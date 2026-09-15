@@ -1,0 +1,92 @@
+name: Social draft generation (X / note)
+
+on:
+  schedule:
+    # JST 09:00 ≈ 00:00 UTC
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "generate | x-dry-run | x-publish"
+        required: true
+        default: "generate"
+        type: choice
+        options:
+          - generate
+          - x-dry-run
+          - x-publish
+      confirm:
+        description: "x-publish のとき publish と入力"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: social-publish
+  cancel-in-progress: false
+
+jobs:
+  social:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml requests requests-oauthlib
+
+      - name: Generate drafts
+        if: github.event_name == 'schedule' || inputs.mode == 'generate' || inputs.mode == 'x-dry-run' || inputs.mode == 'x-publish'
+        run: python scripts/social/generate_queue.py --limit 3
+
+      - name: Export note draft list
+        if: github.event_name == 'schedule' || inputs.mode == 'generate'
+        run: python scripts/social/export_note.py
+
+      - name: X dry-run
+        if: inputs.mode == 'x-dry-run' || github.event_name == 'schedule'
+        run: python scripts/social/post_x.py --dry-run
+
+      - name: X publish (manual only)
+        if: inputs.mode == 'x-publish'
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+        run: |
+          if [ "${{ inputs.confirm }}" != "publish" ]; then
+            echo "Refusing publish without confirm=publish"
+            exit 1
+          fi
+          python scripts/social/post_x.py --publish
+
+      - name: Upload outbox artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: social-outbox
+          path: ops/social-publisher/outbox/
+          if-no-files-found: warn
+
+      - name: Commit newly generated drafts
+        if: github.event_name == 'schedule' || inputs.mode == 'generate'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ops/social-publisher/outbox || true
+          if git diff --cached --quiet; then
+            echo "No draft changes"
+          else
+            git commit -m "chore(social): generate X/note drafts"
+            git push
+          fi

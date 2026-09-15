@@ -135,7 +135,97 @@ tbdesc: 株式会社トリリオンバンクは、AI検索での言及・引用�
   .contact-links a{color:var(--blue-600);font-weight:600;font-size:1rem;display:inline-flex;align-items:center;gap:8px;transition:.2s}
   .contact-links a:hover{opacity:.7}
   @media(max-width:640px){.contact-links{flex-direction:column;align-items:flex-start}}
+
+  /* homepage FAQ — visible Q&A for FAQPage schema parity */
+  .home-faq{max-width:46em}
+  .home-faq details{border-top:1px solid var(--border);padding:18px 0}
+  .home-faq details:last-child{border-bottom:1px solid var(--border)}
+  .home-faq summary{cursor:pointer;font-weight:700;font-size:1rem;line-height:1.7;list-style:none}
+  .home-faq summary::-webkit-details-marker{display:none}
+  .home-faq summary::before{content:"Q.";font-family:var(--mono);color:var(--blue-600);font-size:.72rem;letter-spacing:.12em;margin-right:10px}
+  .home-faq .faq-a{color:var(--muted);font-size:.92rem;line-height:1.85;margin-top:10px;padding-left:1.6em}
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://trillion-bank.jp/#webpage",
+      "url": "https://trillion-bank.jp/",
+      "name": "株式会社トリリオンバンク | AI検索時代の情報流通を、測る・守る・正規化する",
+      "description": "株式会社トリリオンバンクは、AI検索での言及・引用・推薦を可視化するHackⅡと、AIクローラーによるコンテンツ利用を制御・記録するPay per Crawl / AI Access Gatewayを開発するAI情報流通インフラ企業です。",
+      "isPartOf": {"@id": "https://trillion-bank.jp/#website"},
+      "about": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja",
+      "mainEntity": {"@id": "https://trillion-bank.jp/#faq"}
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://trillion-bank.jp/#faq",
+      "url": "https://trillion-bank.jp/",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "トリリオンバンクはどんな会社ですか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AI検索時代の情報流通を「測る・守る・正規化する」ことに取り組む企業です。AIに情報がどう見られ、どう使われるかを可視化・管理する技術を提供しています。銀行業を営む会社ではありません。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "HackⅡでは何が分かりますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AI回答内で自社が候補に入っているか、競合との勝敗がどうか、どの情報源が引用されたかを証拠付きで測定できます。施策前後の比較や投資判断にもつなげられます。掲載・順位・問い合わせや売上を保証するものではありません。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Pay per Crawlはどのような仕組みですか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AIクローラーやRAG、MCP事業者によるコンテンツアクセスを制御・記録する基盤です。正規ライセンス、利用ログ、将来の請求や分配への接続を見据えた研究開発・限定PoC段階の事業です。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "どんな課題を持つ企業向けのサービスですか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AI検索対策に予算を付ける根拠がほしい、競合がAIで選ばれる理由を知りたい、施策の効果を数字で比較したい企業に向いています。メディアや専門DB向けの用途もあります。AI検索に未着手の中小企業や、HackⅡの販売代理店を検討する業者様のご相談も受け付けます。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "HackⅡはどんな部署や担当者に向いていますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "経営者、CMO、マーケティング、SEO、広報など、AI検索対策の判断や実行に関わる担当者向けです。重要質問での候補入り率や競合比較を見ながら検討できます。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Pay per Crawlは誰に適していますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AIに読まれても対価や証跡が残らないことに課題を持つメディアや専門データベース向けです。守る情報と開く情報を分け、利用記録やライセンス化を目指せます。"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "販売代理店の相談は受けていますか？",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Trillion Bankサービスの販売代理店検討は歓迎しています。一方、他社サービスの販売代理店としてTrillion Bank側が引き受ける依頼はお受けしていません。共同提案・役割分担はお問い合わせフォームまたは商談予約からご相談ください。"
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
 </head>
 <body>
 {% include tb-header.html %}
@@ -157,7 +247,7 @@ tbdesc: 株式会社トリリオンバンクは、AI検索での言及・引用�
       <span class="sep">|</span>
       <a href="{{ '/trillionbank/contact/' | relative_url }}#form" data-event="contact_page_open" data-inquiry="hero" data-cta="hero_contact_form">お問い合わせフォームへ →</a>
     </div>
-    <p class="hero-note hi" style="--d:1.2s">HackⅡの詳細説明・代理店の共同提案・Pay per CrawlのPoCはオンライン商談を。取材・採用などはお問い合わせフォームからご連絡ください。</p>
+    <p class="hero-note hi" style="--d:1.2s">AI検索未着手の中小企業の現状確認、HackⅡ販売代理店の検討、Pay per CrawlのPoCはお問い合わせフォームまたはオンライン商談を。他社商材の代理販売依頼はお受けしていません。取材・採用はフォームからご連絡ください。</p>
   </div>
   <div class="hero-scroll hi" style="--d:1.3s" aria-hidden="true"><span>SCROLL</span><div class="hero-scroll-line"></div></div>
   <div class="hero-bottom hi" style="--d:1.4s">
@@ -248,9 +338,9 @@ tbdesc: 株式会社トリリオンバンクは、AI検索での言及・引用�
     <h2 class="bh rv">誰の、どんな課題に</h2>
     <div class="ucases">
       <div class="ucase rv">
-        <h3>事業会社</h3>
-        <p>AI検索対策へ予算を付ける根拠がほしい。競合がAIで選ばれている理由を知りたい。施策の前後を数字で比較したい経営者・CMO・マーケ・SEO・広報の方へ。</p>
-        <div class="arrow">→ HackⅡ</div>
+        <h3>中小・未着手の事業会社</h3>
+        <p>AI検索対策へ予算を付ける根拠がほしい。競合がAIで選ばれている理由を知りたい。施策の前後を数字で比較したい経営者・CMO・マーケ・SEO・広報の方へ。まだ本格着手していない段階の現状確認から相談できます。</p>
+        <div class="arrow">→ お問い合わせ / HackⅡ</div>
       </div>
       <div class="ucase rv">
         <h3>メディア・専門DB</h3>
@@ -263,9 +353,9 @@ tbdesc: 株式会社トリリオンバンクは、AI検索での言及・引用�
         <div class="arrow">→ データ提携</div>
       </div>
       <div class="ucase rv">
-        <h3>販売代理店・パートナー</h3>
-        <p>クライアントからAI検索について聞かれ始めた。専門部署を新設せず、既存のSEO・広告・PR提案に追加できる商材がほしい代理店・制作会社の方へ。共同提案・レポート提供・役割分担をご相談ください。</p>
-        <div class="arrow">→ 共同提案・業務提携</div>
+        <h3>販売代理店を検討する業者様</h3>
+        <p>Trillion Bankサービスの販売代理店・共同提案パートナーとして関わりたいSEO・広告・制作会社の方へ。共同提案・レポート提供・役割分担をご相談ください。他社商材の代理販売依頼はお受けしていません。</p>
+        <div class="arrow">→ 代理店検討のお問い合わせ</div>
       </div>
     </div>
   </div>
@@ -326,15 +416,54 @@ tbdesc: 株式会社トリリオンバンクは、AI検索での言及・引用�
   </div>
 </section>
 
+<!-- FAQ -->
+<section class="sec" id="faq" aria-labelledby="home-faq-heading">
+  <div class="wrap">
+    <p class="sl rv">FAQ</p>
+    <h2 class="bh rv" id="home-faq-heading">よくある質問</h2>
+    <p class="sh rv">AI検索での見え方・測定・販売代理店の検討について、最初によく聞かれる内容です。</p>
+    <div class="home-faq rv">
+      <details open>
+        <summary>トリリオンバンクはどんな会社ですか？</summary>
+        <p class="faq-a">AI検索時代の情報流通を「測る・守る・正規化する」ことに取り組む企業です。AIに情報がどう見られ、どう使われるかを可視化・管理する技術を提供しています。銀行業を営む会社ではありません。</p>
+      </details>
+      <details>
+        <summary>HackⅡでは何が分かりますか？</summary>
+        <p class="faq-a">AI回答内で自社が候補に入っているか、競合との勝敗がどうか、どの情報源が引用されたかを証拠付きで測定できます。施策前後の比較や投資判断にもつなげられます。掲載・順位・問い合わせや売上を保証するものではありません。</p>
+      </details>
+      <details>
+        <summary>Pay per Crawlはどのような仕組みですか？</summary>
+        <p class="faq-a">AIクローラーやRAG、MCP事業者によるコンテンツアクセスを制御・記録する基盤です。正規ライセンス、利用ログ、将来の請求や分配への接続を見据えた研究開発・限定PoC段階の事業です。</p>
+      </details>
+      <details>
+        <summary>どんな課題を持つ企業向けのサービスですか？</summary>
+        <p class="faq-a">AI検索対策に予算を付ける根拠がほしい、競合がAIで選ばれる理由を知りたい、施策の効果を数字で比較したい企業に向いています。メディアや専門DB向けの用途もあります。AI検索に未着手の中小企業や、HackⅡの販売代理店を検討する業者様のご相談も受け付けます。</p>
+      </details>
+      <details>
+        <summary>HackⅡはどんな部署や担当者に向いていますか？</summary>
+        <p class="faq-a">経営者、CMO、マーケティング、SEO、広報など、AI検索対策の判断や実行に関わる担当者向けです。重要質問での候補入り率や競合比較を見ながら検討できます。</p>
+      </details>
+      <details>
+        <summary>Pay per Crawlは誰に適していますか？</summary>
+        <p class="faq-a">AIに読まれても対価や証跡が残らないことに課題を持つメディアや専門データベース向けです。守る情報と開く情報を分け、利用記録やライセンス化を目指せます。</p>
+      </details>
+      <details>
+        <summary>販売代理店の相談は受けていますか？</summary>
+        <p class="faq-a">Trillion Bankサービスの販売代理店検討は歓迎しています。一方、他社サービスの販売代理店としてTrillion Bank側が引き受ける依頼はお受けしていません。共同提案・役割分担はお問い合わせフォームまたは商談予約からご相談ください。</p>
+      </details>
+    </div>
+  </div>
+</section>
+
 <!-- CONTACT -->
 <section class="sec">
   <div class="wrap">
     <p class="sl rv">CONTACT</p>
     <h2 class="bh rv">まずは、ご相談ください。</h2>
-    <p class="sh rv">HackⅡの詳細説明（事業会社向け）・共同提案のご相談（販売代理店向け）・Pay per CrawlのPoCはオンライン商談を。<br>取材・資料送付・採用・その他のご質問はフォームを優先して受け付けます。</p>
+    <p class="sh rv">AI検索未着手の中小企業の現状確認、HackⅡ販売代理店の検討、Pay per CrawlのPoCはお問い合わせフォームを優先しています。詳細説明が必要な場合はオンライン商談もご利用ください。<br>取材・資料送付・採用・その他のご質問もフォームから受け付けます。</p>
     <div class="contact-links rv">
-      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="final_cta_meeting">商談を予約する →</a>
       <a href="{{ '/trillionbank/contact/' | relative_url }}#form" data-event="contact_page_open" data-inquiry="general" data-cta="final_cta_contact_form">お問い合わせフォームへ →</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="final_cta_meeting">商談を予約する →</a>
       <a href="/trillionbank/contact/">お問い合わせ窓口 →</a>
     </div>
   </div>

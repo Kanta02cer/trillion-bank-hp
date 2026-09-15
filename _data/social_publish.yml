@@ -1,0 +1,34 @@
+# Social publish automation config
+# X / note drafts are generated from keywords + published Insights.
+# Live posting requires GitHub secrets and explicit workflow approval.
+
+version: 1
+site_url: "https://trillion-bank.jp"
+primary_cta: "/trillionbank/contact/#form"
+x:
+  enabled: true
+  dry_run_default: true
+  max_chars: 260
+  hashtags_default: ["AI検索", "AEO", "GEO", "LLMO"]
+  posts_per_day: 1
+note:
+  enabled: true
+  # note.com has no stable public write API. We auto-generate drafts only.
+  mode: "draft_export"
+  posts_per_week: 3
+selection:
+  prefer_groups: ["P0", "P1"]
+  prefer_status: ["published", "drafting"]
+  skip_status: ["monitor"]
+  require_article_url: true
+guardrails:
+  forbidden_terms:
+    - "世界初"
+    - "日本初"
+    - "業界唯一"
+    - "完全自動"
+    - "必ず表示"
+    - "売上保証"
+    - "問い合わせ保証"
+  require_cta: true
+  require_source_url: true
