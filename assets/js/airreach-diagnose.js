@@ -1,20 +1,26 @@
 /**
- * AirReach — client-side AI search readiness diagnosis (no API keys).
- * Scores public HTML / llms.txt / robots signals only.
- * Does NOT claim live ChatGPT / Gemini / Claude / AI Overviews citation rates.
+ * AIO Agent (AirReach) — free Growth Report from public page signals.
+ * Estimates are labeled. Does NOT claim live AI citation rates.
  */
 (function () {
   'use strict';
 
   var MAX_BYTES = 900000;
-
-  // First-party Cloudflare Worker (ops/airreach-fetch). Prefer this over third-party proxies.
   var FIRST_PARTY_PROXY = 'https://trillion-bank-airreach-fetch.trillion-bank.workers.dev/';
-
   var PROXY_BUILDERS = [
     function (u) { return FIRST_PARTY_PROXY + '?url=' + encodeURIComponent(u); },
     function (u) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); }
   ];
+
+  // Transparent default assumptions for free (unconnected) estimates
+  var ASSUMPTIONS = {
+    cvr: 0.02,
+    expectedCvValueYen: 150000,
+    grossMargin: 0.7,
+    reachableCtr: 0.06,
+    relevance: 0.7,
+    labelNote: '未接続時の仮置き。GSC/GA4接続後に実測へ置換します。'
+  };
 
   function normalizeUrl(input) {
     var raw = String(input || '').trim();
@@ -23,12 +29,11 @@
     var url;
     try { url = new URL(raw); } catch (e) { throw new Error('URLの形式を確認してください。'); }
     if (!/^https?:$/i.test(url.protocol)) throw new Error('httpまたはhttpsのURLのみ対応しています。');
-    // Strip credentials and common sensitive query fragments before any network use
     url.username = '';
     url.password = '';
-    var drop = ['token', 'access_token', 'auth', 'key', 'api_key', 'apikey', 'session', 'sig', 'signature', 'password', 'passwd'];
-    drop.forEach(function (k) { url.searchParams.delete(k); });
-    // Also drop params that look like secrets
+    ['token','access_token','auth','key','api_key','apikey','session','sig','signature','password','passwd'].forEach(function (k) {
+      url.searchParams.delete(k);
+    });
     Array.from(url.searchParams.keys()).forEach(function (k) {
       if (/token|secret|auth|key|session|sig/i.test(k)) url.searchParams.delete(k);
     });
@@ -38,8 +43,7 @@
   function fetchText(url, timeoutMs) {
     var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, timeoutMs || 15000);
-    var opts = { signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', mode: 'cors' };
-    return fetch(url, opts).then(function (res) {
+    return fetch(url, { signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', mode: 'cors' }).then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       var len = res.headers && res.headers.get ? res.headers.get('content-length') : null;
       if (len && parseInt(len, 10) > MAX_BYTES) throw new Error('応答が大きすぎます');
@@ -57,14 +61,14 @@
   function fetchWithFallbacks(targetUrl, allowProxy) {
     return fetchText(targetUrl, 10000).catch(function (directErr) {
       if (!allowProxy) {
-        throw new Error('このサイトはブラウザから直接取得できません。取得代行（外部プロキシ）への同意にチェックするか、フォームからURLを送ってください。');
+        throw new Error('このサイトは直接取得できません。下の同意にチェックするか、お問い合わせからURLをお送りください。');
       }
       var chain = Promise.reject(directErr);
       PROXY_BUILDERS.forEach(function (build) {
         chain = chain.catch(function () { return fetchText(build(targetUrl), 16000); });
       });
       return chain.catch(function () {
-        throw new Error('ページを取得できませんでした。サイト側の制限か、プロキシ不通の可能性があります。フォームからご相談ください。');
+        throw new Error('ページを取得できませんでした。お問い合わせからURLをお送りください。');
       });
     });
   }
@@ -73,11 +77,20 @@
     try { return new URL(path, base).href; } catch (e) { return null; }
   }
 
+  function scoreBlock(pts, max) {
+    return Math.max(0, Math.min(100, Math.round((pts / max) * 100)));
+  }
+
+  function yen(n) {
+    return Math.round(n);
+  }
+
   function parseHtml(html) {
     var doc = new DOMParser().parseFromString(html, 'text/html');
     var text = (doc.body && doc.body.innerText ? doc.body.innerText : '').replace(/\s+/g, ' ').trim();
     var title = (doc.querySelector('title') || {}).textContent || '';
     var h1 = Array.prototype.map.call(doc.querySelectorAll('h1'), function (n) { return n.textContent.trim(); }).filter(Boolean);
+    var h2 = Array.prototype.map.call(doc.querySelectorAll('h2'), function (n) { return n.textContent.trim(); }).filter(Boolean).slice(0, 20);
     var metaDesc = (doc.querySelector('meta[name="description"]') || {}).content || '';
     var canonical = (doc.querySelector('link[rel="canonical"]') || {}).href || '';
     var robotsMeta = ((doc.querySelector('meta[name="robots"]') || {}).content || '').toLowerCase();
@@ -104,9 +117,15 @@
     });
     var visibleFaq = doc.querySelectorAll('[itemtype*="FAQPage"], .faq, #faq, [aria-labelledby*="faq"]').length;
     var hasContact = /お問い合わせ|contact|inquiry|相談|予約/i.test(text) || !!doc.querySelector('a[href*="contact"], a[href*="meeting"], form');
+    var hasPrice = /料金|価格|円|プラン|費用|見積/i.test(text);
+    var hasCompare = /比較|おすすめ|選び方|違い|メリット|デメリット/i.test(text);
+    var hasUpdate = /更新日|最終更新|as of|確認日/i.test(text) || !!doc.querySelector('time');
+    var hasAuthor = /著者|執筆|監修|author/i.test(text);
+    var hasCase = /事例|実績|導入|ケース/i.test(text);
     return {
       title: title.trim(),
       h1: h1,
+      h2: h2,
       metaDesc: metaDesc.trim(),
       canonical: canonical,
       robotsMeta: robotsMeta,
@@ -115,24 +134,134 @@
       faqCount: faqCount,
       visibleFaq: visibleFaq,
       hasContact: hasContact,
+      hasPrice: hasPrice,
+      hasCompare: hasCompare,
+      hasUpdate: hasUpdate,
+      hasAuthor: hasAuthor,
+      hasCase: hasCase,
       textLen: text.length,
+      text: text,
       htmlLen: html.length
     };
   }
 
-  function scoreBlock(pts, max) {
-    return Math.max(0, Math.min(100, Math.round((pts / max) * 100)));
+  function brandSeed(host, page) {
+    var fromTitle = String(page.title || '').split(/[|\-—・｜]/)[0].trim()
+      .replace(/^株式会社/, '')
+      .replace(/株式会社$/, '')
+      .trim();
+    if (fromTitle && fromTitle.length <= 18 && !/課題|挑む|ミッション|わたしたち|私たち|判断材料/.test(fromTitle)) {
+      return fromTitle;
+    }
+    try {
+      var h = new URL('https://' + String(host || '').replace(/^https?:\/\//, '')).hostname.replace(/^www\./, '');
+      var part = h.split('.')[0];
+      if (part === 'trillion-bank') return 'Trillion Bank';
+      if (part) return part.replace(/-/g, ' ');
+    } catch (e) { /* ignore */ }
+    return 'サービス';
+  }
+
+  function extractThemes(page, host) {
+    var seeds = [];
+    var brand = brandSeed(host, page);
+    function usable(s) {
+      s = String(s || '').replace(/\s+/g, ' ').trim();
+      if (!s || s.length < 2 || s.length > 28) return '';
+      if (/^[A-Za-z0-9._-]+$/.test(s) && s.indexOf(' ') < 0 && s.length < 4) return '';
+      if (/課題に挑む|ミッション|わたしたち|私たち|ようこそ|トップページ|判断材料|重要なのは/.test(s)) return '';
+      if (/[。．！？]/.test(s) || (s.length > 18 && /\s/.test(s) && !/比較|おすすめ|料金|とは/.test(s))) return '';
+      return s;
+    }
+    function add(s, intent, weight) {
+      s = usable(s);
+      if (!s) return;
+      seeds.push({ raw: s, intent: intent || 'informational', weight: weight || 1 });
+    }
+    page.h1.forEach(function (t) { add(t, 'commercial', 3); });
+    add(page.title.split(/[|\-—・｜]/)[0], 'commercial', 2);
+    page.h2.forEach(function (t) {
+      var intent = /比較|おすすめ|料金|選び方/.test(t) ? 'comparison' : 'informational';
+      add(t, intent, 2);
+    });
+    if (page.hasCompare) add(brand + ' 比較', 'comparison', 4);
+    if (page.hasPrice) add(brand + ' 料金', 'commercial', 3);
+    add(brand + ' おすすめ', 'comparison', 3);
+    add(brand + ' とは', 'informational', 2);
+    add('AI検索 測定', 'commercial', 2);
+
+    // Dedupe by normalized key
+    var map = {};
+    seeds.forEach(function (s) {
+      var key = s.raw.toLowerCase();
+      if (!map[key] || map[key].weight < s.weight) map[key] = s;
+    });
+    var list = Object.keys(map).map(function (k) { return map[k]; });
+    list.sort(function (a, b) { return b.weight - a.weight; });
+    return list.slice(0, 10);
+  }
+
+  function estimateThemeMetrics(theme, scores, index) {
+    var intentBoost = theme.intent === 'comparison' ? 1.4 : theme.intent === 'commercial' ? 1.2 : 1.0;
+    var baseVol = Math.round((180 + theme.weight * 220 + (10 - index) * 90) * intentBoost);
+    // Soften by page readiness: weaker pages still have demand, but lower reachable share
+    var coverage = Math.max(0.15, Math.min(0.85, scores.search / 100));
+    var currentCtr = Math.max(0.002, (scores.answer / 100) * 0.04);
+    var demand = baseVol;
+    var reachableClicks = demand * ASSUMPTIONS.reachableCtr * ASSUMPTIONS.relevance * coverage;
+    var currentClicks = demand * currentCtr * 0.5;
+    var addClicks = Math.max(0, Math.round(reachableClicks - currentClicks));
+    var cvBase = addClicks * ASSUMPTIONS.cvr;
+    var revenueBase = cvBase * ASSUMPTIONS.expectedCvValueYen;
+    var gap = Math.round((1 - coverage) * 40 + (theme.intent === 'comparison' && scores.answer < 70 ? 25 : 10));
+    var opportunityScore = Math.min(99, Math.round(
+      (demand / 40) * 0.25 +
+      (addClicks / 8) * 0.3 +
+      gap * 0.25 +
+      theme.weight * 8
+    ));
+    var aiDemand = theme.intent === 'comparison' || theme.intent === 'commercial' ? '高' : '中';
+    var effort = theme.intent === 'informational' ? '低' : theme.intent === 'comparison' ? '中' : '中';
+    var confidence = Math.min(92, 58 + theme.weight * 6 + Math.round(scores.ai / 10));
+    return {
+      name: theme.raw,
+      intent: theme.intent,
+      googleVolumeEst: demand,
+      aiDemandLabel: aiDemand,
+      opportunityScore: opportunityScore,
+      clicksEst: addClicks,
+      cvEst: Math.round(cvBase * 10) / 10,
+      revenueEst: yen(revenueBase),
+      profitEst: yen(revenueBase * ASSUMPTIONS.grossMargin),
+      priority: opportunityScore,
+      effort: effort,
+      confidence: confidence,
+      prompts: [
+        theme.raw + ' とは',
+        theme.raw + ' おすすめ',
+        theme.raw + ' 比較'
+      ],
+      action: theme.intent === 'comparison'
+        ? '比較・料金・選ばれる理由を1ページにまとめる'
+        : theme.intent === 'commercial'
+          ? '対象・料金・次の相談先を明確にする'
+          : '定義とよくある質問を厚くする',
+      dataKind: 'モデル予測'
+    };
   }
 
   function analyze(page, llmsText, robotsText, baseHref) {
-    var structurePts = 0, structureMax = 12;
-    if (page.title) structurePts += 2;
-    if (page.h1.length === 1) structurePts += 3;
-    else if (page.h1.length > 1) structurePts += 1;
-    if (page.metaDesc && page.metaDesc.length >= 40) structurePts += 2;
-    if (page.canonical) structurePts += 2;
-    if (page.ogTitle) structurePts += 1;
-    if (page.textLen > 800) structurePts += 2;
+    // Google search readiness (structure / indexability) — llms.txt is auxiliary only
+    var searchPts = 0, searchMax = 14;
+    if (page.title) searchPts += 2;
+    if (page.h1.length === 1) searchPts += 3;
+    else if (page.h1.length > 1) searchPts += 1;
+    if (page.metaDesc && page.metaDesc.length >= 40) searchPts += 2;
+    if (page.canonical) searchPts += 2;
+    if (page.ogTitle) searchPts += 1;
+    if (page.textLen > 800) searchPts += 2;
+    if (robotsText && /sitemap/i.test(robotsText)) searchPts += 1;
+    if (page.robotsMeta.indexOf('noindex') >= 0) searchPts -= 3;
 
     var entityPts = 0, entityMax = 10;
     if (page.types.Organization || page.types.LocalBusiness) entityPts += 4;
@@ -141,76 +270,158 @@
     if (page.types.BreadcrumbList) entityPts += 1;
     if (page.hasContact) entityPts += 1;
 
-    var faqPts = 0, faqMax = 8;
-    if (page.types.FAQPage) faqPts += 3;
-    if (page.faqCount >= 3) faqPts += 3;
-    else if (page.faqCount > 0) faqPts += 1;
-    if (page.visibleFaq) faqPts += 2;
+    var answerPts = 0, answerMax = 12;
+    if (page.types.FAQPage) answerPts += 3;
+    if (page.faqCount >= 3) answerPts += 3;
+    else if (page.faqCount > 0) answerPts += 1;
+    if (page.visibleFaq) answerPts += 2;
+    if (page.hasCompare) answerPts += 2;
+    if (page.hasPrice) answerPts += 2;
 
-    var discPts = 0, discMax = 10;
-    if (llmsText && llmsText.length > 80) discPts += 4;
+    var trustPts = 0, trustMax = 8;
+    if (page.hasUpdate) trustPts += 2;
+    if (page.hasAuthor) trustPts += 2;
+    if (page.hasCase) trustPts += 2;
+    if (page.textLen > 1500) trustPts += 2;
+
+    var cvPts = 0, cvMax = 8;
+    if (page.hasContact) cvPts += 4;
+    if (page.hasPrice) cvPts += 2;
+    if (/無料|資料|デモ|相談|予約|申し込み/i.test(page.text)) cvPts += 2;
+
+    var discPts = 0, discMax = 8;
     if (robotsText) {
       discPts += 2;
       if (/GPTBot|ClaudeBot|PerplexityBot|Google-Extended|OAI-SearchBot/i.test(robotsText)) discPts += 2;
       if (/Disallow:\s*\/\s*$/m.test(robotsText) && !/Allow:/i.test(robotsText)) discPts -= 2;
     }
+    if (llmsText && llmsText.length > 80) discPts += 2; // auxiliary
     if (page.robotsMeta.indexOf('noindex') >= 0) discPts -= 3;
     if (/sitemap/i.test(robotsText || '')) discPts += 2;
 
-    var structure = scoreBlock(structurePts, structureMax);
+    var search = scoreBlock(Math.max(0, searchPts), searchMax);
     var entity = scoreBlock(entityPts, entityMax);
-    var faq = scoreBlock(faqPts, faqMax);
+    var answer = scoreBlock(answerPts, answerMax);
+    var trust = scoreBlock(trustPts, trustMax);
+    var cv = scoreBlock(cvPts, cvMax);
     var discover = scoreBlock(Math.max(0, discPts), discMax);
-    var overall = Math.round(structure * 0.3 + entity * 0.25 + faq * 0.2 + discover * 0.25);
+    var ai = Math.round(answer * 0.35 + entity * 0.25 + trust * 0.2 + discover * 0.2);
+    var overall = Math.round(ai * 0.35 + search * 0.25 + entity * 0.15 + answer * 0.15 + cv * 0.1);
+
+    var scores = { ai: ai, search: search, entity: entity, answer: answer, trust: trust, cv: cv, discover: discover };
 
     var strengths = [];
     var gaps = [];
-    if (page.h1.length === 1) strengths.push('H1が1つに整理されている');
-    else gaps.push('H1が無い、または複数あり主題が散っている');
-    if (page.types.Organization || page.types.LocalBusiness) strengths.push('Organization系の構造化データがある');
-    else gaps.push('Organization（またはLocalBusiness）の構造化データが見つからない');
-    if (page.types.FAQPage && page.faqCount > 0) strengths.push('FAQPageが検出された（' + page.faqCount + '問）');
-    else gaps.push('可視FAQと一致するFAQPageが弱い／無い');
-    if (llmsText && llmsText.length > 80) strengths.push('llms.txt（または同等テキスト）を取得できた');
-    else gaps.push('llms.txtが見つからない、または内容が薄い');
-    if (page.hasContact) strengths.push('問い合わせ・相談の導線らしき文言がある');
-    else gaps.push('問い合わせ導線が本文から見つけにくい');
-    if (page.canonical) strengths.push('canonicalが設定されている');
-    else gaps.push('canonicalが無い');
+    if (page.h1.length === 1) strengths.push('ページの主題が1つにまとまっている');
+    else gaps.push('ページの主題がはっきりしない（見出しが無い、または多すぎる）');
+    if (page.types.Organization || page.types.LocalBusiness) strengths.push('会社情報が機械にも読める形で載っている');
+    else gaps.push('会社名・公式サイトなどの会社情報が不足している');
+    if (page.types.FAQPage && page.faqCount > 0) strengths.push('よくある質問が ' + page.faqCount + ' 問ある');
+    else gaps.push('よくある質問が少ない、または無い');
+    if (page.hasCompare) strengths.push('比較や選び方の情報がある');
+    else gaps.push('比較・選び方の情報が弱い');
+    if (page.hasContact) strengths.push('問い合わせや相談の入り口がある');
+    else gaps.push('問い合わせの入り口が見つけにくい');
+    if (page.canonical) strengths.push('正式なページURLが明示されている');
+    else gaps.push('正式なページURLの指定が無い');
 
     var actions = { now: [], weeks: [], partner: [] };
-    if (!page.types.Organization) actions.now.push('会社名・公式URL・ロゴを含むOrganization schemaを追加する');
-    if (!(page.types.FAQPage && page.faqCount >= 3)) actions.now.push('購入前に聞かれる質問を可視FAQにし、同じ内容のFAQPageを置く');
-    if (!page.metaDesc || page.metaDesc.length < 40) actions.now.push('meta descriptionを40文字以上で、サービスの対象を明確に書く');
-    if (!llmsText || llmsText.length < 80) actions.weeks.push('llms.txtで主要ページ（会社・サービス・FAQ・ポリシー）への案内を置く');
-    if (page.h1.length !== 1) actions.weeks.push('トップと主要LPのH1を「何のサービスか」が一瞬で分かる文言に揃える');
-    actions.weeks.push('重要カテゴリ質問で競合が出る場合の公式比較軸・対象外をページ化する');
-    actions.partner.push('ChatGPT / Gemini / Perplexity / AI Overviewsでの言及・引用・推薦を同条件で測定する（HackⅡ）');
-    actions.partner.push('競合Win/Lossと引用URLから、優先施策を週次で更新する伴走に切り替える');
-    actions.partner.push('一次情報の改修と再計測をセットにした伴走モニター枠で実装まで任せる');
+    if (!page.types.Organization) actions.now.push('会社名・公式URL・ロゴをページに明示する');
+    if (!(page.types.FAQPage && page.faqCount >= 3)) actions.now.push('購入前に聞かれやすい質問を「よくある質問」にまとめる');
+    if (!page.hasCompare) actions.now.push('比較・料金・選ばれる理由を1ページにまとめる');
+    if (!page.metaDesc || page.metaDesc.length < 40) actions.now.push('検索結果の説明文で「誰向けの何のサービスか」を書く');
+    if (page.h1.length !== 1) actions.weeks.push('主要ページの見出しを「何のサービスか」が一瞬で分かる文言に揃える');
+    actions.weeks.push('競合と比較されやすいテーマの公式比較軸と対象外をページ化する');
+    if (!llmsText || llmsText.length < 80) actions.weeks.push('（補助）AI向け案内ファイルで主要ページへの案内を置く');
+    actions.partner.push('ChatGPTやGeminiなどで、自社がどう出てくるかを同じ条件で測る（HackⅡ）');
+    actions.partner.push('Search Console連携で「推定」を実測に置き換える');
+    actions.partner.push('直す作業と再計測まで一緒に進める');
 
     var host = '';
     try { host = new URL(baseHref).hostname; } catch (e) { host = baseHref; }
-    var tone;
-    if (overall >= 75) tone = '公開ページの土台は比較的整っています。次は実AI回答での出現を同条件測定し、負けている質問から直す段階です。';
-    else if (overall >= 50) tone = '基本要素は一部ありますが、AIが引用・比較しやすい「定義・FAQ・エンティティ」がまだ弱い可能性があります。';
-    else tone = '現状は、AI検索で候補に入りにくい公開情報設計の可能性が高いです。まず公式の定義とFAQ、組織情報を厚くするのが先です。';
+
+    var themes = extractThemes(page, host).map(function (t, i) {
+      return estimateThemeMetrics(t, scores, i);
+    });
+    themes.sort(function (a, b) { return b.priority - a.priority; });
+
+    var clicksBase = themes.reduce(function (s, t) { return s + t.clicksEst; }, 0);
+    var cvBase = themes.reduce(function (s, t) { return s + t.cvEst; }, 0);
+    var revenueBase = themes.reduce(function (s, t) { return s + t.revenueEst; }, 0);
+    var cvLow = Math.round(cvBase * 0.55 * 10) / 10;
+    var cvHigh = Math.round(cvBase * 1.45 * 10) / 10;
+    var revenueLow = yen(revenueBase * 0.55);
+    var revenueHigh = yen(revenueBase * 1.45);
+    var profitBase = yen(revenueBase * ASSUMPTIONS.grossMargin);
+    var profitLow = yen(revenueLow * ASSUMPTIONS.grossMargin);
+    var profitHigh = yen(revenueHigh * ASSUMPTIONS.grossMargin);
+
+    var topTheme = themes[0] ? themes[0].name : '主要サービス';
+    var topFix = gaps.length ? gaps[0] : '実際のAI回答での出方を測り、弱いテーマから直す';
+    var biggestProblem = scores.cv < 50
+      ? '興味は呼べても、問い合わせにつながりにくい可能性があります。'
+      : scores.answer < 55
+        ? '検索やAIで比較されたとき、答えになる情報が足りない可能性があります。'
+        : '検索結果やAI回答に出ても、クリック・推薦につながり切っていない可能性があります。';
+
+    var verdict;
+    var nextStep;
+    if (overall >= 75) {
+      verdict = '土台は整っています。次は実際の出方と取りこぼしを測る段階です。';
+      nextStep = themes[0] ? themes[0].action : 'ChatGPTやGeminiでの実際の出方を測る';
+    } else if (overall >= 50) {
+      verdict = '基本はあるが、会社情報やFAQが弱い可能性があります。';
+      nextStep = themes[0] ? themes[0].action : '会社情報とよくある質問を厚くする';
+    } else {
+      verdict = '見つけてもらいにくい状態の可能性が高いです。定義とFAQから整えましょう。';
+      nextStep = 'サービスの定義とよくある質問を先に整える';
+    }
 
     return {
       overall: overall,
-      structure: structure,
+      structure: search,
       entity: entity,
-      faq: faq,
+      faq: answer,
       discover: discover,
+      scores: scores,
       strengths: strengths,
       gaps: gaps,
       actions: actions,
+      themes: themes,
+      opportunity: {
+        clicksBase: clicksBase,
+        cvBase: Math.round(cvBase * 10) / 10,
+        cvLow: cvLow,
+        cvHigh: cvHigh,
+        revenueBase: yen(revenueBase),
+        revenueLow: revenueLow,
+        revenueHigh: revenueHigh,
+        profitBase: profitBase,
+        profitLow: profitLow,
+        profitHigh: profitHigh,
+        dataKind: 'モデル予測',
+        assumptions: {
+          cvr: ASSUMPTIONS.cvr,
+          expectedCvValueYen: ASSUMPTIONS.expectedCvValueYen,
+          grossMargin: ASSUMPTIONS.grossMargin,
+          reachableCtr: ASSUMPTIONS.reachableCtr,
+          relevance: ASSUMPTIONS.relevance,
+          note: ASSUMPTIONS.labelNote
+        },
+        formula: '追加クリック ≒ 推定需要 × 到達可能CTR × 関連度 × カバー率 − 現状クリック。追加CV ≒ 追加クリック × CVR。売上機会 ≒ 追加CV × 問い合わせ1件の期待価値。'
+      },
+      plainSummary: {
+        host: host,
+        verdict: verdict,
+        nextStep: nextStep,
+        topFix: topFix,
+        topTheme: topTheme,
+        biggestProblem: biggestProblem
+      },
       review: {
-        summary: host + ' の公開ページ準備度は ' + overall + ' / 100 です。' + tone,
-        strengths: strengths.slice(0, 4),
-        gaps: gaps.slice(0, 5),
-        conversionHint: '表示だけでなく問い合わせにつなげるには、「誰向けか／何ができるか／何をしないか／次の相談先」が同一ページで完結しているかが重要です。',
-        disclaimer: 'このレビューは公開HTML等の準備度に基づく自動生成です。実際のAI回答での引用・推薦・出現率はHackⅡの測定が必要です。掲載や問い合わせ増を保証するものではありません。'
+        summary: host + ' の成長機会レポート（推定）です。' + verdict,
+        conversionHint: '問い合わせにつなげるには、「誰向けか／何ができるか／何をしないか／次の相談先」が同じページで揃っているかが大切です。',
+        disclaimer: '表示の金額・CVはモデル予測です。掲載・順位・流入・問い合わせ・売上を保証しません。実AI回答の出方はHackⅡ、検索実測はGSC連携で置換します。'
       },
       page: {
         title: page.title,
@@ -220,14 +431,7 @@
         hasLlms: !!(llmsText && llmsText.length > 80),
         hasRobots: !!robotsText,
         baseHref: baseHref
-      },
-      modelPlaceholders: [
-        { name: 'Google AI Overviews', status: '要HackⅡ測定', note: '実回答の引用率は本ツールでは取得しません' },
-        { name: 'Gemini', status: '要HackⅡ測定', note: '準備度シグナルのみ反映' },
-        { name: 'ChatGPT', status: '要HackⅡ測定', note: '準備度シグナルのみ反映' },
-        { name: 'Claude', status: '要HackⅡ測定', note: '準備度シグナルのみ反映' },
-        { name: 'Perplexity他', status: '要HackⅡ測定', note: '準備度シグナルのみ反映' }
-      ]
+      }
     };
   }
 
@@ -247,5 +451,5 @@
     });
   }
 
-  window.AirReach = { diagnose: diagnose, normalizeUrl: normalizeUrl };
+  window.AirReach = { diagnose: diagnose, normalizeUrl: normalizeUrl, ASSUMPTIONS: ASSUMPTIONS };
 })();
