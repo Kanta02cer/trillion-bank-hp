@@ -64,4 +64,38 @@ Adctor is a research and PoC program for connecting AI/RAG/MCP/Agent content use
 
 This file is an experimental, human-readable index of approved public pages. It is not a ranking instruction or an inclusion guarantee. The HTML pages above are the canonical sources.
 
-Last reviewed: 2026-09-06
+
+## SME / Partner lead guides (2026-09-15)
+
+- 広告代理店がAI検索測定を提案に足す理由: https://trillion-bank.jp/trillionbank/news/partner-ad-agency-pitch/
+- 販売代理店向け｜HackⅡ共同提案の進め方: https://trillion-bank.jp/trillionbank/news/partner-co-sell-process/
+- 販売代理店検討でよくある質問｜範囲と役割分担: https://trillion-bank.jp/trillionbank/news/partner-faq-scope-roles/
+- 販売代理店が最初の1社にHackⅡを提案する手順: https://trillion-bank.jp/trillionbank/news/partner-first-client-playbook/
+- 代理店検討の商談前チェックリスト: https://trillion-bank.jp/trillionbank/news/partner-meeting-prep-checklist/
+- 「御社に代理店になってほしい」依頼をお受けしない理由: https://trillion-bank.jp/trillionbank/news/partner-not-becoming-your-agent/
+- Trillion Bankサービス販売代理店の検討ガイド: https://trillion-bank.jp/trillionbank/news/partner-program-overview/
+- SEO会社がHackⅡを提案メニューに追加する考え方: https://trillion-bank.jp/trillionbank/news/partner-seo-firm-add-on/
+- Web制作会社がAI検索対策を継続収益にする設計: https://trillion-bank.jp/trillionbank/news/partner-web-production-add-on/
+- HackⅡ販売代理店に向いている業者の特徴: https://trillion-bank.jp/trillionbank/news/partner-who-fits/
+- 中小企業がAI検索対策に予算を付ける根拠の作り方: https://trillion-bank.jp/trillionbank/news/sme-ai-search-budget-justification/
+- AI検索対策で中小企業が最初にやりがちな失敗: https://trillion-bank.jp/trillionbank/news/sme-ai-search-common-first-mistakes/
+- 中小企業がAI検索対策を始める最初の30日｜未着手からの手順: https://trillion-bank.jp/trillionbank/news/sme-ai-search-first-30-days/
+- 中小企業が抱きやすいAI検索・SEOの誤解10選: https://trillion-bank.jp/trillionbank/news/sme-ai-seo-myths/
+- 社内稟議用｜AI検索対策の説明文テンプレート（中小企業）: https://trillion-bank.jp/trillionbank/news/sme-board-proposal-template/
+- BtoBサービス業の中小企業がAIにおすすめされない理由: https://trillion-bank.jp/trillionbank/news/sme-btob-services-ai-recommend/
+- ChatGPTに自社が出てこない中小企業向けチェックリスト: https://trillion-bank.jp/trillionbank/news/sme-chatgpt-not-mentioned/
+- 問い合わせ前に揃える｜AI検索対策の相談準備チェックリスト: https://trillion-bank.jp/trillionbank/news/sme-contact-ready-checklist/
+- 既存サイトのAI向け棚卸し｜中小企業のページ点検手順: https://trillion-bank.jp/trillionbank/news/sme-content-inventory-for-ai/
+- スクール・研修事業の中小企業向けAI検索対策: https://trillion-bank.jp/trillionbank/news/sme-education-school-ai-search/
+- 中小企業の社名・サービス表記ゆれチェックリスト｜AI検索対策: https://trillion-bank.jp/trillionbank/news/sme-entity-consistency-checklist/
+- 未着手企業がまず作るFAQとFAQPageの実務ガイド: https://trillion-bank.jp/trillionbank/news/sme-faq-schema-starter/
+- フランチャイズ本部が整えるべきAI検索の一次情報: https://trillion-bank.jp/trillionbank/news/sme-franchise-hq-ai-search/
+- 地域密着の中小企業向け｜地図情報とAI検索の役割分担: https://trillion-bank.jp/trillionbank/news/sme-local-brand-ai-and-maps/
+- 製造業の中小企業向けAI検索対策｜技術情報の出し方: https://trillion-bank.jp/trillionbank/news/sme-manufacturing-ai-search/
+- AI検索ツール導入前に中小企業が取るべき基準線: https://trillion-bank.jp/trillionbank/news/sme-measure-before-tools/
+- 経営者が決めるAI検索投資｜中小企業の判断フレーム: https://trillion-bank.jp/trillionbank/news/sme-owner-ceo-ai-search-decision/
+- SEO会社にAI検索対策を頼む前に中小企業が聞くべき質問: https://trillion-bank.jp/trillionbank/news/sme-seo-vendor-questions/
+- 競合だけがAIに選ばれるとき中小企業が確認すべきこと: https://trillion-bank.jp/trillionbank/news/sme-vs-competitor-ai-visibility/
+- 中小企業がAI検索対策をまだ外注しなくていい段階: https://trillion-bank.jp/trillionbank/news/sme-when-not-to-outsource/
+
+Last reviewed: 2026-09-15

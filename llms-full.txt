@@ -73,3 +73,35 @@ Business consultation: https://trillion-bank.jp/trillionbank/meeting/
 General inquiries: https://trillion-bank.jp/trillionbank/contact/
 
 The HTML pages are canonical. This file is an optional discovery index, not a ranking signal or a guarantee.
+
+## Additional SME / Partner guides
+- https://trillion-bank.jp/trillionbank/news/partner-ad-agency-pitch/
+- https://trillion-bank.jp/trillionbank/news/partner-co-sell-process/
+- https://trillion-bank.jp/trillionbank/news/partner-faq-scope-roles/
+- https://trillion-bank.jp/trillionbank/news/partner-first-client-playbook/
+- https://trillion-bank.jp/trillionbank/news/partner-meeting-prep-checklist/
+- https://trillion-bank.jp/trillionbank/news/partner-not-becoming-your-agent/
+- https://trillion-bank.jp/trillionbank/news/partner-program-overview/
+- https://trillion-bank.jp/trillionbank/news/partner-seo-firm-add-on/
+- https://trillion-bank.jp/trillionbank/news/partner-web-production-add-on/
+- https://trillion-bank.jp/trillionbank/news/partner-who-fits/
+- https://trillion-bank.jp/trillionbank/news/sme-ai-search-budget-justification/
+- https://trillion-bank.jp/trillionbank/news/sme-ai-search-common-first-mistakes/
+- https://trillion-bank.jp/trillionbank/news/sme-ai-search-first-30-days/
+- https://trillion-bank.jp/trillionbank/news/sme-ai-seo-myths/
+- https://trillion-bank.jp/trillionbank/news/sme-board-proposal-template/
+- https://trillion-bank.jp/trillionbank/news/sme-btob-services-ai-recommend/
+- https://trillion-bank.jp/trillionbank/news/sme-chatgpt-not-mentioned/
+- https://trillion-bank.jp/trillionbank/news/sme-contact-ready-checklist/
+- https://trillion-bank.jp/trillionbank/news/sme-content-inventory-for-ai/
+- https://trillion-bank.jp/trillionbank/news/sme-education-school-ai-search/
+- https://trillion-bank.jp/trillionbank/news/sme-entity-consistency-checklist/
+- https://trillion-bank.jp/trillionbank/news/sme-faq-schema-starter/
+- https://trillion-bank.jp/trillionbank/news/sme-franchise-hq-ai-search/
+- https://trillion-bank.jp/trillionbank/news/sme-local-brand-ai-and-maps/
+- https://trillion-bank.jp/trillionbank/news/sme-manufacturing-ai-search/
+- https://trillion-bank.jp/trillionbank/news/sme-measure-before-tools/
+- https://trillion-bank.jp/trillionbank/news/sme-owner-ceo-ai-search-decision/
+- https://trillion-bank.jp/trillionbank/news/sme-seo-vendor-questions/
+- https://trillion-bank.jp/trillionbank/news/sme-vs-competitor-ai-visibility/
+- https://trillion-bank.jp/trillionbank/news/sme-when-not-to-outsource/

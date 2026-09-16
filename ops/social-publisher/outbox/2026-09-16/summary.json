@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-16",
+  "items": [
+    {
+      "date": "2026-09-16",
+      "keyword": "広告代理店がAI検索測定を提案に足す理由",
+      "priority": 201,
+      "group": "P1",
+      "cluster": "販売代理店検討",
+      "article_slug": "partner-ad-agency-pitch",
+      "article_url": "https://trillion-bank.jp/trillionbank/news/partner-ad-agency-pitch/",
+      "x_file": "201-partner-ad-agency-pitch.x.txt",
+      "note_file": "201-partner-ad-agency-pitch.note.md",
+      "status": "draft"
+    },
+    {
+      "date": "2026-09-16",
+      "keyword": "販売代理店向け",
+      "priority": 202,
+      "group": "P1",
+      "cluster": "販売代理店検討",
+      "article_slug": "partner-co-sell-process",
+      "article_url": "https://trillion-bank.jp/trillionbank/news/partner-co-sell-process/",
+      "x_file": "202-partner-co-sell-process.x.txt",
+      "note_file": "202-partner-co-sell-process.note.md",
+      "status": "draft"
+    },
+    {
+      "date": "2026-09-16",
+      "keyword": "販売代理店検討でよくある質問",
+      "priority": 203,
+      "group": "P1",
+      "cluster": "販売代理店検討",
+      "article_slug": "partner-faq-scope-roles",
+      "article_url": "https://trillion-bank.jp/trillionbank/news/partner-faq-scope-roles/",
+      "x_file": "203-partner-faq-scope-roles.x.txt",
+      "note_file": "203-partner-faq-scope-roles.note.md",
+      "status": "draft"
+    }
+  ]
+}

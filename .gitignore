@@ -60,3 +60,7 @@ HackⅡ/
 hack2-edge/
 ai-coupon-system/
 tools/dynamic-aio/data/
+
+# Social drafts may be committed selectively; ignore local secrets
+ops/social-publisher/.env
+ops/social-publisher/**/*.secret

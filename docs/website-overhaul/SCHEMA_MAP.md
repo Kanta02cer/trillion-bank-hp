@@ -12,3 +12,10 @@
 | visible FAQ | FAQPage | render the same Q&A visibly |
 
 Prohibited patterns include fake reviews, ratings, customers, awards, offers, certifications, a nonexistent parent organization, a SearchAction without working site search, machine-only prices, and media entries without confirmed rights.
+
+## AIO diagnosis (2026-09-11) decisions
+
+- Homepage now has visible FAQ + FAQPage.
+- SearchAction is intentionally omitted (no site search).
+- Homepage Article/Product are intentionally omitted (not an article; no public Product/Offer).
+- BreadcrumbList on homepage root is optional; WebPage + FAQPage added instead.

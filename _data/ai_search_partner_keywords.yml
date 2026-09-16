@@ -808,3 +808,245 @@ keywords:
     slug: "ai-searchable-company"
     content_type: "brand-guide"
     status: planned
+
+# --- 2026-09-15 SME / Partner lead batch ---
+  - priority: 201
+    group: P1
+    cluster: "販売代理店検討"
+    keyword: "広告代理店がAI検索測定を提案に足す理由"
+    intent: "リード獲得"
+    slug: "partner-ad-agency-pitch"
+    content_type: "guide"
+    status: published
+  - priority: 202
+    group: P1
+    cluster: "販売代理店検討"
+    keyword: "販売代理店向け"
+    intent: "リード獲得"
+    slug: "partner-co-sell-process"
+    content_type: "guide"
+    status: published
+  - priority: 203
+    group: P1
+    cluster: "販売代理店検討"
+    keyword: "販売代理店検討でよくある質問"
+    intent: "リード獲得"
+    slug: "partner-faq-scope-roles"
+    content_type: "guide"
+    status: published
+  - priority: 204
+    group: P1
+    cluster: "販売代理店検討"
+    keyword: "販売代理店が最初の1社にHackⅡを提案する手順"
+    intent: "リード獲得"
+    slug: "partner-first-client-playbook"
+    content_type: "guide"
+    status: published
+  - priority: 205
+    group: P1
+    cluster: "販売代理店検討"
+    keyword: "代理店検討の商談前チェックリスト"
+    intent: "リード獲得"
+    slug: "partner-meeting-prep-checklist"
+    content_type: "guide"
+    status: published
+  - priority: 206
+    group: P1
+    cluster: "販売代理店検討"
+    keyword: "「御社に代理店になってほしい」依頼をお受けしない理由"
+    intent: "リード獲得"
+    slug: "partner-not-becoming-your-agent"
+    content_type: "guide"
+    status: published
+  - priority: 207
+    group: P1
+    cluster: "販売代理店検討"
+    keyword: "Trillion Bankサービス販売代理店の検討ガイド"
+    intent: "リード獲得"
+    slug: "partner-program-overview"
+    content_type: "guide"
+    status: published
+  - priority: 208
+    group: P1
+    cluster: "販売代理店検討"
+    keyword: "SEO会社がHackⅡを提案メニューに追加する考え方"
+    intent: "リード獲得"
+    slug: "partner-seo-firm-add-on"
+    content_type: "guide"
+    status: published
+  - priority: 209
+    group: P1
+    cluster: "販売代理店検討"
+    keyword: "Web制作会社がAI検索対策を継続収益にする設計"
+    intent: "リード獲得"
+    slug: "partner-web-production-add-on"
+    content_type: "guide"
+    status: published
+  - priority: 210
+    group: P1
+    cluster: "販売代理店検討"
+    keyword: "HackⅡ販売代理店に向いている業者の特徴"
+    intent: "リード獲得"
+    slug: "partner-who-fits"
+    content_type: "guide"
+    status: published
+  - priority: 211
+    group: P1
+    cluster: "中小未着手"
+    keyword: "中小企業がAI検索対策に予算を付ける根拠の作り方"
+    intent: "リード獲得"
+    slug: "sme-ai-search-budget-justification"
+    content_type: "guide"
+    status: published
+  - priority: 212
+    group: P1
+    cluster: "中小未着手"
+    keyword: "AI検索対策で中小企業が最初にやりがちな失敗"
+    intent: "リード獲得"
+    slug: "sme-ai-search-common-first-mistakes"
+    content_type: "guide"
+    status: published
+  - priority: 213
+    group: P1
+    cluster: "中小未着手"
+    keyword: "中小企業がAI検索対策を始める最初の30日"
+    intent: "リード獲得"
+    slug: "sme-ai-search-first-30-days"
+    content_type: "guide"
+    status: published
+  - priority: 214
+    group: P1
+    cluster: "中小未着手"
+    keyword: "中小企業が抱きやすいAI検索・SEOの誤解10選"
+    intent: "リード獲得"
+    slug: "sme-ai-seo-myths"
+    content_type: "guide"
+    status: published
+  - priority: 215
+    group: P1
+    cluster: "中小未着手"
+    keyword: "社内稟議用"
+    intent: "リード獲得"
+    slug: "sme-board-proposal-template"
+    content_type: "guide"
+    status: published
+  - priority: 216
+    group: P1
+    cluster: "中小未着手"
+    keyword: "BtoBサービス業の中小企業がAIにおすすめされない理由"
+    intent: "リード獲得"
+    slug: "sme-btob-services-ai-recommend"
+    content_type: "guide"
+    status: published
+  - priority: 217
+    group: P1
+    cluster: "中小未着手"
+    keyword: "ChatGPTに自社が出てこない中小企業向けチェックリスト"
+    intent: "リード獲得"
+    slug: "sme-chatgpt-not-mentioned"
+    content_type: "guide"
+    status: published
+  - priority: 218
+    group: P1
+    cluster: "中小未着手"
+    keyword: "問い合わせ前に揃える"
+    intent: "リード獲得"
+    slug: "sme-contact-ready-checklist"
+    content_type: "guide"
+    status: published
+  - priority: 219
+    group: P1
+    cluster: "中小未着手"
+    keyword: "既存サイトのAI向け棚卸し"
+    intent: "リード獲得"
+    slug: "sme-content-inventory-for-ai"
+    content_type: "guide"
+    status: published
+  - priority: 220
+    group: P1
+    cluster: "中小未着手"
+    keyword: "スクール・研修事業の中小企業向けAI検索対策"
+    intent: "リード獲得"
+    slug: "sme-education-school-ai-search"
+    content_type: "guide"
+    status: published
+  - priority: 221
+    group: P1
+    cluster: "中小未着手"
+    keyword: "中小企業の社名・サービス表記ゆれチェックリスト"
+    intent: "リード獲得"
+    slug: "sme-entity-consistency-checklist"
+    content_type: "guide"
+    status: published
+  - priority: 222
+    group: P1
+    cluster: "中小未着手"
+    keyword: "未着手企業がまず作るFAQとFAQPageの実務ガイド"
+    intent: "リード獲得"
+    slug: "sme-faq-schema-starter"
+    content_type: "guide"
+    status: published
+  - priority: 223
+    group: P1
+    cluster: "中小未着手"
+    keyword: "フランチャイズ本部が整えるべきAI検索の一次情報"
+    intent: "リード獲得"
+    slug: "sme-franchise-hq-ai-search"
+    content_type: "guide"
+    status: published
+  - priority: 224
+    group: P1
+    cluster: "中小未着手"
+    keyword: "地域密着の中小企業向け"
+    intent: "リード獲得"
+    slug: "sme-local-brand-ai-and-maps"
+    content_type: "guide"
+    status: published
+  - priority: 225
+    group: P1
+    cluster: "中小未着手"
+    keyword: "製造業の中小企業向けAI検索対策"
+    intent: "リード獲得"
+    slug: "sme-manufacturing-ai-search"
+    content_type: "guide"
+    status: published
+  - priority: 226
+    group: P1
+    cluster: "中小未着手"
+    keyword: "AI検索ツール導入前に中小企業が取るべき基準線"
+    intent: "リード獲得"
+    slug: "sme-measure-before-tools"
+    content_type: "guide"
+    status: published
+  - priority: 227
+    group: P1
+    cluster: "中小未着手"
+    keyword: "経営者が決めるAI検索投資"
+    intent: "リード獲得"
+    slug: "sme-owner-ceo-ai-search-decision"
+    content_type: "guide"
+    status: published
+  - priority: 228
+    group: P1
+    cluster: "中小未着手"
+    keyword: "SEO会社にAI検索対策を頼む前に中小企業が聞くべき質問"
+    intent: "リード獲得"
+    slug: "sme-seo-vendor-questions"
+    content_type: "guide"
+    status: published
+  - priority: 229
+    group: P1
+    cluster: "中小未着手"
+    keyword: "競合だけがAIに選ばれるとき中小企業が確認すべきこと"
+    intent: "リード獲得"
+    slug: "sme-vs-competitor-ai-visibility"
+    content_type: "guide"
+    status: published
+  - priority: 230
+    group: P1
+    cluster: "中小未着手"
+    keyword: "中小企業がAI検索対策をまだ外注しなくていい段階"
+    intent: "リード獲得"
+    slug: "sme-when-not-to-outsource"
+    content_type: "guide"
+    status: published
