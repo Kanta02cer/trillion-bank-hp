@@ -7,14 +7,14 @@ Public site ships client-side P0–P3 surfaces. Live OAuth and HackⅡ execution
 - OAuth scopes (planned): Search Console read, GA4 Data API read
 - Ingest: query × page × device × country, brand vs non-brand, CTR gap, generative AI performance when available
 - Replacement rule: measured impressions/clicks/position/CVR replace model estimates per theme; keep `dataKind: 実測`
-- Current public fallback: manual metric input on `/airreach/` labeled `実測（ユーザー入力）`
+- Current public measurement: GSC Performance CSV/TSV import (browser-only) labeled `実測（GSC CSV）`; optional single-theme manual input; AI hand-measurement log labeled `実測（手計測）`
 
 ## P2 HackⅡ
 
 - Platforms: ChatGPT / Gemini / Claude / Perplexity (contract-defined)
 - Metrics: visibility, mention, citation, recommendation, SOV, position, sentiment, fact accuracy, fanout, volatility
 - Competitor Win/Loss and source-domain gaps
-- Current public fallback: SAMPLE projection only, never claimed as live
+- Current public measurement: hand log of prompt/model/mention/citation/recommendation; SAMPLE remains demo-only; live multi-model runs require HackⅡ
 
 ## P3 Action
 

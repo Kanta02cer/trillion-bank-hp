@@ -470,11 +470,11 @@
       ? result.evidence.items.filter(function (i) { return i.ok; }).length
       : 0;
     var evidenceTotal = (result.evidence && result.evidence.items) ? result.evidence.items.length : 0;
-    var searchMeasured = !!(opts.searchMeasured || (result.themes || []).some(function (t) {
+    var searchMeasured = !!(opts.searchMeasured || result.searchMeasured || (result.themes || []).some(function (t) {
       return t.dataKind && String(t.dataKind).indexOf('実測') === 0;
     }));
-    var hack2Measured = !!(opts.hack2Measured);
-    var hack2Sample = !!(opts.hack2Sample || result.hack2Sample);
+    var hack2Measured = !!(opts.hack2Measured || (result.aiMeasured && result.aiMeasured.sampleSize > 0));
+    var hack2Sample = !hack2Measured && !!(opts.hack2Sample || result.hack2Sample);
     return {
       layers: [
         {

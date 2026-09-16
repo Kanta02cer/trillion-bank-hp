@@ -158,6 +158,15 @@ ai_summary: "AIO Agent（AirReach）は公開ページのシグナルから準�
   .ar-progress-track > i{transition:none}
   .ar-steps li.is-run .dot{box-shadow:none}
 }
+.ar-upload{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.ar-upload input[type=file]{font-size:.82rem}
+.ar-measured-box{margin-top:12px;padding:14px 16px;border:1px solid #93c5fd;border-radius:12px;background:#f8fbff;display:none}
+.ar-measured-box.is-on{display:block}
+.ar-measured-box .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px}
+.ar-measured-box .cell .k{font-size:.72rem;color:var(--muted,#6b7280)}
+.ar-measured-box .cell .v{font-size:1.05rem;font-weight:700;margin-top:2px}
+.ar-checkrow{display:flex;flex-wrap:wrap;gap:14px;margin:8px 0;font-size:.84rem;color:var(--muted,#6b7280)}
+@media(max-width:900px){.ar-measured-box .grid{grid-template-columns:1fr 1fr}}
 @media(max-width:900px){.ar-form-grid,.ar-gap-grid{grid-template-columns:1fr}}
 </style>
 <script type="application/ld+json">
@@ -341,60 +350,102 @@ ai_summary: "AIO Agent（AirReach）は公開ページのシグナルから準�
         <div class="ar-layer" id="ar-connected">
           <div class="ar-layer-head">
             <div>
-              <div class="ar-kicker">P1 · CONNECTED</div>
-              <h3 style="margin:0;font-size:1.05rem">GSC / GA4 実測で推定を置換</h3>
+              <div class="ar-kicker">P1 · SEARCH 実測</div>
+              <h3 style="margin:0;font-size:1.05rem">Search Console の実数で置換</h3>
             </div>
-            <span class="ar-pill" id="ar-connected-pill">未接続</span>
+            <span class="ar-pill" id="ar-connected-pill">未計測</span>
           </div>
-          <p class="ar-footnote" style="margin:0 0 8px">Google OAuthの本番連携は導入時に設定します。いまは Search Console / GA4 の数値を入力して、テーマ単位の機会を「実測（ユーザー入力）」へ再計算できます。</p>
-          <div class="ar-form-grid">
-            <label>対象テーマ
-              <select id="ar-m-theme"></select>
-            </label>
-            <label>表示回数（impressions）
-              <input id="ar-m-impr" type="number" min="0" step="1" placeholder="例: 7400">
-            </label>
-            <label>クリック
-              <input id="ar-m-clicks" type="number" min="0" step="1" placeholder="例: 120">
-            </label>
-            <label>平均順位
-              <input id="ar-m-pos" type="number" min="1" step="0.1" placeholder="例: 11.3">
-            </label>
-            <label>セッション（任意）
-              <input id="ar-m-sess" type="number" min="0" step="1" placeholder="GA4">
-            </label>
-            <label>CV数（任意）
-              <input id="ar-m-cv" type="number" min="0" step="1" placeholder="GA4">
-            </label>
+          <p class="ar-footnote" style="margin:0 0 8px">Search Console → パフォーマンス → エクスポートした CSV（クエリまたはページ）を取り込むと、表示回数・クリック・CTR・順位の<strong>実測</strong>で機会を再計算します。数値はブラウザ内のみで処理し、サーバーへ送りません。</p>
+          <div class="ar-upload">
+            <input type="file" id="ar-gsc-file" accept=".csv,text/csv,.tsv,text/tab-separated-values" aria-label="GSC CSVファイル">
+            <button type="button" class="ar-btn ar-btn-primary" id="ar-gsc-import">CSVを実測反映</button>
+            <a class="ar-btn ar-btn-line" id="ar-cta-gsc" href="/trillionbank/contact/#form?from=aio-gsc">OAuth自動連携を相談</a>
           </div>
-          <div class="ar-theme-actions">
-            <button type="button" class="ar-btn ar-btn-primary" id="ar-m-apply">このテーマを実測で再計算</button>
-            <a class="ar-btn ar-btn-line" id="ar-cta-gsc" href="/trillionbank/contact/#form?from=aio-gsc">GSC正式連携を相談</a>
+          <div class="ar-measured-box" id="ar-gsc-summary">
+            <div class="ar-tag ar-tag-m">実測 · GSC</div>
+            <div class="grid">
+              <div class="cell"><div class="k">表示回数</div><div class="v" id="ar-gsc-impr">—</div></div>
+              <div class="cell"><div class="k">クリック</div><div class="v" id="ar-gsc-clicks">—</div></div>
+              <div class="cell"><div class="k">平均CTR</div><div class="v" id="ar-gsc-ctr">—</div></div>
+              <div class="cell"><div class="k">非指名比率</div><div class="v" id="ar-gsc-nonbrand">—</div></div>
+            </div>
+            <p class="ar-footnote" id="ar-gsc-meta" style="margin-top:8px"></p>
           </div>
+          <details style="margin-top:14px">
+            <summary style="cursor:pointer;font-size:.9rem;font-weight:600">1テーマだけ手入力する</summary>
+            <div class="ar-form-grid" style="margin-top:10px">
+              <label>対象テーマ<select id="ar-m-theme"></select></label>
+              <label>表示回数<input id="ar-m-impr" type="number" min="0" step="1" placeholder="7400"></label>
+              <label>クリック<input id="ar-m-clicks" type="number" min="0" step="1" placeholder="120"></label>
+              <label>平均順位<input id="ar-m-pos" type="number" min="1" step="0.1" placeholder="11.3"></label>
+              <label>セッション（任意）<input id="ar-m-sess" type="number" min="0" step="1"></label>
+              <label>CV数（任意）<input id="ar-m-cv" type="number" min="0" step="1"></label>
+            </div>
+            <div class="ar-theme-actions">
+              <button type="button" class="ar-btn ar-btn-line" id="ar-m-apply">このテーマを実測で再計算</button>
+            </div>
+          </details>
           <p class="ar-footnote" id="ar-m-note" style="margin-top:10px"></p>
         </div>
 
         <div class="ar-layer" id="ar-hack2">
           <div class="ar-layer-head">
             <div>
-              <div class="ar-kicker">P2 · HACKⅡ</div>
-              <h3 style="margin:0;font-size:1.05rem">AI回答の本格計測レイヤー</h3>
+              <div class="ar-kicker">P2 · AI回答 実測</div>
+              <h3 style="margin:0;font-size:1.05rem">AI回答を手計測する / HackⅡへ</h3>
             </div>
             <span class="ar-pill" id="ar-hack2-pill">未計測</span>
           </div>
-          <p class="ar-footnote" style="margin:0 0 8px">Visibility / Mention / Citation / Recommendation / SOV / 競合Win-Loss はHackⅡ領域です。無料診断では取得しません。</p>
+          <p class="ar-footnote" style="margin:0 0 8px">ChatGPT等を開き、同じ質問で出方を記録すると <strong>実測（手計測）</strong> になります。自動化・同条件保存はHackⅡです。SAMPLEはデモ専用です。</p>
+          <div class="ar-form-grid">
+            <label style="grid-column:1/-1">プロンプト（実際に聞いた質問）
+              <input id="ar-ai-prompt" type="text" placeholder="例: AI検索の効果測定 ツール おすすめ">
+            </label>
+            <label>モデル
+              <select id="ar-ai-model">
+                <option>ChatGPT</option>
+                <option>Gemini</option>
+                <option>Claude</option>
+                <option>Perplexity</option>
+                <option>その他</option>
+              </select>
+            </label>
+            <label>自社の掲載位置（任意）
+              <input id="ar-ai-pos" type="number" min="1" step="1" placeholder="1〜">
+            </label>
+            <label>引用URL（任意）
+              <input id="ar-ai-url" type="url" placeholder="https://...">
+            </label>
+          </div>
+          <div class="ar-checkrow">
+            <label><input type="checkbox" id="ar-ai-mentioned"> 自社が言及された</label>
+            <label><input type="checkbox" id="ar-ai-cited"> 自社URLが引用された</label>
+            <label><input type="checkbox" id="ar-ai-recommended"> 推薦・候補に入った</label>
+            <label><input type="checkbox" id="ar-ai-comp"> 競合が言及された</label>
+          </div>
           <div class="ar-theme-actions">
-            <button type="button" class="ar-btn ar-btn-line" id="ar-hack2-sample">SAMPLEで見え方を確認</button>
-            <a class="ar-btn ar-btn-primary" href="/trillionbank/business/hack2/">HackⅡの説明</a>
-            <a class="ar-btn ar-btn-line" id="ar-cta-hack2" href="/trillionbank/meeting/?type=company&from=aio-hack2">測定導入を相談</a>
+            <button type="button" class="ar-btn ar-btn-primary" id="ar-ai-add">この観測を実測に追加</button>
+            <button type="button" class="ar-btn ar-btn-line" id="ar-hack2-sample">SAMPLEデモ</button>
+            <a class="ar-btn ar-btn-line" href="/trillionbank/business/hack2/">HackⅡの説明</a>
+            <a class="ar-btn ar-btn-line" id="ar-cta-hack2" href="/trillionbank/meeting/?type=company&from=aio-hack2">自動測定を相談</a>
+          </div>
+          <div class="ar-measured-box" id="ar-ai-summary">
+            <div class="ar-tag ar-tag-m">実測 · AI手計測</div>
+            <div class="grid">
+              <div class="cell"><div class="k">観測数</div><div class="v" id="ar-ai-n">—</div></div>
+              <div class="cell"><div class="k">Mention</div><div class="v" id="ar-ai-men">—</div></div>
+              <div class="cell"><div class="k">Citation</div><div class="v" id="ar-ai-cit">—</div></div>
+              <div class="cell"><div class="k">Recommendation</div><div class="v" id="ar-ai-rec">—</div></div>
+            </div>
+            <p class="ar-footnote" id="ar-ai-meta" style="margin-top:8px"></p>
           </div>
           <div class="ar-gap-grid" id="ar-hack2-view" hidden>
             <div class="ar-gap-card">
-              <h4 id="ar-h2-self-title">自社（SAMPLE）</h4>
+              <h4 id="ar-h2-self-title">自社</h4>
               <p id="ar-h2-self"></p>
             </div>
             <div class="ar-gap-card">
-              <h4 id="ar-h2-comp-title">なぜ競合に負けている？（SAMPLE）</h4>
+              <h4 id="ar-h2-comp-title">競合との差</h4>
               <p id="ar-h2-comp"></p>
             </div>
           </div>
@@ -462,6 +513,7 @@ ai_summary: "AIO Agent（AirReach）は公開ページのシグナルから準�
 <style>.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
 <script src="{{ '/assets/js/airreach-diagnose.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-growth.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/airreach-measure.js' | relative_url }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   var form = document.getElementById('ar-form');
@@ -472,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var dash = document.getElementById('ar-dash');
   var progressBox = document.getElementById('ar-progress');
   var progressBar = document.getElementById('ar-progress-bar');
-  var state = { result: null, url: '', hack2Sample: false, searchMeasured: false };
+  var state = { result: null, url: '', hack2Sample: false, searchMeasured: false, hack2Measured: false };
 
   var STEP_ORDER = ['fetch_page', 'fetch_meta', 'parse', 'score', 'themes', 'report'];
 
@@ -599,7 +651,37 @@ document.addEventListener('DOMContentLoaded', function () {
       ? '公開ページ実測: ' + result.evidence.measuredAt.replace('T', ' ').slice(0, 19)
       : '';
   }
+  function renderGscSummary(result) {
+    var box = document.getElementById('ar-gsc-summary');
+    var sm = result.searchMeasured;
+    if (!box) return;
+    if (!sm) { box.classList.remove('is-on'); return; }
+    box.classList.add('is-on');
+    document.getElementById('ar-gsc-impr').textContent = Number(sm.totalImpressions || 0).toLocaleString('ja-JP');
+    document.getElementById('ar-gsc-clicks').textContent = Number(sm.totalClicks || 0).toLocaleString('ja-JP');
+    document.getElementById('ar-gsc-ctr').textContent = (Math.round((sm.avgCtr || 0) * 1000) / 10) + '%';
+    document.getElementById('ar-gsc-nonbrand').textContent = (Math.round((1 - (sm.brandShare || 0)) * 1000) / 10) + '%';
+    document.getElementById('ar-gsc-meta').textContent =
+      sm.dataKind + ' · ' + (sm.rowCount || 0) + '行 · ' + (sm.importedAt || '').replace('T', ' ').slice(0, 19) +
+      ' · 指名表示 ' + Number(sm.brandImpressions || 0).toLocaleString('ja-JP');
+  }
+  function renderAiSummary(result) {
+    var box = document.getElementById('ar-ai-summary');
+    var ai = result.aiMeasured;
+    if (!box) return;
+    if (!ai || !ai.sampleSize) { box.classList.remove('is-on'); return; }
+    box.classList.add('is-on');
+    document.getElementById('ar-ai-n').textContent = String(ai.sampleSize);
+    document.getElementById('ar-ai-men').textContent = ai.mentionRate + '%';
+    document.getElementById('ar-ai-cit').textContent = ai.citationRate + '%';
+    document.getElementById('ar-ai-rec').textContent = ai.recommendationRate + '%';
+    document.getElementById('ar-ai-meta').textContent =
+      ai.dataKind + ' · Visibility ' + ai.aiVisibility + '%' +
+      (ai.averagePosition != null ? ' · 平均位置 ' + ai.averagePosition : '') +
+      ' · ' + (ai.measuredAt || '').replace('T', ' ').slice(0, 19);
+  }
   function renderWeekly(result) {
+
     var box = document.getElementById('ar-week-box');
     var ol = document.getElementById('ar-week-list');
     if (!window.AirReachGrowth || !box || !ol) return;
@@ -660,9 +742,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var top = (result.themes || [])[0];
     if (!top || !top.hack2 || !top.hack2.metrics) {
       view.hidden = true;
-      pill.textContent = '未計測';
-      pill.classList.remove('ar-pill-on');
-      disc.textContent = '無料診断では取得しません。HackⅡ接続後に実測へ置換します。';
+      pill.textContent = state.hack2Measured ? '手計測あり（テーマ未割当）' : '未計測';
+      pill.classList.toggle('ar-pill-on', !!state.hack2Measured);
+      disc.textContent = '観測を追加するか、HackⅡの自動測定を接続してください。';
       return;
     }
     var m = top.hack2.metrics;
@@ -680,12 +762,17 @@ document.addEventListener('DOMContentLoaded', function () {
     view.hidden = false;
     pill.textContent = top.hack2.dataKind || 'SAMPLE';
     pill.classList.add('ar-pill-on');
+    var selfTitle = document.getElementById('ar-h2-self-title');
+    var compTitle = document.getElementById('ar-h2-comp-title');
+    if (selfTitle) selfTitle.textContent = (String(top.hack2.dataKind || '').indexOf('実測') >= 0) ? '自社（実測）' : '自社（SAMPLE）';
+    if (compTitle) compTitle.textContent = (String(top.hack2.dataKind || '').indexOf('実測') >= 0) ? '競合との差（実測）' : 'なぜ競合に負けている？（SAMPLE）';
   }
   function syncProgressState(result) {
     if (window.AirReachGrowth && window.AirReachGrowth.refreshMeasurementProgress) {
       window.AirReachGrowth.refreshMeasurementProgress(result, {
         searchMeasured: state.searchMeasured,
-        hack2Sample: state.hack2Sample
+        hack2Sample: state.hack2Sample,
+        hack2Measured: state.hack2Measured
       });
     } else if (window.AirReach && window.AirReach.buildMeasurementProgress) {
       result.measurementProgress = window.AirReach.buildMeasurementProgress(result, {
@@ -697,9 +784,10 @@ document.addEventListener('DOMContentLoaded', function () {
   function render(result, url) {
     state.result = result;
     state.url = url;
-    state.searchMeasured = (result.themes || []).some(function (t) {
+    state.searchMeasured = !!(result.searchMeasured) || (result.themes || []).some(function (t) {
       return t.dataKind && String(t.dataKind).indexOf('実測') === 0;
     });
+    state.hack2Measured = !!(result.aiMeasured && result.aiMeasured.sampleSize);
     syncProgressState(result);
     empty.style.display = 'none';
     dash.classList.add('is-on');
@@ -714,6 +802,8 @@ document.addEventListener('DOMContentLoaded', function () {
     renderMaturity(result);
     renderOpp(result);
     renderEvidence(result);
+    renderGscSummary(result);
+    renderAiSummary(result);
 
     document.getElementById('ar-top-theme').textContent = ps.topTheme || '—';
     document.getElementById('ar-biggest-problem').textContent = ps.biggestProblem || '—';
@@ -738,7 +828,7 @@ document.addEventListener('DOMContentLoaded', function () {
     renderHack2(result);
 
     var pill = document.getElementById('ar-connected-pill');
-    pill.textContent = state.searchMeasured ? '一部実測入力済み' : '未接続';
+    pill.textContent = state.searchMeasured ? 'GSC実測済み' : '未計測';
     pill.classList.toggle('ar-pill-on', state.searchMeasured);
 
     var opp = result.opportunity || {};
@@ -799,6 +889,67 @@ document.addEventListener('DOMContentLoaded', function () {
       btn.disabled = false;
       btn.textContent = '無料で診断する';
     });
+  });
+
+  document.getElementById('ar-gsc-import').addEventListener('click', function () {
+    if (!state.result || !window.AirReachMeasure) {
+      document.getElementById('ar-m-note').textContent = '先にURL診断を実行してください。';
+      return;
+    }
+    var fileInput = document.getElementById('ar-gsc-file');
+    var file = fileInput && fileInput.files && fileInput.files[0];
+    if (!file) {
+      document.getElementById('ar-m-note').textContent = 'GSCのCSVファイルを選択してください。';
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var parsed = window.AirReachMeasure.parseGscCsv(String(reader.result || ''));
+        var next = window.AirReachMeasure.applyGscImport(state.result, parsed, { mode: 'replace-top' });
+        state.searchMeasured = true;
+        document.getElementById('ar-m-note').textContent =
+          'GSC実測を反映: ' + parsed.rowCount + '行 → テーマ ' + ((next.themes && next.themes.length) || 0) + '件。機会額は実測ベースです。';
+        render(next, state.url);
+      } catch (ex) {
+        document.getElementById('ar-m-note').textContent = (ex && ex.message) ? ex.message : 'CSVの読み込みに失敗しました。';
+      }
+    };
+    reader.onerror = function () {
+      document.getElementById('ar-m-note').textContent = 'ファイルを読めませんでした。';
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('ar-ai-add').addEventListener('click', function () {
+    if (!state.result || !window.AirReachMeasure) {
+      document.getElementById('ar-h2-disc').textContent = '先にURL診断を実行してください。';
+      return;
+    }
+    try {
+      var next = window.AirReachMeasure.addAiObservation(state.result, {
+        prompt: document.getElementById('ar-ai-prompt').value,
+        model: document.getElementById('ar-ai-model').value,
+        position: document.getElementById('ar-ai-pos').value,
+        citationUrl: document.getElementById('ar-ai-url').value,
+        mentioned: document.getElementById('ar-ai-mentioned').checked,
+        cited: document.getElementById('ar-ai-cited').checked,
+        recommended: document.getElementById('ar-ai-recommended').checked,
+        competitorMentioned: document.getElementById('ar-ai-comp').checked
+      });
+      state.hack2Measured = true;
+      state.hack2Sample = false;
+      document.getElementById('ar-ai-prompt').value = '';
+      document.getElementById('ar-ai-pos').value = '';
+      document.getElementById('ar-ai-url').value = '';
+      document.getElementById('ar-ai-mentioned').checked = false;
+      document.getElementById('ar-ai-cited').checked = false;
+      document.getElementById('ar-ai-recommended').checked = false;
+      document.getElementById('ar-ai-comp').checked = false;
+      render(next, state.url);
+    } catch (ex) {
+      document.getElementById('ar-h2-disc').textContent = (ex && ex.message) ? ex.message : '観測の追加に失敗しました。';
+    }
   });
 
   document.getElementById('ar-m-apply').addEventListener('click', function () {

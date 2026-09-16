@@ -42,10 +42,11 @@ products:
   airreach:
     name: "AIO Agent（AirReach）"
     status: "無料Growth Report＋実測入力/施策下書き（公開ページ）。GSC OAuth・HackⅡ本番計測は導入連携。"
-    public_definition: "URL入力で準備度と推定成長機会を表示し、GSC/GA4数値の手入力で実測再計算、施策ブリーフ生成、端末内の再測定差分まで提供する無料ツール。実AI回答の引用率・出現率はHackⅡ、Search Consoleの正式OAuth連携は導入時に接続する。"
+    public_definition: "URL入力で公開ページを実測し、Search Console CSVとAI回答の手計測で実数に置換できる無料ツール。正式OAuthとHackⅡ自動測定は導入連携。"
     limitations:
       - "ChatGPT・Gemini・Claude・AI Overviewsなどの実回答引用率を本ツール単体では取得しない"
-      - "表示の金額・CVはモデル予測またはユーザー入力実測に基づく再計算であり、掲載・順位・流入・問い合わせ・売上を保証しない"
+      - "表示の金額・CVはモデル予測、またはGSC CSV/手計測の実測に基づく再計算であり、掲載・順位・流入・問い合わせ・売上を保証しない"
+      - "GSC CSV・AI手計測データはブラウザ内のみで処理し、当サービスへ送信しない"
       - "SAMPLE表示はデモ用であり実測ではない"
       - "施策ブリーフは下書きであり自動公開しない"
       - "サイト側の取得制限により診断できない場合がある"
