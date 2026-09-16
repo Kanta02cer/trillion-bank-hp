@@ -8,9 +8,12 @@
 
   var MAX_BYTES = 900000;
 
+  // First-party Cloudflare Worker (ops/airreach-fetch). Prefer this over third-party proxies.
+  var FIRST_PARTY_PROXY = 'https://trillion-bank-airreach-fetch.trillion-bank.workers.dev/';
+
   var PROXY_BUILDERS = [
-    function (u) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); },
-    function (u) { return 'https://corsproxy.io/?' + encodeURIComponent(u); }
+    function (u) { return FIRST_PARTY_PROXY + '?url=' + encodeURIComponent(u); },
+    function (u) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); }
   ];
 
   function normalizeUrl(input) {

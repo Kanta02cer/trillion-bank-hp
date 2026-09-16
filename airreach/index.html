@@ -1,3 +1,15 @@
+---
+title: "AirReach｜AI検索準備度を無料診断 - Trillion Bank"
+tbdesc: "公開ページの構造・エンティティ・FAQ・発見可能性からAI検索準備度を無料診断。実AI回答の引用率・出現率の測定はHackⅡへ接続します。"
+keywords: "AirReach,AI検索,AEO,GEO,準備度診断,HackⅡ,Trillion Bank"
+ai_summary: "AirReachは公開ページのHTML・構造化データ・llms.txt・robotsなどのシグナルからAI検索準備度を算出する無料診断。実AI回答の測定はHackⅡへ接続する。"
+---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+{% include tb-head.html %}
+
 <style>
 /* AirReach — aligned to site tokens (white / quiet gray / Trillion blue) */
 .ar-page{color:var(--ink,#0f172a);background:#fff}
@@ -96,10 +108,10 @@
         <input id="ar-url" name="url" type="url" inputmode="url" autocomplete="url" placeholder="https://example.com/" required>
         <button id="ar-run" type="submit">無料で診断する</button>
       </form>
-      <p class="ar-note">APIキー不要。まず同一オリジン／CORS許可の直接取得を試します。多くの外部サイトでは失敗するため、同意がある場合のみ取得代行（第三者プロキシ）を使います。URLの認証情報やトークン系クエリは送信前に除去します。</p>
+      <p class="ar-note">APIキー不要。まず同一オリジン／CORS許可の直接取得を試します。外部サイトは同意がある場合のみ、Trillion Bankの取得サーバー（Cloudflare Workers）経由で公開HTML等を取得します。URLの認証情報やトークン系クエリは送信前に除去します。</p>
       <label class="ar-consent">
         <input id="ar-proxy-consent" type="checkbox" style="margin-top:3px">
-        <span>直接取得できない場合、診断のためにURL（認証情報・トークン除去後）を取得代行サービスへ送信することに同意します。<a href="/trillionbank/privacy/" target="_blank" rel="noopener">プライバシーポリシー</a></span>
+        <span>直接取得できない場合、診断のためにURL（認証情報・トークン除去後）をTrillion Bankの取得サーバーへ送信することに同意します。<a href="/trillionbank/privacy/" target="_blank" rel="noopener">プライバシーポリシー</a></span>
       </label>
       <div id="ar-error" class="ar-error" role="alert"></div>
     </div>
