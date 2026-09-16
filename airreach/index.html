@@ -1,95 +1,67 @@
----
-title: "AirReach｜AI検索準備度の無料診断 — URLを入れるだけで次の一手が分かる"
-tbdesc: "AirReachは、公開ページの構造・エンティティ・FAQ・発見可能性からAI検索準備度を無料診断します。実AI回答の引用率測定と改善伴走はHackⅡへ接続します。掲載や問い合わせ増を保証するものではありません。"
-keywords: "AirReach,AIO計測,AI検索診断,AEO,GEO,LLMO,HackⅡ,無料診断"
-ai_summary: "AirReachはURL入力で公開ページのAI検索準備度を算出する無料診断。モデル別の実引用率はHackⅡ測定。期間限定の伴走モニター枠へ導線。"
-og_image: /images/hero/tb-logo-color.webp
-permalink: /airreach/
----
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-{% include tb-head.html %}
-<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
 <style>
-:root{
-  --ar-ink:#0f172a; --ar-muted:#64748b; --ar-line:#e2e8f0; --ar-bg:#f8fafc;
-  --ar-blue:#2563eb; --ar-blue2:#0ea5e9; --ar-grad:linear-gradient(135deg,#1d4ed8 0%,#0284c7 55%,#06b6d4 100%);
-  --ar-ok:#059669; --ar-warn:#d97706; --ar-bad:#dc2626; --ar-radius:16px;
-}
-.ar-page{color:var(--ar-ink);background:#fff}
-.ar-wrap{width:min(1120px,calc(100% - 40px));margin:0 auto}
-.ar-hero{position:relative;padding:clamp(72px,12vw,120px) 0 clamp(48px,8vw,72px);overflow:hidden;background:
-  radial-gradient(1200px 480px at 80% -10%,rgba(37,99,235,.16),transparent 60%),
-  radial-gradient(900px 420px at 0% 20%,rgba(6,182,212,.12),transparent 55%),
-  linear-gradient(180deg,#f8fbff 0%,#fff 70%)}
-.ar-hero::after{content:"";position:absolute;inset:auto 0 0 0;height:1px;background:var(--ar-line)}
-.ar-badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono,ui-monospace,monospace);font-size:.68rem;letter-spacing:.16em;color:var(--ar-blue);font-weight:700;margin-bottom:18px}
-.ar-badge i{width:8px;height:8px;border-radius:50%;background:var(--ar-grad);display:inline-block}
-.ar-hero h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.15;letter-spacing:-.03em;margin:0 0 18px;font-weight:800;max-width:16em}
-.ar-hero h1 em{font-style:normal;background:var(--ar-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-.ar-lead{font-size:clamp(.95rem,1.3vw,1.08rem);color:var(--ar-muted);line-height:1.85;max-width:40em;margin:0 0 28px}
-.ar-offer{display:inline-flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
-.ar-chip{font-size:.78rem;font-weight:600;padding:8px 12px;border-radius:999px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
-.ar-urlbox{display:flex;gap:8px;padding:8px;background:#fff;border:1px solid var(--ar-line);border-radius:14px;box-shadow:0 18px 50px rgba(15,23,42,.06);max-width:640px}
-.ar-urlbox input{flex:1;border:0;outline:0;font:inherit;padding:14px 16px;min-width:0;background:transparent}
-.ar-urlbox button{border:0;border-radius:10px;padding:14px 22px;font-weight:700;color:#fff;background:var(--ar-grad);cursor:pointer;white-space:nowrap}
-.ar-urlbox button:disabled{opacity:.55;cursor:wait}
-.ar-note{margin-top:14px;font-size:.78rem;color:var(--ar-muted);line-height:1.7;max-width:42em}
-.ar-sec{padding:clamp(56px,8vw,96px) 0}
-.ar-sec--alt{background:var(--ar-bg)}
-.ar-kicker{font-family:var(--mono,ui-monospace,monospace);font-size:.68rem;letter-spacing:.18em;color:var(--ar-blue);margin-bottom:10px}
-.ar-h2{font-size:clamp(1.4rem,3vw,2rem);margin:0 0 12px;letter-spacing:-.02em;font-weight:800}
-.ar-sub{color:var(--ar-muted);line-height:1.8;max-width:40em;margin:0 0 32px}
-.ar-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-@media(max-width:860px){.ar-grid3{grid-template-columns:1fr}.ar-urlbox{flex-direction:column}}
-.ar-card{background:#fff;border:1px solid var(--ar-line);border-radius:var(--ar-radius);padding:24px}
-.ar-card h3{margin:0 0 8px;font-size:1.05rem}
-.ar-card p{margin:0;color:var(--ar-muted);font-size:.9rem;line-height:1.75}
+/* AirReach — aligned to site tokens (white / quiet gray / Trillion blue) */
+.ar-page{color:var(--ink,#0f172a);background:#fff}
+.ar-wrap{width:min(1120px,calc(100% - 2 * var(--gutter,20px)));margin:0 auto;padding:0 var(--gutter,20px)}
+.ar-hero{padding:clamp(88px,12vw,132px) 0 clamp(48px,7vw,72px);border-bottom:1px solid var(--border,#e5e7eb);background:#fff}
+.ar-badge,.ar-kicker{font-family:var(--mono,ui-monospace,monospace);font-size:.68rem;letter-spacing:.18em;color:var(--blue-600,#2563eb);margin-bottom:12px;font-weight:600}
+.ar-hero h1{font-size:clamp(1.8rem,4.6vw,3rem);line-height:1.2;letter-spacing:-.02em;margin:0 0 16px;font-weight:700;max-width:16em}
+.ar-hero h1 em{font-style:normal;color:var(--blue-600,#2563eb)}
+.ar-lead,.ar-sub{font-size:clamp(.92rem,1.15vw,1.02rem);color:var(--muted,#6b7280);line-height:1.85;max-width:40em;margin:0 0 24px}
+.ar-offer{display:flex;flex-wrap:wrap;gap:10px 18px;margin-bottom:24px;font-size:.82rem;color:var(--muted,#6b7280)}
+.ar-chip{padding:0;border:0;background:transparent;color:var(--muted,#6b7280);font-weight:500}
+.ar-chip::before{content:"→ ";color:var(--blue-600,#2563eb);font-family:var(--mono,ui-monospace,monospace)}
+.ar-urlbox{display:flex;gap:8px;padding:6px;background:#fff;border:1px solid var(--border,#e5e7eb);border-radius:10px;max-width:640px}
+.ar-urlbox:focus-within{border-color:var(--blue-600,#2563eb)}
+.ar-urlbox input{flex:1;border:0;outline:0;font:inherit;padding:12px 14px;min-width:0;background:transparent}
+.ar-urlbox button{border:0;border-radius:8px;padding:12px 20px;font-weight:600;color:#fff;background:var(--blue-600,#2563eb);cursor:pointer;white-space:nowrap}
+.ar-urlbox button:hover{opacity:.88}
+.ar-urlbox button:disabled{opacity:.5;cursor:wait}
+.ar-note,.ar-footnote{margin-top:14px;font-size:.78rem;color:var(--muted,#6b7280);line-height:1.7;max-width:46em}
+.ar-consent{display:flex;gap:10px;align-items:flex-start;max-width:640px;margin-top:14px;font-size:.82rem;color:var(--muted,#6b7280);line-height:1.6}
+.ar-sec{padding:clamp(56px,8vw,88px) 0}
+.ar-sec--alt{background:var(--surface,#f8fafc);border-top:1px solid var(--border,#e5e7eb);border-bottom:1px solid var(--border,#e5e7eb)}
+.ar-h2{font-size:clamp(1.35rem,2.8vw,1.9rem);margin:0 0 12px;letter-spacing:-.01em;font-weight:700}
+.ar-grid3,.ar-flow,.ar-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.ar-flow{grid-template-columns:repeat(4,1fr)}
+@media(max-width:900px){.ar-grid3,.ar-actions,.ar-flow,.ar-models{grid-template-columns:1fr}.ar-urlbox{flex-direction:column}.ar-score-row,.ar-cols{grid-template-columns:1fr}}
+.ar-card,.ar-act,.ar-meter,.ar-model{background:#fff;border:0;border-top:1px solid var(--border,#e5e7eb);border-radius:0;padding:20px 0}
+.ar-card h3,.ar-act h3{margin:0 0 8px;font-size:1.02rem;font-weight:700}
+.ar-card p{margin:0;color:var(--muted,#6b7280);font-size:.9rem;line-height:1.75}
 .ar-dash{display:none;margin-top:28px}
 .ar-dash.is-on{display:block}
-.ar-score-row{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:stretch}
-@media(max-width:860px){.ar-score-row{grid-template-columns:1fr}}
-.ar-score{background:#0b1220;color:#fff;border-radius:var(--ar-radius);padding:28px;display:flex;flex-direction:column;justify-content:center;min-height:220px}
-.ar-score .label{font-size:.72rem;letter-spacing:.14em;opacity:.7;margin-bottom:8px}
-.ar-score .num{font-size:clamp(3rem,8vw,4.4rem);font-weight:800;line-height:1;letter-spacing:-.04em}
-.ar-score .num span{font-size:1rem;font-weight:600;opacity:.65;margin-left:6px}
-.ar-score .hint{margin-top:12px;font-size:.82rem;opacity:.78;line-height:1.6}
-.ar-meters{display:grid;gap:12px}
-.ar-meter{background:#fff;border:1px solid var(--ar-line);border-radius:12px;padding:14px 16px}
+.ar-score-row{display:grid;grid-template-columns:220px 1fr;gap:28px;align-items:stretch}
+.ar-score{background:#fff;color:var(--ink,#0f172a);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:28px;min-height:200px;display:flex;flex-direction:column;justify-content:center}
+.ar-score .label{font-family:var(--mono,ui-monospace,monospace);font-size:.68rem;letter-spacing:.14em;color:var(--blue-600,#2563eb);margin-bottom:8px}
+.ar-score .num{font-size:clamp(2.8rem,7vw,4rem);font-weight:700;line-height:1;letter-spacing:-.03em}
+.ar-score .num span{font-size:1rem;font-weight:600;color:var(--muted,#6b7280);margin-left:6px}
+.ar-score .hint{margin-top:12px;font-size:.82rem;color:var(--muted,#6b7280);line-height:1.6}
+.ar-meters{display:grid;gap:8px}
 .ar-meter .top{display:flex;justify-content:space-between;gap:12px;font-size:.86rem;font-weight:600;margin-bottom:8px}
-.ar-bar{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden}
-.ar-bar > i{display:block;height:100%;background:var(--ar-grad);width:0;transition:width .8s ease}
-.ar-models{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:18px}
-@media(max-width:900px){.ar-models{grid-template-columns:1fr 1fr}}
-.ar-model{border:1px dashed #cbd5e1;border-radius:12px;padding:14px;background:#fff}
+.ar-bar{height:6px;background:#eef2f7;border-radius:999px;overflow:hidden}
+.ar-bar > i{display:block;height:100%;background:var(--blue-600,#2563eb);width:0;transition:width .6s ease}
+.ar-models{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:18px}
 .ar-model .name{font-size:.82rem;font-weight:700;margin-bottom:6px}
-.ar-model .st{display:inline-block;font-size:.72rem;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:999px;padding:3px 8px}
-.ar-model .note{margin-top:8px;font-size:.75rem;color:var(--ar-muted);line-height:1.5}
-.ar-sample{margin-top:10px;font-size:.72rem;color:#b45309}
-.ar-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
-@media(max-width:860px){.ar-cols{grid-template-columns:1fr}}
-.ar-list{margin:0;padding-left:1.1em;color:var(--ar-muted);font-size:.9rem;line-height:1.7}
+.ar-model .st{display:inline-block;font-size:.72rem;font-weight:600;color:var(--muted,#6b7280);border:1px solid var(--border,#e5e7eb);border-radius:6px;padding:3px 8px}
+.ar-model .note{margin-top:8px;font-size:.75rem;color:var(--muted,#6b7280);line-height:1.5}
+.ar-sample{margin-top:10px;font-size:.72rem;color:var(--muted,#6b7280)}
+.ar-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:18px}
+.ar-list{margin:0;padding-left:1.1em;color:var(--muted,#6b7280);font-size:.9rem;line-height:1.7}
 .ar-list li{margin-bottom:6px}
-.ar-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
-@media(max-width:900px){.ar-actions{grid-template-columns:1fr}}
-.ar-act{border-radius:var(--ar-radius);border:1px solid var(--ar-line);padding:20px;background:#fff}
-.ar-act .tag{font-size:.68rem;font-weight:800;letter-spacing:.12em;color:var(--ar-blue);margin-bottom:8px}
-.ar-act h3{margin:0 0 10px;font-size:1rem}
-.ar-review{margin-top:18px;background:#0b1220;color:#e2e8f0;border-radius:var(--ar-radius);padding:24px}
-.ar-review h3{margin:0 0 10px;color:#fff}
-.ar-review p{margin:0 0 12px;line-height:1.75;font-size:.92rem}
+.ar-act .tag{font-family:var(--mono,ui-monospace,monospace);font-size:.68rem;font-weight:600;letter-spacing:.12em;color:var(--blue-600,#2563eb);margin-bottom:8px}
+.ar-review{margin-top:28px;background:var(--surface,#f8fafc);color:var(--ink,#0f172a);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:24px}
+.ar-review h3{margin:0 0 10px}
+.ar-review p{margin:0 0 12px;line-height:1.75;font-size:.92rem;color:var(--muted,#6b7280)}
 .ar-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
-.ar-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;border-radius:10px;font-weight:700;text-decoration:none;border:1px solid transparent}
-.ar-btn-primary{background:var(--ar-grad);color:#fff}
-.ar-btn-line{background:#fff;border-color:var(--ar-line);color:var(--ar-ink)}
-.ar-error{display:none;margin-top:14px;padding:12px 14px;border-radius:10px;background:#fef2f2;color:#991b1b;font-size:.88rem}
+.ar-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;border-radius:8px;font-weight:600;text-decoration:none;border:1px solid transparent;font-size:.92rem}
+.ar-btn-primary{background:var(--blue-600,#2563eb);color:#fff}
+.ar-btn-primary:hover{opacity:.88;color:#fff}
+.ar-btn-line{background:#fff;border-color:var(--border,#e5e7eb);color:var(--ink,#0f172a)}
+.ar-btn-line:hover{border-color:var(--blue-600,#2563eb)}
+.ar-error{display:none;margin-top:14px;padding:12px 14px;border-radius:8px;background:#f8fafc;border:1px solid var(--border,#e5e7eb);color:#991b1b;font-size:.88rem}
 .ar-error.is-on{display:block}
-.ar-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-@media(max-width:900px){.ar-flow{grid-template-columns:1fr 1fr}}
-.ar-flow .ar-card{min-height:140px}
-.ar-footnote{font-size:.78rem;color:var(--ar-muted);line-height:1.7;margin-top:18px}
+@media (prefers-reduced-motion: reduce){
+  .ar-bar > i{transition:none}
+}
 </style>
 <script type="application/ld+json">
 {
@@ -110,7 +82,8 @@ permalink: /airreach/
 <main id="main">
   <section class="ar-hero">
     <div class="ar-wrap">
-      <div class="ar-badge"><i aria-hidden="true"></i> AIRREACH · AIO READY CHECK</div>
+      <div class="crumb" style="margin-bottom:18px;font-size:.82rem;color:var(--muted)"><a href="/">HOME</a> ／ AirReach</div>
+      <div class="ar-badge">AIRREACH · AIO READY CHECK</div>
       <h1>URLを入れるだけで、<br><em>AI検索の準備度</em>が分かる。</h1>
       <p class="ar-lead">AirReachは、公開ページの構造・エンティティ・FAQ・発見可能性から「AIに読まれやすいか」を無料診断します。Google AI Overviews / Gemini / ChatGPT / Claude などの<strong>実回答の引用率・出現率</strong>はHackⅡで測定し、改善の伴走につなげます。</p>
       <div class="ar-offer" aria-label="特別オファー">
@@ -124,7 +97,7 @@ permalink: /airreach/
         <button id="ar-run" type="submit">無料で診断する</button>
       </form>
       <p class="ar-note">APIキー不要。まず同一オリジン／CORS許可の直接取得を試します。多くの外部サイトでは失敗するため、同意がある場合のみ取得代行（第三者プロキシ）を使います。URLの認証情報やトークン系クエリは送信前に除去します。</p>
-      <label class="ar-consent" style="display:flex;gap:10px;align-items:flex-start;max-width:640px;margin-top:14px;font-size:.82rem;color:var(--ar-muted);line-height:1.6">
+      <label class="ar-consent">
         <input id="ar-proxy-consent" type="checkbox" style="margin-top:3px">
         <span>直接取得できない場合、診断のためにURL（認証情報・トークン除去後）を取得代行サービスへ送信することに同意します。<a href="/trillionbank/privacy/" target="_blank" rel="noopener">プライバシーポリシー</a></span>
       </label>
