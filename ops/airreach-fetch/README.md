@@ -9,7 +9,7 @@ Trillion Bank 自前の公開ページ取得プロキシです。AirReach（準�
 デプロイ後（workers.dev）:
 
 ```
-GET https://trillion-bank-airreach-fetch.<subdomain>.workers.dev/?url=<encoded-url>
+GET https://trillion-bank-airreach-fetch.trillion-bank.workers.dev/?url=<encoded-url>
 ```
 
 - CORS: `https://trillion-bank.jp` のみ（ローカル開発用オリジンも許可）
@@ -32,3 +32,9 @@ npm run deploy
 ## 公式資料
 
 - [CORS header proxy](https://developers.cloudflare.com/workers/examples/cors-header-proxy/)
+
+## 本番URL（2026-09-16）
+
+`https://trillion-bank-airreach-fetch.trillion-bank.workers.dev/`
+
+`src/index.ts` が詳細実装、`deploy/index.js` がデプロイ済みバンドルです。
