@@ -6,6 +6,8 @@
 (function () {
   'use strict';
 
+  var MAX_BYTES = 900000;
+
   var PROXY_BUILDERS = [
     function (u) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); },
     function (u) { return 'https://corsproxy.io/?' + encodeURIComponent(u); }
@@ -18,30 +20,49 @@
     var url;
     try { url = new URL(raw); } catch (e) { throw new Error('URLの形式を確認してください。'); }
     if (!/^https?:$/i.test(url.protocol)) throw new Error('httpまたはhttpsのURLのみ対応しています。');
+    // Strip credentials and common sensitive query fragments before any network use
+    url.username = '';
+    url.password = '';
+    var drop = ['token', 'access_token', 'auth', 'key', 'api_key', 'apikey', 'session', 'sig', 'signature', 'password', 'passwd'];
+    drop.forEach(function (k) { url.searchParams.delete(k); });
+    // Also drop params that look like secrets
+    Array.from(url.searchParams.keys()).forEach(function (k) {
+      if (/token|secret|auth|key|session|sig/i.test(k)) url.searchParams.delete(k);
+    });
     return url;
   }
 
   function fetchText(url, timeoutMs) {
     var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, timeoutMs || 12000);
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, timeoutMs || 15000);
     var opts = { signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', mode: 'cors' };
     return fetch(url, opts).then(function (res) {
-      clearTimeout(timer);
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.text();
+      var len = res.headers && res.headers.get ? res.headers.get('content-length') : null;
+      if (len && parseInt(len, 10) > MAX_BYTES) throw new Error('応答が大きすぎます');
+      return res.text().then(function (text) {
+        clearTimeout(timer);
+        if (text && text.length > MAX_BYTES) throw new Error('応答が大きすぎます');
+        return text;
+      });
     }).catch(function (err) {
       clearTimeout(timer);
       throw err;
     });
   }
 
-  function fetchWithFallbacks(targetUrl) {
-    return fetchText(targetUrl, 8000).catch(function () {
-      var chain = Promise.reject(new Error('direct failed'));
+  function fetchWithFallbacks(targetUrl, allowProxy) {
+    return fetchText(targetUrl, 10000).catch(function (directErr) {
+      if (!allowProxy) {
+        throw new Error('このサイトはブラウザから直接取得できません。取得代行（外部プロキシ）への同意にチェックするか、フォームからURLを送ってください。');
+      }
+      var chain = Promise.reject(directErr);
       PROXY_BUILDERS.forEach(function (build) {
-        chain = chain.catch(function () { return fetchText(build(targetUrl), 14000); });
+        chain = chain.catch(function () { return fetchText(build(targetUrl), 16000); });
       });
-      return chain;
+      return chain.catch(function () {
+        throw new Error('ページを取得できませんでした。サイト側の制限か、プロキシ不通の可能性があります。フォームからご相談ください。');
+      });
     });
   }
 
@@ -207,16 +228,18 @@
     };
   }
 
-  function diagnose(inputUrl) {
+  function diagnose(inputUrl, options) {
+    options = options || {};
+    var allowProxy = !!options.allowProxy;
     var url = normalizeUrl(inputUrl);
     var base = url.origin + '/';
     return Promise.all([
-      fetchWithFallbacks(url.href),
-      fetchWithFallbacks(absUrl(base, '/llms.txt')).catch(function () { return ''; }),
-      fetchWithFallbacks(absUrl(base, '/robots.txt')).catch(function () { return ''; })
+      fetchWithFallbacks(url.href, allowProxy),
+      fetchWithFallbacks(absUrl(base, '/llms.txt'), allowProxy).catch(function () { return ''; }),
+      fetchWithFallbacks(absUrl(base, '/robots.txt'), allowProxy).catch(function () { return ''; })
     ]).then(function (parts) {
       var html = parts[0];
-      if (!html || html.length < 40) throw new Error('ページ内容を取得できませんでした。サイト側の制限で読めない場合があります。');
+      if (!html || html.length < 40) throw new Error('ページ内容を取得できませんでした。');
       return analyze(parseHtml(html), parts[1] || '', parts[2] || '', url.href);
     });
   }

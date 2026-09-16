@@ -123,7 +123,11 @@ permalink: /airreach/
         <input id="ar-url" name="url" type="url" inputmode="url" autocomplete="url" placeholder="https://example.com/" required>
         <button id="ar-run" type="submit">無料で診断する</button>
       </form>
-      <p class="ar-note">APIキー不要。ブラウザ上で公開HTML / llms.txt / robots.txt のシグナルを評価します。サイト側の制限で取得できない場合は、お問い合わせから手動診断へ切り替えられます。</p>
+      <p class="ar-note">APIキー不要。まず同一オリジン／CORS許可の直接取得を試します。多くの外部サイトでは失敗するため、同意がある場合のみ取得代行（第三者プロキシ）を使います。URLの認証情報やトークン系クエリは送信前に除去します。</p>
+      <label class="ar-consent" style="display:flex;gap:10px;align-items:flex-start;max-width:640px;margin-top:14px;font-size:.82rem;color:var(--ar-muted);line-height:1.6">
+        <input id="ar-proxy-consent" type="checkbox" style="margin-top:3px">
+        <span>直接取得できない場合、診断のためにURL（認証情報・トークン除去後）を取得代行サービスへ送信することに同意します。<a href="/trillionbank/privacy/" target="_blank" rel="noopener">プライバシーポリシー</a></span>
+      </label>
       <div id="ar-error" class="ar-error" role="alert"></div>
     </div>
   </section>
@@ -193,8 +197,8 @@ permalink: /airreach/
     <div class="ar-wrap">
       <div class="ar-kicker">WHY NOW</div>
       <h2 class="ar-h2">AI回答に出ないと、比較の土俵に乗れない。</h2>
-      <p class="ar-sub">ローカル検索では、AI Overviewが表示された結果ページの活動継続率が21秒で約41.9%まで低下するという観測もあります（米国セッション、ページ全体の継続率）。候補に入り、地図・公式情報で確認される流れを一体で設計する必要があります。</p>
-      <p class="ar-footnote">出典: ClickStream Solutions / Surfer SEO（約846,000の米国Google検索セッション、2024年2–3月）。AIO単体ではなく結果ページ全体の継続率。掲載保証を意味しません。</p>
+      <p class="ar-sub">ローカル検索でAI Overviewが表示された結果ページでは、21秒時点の活動継続率が41.9%だったという観測があります（ページ全体の継続率。AIO単体の数値ではありません）。候補に入り、地図・公式情報で確認される流れを一体で設計する必要があります。</p>
+      <p class="ar-footnote">出典: <a href="https://www.searchenginejournal.com/google-search-sessions-show-how-users-pause-scroll-reconsider-before-clicking/575243/" target="_blank" rel="noopener noreferrer">Search Engine Journal — 846,000 Google Searches…</a>（ClickStream Solutions / Surfer SEOの匿名化クリックストリーム、米国セッション、2026年2–3月）。方法論: <a href="https://clickstream.cc/methodology-measuring-how-users-move-pause-and-reconsider-on-google-search/" target="_blank" rel="noopener noreferrer">Clickstream Solutions methodology</a>。確認日: 2026-09-16。掲載保証を意味しません。</p>
       <div class="ar-grid3" style="margin-top:28px">
         <div class="ar-card"><h3>測る</h3><p>準備度（AirReach）と、実AI回答の言及・引用・推薦（HackⅡ）を分けて扱います。</p></div>
         <div class="ar-card"><h3>直す</h3><p>定義・FAQ・比較軸・エンティティなど、引用されやすい一次情報を優先して整えます。</p></div>
@@ -284,7 +288,8 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('ar-review-disc').textContent = result.review.disclaimer;
     var q = 'AirReach診断URL=' + encodeURIComponent(url) + '&score=' + result.overall;
     document.getElementById('ar-cta-meet').href = '/trillionbank/meeting/?type=company&from=airreach&' + q;
-    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById('result').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   }
 
   form.addEventListener('submit', function (e) {
@@ -294,7 +299,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var url = input.value;
     btn.disabled = true;
     btn.textContent = '診断中…';
-    window.AirReach.diagnose(url).then(function (result) {
+    var allowProxy = !!(document.getElementById('ar-proxy-consent') && document.getElementById('ar-proxy-consent').checked);
+    window.AirReach.diagnose(url, { allowProxy: allowProxy }).then(function (result) {
       render(result, window.AirReach.normalizeUrl(url).href);
     }).catch(function (ex) {
       showError((ex && ex.message) ? ex.message + ' 取得できない場合はフォームからURLを送ってください。' : '診断に失敗しました。');
