@@ -8,6 +8,8 @@ date: 2026-09-16
 last_modified: 2026-09-16
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "AIブランド可視性・AI検索モニタリングツールを選ぶときの機能チェックリストを解説します。"
 keywords: "AIブランド可視性 ツール,AI検索モニタリング,AEOツール 比較"
 ai_summary: "可視性ツール選定は機能数より、証跡と再計測の再現性で決める。"

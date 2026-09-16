@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 技術
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "AI検索対策が未着手の企業が、最初に整備すべきFAQの作り方とFAQPage構造化データの注意点を解説します。"
 keywords: "FAQPage 中小企業,FAQ 構造化データ,未着手 AIO,JSON-LD FAQ"
 ai_summary: "FAQは実際の顧客質問に自己完結で答え、画面表示とJSON-LDを一致させる。非表示FAQや誇大表現は避ける。"

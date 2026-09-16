@@ -29,7 +29,7 @@
       "datePublished": "{{ page.date | date_to_xmlschema }}",
       "dateModified": "{% if page.last_modified %}{{ page.last_modified }}T00:00:00+09:00{% else %}{{ page.date | date_to_xmlschema }}{% endif %}",
       "author": {"@type": "Person", "name": {{ page.author | default: site.data.public_facts.company.representative | jsonify }}, "@id": "https://trillion-bank.jp/#kanta-inoue"},
-      "editor": {"@type": "Organization", "name": {{ page.reviewed_by | default: '株式会社Trillion Bank 編集部' | jsonify }}},
+      "editor": {"@type": "Person", "name": {{ page.reviewed_by | default: site.data.public_facts.company.representative | jsonify }}},
       "publisher": {"@id": "https://trillion-bank.jp/#organization"},
       "mainEntityOfPage": {"@id": "{{ page.url | absolute_url }}#webpage"},
       "inLanguage": "ja",
@@ -47,7 +47,7 @@
     {
       "@type": "FAQPage",
       "@id": "{{ page.url | absolute_url }}#faq",
-      "mainEntity": [{% for item in page.faq_items %}{"@type":"Question","name":{{ item.question | jsonify }},"acceptedAnswer":{"@type":"Answer","text":{{ item.answer | jsonify }}}}{% unless forloop.last %},{% endunless %}{% endfor %}]
+      "mainEntity": [{% for item in page.faq_items %}{% capture faq_plain %}{{ item.answer | markdownify | strip_html }}{% endcapture %}{"@type":"Question","name":{{ item.question | jsonify }},"acceptedAnswer":{"@type":"Answer","text":{{ faq_plain | strip | jsonify }}}}{% unless forloop.last %},{% endunless %}{% endfor %}]
     }{% endif %}
   ]
 }
@@ -62,7 +62,7 @@
 {% include tb-direct-answer.html %}
 {% if page.toc %}{% include tb-toc.html %}{% endif %}
 {{ content }}
-{% if page.faq_items %}<section aria-labelledby="article-faq" style="margin-top:48px"><h2 id="article-faq">よくある質問</h2>{% for item in page.faq_items %}<div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">{{ item.question }}</h3><p>{{ item.answer }}</p></div>{% endfor %}</section>{% endif %}
+{% if page.faq_items %}<section aria-labelledby="article-faq" style="margin-top:48px"><h2 id="article-faq">よくある質問</h2>{% for item in page.faq_items %}<div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">{{ item.question }}</h3><div class="faq-answer">{{ item.answer | markdownify }}</div></div>{% endfor %}</section>{% endif %}
 {% if page.references %}<div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);"><h2 style="font-size:1rem;margin-bottom:12px">参考文献・一次情報</h2><ol style="font-size:.86rem;color:var(--muted,#6b7280);padding-left:20px">{% for ref in page.references %}<li style="margin-bottom:8px"><a href="{{ ref.url }}" target="_blank" rel="noopener noreferrer">{{ ref.title }}</a>{% if ref.accessed %}（確認日：{{ ref.accessed }}）{% endif %}</li>{% endfor %}</ol></div>{% endif %}
 <div style="margin-top:40px;padding:20px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);font-size:.8rem;color:var(--muted,#6b7280)"><p style="margin:0">本記事は公開時点の一次情報と当社の分析に基づきます。用語や各サービスの仕様は変わる可能性があります。誤りを確認した場合は、お問い合わせ窓口からお知らせください。</p></div>
 {% include tb-author-box.html %}

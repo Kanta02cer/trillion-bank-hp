@@ -8,6 +8,8 @@ date: 2026-09-16
 last_modified: 2026-09-16
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "生成AIの引用分析で確認すべき項目と、中小企業でも実行できる実務手順を解説します。"
 keywords: "生成AI引用分析,AI検索 引用元分析,引用チャネル"
 ai_summary: "引用分析はURLの列挙で終わらせず、情報源タイプと不足一次情報へ落とす。"

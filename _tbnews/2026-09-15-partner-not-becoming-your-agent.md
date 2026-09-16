@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "他社から「Trillion Bankに代理店になってほしい」と依頼されるケースへの方針と、歓迎する代理店検討の違いを説明します。"
 keywords: "代理店依頼 お断り,販売代理店 方針,Trillion Bank パートナー"
 ai_summary: "当社は自社サービスを売るパートナーは歓迎するが、他社商材の販売代理にはならない。"

@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "中小企業がAI検索対策を外注する前に、自社で済ませられる段階と、外注に切り替える合図を解説します。"
 keywords: "AI検索 内製,外注しない,中小企業 判断"
 ai_summary: "質問設計・表記統一・FAQ整備は内製しやすい。継続測定と競合監視が負担になったら外注を検討する。"

@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "Trillion Bankサービスの販売代理店検討で商談・問い合わせ前に揃える情報のチェックリストです。"
 keywords: "代理店 商談準備,HackⅡ パートナー チェックリスト"
 ai_summary: "業種、既存顧客、提案したい役割、想定初回顧客、できないことを明確にしてから相談する。"

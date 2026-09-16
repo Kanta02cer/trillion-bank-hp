@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "AI検索対策の予算稟議で使える根拠の組み立て方を、測定可能な指標と保証しない範囲の切り分けで解説します。"
 keywords: "AI検索 予算,AEO 稟議,中小企業 投資判断,HackⅡ 根拠"
 ai_summary: "予算根拠は掲載保証ではなく、候補入り率・競合Win/Loss・引用チャネル・誤情報の有無など測定可能な指標で作る。"

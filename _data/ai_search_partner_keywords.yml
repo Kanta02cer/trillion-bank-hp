@@ -87,7 +87,7 @@ keywords:
     intent: "情報収集"
     slug: "google-search-console-ai-report"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 11
     group: P0
     cluster: "Google AI"
@@ -95,7 +95,7 @@ keywords:
     intent: "情報収集"
     slug: "generative-ai-search-report"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 12
     group: P0
     cluster: "問い合わせ"
@@ -119,7 +119,7 @@ keywords:
     intent: "比較"
     slug: "ai-search-optimization-tool"
     content_type: "comparison"
-    status: planned
+    status: published
   - priority: 15
     group: P0
     cluster: "ブランド分析"
@@ -127,7 +127,7 @@ keywords:
     intent: "導入検討"
     slug: "chatgpt-brand-analysis"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 16
     group: P0
     cluster: "Gemini"
@@ -135,7 +135,7 @@ keywords:
     intent: "導入検討"
     slug: "gemini-citation-rate"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 17
     group: P0
     cluster: "Gemini"
@@ -143,7 +143,7 @@ keywords:
     intent: "導入検討"
     slug: "gemini-mention-rate"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 18
     group: P0
     cluster: "Perplexity"
@@ -151,7 +151,7 @@ keywords:
     intent: "情報収集"
     slug: "perplexity-seo-optimization"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 19
     group: P0
     cluster: "ChatGPT"
@@ -159,7 +159,7 @@ keywords:
     intent: "情報収集"
     slug: "chatgpt-citation-method"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 20
     group: P0
     cluster: "計測"
@@ -167,7 +167,7 @@ keywords:
     intent: "導入検討"
     slug: "ai-search-referral-measurement"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 21
     group: P1
     cluster: "推薦"
@@ -175,7 +175,7 @@ keywords:
     intent: "情報収集"
     slug: "how-to-be-recommended-by-ai"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 22
     group: P1
     cluster: "引用"
@@ -183,7 +183,7 @@ keywords:
     intent: "情報収集"
     slug: "how-to-get-cited-by-generative-ai"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 23
     group: P1
     cluster: "課題"
@@ -191,7 +191,7 @@ keywords:
     intent: "課題認知"
     slug: "why-not-appearing-in-ai-search"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 24
     group: P1
     cluster: "競合分析"
@@ -199,7 +199,7 @@ keywords:
     intent: "課題認知"
     slug: "competitors-recommended-by-ai"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 25
     group: P1
     cluster: "課題"
@@ -207,7 +207,7 @@ keywords:
     intent: "課題認知"
     slug: "company-name-not-in-ai-search"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 26
     group: P1
     cluster: "誤情報"
@@ -215,7 +215,7 @@ keywords:
     intent: "課題認知"
     slug: "ai-search-misinformation-countermeasures"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 27
     group: P1
     cluster: "ブランド保護"
@@ -223,7 +223,7 @@ keywords:
     intent: "課題認知"
     slug: "ai-search-brand-risk"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 28
     group: P1
     cluster: "公式情報"
@@ -231,7 +231,7 @@ keywords:
     intent: "情報収集"
     slug: "ai-search-official-information"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 29
     group: P1
     cluster: "llms"
@@ -239,7 +239,7 @@ keywords:
     intent: "実装"
     slug: "llms-txt-corporate-site"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 30
     group: P1
     cluster: "llms"
@@ -247,7 +247,7 @@ keywords:
     intent: "実装"
     slug: "llms-txt-writing-guide"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 31
     group: P1
     cluster: "llms"
@@ -255,7 +255,7 @@ keywords:
     intent: "情報収集"
     slug: "llms-full-txt"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 32
     group: P1
     cluster: "構造化データ"
@@ -263,7 +263,7 @@ keywords:
     intent: "実装"
     slug: "json-ld-faq-ai-search"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 33
     group: P1
     cluster: "構造化データ"
@@ -271,7 +271,7 @@ keywords:
     intent: "実装"
     slug: "faqpage-structured-data"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 34
     group: P1
     cluster: "構造化データ"
@@ -279,7 +279,7 @@ keywords:
     intent: "実装"
     slug: "organization-schema-corporate-site"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 35
     group: P1
     cluster: "構造化データ"
@@ -287,7 +287,7 @@ keywords:
     intent: "実装"
     slug: "service-schema-guide"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 36
     group: P1
     cluster: "構造化データ"
@@ -295,7 +295,7 @@ keywords:
     intent: "実装"
     slug: "article-schema-seo"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 37
     group: P1
     cluster: "AIエージェント"
@@ -303,7 +303,7 @@ keywords:
     intent: "実装"
     slug: "ai-agent-ready-website"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 38
     group: P1
     cluster: "クローラー"
@@ -311,7 +311,7 @@ keywords:
     intent: "実装"
     slug: "ai-crawler-robots-txt"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 39
     group: P1
     cluster: "クローラー"
@@ -319,7 +319,7 @@ keywords:
     intent: "実装"
     slug: "google-extended-setting"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 40
     group: P1
     cluster: "クローラー"
@@ -327,7 +327,7 @@ keywords:
     intent: "実装"
     slug: "gptbot-robots-txt"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 41
     group: P1
     cluster: "クローラー"
@@ -335,7 +335,7 @@ keywords:
     intent: "実装"
     slug: "perplexitybot-robots-txt"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 42
     group: P1
     cluster: "クローラー"
@@ -343,7 +343,7 @@ keywords:
     intent: "実装"
     slug: "oai-searchbot-setup"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 43
     group: P1
     cluster: "サイト構造"
@@ -351,7 +351,7 @@ keywords:
     intent: "実装"
     slug: "ai-search-site-structure"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 44
     group: P1
     cluster: "機械可読"
@@ -359,7 +359,7 @@ keywords:
     intent: "実装"
     slug: "knowledge-json-ai"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 45
     group: P1
     cluster: "機械可読"
@@ -367,7 +367,7 @@ keywords:
     intent: "実装"
     slug: "ai-patch-json"
     content_type: "technical-guide"
-    status: planned
+    status: published
   - priority: 46
     group: P1
     cluster: "AIエージェント"
@@ -375,7 +375,7 @@ keywords:
     intent: "情報収集"
     slug: "ai-agent-corporate-site-comparison"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 47
     group: P1
     cluster: "レポート"
@@ -383,7 +383,7 @@ keywords:
     intent: "導入検討"
     slug: "ai-search-report-template"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 48
     group: P1
     cluster: "計測"
@@ -391,7 +391,7 @@ keywords:
     intent: "導入検討"
     slug: "ai-search-kpi"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 49
     group: P1
     cluster: "レポート"
@@ -399,7 +399,7 @@ keywords:
     intent: "導入検討"
     slug: "ai-search-monthly-report"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 50
     group: P1
     cluster: "運用"
@@ -407,7 +407,7 @@ keywords:
     intent: "導入検討"
     slug: "ai-search-pdca"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 51
     group: P2
     cluster: "業種別"
@@ -415,7 +415,7 @@ keywords:
     intent: "業種課題"
     slug: "btob-saas-ai-search"
     content_type: "industry-guide"
-    status: published
+    status: planned
   - priority: 52
     group: P2
     cluster: "業種別"
@@ -439,7 +439,7 @@ keywords:
     intent: "業種課題"
     slug: "professional-firms-ai-search"
     content_type: "industry-guide"
-    status: published
+    status: planned
   - priority: 55
     group: P2
     cluster: "業種別"
@@ -447,7 +447,7 @@ keywords:
     intent: "業種課題"
     slug: "real-estate-ai-search"
     content_type: "industry-guide"
-    status: published
+    status: planned
   - priority: 56
     group: P2
     cluster: "業種別"
@@ -455,7 +455,7 @@ keywords:
     intent: "業種課題"
     slug: "clinic-ai-search"
     content_type: "industry-guide"
-    status: published
+    status: planned
   - priority: 57
     group: P2
     cluster: "業種別"
@@ -471,7 +471,7 @@ keywords:
     intent: "業種課題"
     slug: "hotel-ai-recommendation"
     content_type: "industry-guide"
-    status: published
+    status: planned
   - priority: 59
     group: P2
     cluster: "業種別"
@@ -479,7 +479,7 @@ keywords:
     intent: "業種課題"
     slug: "ec-ai-search"
     content_type: "industry-guide"
-    status: published
+    status: planned
   - priority: 60
     group: P2
     cluster: "業種別"

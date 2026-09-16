@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "Trillion Bankへの問い合わせ前に、中小企業が揃えておくと相談が前に進みやすい情報のチェックリストです。"
 keywords: "AI検索 相談準備,問い合わせ チェックリスト,中小企業 HackⅡ"
 ai_summary: "重要質問、競合、現状メモ、直せるページ、決裁者を揃えると初回相談が具体化する。"

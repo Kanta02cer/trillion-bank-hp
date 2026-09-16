@@ -8,6 +8,8 @@ date: 2026-09-16
 last_modified: 2026-09-16
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "LLMO対策会社・支援の選び方を、測定・一次情報・SEO併存の観点で解説します。"
 keywords: "LLMO対策 会社,LLMO 支援,生成AI検索最適化 会社"
 ai_summary: "LLMO支援選定は用語理解より、測定と一次情報更新の設計で決める。"

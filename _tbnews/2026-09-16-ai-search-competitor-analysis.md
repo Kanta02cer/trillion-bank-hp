@@ -8,6 +8,8 @@ date: 2026-09-16
 last_modified: 2026-09-16
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "AI検索における競合分析を、質問単位のWin/Lossと引用チャネル分解で実践する方法を解説します。"
 keywords: "AI検索 競合分析,AI検索 Win/Loss,GEO 競合比較"
 ai_summary: "競合分析は順位表より、質問単位の言及と引用元分解が実務的。"

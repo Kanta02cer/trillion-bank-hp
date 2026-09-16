@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "AI回答で競合ばかり選ばれるときに、中小企業が確認すべき情報源・比較軸・測定方法を解説します。"
 keywords: "AI検索 競合,競合 推薦,Win/Loss,中小企業 AEO"
 ai_summary: "競合優位は被リンクだけでなく、比較表・第三者言及・明確な定義・最新情報の差で起きやすい。勝敗を質問単位で記録する。"

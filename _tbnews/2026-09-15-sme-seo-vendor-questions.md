@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "既存のSEO会社や制作会社にAI検索対策を相談する前に、中小企業が確認すべき質問リストです。"
 keywords: "SEO会社 AI検索,AEO 外注,中小企業 ベンダー選定"
 ai_summary: "ベンダーには測定範囲、証跡保存、再計測条件、保証しない範囲、成果報告の粒度を確認する。"

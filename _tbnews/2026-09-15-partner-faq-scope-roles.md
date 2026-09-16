@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "Trillion Bankサービスの販売代理店検討時によくある、対応範囲・役割分担・お断りの境界についてのFAQです。"
 keywords: "販売代理店 FAQ,役割分担,HackⅡ パートナー質問"
 ai_summary: "販売は歓迎、他社代理は拒否、成果保証なし、役割は案件ごとに設計。"

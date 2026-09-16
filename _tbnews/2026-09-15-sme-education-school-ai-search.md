@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "スクールや研修を運営する中小企業が、AIのおすすめや比較回答で正しく説明されるための情報整備を解説します。"
 keywords: "スクール AI検索,研修 AEO,教育事業 中小企業"
 ai_summary: "対象レベル、到達目標、受講形式、向く人／向かない人を明確にすると比較回答に乗りやすい。"

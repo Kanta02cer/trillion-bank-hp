@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "SEO会社が既存メニューを維持したまま、HackⅡをAI検索測定の追加提案として位置づける考え方を解説します。"
 keywords: "SEO会社 新メニュー,AEO 追加提案,HackⅡ 代理店"
 ai_summary: "SEOの代替ではなく、回答面の測定レイヤーとして追加する。カニバリを避ける説明が必要。"

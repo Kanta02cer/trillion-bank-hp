@@ -8,6 +8,8 @@ date: 2026-09-16
 last_modified: 2026-09-16
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "AI検索におけるSOV（シェア・オブ・ボイス）の考え方、計算時の分母定義、誤用しやすい点を解説します。"
 keywords: "AI検索 SOV,Share of Voice AI検索,AI言及率"
 ai_summary: "AI検索SOVは定義固定が命。分母と欠損処理を明示して使う。"

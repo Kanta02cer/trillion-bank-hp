@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "HackⅡの販売代理店・共同提案に向いている業者の特徴と、向かないケースを整理します。"
 keywords: "HackⅡ 代理店 向いている,共同提案 適性,SEO会社 パートナー"
 ai_summary: "既存顧客関係、課題ヒアリング力、継続提案の習慣がある業者に向く。単発売り切りのみの場合は不向きになりやすい。"

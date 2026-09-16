@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "広告代理店が、出稿前・出稿中の判断材料としてAI検索測定を提案に追加する理由と注意点を解説します。"
 keywords: "広告代理店 AI検索,AEO 提案,HackⅡ パートナー"
 ai_summary: "広告前に有機的な推薦状況の基準線があると、出稿判断とメッセージ設計がしやすい。"
