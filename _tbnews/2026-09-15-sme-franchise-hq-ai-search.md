@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "フランチャイズ本部が加盟検討者向けのAI回答で誤認されないために整備すべき公式情報を解説します。"
 keywords: "フランチャイズ AI検索,FC本部 AEO,中小企業"
 ai_summary: "本部概要、加盟条件の公開可能範囲、支援内容、向く加盟希望者像を公式に揃える。"

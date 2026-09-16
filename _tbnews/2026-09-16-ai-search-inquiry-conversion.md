@@ -8,6 +8,8 @@ date: 2026-09-16
 last_modified: 2026-09-16
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "AI検索対策を問い合わせにつなげるために、未着手企業が整えるべき公式導線と測定の関係を解説します。"
 keywords: "AI検索 問い合わせ,AI検索 コンバージョン,AEO リード"
 ai_summary: "問い合わせ接続は推薦保証ではなく、公式の回答可能性と相談導線の設計が中心。"

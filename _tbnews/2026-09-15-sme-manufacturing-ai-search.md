@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "製造業の中小企業がAI検索で見つけてもらうために、仕様・用途・対応業界などの技術一次情報の出し方を解説します。"
 keywords: "製造業 AI検索,BtoB製造 AEO,技術情報 一次情報"
 ai_summary: "製造は用途・材質・対応業界・ロット条件など、仕様の言語化がAI推薦の材料になる。"

@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "ChatGPTなどのAI回答に自社が出てこないときに、中小企業が確認すべき技術・情報・エンティティ・第三者情報のチェックリストです。"
 keywords: "ChatGPT 自社 出てこない,AI検索 言及されない,中小企業 チェックリスト,GEO"
 ai_summary: "出てこない原因はクロール拒否、一次情報不足、表記ゆれ、競合情報の優勢、第三者情報の古さなどに分かれる。まず切り分ける。"

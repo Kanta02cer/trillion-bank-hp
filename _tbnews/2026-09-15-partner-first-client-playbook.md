@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "販売代理店が最初の1社へHackⅡを提案するときの、顧客選定から説明、次アクションまでの手順書です。"
 keywords: "代理店 初回提案,HackⅡ 最初の顧客,共同提案 プレイブック"
 ai_summary: "最初の1社は関係性が良く、比較検討型商材で、一次情報を直せる顧客が向く。"

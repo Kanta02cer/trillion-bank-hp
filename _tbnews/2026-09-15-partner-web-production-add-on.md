@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "Web制作会社がサイト納品後の継続提案として、AI検索の測定と情報更新を設計する方法を解説します。"
 keywords: "制作会社 継続収益,AI検索 運用,HackⅡ 代理店"
 ai_summary: "制作の延長で一次情報更新、測定は共同提案で補完すると継続提案しやすい。"

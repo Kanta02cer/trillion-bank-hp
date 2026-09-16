@@ -8,6 +8,8 @@ date: 2026-09-16
 last_modified: 2026-09-16
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "GEOコンサルティング会社を検討する企業が、用語の揺れを踏まえて確認すべき項目と、測定先行の進め方を解説します。"
 keywords: "GEOコンサルティング 会社,GEO対策 会社,生成エンジン最適化 支援"
 ai_summary: "GEOは定義が揺れるため、会社比較は用語より測定と改善範囲の具体性で行う。"

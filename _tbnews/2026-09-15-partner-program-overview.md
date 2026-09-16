@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "Trillion Bankサービスの販売代理店・共同提案パートナーを検討する業者様向けに、対象・役割・相談方法を解説します。"
 keywords: "販売代理店 検討,HackⅡ 代理店,共同提案 パートナー"
 ai_summary: "当社サービスの販売代理店検討は歓迎。他社商材の代理販売依頼は非対応。共同提案と役割分担を相談できる。"

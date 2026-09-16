@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "中小企業の現場で起きやすいAI検索対策の誤解を10個取り上げ、正しい進め方に言い換えます。"
 keywords: "AI検索 誤解,AEO 神話,中小企業 SEO"
 ai_summary: "特別な隠しタグや一発設置で解決する話ではなく、有用な一次情報と測定が基本。"

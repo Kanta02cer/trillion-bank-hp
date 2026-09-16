@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "BtoBサービス業の中小企業がAIのおすすめから外れる典型理由と、公式情報で埋めるべき比較軸を解説します。"
 keywords: "BtoB AI検索,サービス業 AEO,中小企業 おすすめされない"
 ai_summary: "BtoBでは対象顧客・提供範囲・向く／向かない条件・導入プロセスが弱いと推薦されにくい。"

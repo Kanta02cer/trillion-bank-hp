@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "地域密着型の中小企業が、地図・ローカル検索とAI検索をどう役割分担して整えるかを解説します。"
 keywords: "地域密着 AI検索,MEO AEO 違い,中小企業 地図情報"
 ai_summary: "地図情報は来店・電話の近場需要、AI検索は比較・推薦の説明需要。両方の一次情報を一致させる。"

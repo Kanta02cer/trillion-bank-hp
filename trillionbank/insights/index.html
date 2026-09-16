@@ -28,4 +28,62 @@ robots: index, follow, max-snippet:-1, max-image-preview:large
 <li><a href="/trillionbank/news/aeo-support-company/">AEO支援会社の選び方</a></li>
 <li><a href="/trillionbank/news/ai-search-sov/">AI検索SOVとは</a></li>
 <li><a href="/trillionbank/news/generative-ai-citation-analysis/">生成AI引用分析</a></li>
-</ul></article></div></div></section><section class="sec" style="background:var(--surface,#f8fafc)"><div class="wrap"><div class="khead"><span class="no">REVIEWED ARTICLES</span><h2>最新の実務解説</h2></div><div class="ins-list">{% assign insights = site.tbnews | where: 'insight', true | sort: 'date' | reverse %}{% for item in insights %}<a class="ins-item" href="{{ item.url }}"><span class="meta">{{ item.date | date:'%Y.%m.%d' }} / {{ item.category }}</span><h2>{{ item.title }}</h2><p>{{ item.tbdesc | default: item.excerpt_text | truncate: 120 }}</p><span style="color:var(--blue-600);font-weight:700">読む →</span></a>{% endfor %}</div>{% if insights.size == 0 %}<p>公開準備中です。</p>{% endif %}</div></section><section class="sec"><div class="wrap"><h2>自社のAI検索上の現在地を確認する</h2><p style="max-width:700px;color:var(--muted);line-height:1.8">記事の一般論だけでは判断しにくい場合、対象サイト、重要質問、競合を共有いただき、HackⅡが適する課題かを確認します。</p><div style="margin-top:22px;display:flex;gap:14px;flex-wrap:wrap"><a class="btn btn-primary" href="/trillionbank/meeting/?type=company">AI検索の現在地を相談する <span class="a">→</span></a><a class="btn btn-line" href="/trillionbank/meeting/?type=agency">共同提案を相談する <span class="a">→</span></a></div></div></section></main>{% include tb-footer-safe.html %}</body></html>
+</ul></article></div></div></section><section class="sec" style="background:var(--surface,#f8fafc)"><div class="wrap"><div class="khead"><span class="no">REVIEWED ARTICLES</span><h2>最新の実務解説</h2></div><div class="ins-list">{% assign insights = site.tbnews | where: 'insight', true | sort: 'date' | reverse %}{% for item in insights %}<a class="ins-item" href="{{ item.url }}"><span class="meta">{{ item.date | date:'%Y.%m.%d' }} / {{ item.category }}</span><h2>{{ item.title }}</h2><p>{{ item.tbdesc | default: item.excerpt_text | truncate: 120 }}</p><span style="color:var(--blue-600);font-weight:700">読む →</span></a>{% endfor %}</div>{% if insights.size == 0 %}<p>公開準備中です。</p>{% endif %}</div></section><section class="sec"><div class="wrap"><h2>自社のAI検索上の現在地を確認する</h2><p style="max-width:700px;color:var(--muted);line-height:1.8">記事の一般論だけでは判断しにくい場合、対象サイト、重要質問、競合を共有いただき、HackⅡが適する課題かを確認します。</p><div style="margin-top:22px;display:flex;gap:14px;flex-wrap:wrap"><a class="btn btn-primary" href="/trillionbank/meeting/?type=company">AI検索の現在地を相談する <span class="a">→</span></a><a class="btn btn-line" href="/trillionbank/meeting/?type=agency">共同提案を相談する <span class="a">→</span></a></div></div></section>
+<!-- P0_P1_BATCH -->
+<section class="sec"><div class="wrap">
+  <h2>対策キーワード（P0 / P1）</h2>
+  <p class="lead">会社選定・測定指標・出てこない原因・構造化データ・クローラー方針・レポート運用のガイドです。</p>
+  <ul class="insight-list">
+    <li><a href="/trillionbank/news/aeo-support-company/">AEO支援会社の選び方｜回答エンジン最適化で見るべき比較軸</a></li>
+    <li><a href="/trillionbank/news/ai-agent-corporate-site-comparison/">AIエージェント向け企業サイト比較の観点</a></li>
+    <li><a href="/trillionbank/news/ai-agent-ready-website/">AIエージェント対応サイトの条件｜人が読めて機械も辿れる</a></li>
+    <li><a href="/trillionbank/news/ai-brand-visibility-tool/">AIブランド可視性ツールの選び方｜チェックすべき機能</a></li>
+    <li><a href="/trillionbank/news/ai-crawler-robots-txt/">AIクローラーとrobots.txt｜許可・拒否の判断枠</a></li>
+    <li><a href="/trillionbank/news/ai-patch-json/">ai-patch.jsonの考え方｜差分更新をどう扱うか</a></li>
+    <li><a href="/trillionbank/news/ai-search-brand-risk/">AI検索のブランド毀損リスクと先回り対策</a></li>
+    <li><a href="/trillionbank/news/ai-search-competitor-analysis/">AI検索の競合分析のやり方｜質問単位のWin/Lossで見る</a></li>
+    <li><a href="/trillionbank/news/ai-search-effect-measurement-gemini-sov/">AI検索の効果測定｜Gemini時代の引用率・言及率・SOVの考え方</a></li>
+    <li><a href="/trillionbank/news/ai-search-inquiry-conversion/">AI検索から問い合わせにつなげる導線設計｜未着手企業向け</a></li>
+    <li><a href="/trillionbank/news/ai-search-kpi/">AI検索KPIの決め方｜候補入り・言及・引用・Win率</a></li>
+    <li><a href="/trillionbank/news/ai-search-marketing-support/">AI検索マーケティング支援とは？依頼範囲の切り方と注意点</a></li>
+    <li><a href="/trillionbank/news/ai-search-misinformation-countermeasures/">AI検索の誤情報対策｜発見・訂正・再計測の流れ</a></li>
+    <li><a href="/trillionbank/news/ai-search-monthly-report/">AI検索の月次レポート｜固定質問で見る運用</a></li>
+    <li><a href="/trillionbank/news/ai-search-official-information/">AI検索向け公式情報の整備｜何をどの順で直すか</a></li>
+    <li><a href="/trillionbank/news/ai-search-optimization-company/">AI検索対策会社の選び方｜測定・支援・SEO拡張の3分類で比較する</a></li>
+    <li><a href="/trillionbank/news/ai-search-optimization-tool/">AI検索最適化ツールの選び方｜測定・監視・改善支援の切り分け</a></li>
+    <li><a href="/trillionbank/news/ai-search-pdca/">AI検索PDCA｜Measure→Act→Remeasureの回し方</a></li>
+    <li><a href="/trillionbank/news/ai-search-referral-measurement/">AI検索流入の計測方法｜参照元の捉え方とレポート設計</a></li>
+    <li><a href="/trillionbank/news/ai-search-report-template/">AI検索レポートテンプレート｜そのまま使える項目一覧</a></li>
+    <li><a href="/trillionbank/news/ai-search-site-structure/">AI検索向けサイト構造｜ハブと一次情報の置き方</a></li>
+    <li><a href="/trillionbank/news/ai-search-sov/">AI検索SOVとは？計算の考え方と誤用しやすい点</a></li>
+    <li><a href="/trillionbank/news/article-schema-seo/">Article schemaとSEO｜記事ページで揃える項目</a></li>
+    <li><a href="/trillionbank/news/chatgpt-brand-analysis/">ChatGPTブランド分析のやり方｜質問設計からWin/Lossまで</a></li>
+    <li><a href="/trillionbank/news/chatgpt-citation-method/">ChatGPTに引用される方法｜再現性のある整え方と限界</a></li>
+    <li><a href="/trillionbank/news/company-name-not-in-ai-search/">AI検索で会社名が出ないときの確認手順</a></li>
+    <li><a href="/trillionbank/news/competitors-recommended-by-ai/">競合ばかりAIに推薦されるとき確認すべきこと</a></li>
+    <li><a href="/trillionbank/news/faqpage-structured-data/">FAQPage構造化データの書き方｜一致・検証・更新</a></li>
+    <li><a href="/trillionbank/news/gemini-citation-rate/">Geminiの引用率とは？計算の考え方と測定時の注意</a></li>
+    <li><a href="/trillionbank/news/gemini-mention-rate/">Geminiの言及率とは？引用率との違いと使い方</a></li>
+    <li><a href="/trillionbank/news/generative-ai-citation-analysis/">生成AI引用分析とは？見るべき項目と実務手順</a></li>
+    <li><a href="/trillionbank/news/generative-ai-search-report/">生成AI検索レポートの作り方｜経営・施策に使える項目設計</a></li>
+    <li><a href="/trillionbank/news/geo-consulting-company/">GEOコンサルティング会社の選び方｜定義の揺れを踏まえた確認項目</a></li>
+    <li><a href="/trillionbank/news/google-extended-setting/">Google-Extended設定の考え方｜何を制御し何を制御しないか</a></li>
+    <li><a href="/trillionbank/news/google-search-console-ai-report/">Google Search ConsoleとAI検索｜見られること・見られないこと</a></li>
+    <li><a href="/trillionbank/news/gptbot-robots-txt/">GPTBotのrobots.txt対応｜許可・拒否の実務</a></li>
+    <li><a href="/trillionbank/news/how-to-be-recommended-by-ai/">AIに推薦される方法｜カテゴリ質問で選ばれるための実務</a></li>
+    <li><a href="/trillionbank/news/how-to-get-cited-by-generative-ai/">生成AIに引用される方法｜出典になるページの条件</a></li>
+    <li><a href="/trillionbank/news/json-ld-faq-ai-search/">JSON-LDのFAQとAI検索｜効果と正しい使い方</a></li>
+    <li><a href="/trillionbank/news/knowledge-json-ai/">knowledge.jsonとは？企業サイトでの使い方</a></li>
+    <li><a href="/trillionbank/news/llmo-company-selection/">LLMO対策会社の選び方｜生成AI検索最適化の依頼範囲を決める</a></li>
+    <li><a href="/trillionbank/news/llms-full-txt/">llms-full.txtとは？llms.txtとの使い分け</a></li>
+    <li><a href="/trillionbank/news/llms-txt-corporate-site/">企業サイトのllms.txt｜置く目的と限界</a></li>
+    <li><a href="/trillionbank/news/llms-txt-writing-guide/">llms.txtの書き方｜項目・順序・やってはいけないこと</a></li>
+    <li><a href="/trillionbank/news/oai-searchbot-setup/">OAI-SearchBot対応｜検索利用と学習制御を分けて考える</a></li>
+    <li><a href="/trillionbank/news/organization-schema-corporate-site/">企業サイトのOrganization schema｜必須項目とsameAs</a></li>
+    <li><a href="/trillionbank/news/perplexity-seo-optimization/">Perplexity SEO対策の実務｜引用されやすい公式情報の整え方</a></li>
+    <li><a href="/trillionbank/news/perplexitybot-robots-txt/">PerplexityBotのrobots.txt対応｜観測と方針</a></li>
+    <li><a href="/trillionbank/news/service-schema-guide/">Service schemaの書き方｜公開できる範囲だけを記述</a></li>
+    <li><a href="/trillionbank/news/why-not-appearing-in-ai-search/">AI検索で出てこない原因｜まず疑うべきチェックリスト</a></li>
+  </ul>
+</div></section>
+</main>{% include tb-footer-safe.html %}</body></html>

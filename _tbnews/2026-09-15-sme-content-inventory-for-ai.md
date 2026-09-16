@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "中小企業が既存サイトをAI検索向けに棚卸しする手順と、優先して直すページの見極め方を解説します。"
 keywords: "コンテンツ棚卸し AI,中小企業 サイト改善,一次情報 整備"
 ai_summary: "全ページ改修より、定義・比較・FAQ・会社情報・サービス詳細の不足を優先して埋める。"

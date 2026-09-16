@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "販売代理店がHackⅡを既存顧客へ共同提案するときの、初回ヒアリングから役割分担までの進め方です。"
 keywords: "共同提案 進め方,HackⅡ 代理店 フロー,パートナー 営業"
 ai_summary: "顧客課題の確認→質問設計→現状説明→役割分担→商談、の順で進める。"

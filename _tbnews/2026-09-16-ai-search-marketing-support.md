@@ -8,6 +8,8 @@ date: 2026-09-16
 last_modified: 2026-09-16
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "AI検索マーケティング支援を検討する企業が、依頼範囲を切り分け、過大な約束を避けるための実務ガイドです。"
 keywords: "AI検索マーケティング支援,AI検索 支援サービス,GEO支援"
 ai_summary: "支援依頼は範囲の切り分けが先。測定と一次情報が土台。"

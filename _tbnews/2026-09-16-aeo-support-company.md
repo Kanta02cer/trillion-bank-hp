@@ -8,6 +8,8 @@ date: 2026-09-16
 last_modified: 2026-09-16
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "AEO支援会社を比較する際の確認軸と、未着手企業が最初に依頼すべき範囲を整理します。"
 keywords: "AEO支援会社,AEO対策 会社,Answer Engine Optimization 支援"
 ai_summary: "AEO支援の選定は、回答面の測定設計と一次情報改修の分担が中心。"

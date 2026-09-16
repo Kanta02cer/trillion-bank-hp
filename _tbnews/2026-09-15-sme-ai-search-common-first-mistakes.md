@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "未着手の中小企業がAI検索対策で最初にやりがちな失敗と、回避するための進め方を解説します。"
 keywords: "AI検索 失敗,中小企業 よくあるミス,AEO 注意点"
 ai_summary: "用語収集、ツール先行、保証求め、非表示Schema、質問未設計が典型失敗。"

@@ -8,6 +8,8 @@ date: 2026-09-16
 last_modified: 2026-09-16
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "AI検索対策会社を選ぶときの比較軸を、測定・支援・SEO拡張の3分類と確認質問で整理します。Trillion Bankは測定（HackⅡ）を中心に相談を受け付けます。"
 keywords: "AI検索対策 会社,AI検索対策 選び方,AEO 会社,GEO 支援会社,HackⅡ"
 ai_summary: "会社選定は機能一覧より、測定範囲・証跡・再計測・役割分担・保証しない範囲の確認が重要。"

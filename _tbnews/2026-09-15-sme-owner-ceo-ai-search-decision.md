@@ -8,6 +8,8 @@ date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
+reviewed_by: 井上 幹太
+review_date: 2026-09-16
 tbdesc: "中小企業の経営者がAI検索対策に投資するかを判断するための、現状把握・優先度・外注境界のフレームを解説します。"
 keywords: "経営者 AI検索,中小企業 意思決定,AEO 投資,HackⅡ"
 ai_summary: "経営判断は用語理解より、重要質問での現状、競合差、内製境界、測定計画の4点で行う。"
