@@ -83,6 +83,7 @@ scan_extensions: [".md", ".html", ".yml", ".yaml", ".json", ".txt", ".xml"]
 
 global_scan_roots:
   - "index.html"
+  - "airreach/index.html"
   - "trillionbank"
   - "_tbnews"
   - "_includes"
@@ -99,6 +100,7 @@ global_scan_roots:
 # checked independently of this list.
 public_roots:
   - "index.html"
+  - "airreach/index.html"
   - "trillionbank/business/index.html"
   - "trillionbank/business/hack2/index.html"
   - "trillionbank/business/pay-per-crawl/index.html"

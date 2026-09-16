@@ -34,6 +34,11 @@
       "purpose": "AI回答・競合・引用元の測定と分析支援"
     },
     {
+      "name": "AirReach",
+      "url": "https://trillion-bank.jp/airreach/",
+      "purpose": "公開ページのAI検索準備度を無料診断し、HackⅡの詳細測定・伴走へ接続する"
+    },
+    {
       "name": "Adctor",
       "url": "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/",
       "purpose": "AIデータ利用の契約・利用証跡に関する研究開発・PoC"

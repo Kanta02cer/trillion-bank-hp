@@ -38,6 +38,15 @@ products:
       - "すべてのAIサービス・画面を完全に測定するものではない"
       - "AI内部の選定理由を断定しない"
       - "対応AI・測定頻度・質問数は契約時点の検証範囲で確定する"
+
+  airreach:
+    name: "AirReach"
+    status: "無料のAI検索準備度診断（公開ページ）"
+    public_definition: "公開ページのHTML・構造化データ・llms.txt・robotsなどのシグナルからAI検索準備度を算出する無料診断。実AI回答の引用率・出現率の測定はHackⅡへ接続する。"
+    limitations:
+      - "ChatGPT・Gemini・Claude・AI Overviewsなどの実回答引用率を本ツール単体では取得しない"
+      - "AI回答への掲載、順位、流入、問い合わせ、売上を保証しない"
+      - "サイト側の取得制限により診断できない場合がある"
   adctor:
     name: "Adctor"
     status: "研究開発・PoC相談"
