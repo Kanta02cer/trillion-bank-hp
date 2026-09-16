@@ -108,10 +108,10 @@ ai_summary: "AirReachは公開ページのHTML・構造化データ・llms.txt�
         <input id="ar-url" name="url" type="url" inputmode="url" autocomplete="url" placeholder="https://example.com/" required>
         <button id="ar-run" type="submit">無料で診断する</button>
       </form>
-      <p class="ar-note">APIキー不要。まず同一オリジン／CORS許可の直接取得を試します。多くの外部サイトでは失敗するため、同意がある場合のみ取得代行（第三者プロキシ）を使います。URLの認証情報やトークン系クエリは送信前に除去します。</p>
+      <p class="ar-note">APIキー不要。まず同一オリジン／CORS許可の直接取得を試します。外部サイトは同意がある場合のみ、Trillion Bankの取得サーバー（Cloudflare Workers）経由で公開HTML等を取得します。URLの認証情報やトークン系クエリは送信前に除去します。</p>
       <label class="ar-consent">
         <input id="ar-proxy-consent" type="checkbox" style="margin-top:3px">
-        <span>直接取得できない場合、診断のためにURL（認証情報・トークン除去後）を取得代行サービスへ送信することに同意します。<a href="/trillionbank/privacy/" target="_blank" rel="noopener">プライバシーポリシー</a></span>
+        <span>直接取得できない場合、診断のためにURL（認証情報・トークン除去後）をTrillion Bankの取得サーバーへ送信することに同意します。<a href="/trillionbank/privacy/" target="_blank" rel="noopener">プライバシーポリシー</a></span>
       </label>
       <div id="ar-error" class="ar-error" role="alert"></div>
     </div>
