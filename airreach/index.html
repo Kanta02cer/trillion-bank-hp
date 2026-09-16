@@ -112,6 +112,52 @@ ai_summary: "AIO Agent（AirReach）は公開ページのシグナルから準�
 .ar-gap-card h4{margin:0 0 6px;font-size:.9rem}
 .ar-gap-card p{margin:0;font-size:.84rem;color:var(--muted,#6b7280);line-height:1.6}
 .ar-theme-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+
+.ar-progress{margin-top:18px;max-width:640px;display:none}
+.ar-progress.is-on{display:block}
+.ar-progress-track{height:4px;background:#eef2f7;border-radius:999px;overflow:hidden;margin-bottom:12px}
+.ar-progress-track > i{display:block;height:100%;width:0;background:var(--blue-600,#2563eb);transition:width .35s ease}
+.ar-steps{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ar-steps li{display:grid;grid-template-columns:18px 1fr;gap:10px;align-items:start;font-size:.84rem;color:var(--muted,#6b7280);line-height:1.45}
+.ar-steps .dot{width:10px;height:10px;margin-top:4px;border-radius:50%;border:2px solid #cbd5e1;background:#fff}
+.ar-steps li.is-run .dot{border-color:var(--blue-600,#2563eb);background:var(--blue-600,#2563eb);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.ar-steps li.is-done .dot{border-color:var(--blue-600,#2563eb);background:var(--blue-600,#2563eb)}
+.ar-steps li.is-done{color:var(--ink,#0f172a)}
+.ar-steps .step-label{font-weight:600;color:inherit}
+.ar-steps .step-detail{display:block;font-weight:400;font-size:.78rem;margin-top:2px}
+.ar-maturity{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 22px}
+.ar-mat{border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:14px 14px 12px;background:#fff;position:relative}
+.ar-mat .st{font-size:.68rem;font-weight:700;letter-spacing:.04em;margin-bottom:6px}
+.ar-mat h3{margin:0 0 6px;font-size:.88rem;font-weight:700}
+.ar-mat p{margin:0;font-size:.78rem;color:var(--muted,#6b7280);line-height:1.55}
+.ar-mat.is-done{border-color:#93c5fd;background:#f8fbff}
+.ar-mat.is-partial{border-color:#93c5fd}
+.ar-mat.is-sample{border-style:dashed}
+.ar-mat.is-todo{opacity:.92}
+.ar-mat .st-done{color:#2563eb}
+.ar-mat .st-partial{color:#2563eb}
+.ar-mat .st-sample{color:#6b7280}
+.ar-mat .st-todo,.ar-mat .st-ready{color:#6b7280}
+.ar-evid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 8px}
+.ar-evid-item{border:1px solid var(--border,#e5e7eb);border-radius:10px;padding:10px 12px;background:#fff}
+.ar-evid-item .k{font-size:.72rem;color:var(--muted,#6b7280);margin-bottom:4px}
+.ar-evid-item .v{font-size:.9rem;font-weight:600}
+.ar-evid-item.is-ok{border-color:#bfdbfe}
+.ar-evid-item.is-ng{border-color:#e5e7eb;background:var(--surface,#f8fafc)}
+.ar-big.is-measured{border-color:#93c5fd;background:linear-gradient(180deg,#f8fbff,#fff)}
+.ar-big.is-forecast{opacity:.98}
+.ar-tag-m{border-color:#93c5fd;color:#2563eb}
+.ar-tag-f{border-color:#e5e7eb;color:#6b7280}
+@media(max-width:900px){
+  .ar-maturity,.ar-evid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .ar-maturity,.ar-evid{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion: reduce){
+  .ar-progress-track > i{transition:none}
+  .ar-steps li.is-run .dot{box-shadow:none}
+}
 @media(max-width:900px){.ar-form-grid,.ar-gap-grid{grid-template-columns:1fr}}
 </style>
 <script type="application/ld+json">
@@ -143,7 +189,7 @@ ai_summary: "AIO Agent（AirReach）は公開ページのシグナルから準�
       </div>
       <div class="ar-badge">FREE GROWTH REPORT</div>
       <h1>URLを入れるだけで、<br><em>伸びしろ</em>が分かる。</h1>
-      <p class="ar-lead">無料で、準備度と推定の成長機会（CV・売上）まで表示します。ChatGPTなどの実際の出方はHackⅡで測ります。</p>
+      <p class="ar-lead">まず公開ページを<strong>実測</strong>し、準備度と証拠項目を出します。機会額は予測として併記し、GSC/HackⅡ接続で実測へ置き換えます。</p>
       <form id="ar-form" class="ar-urlbox" action="#" method="get">
         <label class="visually-hidden" for="ar-url">診断するサイトURL</label>
         <input id="ar-url" name="url" type="url" inputmode="url" autocomplete="url" placeholder="https://example.com/" required>
@@ -154,6 +200,18 @@ ai_summary: "AIO Agent（AirReach）は公開ページのシグナルから準�
         <input id="ar-proxy-consent" type="checkbox" style="margin-top:3px">
         <span>直接読めない場合、診断のためURLを取得サーバーへ送ることに同意します。<a href="/trillionbank/privacy/" target="_blank" rel="noopener">プライバシーポリシー</a></span>
       </label>
+      
+      <div id="ar-progress" class="ar-progress" aria-live="polite">
+        <div class="ar-progress-track"><i id="ar-progress-bar"></i></div>
+        <ol class="ar-steps" id="ar-steps">
+          <li data-step="fetch_page"><span class="dot" aria-hidden="true"></span><span><span class="step-label">1. 公開HTMLを取得</span><span class="step-detail"></span></span></li>
+          <li data-step="fetch_meta"><span class="dot" aria-hidden="true"></span><span><span class="step-label">2. robots / llms を確認</span><span class="step-detail"></span></span></li>
+          <li data-step="parse"><span class="dot" aria-hidden="true"></span><span><span class="step-label">3. 構造・FAQ・エンティティを集計</span><span class="step-detail"></span></span></li>
+          <li data-step="score"><span class="dot" aria-hidden="true"></span><span><span class="step-label">4. 準備度（実測）を算出</span><span class="step-detail"></span></span></li>
+          <li data-step="themes"><span class="dot" aria-hidden="true"></span><span><span class="step-label">5. 対策テーマを選定</span><span class="step-detail"></span></span></li>
+          <li data-step="report"><span class="dot" aria-hidden="true"></span><span><span class="step-label">6. レポートを生成</span><span class="step-detail"></span></span></li>
+        </ol>
+      </div>
       <div id="ar-error" class="ar-error" role="alert"></div>
     </div>
   </section>
@@ -162,7 +220,7 @@ ai_summary: "AIO Agent（AirReach）は公開ページのシグナルから準�
     <div class="ar-wrap">
       <div class="ar-kicker">REPORT</div>
       <h2 class="ar-h2">AI / SEARCH GROWTH REPORT</h2>
-      <p class="ar-sub">最初に見るのは「機会・CV・いちばん効くテーマ・問題・次の一手」だけです。金額とCVはすべて推定です。</p>
+      <p class="ar-sub">上段は計測レイヤーの進捗。中央は公開ページの実測スコア。機会額は予測（またはGSC入力後の実測再計算）です。</p>
 
       <div id="ar-empty" class="ar-empty">
         <h3 style="margin:0 0 8px;font-size:1.05rem">まだ診断前です</h3>
@@ -173,23 +231,30 @@ ai_summary: "AIO Agent（AirReach）は公開ページのシグナルから準�
         <div class="ar-report-head">
           <p class="host" id="ar-host">—</p>
           <p class="verdict" id="ar-verdict"></p>
+          <p class="ar-footnote" id="ar-measured-at" style="margin-top:8px"></p>
         </div>
+
+        <div class="ar-kicker">MEASUREMENT PROGRESS</div>
+        <h3 style="margin:0 0 10px;font-size:1.05rem">計測の進み方 <span id="ar-maturity-pct" style="font-weight:600;color:var(--muted);font-size:.9rem"></span></h3>
+        <div class="ar-maturity" id="ar-maturity" aria-label="計測レイヤーの進捗"></div>
 
         <div class="ar-hero-metrics">
-          <div class="ar-big">
-            <div class="ar-tag">推定</div>
-            <div class="label">推定成長機会</div>
-            <div class="value" id="ar-opp-revenue">—<span class="unit">/ 月</span></div>
-            <p class="hint" id="ar-opp-profit">粗利機会（推定）: —</p>
+          <div class="ar-big is-measured">
+            <div class="ar-tag ar-tag-m" id="ar-score-tag">実測</div>
+            <div class="label">AI / 検索準備度</div>
+            <div class="value" id="ar-overall-big">—<span class="unit">/ 100</span></div>
+            <p class="hint" id="ar-evidence-summary">公開HTML・構造化データ・robots等から算出</p>
           </div>
-          <div class="ar-big">
-            <div class="ar-tag">推定</div>
-            <div class="label">推定追加CV</div>
-            <div class="value" id="ar-opp-cv">—<span class="unit">/ 月</span></div>
-            <p class="hint" id="ar-opp-cv-range">レンジ: —</p>
+          <div class="ar-big is-forecast">
+            <div class="ar-tag ar-tag-f" id="ar-opp-tag">予測</div>
+            <div class="label" id="ar-opp-label">成長機会（予測）</div>
+            <div class="value" id="ar-opp-revenue">—<span class="unit">/ 月</span></div>
+            <p class="hint" id="ar-opp-profit">粗利機会: —</p>
+            <p class="hint" id="ar-opp-cv-line" style="margin-top:4px">追加CV: —</p>
           </div>
         </div>
 
+        <div style="display:none"><span id="ar-opp-cv"></span><span id="ar-opp-cv-range"></span></div>
         <div class="ar-facts">
           <div class="ar-fact">
             <h3>最大の機会</h3>
@@ -209,8 +274,13 @@ ai_summary: "AIO Agent（AirReach）は公開ページのシグナルから準�
           </div>
         </div>
 
-        <div class="ar-kicker" style="margin-top:8px">SCORES</div>
-        <h3 style="margin:0 0 8px;font-size:1.05rem">準備度の内訳</h3>
+        <div class="ar-kicker" style="margin-top:8px">EVIDENCE · 実測</div>
+        <h3 style="margin:0 0 8px;font-size:1.05rem">公開ページから数えた事実</h3>
+        <div class="ar-evid" id="ar-evidence"></div>
+        <p class="ar-footnote" id="ar-evidence-note" style="margin:0 0 18px"></p>
+
+        <div class="ar-kicker" style="margin-top:8px">SCORES · 実測</div>
+        <h3 style="margin:0 0 8px;font-size:1.05rem">準備度の内訳（公開シグナル）</h3>
         <div class="ar-meters">
           <div class="ar-meter"><div class="top"><span>AI検索準備度</span><span id="ar-s-ai">0</span></div><div class="ar-bar"><i id="ar-b-ai"></i></div></div>
           <div class="ar-meter"><div class="top"><span>Google検索準備度</span><span id="ar-s-search">0</span></div><div class="ar-bar"><i id="ar-b-search"></i></div></div>
@@ -400,7 +470,11 @@ document.addEventListener('DOMContentLoaded', function () {
   var err = document.getElementById('ar-error');
   var empty = document.getElementById('ar-empty');
   var dash = document.getElementById('ar-dash');
-  var state = { result: null, url: '', hack2Sample: false };
+  var progressBox = document.getElementById('ar-progress');
+  var progressBar = document.getElementById('ar-progress-bar');
+  var state = { result: null, url: '', hack2Sample: false, searchMeasured: false };
+
+  var STEP_ORDER = ['fetch_page', 'fetch_meta', 'parse', 'score', 'themes', 'report'];
 
   function showError(msg) {
     err.textContent = msg;
@@ -429,6 +503,34 @@ document.addEventListener('DOMContentLoaded', function () {
   function fmtYen(n) {
     try { return '¥' + Number(n).toLocaleString('ja-JP'); } catch (e) { return '¥' + n; }
   }
+  function resetProgress() {
+    progressBox.classList.add('is-on');
+    progressBar.style.width = '4%';
+    Array.prototype.forEach.call(document.querySelectorAll('#ar-steps li'), function (li) {
+      li.classList.remove('is-run', 'is-done');
+      var d = li.querySelector('.step-detail');
+      if (d) d.textContent = '';
+    });
+  }
+  function onProgress(ev) {
+    var idx = STEP_ORDER.indexOf(ev.step);
+    if (idx < 0) return;
+    var pct = Math.round(((idx + (ev.status === 'done' ? 1 : 0.45)) / STEP_ORDER.length) * 100);
+    progressBar.style.width = Math.max(4, Math.min(100, pct)) + '%';
+    Array.prototype.forEach.call(document.querySelectorAll('#ar-steps li'), function (li) {
+      var step = li.getAttribute('data-step');
+      var si = STEP_ORDER.indexOf(step);
+      var detail = li.querySelector('.step-detail');
+      li.classList.remove('is-run', 'is-done');
+      if (si < idx || (si === idx && ev.status === 'done')) {
+        li.classList.add('is-done');
+      } else if (si === idx && ev.status === 'running') {
+        li.classList.add('is-run');
+      }
+      if (step === ev.step && detail) detail.textContent = ev.detail || '';
+      if (si < idx && detail && !detail.textContent) detail.textContent = '完了';
+    });
+  }
   function fillThemeSelects(themes) {
     ['ar-m-theme', 'ar-a-theme'].forEach(function (id) {
       var sel = document.getElementById(id);
@@ -442,6 +544,61 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   }
+  function renderMaturity(result) {
+    var box = document.getElementById('ar-maturity');
+    var pctEl = document.getElementById('ar-maturity-pct');
+    if (!box) return;
+    var mp = result.measurementProgress;
+    if (!mp && window.AirReach && window.AirReach.buildMeasurementProgress) {
+      mp = window.AirReach.buildMeasurementProgress(result, {
+        searchMeasured: state.searchMeasured,
+        hack2Sample: state.hack2Sample
+      });
+      result.measurementProgress = mp;
+    }
+    box.innerHTML = '';
+    (mp && mp.layers ? mp.layers : []).forEach(function (layer) {
+      var el = document.createElement('div');
+      el.className = 'ar-mat is-' + layer.status;
+      var stLabel = {
+        done: '完了 · 実測',
+        partial: '一部実測',
+        sample: 'SAMPLE',
+        todo: '未計測',
+        ready: '利用可'
+      }[layer.status] || layer.status;
+      el.innerHTML = '<div class="st st-' + layer.status + '">' + stLabel + '</div><h3>' + layer.label +
+        '</h3><p>' + layer.summary + (layer.next && layer.status !== 'done' ? '<br>次: ' + layer.next : '') + '</p>';
+      box.appendChild(el);
+    });
+    if (pctEl) pctEl.textContent = mp ? '（全体 ' + mp.completionPct + '%）' : '';
+  }
+  function renderEvidence(result) {
+    var box = document.getElementById('ar-evidence');
+    var note = document.getElementById('ar-evidence-note');
+    var summary = document.getElementById('ar-evidence-summary');
+    if (!box) return;
+    box.innerHTML = '';
+    var items = (result.evidence && result.evidence.items) || [];
+    var ok = 0;
+    items.forEach(function (it) {
+      if (it.ok) ok += 1;
+      var el = document.createElement('div');
+      el.className = 'ar-evid-item ' + (it.ok ? 'is-ok' : 'is-ng');
+      el.innerHTML = '<div class="k">' + it.label + '</div><div class="v">' + it.value + '</div>';
+      box.appendChild(el);
+    });
+    if (note) {
+      note.textContent = (result.evidence && result.evidence.dataKind ? result.evidence.dataKind + ' · ' : '') +
+        ok + ' / ' + items.length + ' 項目が基準を満たしています。' +
+        (result.evidence && result.evidence.measuredAt ? ' 計測時刻: ' + result.evidence.measuredAt.replace('T', ' ').slice(0, 19) : '');
+    }
+    if (summary) summary.textContent = '証拠 ' + ok + '/' + items.length + ' · 公開ページ実測';
+    var at = document.getElementById('ar-measured-at');
+    if (at) at.textContent = result.evidence && result.evidence.measuredAt
+      ? '公開ページ実測: ' + result.evidence.measuredAt.replace('T', ' ').slice(0, 19)
+      : '';
+  }
   function renderWeekly(result) {
     var box = document.getElementById('ar-week-box');
     var ol = document.getElementById('ar-week-list');
@@ -450,8 +607,8 @@ document.addEventListener('DOMContentLoaded', function () {
     ol.innerHTML = '';
     tasks.forEach(function (t) {
       var li = document.createElement('li');
-      var money = t.profitEst != null ? '推定粗利機会 ' + fmtYen(t.profitEst) : (t.aiExpectation ? 'AI Visibility改善期待：' + t.aiExpectation : '');
-      var cv = t.cvEst != null ? '推定 +' + t.cvEst + 'CV' : '';
+      var money = t.profitEst != null ? '粗利機会 ' + fmtYen(t.profitEst) : (t.aiExpectation ? 'AI Visibility改善期待：' + t.aiExpectation : '');
+      var cv = t.cvEst != null ? '+' + t.cvEst + 'CV' : '';
       li.innerHTML = '<strong>' + t.title + '</strong><br>' + [cv, money, '難易度 ' + t.effort, 'Confidence ' + t.confidence + '%', t.dataKind].filter(Boolean).join(' · ');
       ol.appendChild(li);
     });
@@ -462,18 +619,18 @@ document.addEventListener('DOMContentLoaded', function () {
     tbody.innerHTML = '';
     (result.themes || []).forEach(function (t) {
       var tr = document.createElement('tr');
-      var cells = [
-        t.name + (t.dataKind ? ' [' + t.dataKind + ']' : ''),
-        t.impressions != null
-          ? Number(t.impressions).toLocaleString('ja-JP') + '（実測）'
-          : (t.googleVolumeEst || 0).toLocaleString('ja-JP') + '（推定）',
+      var demand = t.impressions != null
+        ? Number(t.impressions).toLocaleString('ja-JP') + '（実測表示）'
+        : (t.googleVolumeEst || 0).toLocaleString('ja-JP') + '（予測需要）';
+      [
+        t.name,
+        demand,
         t.aiDemandLabel || '—',
-        '+' + (t.clicksEst || 0) + (t.ctrGap != null ? ' / CTR Gap ' + Math.round(t.ctrGap * 1000) / 10 + 'pt' : ''),
+        '+' + (t.clicksEst || 0) + (t.ctrGap != null ? ' / Gap ' + Math.round(t.ctrGap * 1000) / 10 + 'pt' : ''),
         '+' + (t.cvEst || 0),
         fmtYen(t.revenueEst || 0),
-        (t.priority || 0) + ' / 100'
-      ];
-      cells.forEach(function (c) {
+        (t.priority || 0) + ' / 100 · ' + (t.dataKind || 'モデル予測')
+      ].forEach(function (c) {
         var td = document.createElement('td');
         td.textContent = c;
         tr.appendChild(td);
@@ -483,10 +640,18 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   function renderOpp(result) {
     var opp = result.opportunity || {};
+    var measured = (opp.dataKind || '').indexOf('実測') >= 0;
+    document.getElementById('ar-opp-tag').textContent = measured ? '実測ベース' : '予測';
+    document.getElementById('ar-opp-tag').className = 'ar-tag ' + (measured ? 'ar-tag-m' : 'ar-tag-f');
+    document.getElementById('ar-opp-label').textContent = measured ? '成長機会（実測再計算）' : '成長機会（予測）';
     document.getElementById('ar-opp-revenue').innerHTML = fmtYen(opp.revenueBase || 0) + ' <span class="unit">/ 月</span>';
-    document.getElementById('ar-opp-profit').textContent = '粗利機会（' + (opp.dataKind || '推定') + '）: ' + fmtYen(opp.profitBase || 0) + ' / 月（' + fmtYen(opp.profitLow || 0) + '〜' + fmtYen(opp.profitHigh || 0) + '）';
-    document.getElementById('ar-opp-cv').innerHTML = '+' + (opp.cvBase || 0) + ' <span class="unit">/ 月</span>';
-    document.getElementById('ar-opp-cv-range').textContent = 'レンジ（保守〜上振れ）: +' + (opp.cvLow || 0) + '〜+' + (opp.cvHigh || 0) + ' / 追加クリック ' + (opp.clicksBase || 0);
+    document.getElementById('ar-opp-profit').textContent = '粗利機会: ' + fmtYen(opp.profitBase || 0) + ' / 月（' + fmtYen(opp.profitLow || 0) + '〜' + fmtYen(opp.profitHigh || 0) + '）· ' + (opp.dataKind || 'モデル予測');
+    var cvLine = document.getElementById('ar-opp-cv-line');
+    if (cvLine) cvLine.textContent = '追加CV: +' + (opp.cvBase || 0) + ' / 月（レンジ +' + (opp.cvLow || 0) + '〜+' + (opp.cvHigh || 0) + '）· 追加クリック ' + (opp.clicksBase || 0);
+    var hiddenCv = document.getElementById('ar-opp-cv');
+    if (hiddenCv) hiddenCv.textContent = '+' + (opp.cvBase || 0);
+    var hiddenRange = document.getElementById('ar-opp-cv-range');
+    if (hiddenRange) hiddenRange.textContent = '';
   }
   function renderHack2(result) {
     var view = document.getElementById('ar-hack2-view');
@@ -497,7 +662,7 @@ document.addEventListener('DOMContentLoaded', function () {
       view.hidden = true;
       pill.textContent = '未計測';
       pill.classList.remove('ar-pill-on');
-      disc.textContent = '無料診断では取得しません。HackⅡ接続後に置換します。';
+      disc.textContent = '無料診断では取得しません。HackⅡ接続後に実測へ置換します。';
       return;
     }
     var m = top.hack2.metrics;
@@ -516,9 +681,26 @@ document.addEventListener('DOMContentLoaded', function () {
     pill.textContent = top.hack2.dataKind || 'SAMPLE';
     pill.classList.add('ar-pill-on');
   }
+  function syncProgressState(result) {
+    if (window.AirReachGrowth && window.AirReachGrowth.refreshMeasurementProgress) {
+      window.AirReachGrowth.refreshMeasurementProgress(result, {
+        searchMeasured: state.searchMeasured,
+        hack2Sample: state.hack2Sample
+      });
+    } else if (window.AirReach && window.AirReach.buildMeasurementProgress) {
+      result.measurementProgress = window.AirReach.buildMeasurementProgress(result, {
+        searchMeasured: state.searchMeasured,
+        hack2Sample: state.hack2Sample
+      });
+    }
+  }
   function render(result, url) {
     state.result = result;
     state.url = url;
+    state.searchMeasured = (result.themes || []).some(function (t) {
+      return t.dataKind && String(t.dataKind).indexOf('実測') === 0;
+    });
+    syncProgressState(result);
     empty.style.display = 'none';
     dash.classList.add('is-on');
     var ps = result.plainSummary || {};
@@ -526,11 +708,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('ar-host').textContent = ps.host || '診断対象';
     document.getElementById('ar-verdict').textContent = ps.verdict || '';
+    document.getElementById('ar-overall-big').innerHTML = (result.overall || 0) + ' <span class="unit">/ 100</span>';
+    document.getElementById('ar-overall-plain').textContent = (result.overall || 0) + ' 点 / 100 点（公開ページ実測）';
+
+    renderMaturity(result);
     renderOpp(result);
+    renderEvidence(result);
+
     document.getElementById('ar-top-theme').textContent = ps.topTheme || '—';
     document.getElementById('ar-biggest-problem').textContent = ps.biggestProblem || '—';
     document.getElementById('ar-next-step').textContent = ps.nextStep || '—';
-    document.getElementById('ar-overall-plain').textContent = (result.overall || 0) + ' 点 / 100 点';
 
     setMeter('ai', scores.ai || 0);
     setMeter('search', scores.search || result.structure || 0);
@@ -550,24 +737,22 @@ document.addEventListener('DOMContentLoaded', function () {
     renderWeekly(result);
     renderHack2(result);
 
-    var measured = (result.themes || []).some(function (t) { return t.dataKind && t.dataKind.indexOf('実測') === 0; });
     var pill = document.getElementById('ar-connected-pill');
-    pill.textContent = measured ? '一部実測入力済み' : '未接続';
-    pill.classList.toggle('ar-pill-on', measured);
+    pill.textContent = state.searchMeasured ? '一部実測入力済み' : '未接続';
+    pill.classList.toggle('ar-pill-on', state.searchMeasured);
 
     var opp = result.opportunity || {};
-    document.getElementById('ar-formula').textContent = opp.formula ||
-      '追加クリック ≒ 需要 × 到達可能CTR − 現状クリック。追加CV ≒ 追加クリック × CVR。';
+    document.getElementById('ar-formula').textContent = opp.formula || '';
     var a = opp.assumptions || {};
     var ul = document.getElementById('ar-assumptions-list');
     ul.innerHTML = '';
     [
-      'データ種別: ' + (opp.dataKind || 'モデル予測'),
+      '準備度・証拠: 実測（公開ページ）',
+      '機会額・CV: ' + (opp.dataKind || 'モデル予測'),
       '想定CVR: ' + ((a.cvr || 0) * 100) + '%',
       '問い合わせ1件の期待価値: ' + fmtYen(a.expectedCvValueYen || 0),
       '粗利率: ' + ((a.grossMargin || 0) * 100) + '%',
       '到達可能CTR: ' + ((a.reachableCtr || 0) * 100) + '%',
-      '関連度: ' + ((a.relevance || 0) * 100) + '%',
       a.note || ''
     ].forEach(function (line) {
       if (!line) return;
@@ -598,13 +783,18 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!window.AirReach) { showError('診断スクリプトの読み込みに失敗しました。'); return; }
     var url = input.value;
     btn.disabled = true;
-    btn.textContent = '診断中…';
+    btn.textContent = '計測中…';
+    dash.classList.remove('is-on');
+    empty.style.display = 'none';
+    resetProgress();
     var allowProxy = !!(document.getElementById('ar-proxy-consent') && document.getElementById('ar-proxy-consent').checked);
-    window.AirReach.diagnose(url, { allowProxy: allowProxy }).then(function (result) {
+    window.AirReach.diagnose(url, { allowProxy: allowProxy, onProgress: onProgress }).then(function (result) {
       state.hack2Sample = false;
+      progressBar.style.width = '100%';
       render(result, window.AirReach.normalizeUrl(url).href);
     }).catch(function (ex) {
       showError((ex && ex.message) ? ex.message : '診断に失敗しました。');
+      empty.style.display = '';
     }).finally(function () {
       btn.disabled = false;
       btn.textContent = '無料で診断する';
@@ -630,6 +820,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     themes[idx] = window.AirReachGrowth.applySearchMeasured(themes[idx], measured, state.result);
     var oppPatch = window.AirReachGrowth.recomputeOpportunity(themes);
+    state.searchMeasured = true;
     var next = Object.assign({}, state.result, {
       themes: themes,
       opportunity: Object.assign({}, state.result.opportunity || {}, oppPatch),
@@ -640,8 +831,8 @@ document.addEventListener('DOMContentLoaded', function () {
       })
     });
     document.getElementById('ar-m-note').textContent =
-      themes[idx].name + ' を実測入力で再計算しました。CTR Gap ' +
-      (Math.round((themes[idx].ctrGap || 0) * 1000) / 10) + 'pt / 推定追加CV +' + themes[idx].cvEst;
+      themes[idx].name + ' を実測入力で再計算 · CTR Gap ' +
+      (Math.round((themes[idx].ctrGap || 0) * 1000) / 10) + 'pt / 追加CV +' + themes[idx].cvEst;
     render(next, state.url);
   });
 
@@ -704,11 +895,9 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('ar-remeasure').textContent = '保存済みの診断がありません。先に保存してください。';
       return;
     }
-    var prev = list[0];
     var curr = window.AirReachGrowth.saveSnapshot(state.result, state.url);
-    // compare previous (now second) with current
     list = window.AirReachGrowth.listSnapshots(host);
-    prev = list[1] || list[0];
+    var prev = list[1] || list[0];
     var diff = window.AirReachGrowth.compareSnapshots(prev, curr);
     if (!diff) return;
     document.getElementById('ar-remeasure').textContent =

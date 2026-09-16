@@ -273,7 +273,15 @@
     return Object.assign({}, result, { themes: themes, hack2Sample: !!sample });
   }
 
+  function refreshMeasurementProgress(result, opts) {
+    if (window.AirReach && typeof window.AirReach.buildMeasurementProgress === 'function') {
+      result.measurementProgress = window.AirReach.buildMeasurementProgress(result, opts || {});
+    }
+    return result;
+  }
+
   window.AirReachGrowth = {
+    refreshMeasurementProgress: refreshMeasurementProgress,
     applySearchMeasured: applySearchMeasured,
     recomputeOpportunity: recomputeOpportunity,
     buildHack2Layer: buildHack2Layer,

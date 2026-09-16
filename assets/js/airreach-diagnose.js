@@ -421,7 +421,7 @@
       review: {
         summary: host + ' の成長機会レポート（推定）です。' + verdict,
         conversionHint: '問い合わせにつなげるには、「誰向けか／何ができるか／何をしないか／次の相談先」が同じページで揃っているかが大切です。',
-        disclaimer: '表示の金額・CVはモデル予測です。掲載・順位・流入・問い合わせ・売上を保証しません。実AI回答の出方はHackⅡ、検索実測はGSC連携で置換します。'
+        disclaimer: '準備度・証拠項目は公開ページの実測です。金額・CVはモデル予測（またはGSC入力実測）です。掲載・順位・流入・問い合わせ・売上を保証しません。AI回答の出方はHackⅡで測ります。'
       },
       page: {
         title: page.title,
@@ -435,21 +435,134 @@
     };
   }
 
+  function emitProgress(cb, step, status, detail) {
+    if (typeof cb === 'function') {
+      try { cb({ step: step, status: status, detail: detail || '', at: Date.now() }); } catch (e) { /* ignore */ }
+    }
+  }
+
+  function buildEvidence(page, llmsText, robotsText) {
+    var types = Object.keys(page.types || {}).sort();
+    return {
+      dataKind: '実測（公開ページ）',
+      measuredAt: new Date().toISOString(),
+      items: [
+        { key: 'title', label: 'title', value: page.title ? 'あり' : 'なし', ok: !!page.title, raw: page.title || '' },
+        { key: 'h1', label: 'H1数', value: String(page.h1.length), ok: page.h1.length === 1, raw: page.h1.join(' / ') },
+        { key: 'meta', label: 'meta description', value: page.metaDesc ? (page.metaDesc.length + '字') : 'なし', ok: !!(page.metaDesc && page.metaDesc.length >= 40) },
+        { key: 'canonical', label: 'canonical', value: page.canonical ? 'あり' : 'なし', ok: !!page.canonical },
+        { key: 'schema', label: '構造化データ型', value: types.length ? types.join(', ') : 'なし', ok: types.length > 0 },
+        { key: 'org', label: 'Organization/LocalBusiness', value: (page.types.Organization || page.types.LocalBusiness) ? 'あり' : 'なし', ok: !!(page.types.Organization || page.types.LocalBusiness) },
+        { key: 'faq', label: 'FAQ（JSON-LD）', value: page.faqCount + '問', ok: page.faqCount >= 3 },
+        { key: 'compare', label: '比較・選び方表現', value: page.hasCompare ? 'あり' : 'なし', ok: !!page.hasCompare },
+        { key: 'price', label: '料金表現', value: page.hasPrice ? 'あり' : 'なし', ok: !!page.hasPrice },
+        { key: 'contact', label: '問い合わせ導線', value: page.hasContact ? 'あり' : 'なし', ok: !!page.hasContact },
+        { key: 'robots', label: 'robots.txt', value: robotsText ? '取得済み' : '未取得', ok: !!robotsText },
+        { key: 'llms', label: 'llms.txt（補助）', value: (llmsText && llmsText.length > 80) ? 'あり' : 'なし/薄い', ok: !!(llmsText && llmsText.length > 80) },
+        { key: 'body', label: '本文量', value: page.textLen + '字', ok: page.textLen > 800 }
+      ]
+    };
+  }
+
+  function buildMeasurementProgress(result, opts) {
+    opts = opts || {};
+    var evidenceOk = (result.evidence && result.evidence.items)
+      ? result.evidence.items.filter(function (i) { return i.ok; }).length
+      : 0;
+    var evidenceTotal = (result.evidence && result.evidence.items) ? result.evidence.items.length : 0;
+    var searchMeasured = !!(opts.searchMeasured || (result.themes || []).some(function (t) {
+      return t.dataKind && String(t.dataKind).indexOf('実測') === 0;
+    }));
+    var hack2Measured = !!(opts.hack2Measured);
+    var hack2Sample = !!(opts.hack2Sample || result.hack2Sample);
+    return {
+      layers: [
+        {
+          id: 'page',
+          label: '公開ページ',
+          status: 'done',
+          dataKind: '実測',
+          summary: evidenceOk + '/' + evidenceTotal + ' 項目クリア · 準備度 ' + (result.overall || 0) + '点',
+          next: null
+        },
+        {
+          id: 'search',
+          label: '検索実測（GSC/GA4）',
+          status: searchMeasured ? 'partial' : 'todo',
+          dataKind: searchMeasured ? '実測（入力）' : '未計測',
+          summary: searchMeasured
+            ? '表示・クリック等で機会を再計算済み'
+            : '表示回数・CTR・CVを入れると推定を置換',
+          next: '数値を入力するか、正式連携を相談'
+        },
+        {
+          id: 'ai',
+          label: 'AI回答実測（HackⅡ）',
+          status: hack2Measured ? 'done' : (hack2Sample ? 'sample' : 'todo'),
+          dataKind: hack2Measured ? 'HackⅡ実測' : (hack2Sample ? 'SAMPLE' : '未計測'),
+          summary: hack2Measured
+            ? 'モデル別の推薦・引用を計測済み'
+            : (hack2Sample ? 'SAMPLE表示中（実測ではない）' : 'ChatGPT等の出方はまだ未計測'),
+          next: 'HackⅡで同条件測定'
+        },
+        {
+          id: 'action',
+          label: '施策→再測定',
+          status: 'ready',
+          dataKind: '下書き可',
+          summary: '優先テーマからブリーフ作成・差分保存が可能',
+          next: '承認後に実装（自動公開なし）'
+        }
+      ],
+      completionPct: Math.round(
+        (100 + (searchMeasured ? 50 : 0) + (hack2Measured ? 50 : (hack2Sample ? 15 : 0))) / 2
+      )
+    };
+  }
+
   function diagnose(inputUrl, options) {
     options = options || {};
     var allowProxy = !!options.allowProxy;
+    var onProgress = options.onProgress;
     var url = normalizeUrl(inputUrl);
     var base = url.origin + '/';
-    return Promise.all([
-      fetchWithFallbacks(url.href, allowProxy),
-      fetchWithFallbacks(absUrl(base, '/llms.txt'), allowProxy).catch(function () { return ''; }),
-      fetchWithFallbacks(absUrl(base, '/robots.txt'), allowProxy).catch(function () { return ''; })
-    ]).then(function (parts) {
-      var html = parts[0];
+
+    emitProgress(onProgress, 'fetch_page', 'running', '公開HTMLを取得しています');
+    return fetchWithFallbacks(url.href, allowProxy).then(function (html) {
       if (!html || html.length < 40) throw new Error('ページ内容を取得できませんでした。');
-      return analyze(parseHtml(html), parts[1] || '', parts[2] || '', url.href);
+      emitProgress(onProgress, 'fetch_page', 'done', 'HTML ' + html.length.toLocaleString('ja-JP') + ' bytes');
+      emitProgress(onProgress, 'fetch_meta', 'running', 'robots.txt / llms.txt を確認しています');
+      return Promise.all([
+        Promise.resolve(html),
+        fetchWithFallbacks(absUrl(base, '/llms.txt'), allowProxy).catch(function () { return ''; }),
+        fetchWithFallbacks(absUrl(base, '/robots.txt'), allowProxy).catch(function () { return ''; })
+      ]);
+    }).then(function (parts) {
+      var html = parts[0];
+      var llmsText = parts[1] || '';
+      var robotsText = parts[2] || '';
+      emitProgress(onProgress, 'fetch_meta', 'done',
+        'robots ' + (robotsText ? '取得' : 'なし') + ' / llms ' + (llmsText && llmsText.length > 80 ? 'あり' : 'なし'));
+      emitProgress(onProgress, 'parse', 'running', '見出し・構造化データ・FAQを集計しています');
+      var page = parseHtml(html);
+      emitProgress(onProgress, 'parse', 'done',
+        'H1 ' + page.h1.length + ' / FAQ ' + page.faqCount + '問 / schema ' + Object.keys(page.types).length + '種');
+      emitProgress(onProgress, 'score', 'running', '準備度スコアを算出しています');
+      var result = analyze(page, llmsText, robotsText, url.href);
+      result.evidence = buildEvidence(page, llmsText, robotsText);
+      result.measurementProgress = buildMeasurementProgress(result, {});
+      emitProgress(onProgress, 'score', 'done', '総合 ' + result.overall + '点（公開ページ実測）');
+      emitProgress(onProgress, 'themes', 'running', '対策テーマを選定しています');
+      emitProgress(onProgress, 'themes', 'done', 'テーマ ' + ((result.themes && result.themes.length) || 0) + '件');
+      emitProgress(onProgress, 'report', 'done', 'レポート準備完了');
+      return result;
     });
   }
 
-  window.AirReach = { diagnose: diagnose, normalizeUrl: normalizeUrl, ASSUMPTIONS: ASSUMPTIONS };
+  window.AirReach = {
+    diagnose: diagnose,
+    normalizeUrl: normalizeUrl,
+    ASSUMPTIONS: ASSUMPTIONS,
+    buildMeasurementProgress: buildMeasurementProgress
+  };
 })();
