@@ -23,7 +23,7 @@ keywords:
     intent: "購買"
     slug: "ai-search-optimization-company"
     content_type: "comparison"
-    status: planned
+    status: published
   - priority: 3
     group: P0
     cluster: "支援会社"
@@ -31,7 +31,7 @@ keywords:
     intent: "購買"
     slug: "geo-consulting-company"
     content_type: "comparison"
-    status: planned
+    status: published
   - priority: 4
     group: P0
     cluster: "支援会社"
@@ -39,7 +39,7 @@ keywords:
     intent: "購買"
     slug: "aeo-support-company"
     content_type: "comparison"
-    status: planned
+    status: published
   - priority: 5
     group: P0
     cluster: "支援会社"
@@ -47,7 +47,7 @@ keywords:
     intent: "購買"
     slug: "llmo-company-selection"
     content_type: "comparison"
-    status: planned
+    status: published
   - priority: 6
     group: P0
     cluster: "競合分析"
@@ -55,7 +55,7 @@ keywords:
     intent: "導入検討"
     slug: "ai-search-competitor-analysis"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 7
     group: P0
     cluster: "競合分析"
@@ -63,7 +63,7 @@ keywords:
     intent: "導入検討"
     slug: "ai-search-sov"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 8
     group: P0
     cluster: "引用分析"
@@ -71,7 +71,7 @@ keywords:
     intent: "導入検討"
     slug: "generative-ai-citation-analysis"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 9
     group: P0
     cluster: "可視性"
@@ -79,7 +79,7 @@ keywords:
     intent: "比較"
     slug: "ai-brand-visibility-tool"
     content_type: "comparison"
-    status: planned
+    status: published
   - priority: 10
     group: P0
     cluster: "Google AI"
@@ -103,7 +103,7 @@ keywords:
     intent: "購買"
     slug: "ai-search-inquiry-conversion"
     content_type: "guide"
-    status: planned
+    status: published
   - priority: 13
     group: P0
     cluster: "支援会社"
@@ -111,7 +111,7 @@ keywords:
     intent: "購買"
     slug: "ai-search-marketing-support"
     content_type: "service"
-    status: planned
+    status: published
   - priority: 14
     group: P0
     cluster: "ツール比較"

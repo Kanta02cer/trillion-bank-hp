@@ -110,6 +110,16 @@ jobs:
               '_tbnews/2026-09-15-sme-seo-vendor-questions.md': '/trillionbank/news/sme-seo-vendor-questions/',
               '_tbnews/2026-09-15-sme-vs-competitor-ai-visibility.md': '/trillionbank/news/sme-vs-competitor-ai-visibility/',
               '_tbnews/2026-09-15-sme-when-not-to-outsource.md': '/trillionbank/news/sme-when-not-to-outsource/',
+              '_tbnews/2026-09-16-aeo-support-company.md': '/trillionbank/news/aeo-support-company/',
+              '_tbnews/2026-09-16-ai-brand-visibility-tool.md': '/trillionbank/news/ai-brand-visibility-tool/',
+              '_tbnews/2026-09-16-ai-search-competitor-analysis.md': '/trillionbank/news/ai-search-competitor-analysis/',
+              '_tbnews/2026-09-16-ai-search-inquiry-conversion.md': '/trillionbank/news/ai-search-inquiry-conversion/',
+              '_tbnews/2026-09-16-ai-search-marketing-support.md': '/trillionbank/news/ai-search-marketing-support/',
+              '_tbnews/2026-09-16-ai-search-optimization-company.md': '/trillionbank/news/ai-search-optimization-company/',
+              '_tbnews/2026-09-16-ai-search-sov.md': '/trillionbank/news/ai-search-sov/',
+              '_tbnews/2026-09-16-generative-ai-citation-analysis.md': '/trillionbank/news/generative-ai-citation-analysis/',
+              '_tbnews/2026-09-16-geo-consulting-company.md': '/trillionbank/news/geo-consulting-company/',
+              '_tbnews/2026-09-16-llmo-company-selection.md': '/trillionbank/news/llmo-company-selection/',
           }
           site_origin = 'https://trillion-bank.jp'
 

@@ -98,4 +98,18 @@ This file is an experimental, human-readable index of approved public pages. It 
 - 競合だけがAIに選ばれるとき中小企業が確認すべきこと: https://trillion-bank.jp/trillionbank/news/sme-vs-competitor-ai-visibility/
 - 中小企業がAI検索対策をまだ外注しなくていい段階: https://trillion-bank.jp/trillionbank/news/sme-when-not-to-outsource/
 
-Last reviewed: 2026-09-15
+
+## P0 selection / measurement guides (2026-09-16)
+
+- AEO支援会社の選び方｜回答エンジン最適化で見るべき比較軸: https://trillion-bank.jp/trillionbank/news/aeo-support-company/
+- AIブランド可視性ツールの選び方｜チェックすべき機能: https://trillion-bank.jp/trillionbank/news/ai-brand-visibility-tool/
+- AI検索の競合分析のやり方｜質問単位のWin/Lossで見る: https://trillion-bank.jp/trillionbank/news/ai-search-competitor-analysis/
+- AI検索から問い合わせにつなげる導線設計｜未着手企業向け: https://trillion-bank.jp/trillionbank/news/ai-search-inquiry-conversion/
+- AI検索マーケティング支援とは？依頼範囲の切り方と注意点: https://trillion-bank.jp/trillionbank/news/ai-search-marketing-support/
+- AI検索対策会社の選び方｜測定・支援・SEO拡張の3分類で比較する: https://trillion-bank.jp/trillionbank/news/ai-search-optimization-company/
+- AI検索SOVとは？計算の考え方と誤用しやすい点: https://trillion-bank.jp/trillionbank/news/ai-search-sov/
+- 生成AI引用分析とは？見るべき項目と実務手順: https://trillion-bank.jp/trillionbank/news/generative-ai-citation-analysis/
+- GEOコンサルティング会社の選び方｜定義の揺れを踏まえた確認項目: https://trillion-bank.jp/trillionbank/news/geo-consulting-company/
+- LLMO対策会社の選び方｜生成AI検索最適化の依頼範囲を決める: https://trillion-bank.jp/trillionbank/news/llmo-company-selection/
+
+Last reviewed: 2026-09-16
