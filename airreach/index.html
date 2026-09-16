@@ -1,0 +1,315 @@
+---
+title: "AirReach｜AI検索準備度の無料診断 — URLを入れるだけで次の一手が分かる"
+tbdesc: "AirReachは、公開ページの構造・エンティティ・FAQ・発見可能性からAI検索準備度を無料診断します。実AI回答の引用率測定と改善伴走はHackⅡへ接続します。掲載や問い合わせ増を保証するものではありません。"
+keywords: "AirReach,AIO計測,AI検索診断,AEO,GEO,LLMO,HackⅡ,無料診断"
+ai_summary: "AirReachはURL入力で公開ページのAI検索準備度を算出する無料診断。モデル別の実引用率はHackⅡ測定。期間限定の伴走モニター枠へ導線。"
+og_image: /images/hero/tb-logo-color.webp
+permalink: /airreach/
+---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+{% include tb-head.html %}
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<style>
+:root{
+  --ar-ink:#0f172a; --ar-muted:#64748b; --ar-line:#e2e8f0; --ar-bg:#f8fafc;
+  --ar-blue:#2563eb; --ar-blue2:#0ea5e9; --ar-grad:linear-gradient(135deg,#1d4ed8 0%,#0284c7 55%,#06b6d4 100%);
+  --ar-ok:#059669; --ar-warn:#d97706; --ar-bad:#dc2626; --ar-radius:16px;
+}
+.ar-page{color:var(--ar-ink);background:#fff}
+.ar-wrap{width:min(1120px,calc(100% - 40px));margin:0 auto}
+.ar-hero{position:relative;padding:clamp(72px,12vw,120px) 0 clamp(48px,8vw,72px);overflow:hidden;background:
+  radial-gradient(1200px 480px at 80% -10%,rgba(37,99,235,.16),transparent 60%),
+  radial-gradient(900px 420px at 0% 20%,rgba(6,182,212,.12),transparent 55%),
+  linear-gradient(180deg,#f8fbff 0%,#fff 70%)}
+.ar-hero::after{content:"";position:absolute;inset:auto 0 0 0;height:1px;background:var(--ar-line)}
+.ar-badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono,ui-monospace,monospace);font-size:.68rem;letter-spacing:.16em;color:var(--ar-blue);font-weight:700;margin-bottom:18px}
+.ar-badge i{width:8px;height:8px;border-radius:50%;background:var(--ar-grad);display:inline-block}
+.ar-hero h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.15;letter-spacing:-.03em;margin:0 0 18px;font-weight:800;max-width:16em}
+.ar-hero h1 em{font-style:normal;background:var(--ar-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ar-lead{font-size:clamp(.95rem,1.3vw,1.08rem);color:var(--ar-muted);line-height:1.85;max-width:40em;margin:0 0 28px}
+.ar-offer{display:inline-flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
+.ar-chip{font-size:.78rem;font-weight:600;padding:8px 12px;border-radius:999px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.ar-urlbox{display:flex;gap:8px;padding:8px;background:#fff;border:1px solid var(--ar-line);border-radius:14px;box-shadow:0 18px 50px rgba(15,23,42,.06);max-width:640px}
+.ar-urlbox input{flex:1;border:0;outline:0;font:inherit;padding:14px 16px;min-width:0;background:transparent}
+.ar-urlbox button{border:0;border-radius:10px;padding:14px 22px;font-weight:700;color:#fff;background:var(--ar-grad);cursor:pointer;white-space:nowrap}
+.ar-urlbox button:disabled{opacity:.55;cursor:wait}
+.ar-note{margin-top:14px;font-size:.78rem;color:var(--ar-muted);line-height:1.7;max-width:42em}
+.ar-sec{padding:clamp(56px,8vw,96px) 0}
+.ar-sec--alt{background:var(--ar-bg)}
+.ar-kicker{font-family:var(--mono,ui-monospace,monospace);font-size:.68rem;letter-spacing:.18em;color:var(--ar-blue);margin-bottom:10px}
+.ar-h2{font-size:clamp(1.4rem,3vw,2rem);margin:0 0 12px;letter-spacing:-.02em;font-weight:800}
+.ar-sub{color:var(--ar-muted);line-height:1.8;max-width:40em;margin:0 0 32px}
+.ar-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:860px){.ar-grid3{grid-template-columns:1fr}.ar-urlbox{flex-direction:column}}
+.ar-card{background:#fff;border:1px solid var(--ar-line);border-radius:var(--ar-radius);padding:24px}
+.ar-card h3{margin:0 0 8px;font-size:1.05rem}
+.ar-card p{margin:0;color:var(--ar-muted);font-size:.9rem;line-height:1.75}
+.ar-dash{display:none;margin-top:28px}
+.ar-dash.is-on{display:block}
+.ar-score-row{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:stretch}
+@media(max-width:860px){.ar-score-row{grid-template-columns:1fr}}
+.ar-score{background:#0b1220;color:#fff;border-radius:var(--ar-radius);padding:28px;display:flex;flex-direction:column;justify-content:center;min-height:220px}
+.ar-score .label{font-size:.72rem;letter-spacing:.14em;opacity:.7;margin-bottom:8px}
+.ar-score .num{font-size:clamp(3rem,8vw,4.4rem);font-weight:800;line-height:1;letter-spacing:-.04em}
+.ar-score .num span{font-size:1rem;font-weight:600;opacity:.65;margin-left:6px}
+.ar-score .hint{margin-top:12px;font-size:.82rem;opacity:.78;line-height:1.6}
+.ar-meters{display:grid;gap:12px}
+.ar-meter{background:#fff;border:1px solid var(--ar-line);border-radius:12px;padding:14px 16px}
+.ar-meter .top{display:flex;justify-content:space-between;gap:12px;font-size:.86rem;font-weight:600;margin-bottom:8px}
+.ar-bar{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden}
+.ar-bar > i{display:block;height:100%;background:var(--ar-grad);width:0;transition:width .8s ease}
+.ar-models{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:18px}
+@media(max-width:900px){.ar-models{grid-template-columns:1fr 1fr}}
+.ar-model{border:1px dashed #cbd5e1;border-radius:12px;padding:14px;background:#fff}
+.ar-model .name{font-size:.82rem;font-weight:700;margin-bottom:6px}
+.ar-model .st{display:inline-block;font-size:.72rem;font-weight:700;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:999px;padding:3px 8px}
+.ar-model .note{margin-top:8px;font-size:.75rem;color:var(--ar-muted);line-height:1.5}
+.ar-sample{margin-top:10px;font-size:.72rem;color:#b45309}
+.ar-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+@media(max-width:860px){.ar-cols{grid-template-columns:1fr}}
+.ar-list{margin:0;padding-left:1.1em;color:var(--ar-muted);font-size:.9rem;line-height:1.7}
+.ar-list li{margin-bottom:6px}
+.ar-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+@media(max-width:900px){.ar-actions{grid-template-columns:1fr}}
+.ar-act{border-radius:var(--ar-radius);border:1px solid var(--ar-line);padding:20px;background:#fff}
+.ar-act .tag{font-size:.68rem;font-weight:800;letter-spacing:.12em;color:var(--ar-blue);margin-bottom:8px}
+.ar-act h3{margin:0 0 10px;font-size:1rem}
+.ar-review{margin-top:18px;background:#0b1220;color:#e2e8f0;border-radius:var(--ar-radius);padding:24px}
+.ar-review h3{margin:0 0 10px;color:#fff}
+.ar-review p{margin:0 0 12px;line-height:1.75;font-size:.92rem}
+.ar-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.ar-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;border-radius:10px;font-weight:700;text-decoration:none;border:1px solid transparent}
+.ar-btn-primary{background:var(--ar-grad);color:#fff}
+.ar-btn-line{background:#fff;border-color:var(--ar-line);color:var(--ar-ink)}
+.ar-error{display:none;margin-top:14px;padding:12px 14px;border-radius:10px;background:#fef2f2;color:#991b1b;font-size:.88rem}
+.ar-error.is-on{display:block}
+.ar-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:900px){.ar-flow{grid-template-columns:1fr 1fr}}
+.ar-flow .ar-card{min-height:140px}
+.ar-footnote{font-size:.78rem;color:var(--ar-muted);line-height:1.7;margin-top:18px}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "AirReach",
+  "url": "https://trillion-bank.jp/airreach/",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "description": "公開ページのAI検索準備度をURL入力で診断する無料ツール。実AI回答の引用率測定はHackⅡへ接続。",
+  "provider": {"@id": "https://trillion-bank.jp/#organization"},
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}
+}
+</script>
+</head>
+<body class="ar-page">
+{% include tb-header.html %}
+<main id="main">
+  <section class="ar-hero">
+    <div class="ar-wrap">
+      <div class="ar-badge"><i aria-hidden="true"></i> AIRREACH · AIO READY CHECK</div>
+      <h1>URLを入れるだけで、<br><em>AI検索の準備度</em>が分かる。</h1>
+      <p class="ar-lead">AirReachは、公開ページの構造・エンティティ・FAQ・発見可能性から「AIに読まれやすいか」を無料診断します。Google AI Overviews / Gemini / ChatGPT / Claude などの<strong>実回答の引用率・出現率</strong>はHackⅡで測定し、改善の伴走につなげます。</p>
+      <div class="ar-offer" aria-label="特別オファー">
+        <span class="ar-chip">期間限定 · 伴走モニター枠</span>
+        <span class="ar-chip">価格は個別案内（本ページでは非表示）</span>
+        <span class="ar-chip">測定 → 施策 → 再計測まで伴走</span>
+      </div>
+      <form id="ar-form" class="ar-urlbox" action="#" method="get">
+        <label class="visually-hidden" for="ar-url">診断するサイトURL</label>
+        <input id="ar-url" name="url" type="url" inputmode="url" autocomplete="url" placeholder="https://example.com/" required>
+        <button id="ar-run" type="submit">無料で診断する</button>
+      </form>
+      <p class="ar-note">APIキー不要。ブラウザ上で公開HTML / llms.txt / robots.txt のシグナルを評価します。サイト側の制限で取得できない場合は、お問い合わせから手動診断へ切り替えられます。</p>
+      <div id="ar-error" class="ar-error" role="alert"></div>
+    </div>
+  </section>
+
+  <section class="ar-sec" id="result">
+    <div class="ar-wrap">
+      <div class="ar-kicker">DASHBOARD</div>
+      <h2 class="ar-h2">診断ダッシュボード</h2>
+      <p class="ar-sub">総合スコアは「AI施策の完成度（公開ページ準備度）」です。モデル別の数値枠は、実測が必要な項目として明示します。</p>
+
+      <div id="ar-empty" class="ar-card">
+        <h3>まだ診断前です</h3>
+        <p>上の欄に自社サイトURLを入力すると、ここにスコア・ギャップ・次の一手が表示されます。まずは自社ドメインで試してください。</p>
+      </div>
+
+      <div id="ar-dash" class="ar-dash" aria-live="polite">
+        <div class="ar-score-row">
+          <div class="ar-score">
+            <div class="label">総合スコア · AI施策の完成度</div>
+            <div class="num" id="ar-overall">0<span>/100</span></div>
+            <div class="hint" id="ar-overall-hint">準備度の自動評価</div>
+          </div>
+          <div class="ar-meters">
+            <div class="ar-meter"><div class="top"><span>構造・読みやすさ</span><span id="ar-s-structure">0</span></div><div class="ar-bar"><i id="ar-b-structure"></i></div></div>
+            <div class="ar-meter"><div class="top"><span>エンティティ（組織情報）</span><span id="ar-s-entity">0</span></div><div class="ar-bar"><i id="ar-b-entity"></i></div></div>
+            <div class="ar-meter"><div class="top"><span>FAQ / 回答しやすさ</span><span id="ar-s-faq">0</span></div><div class="ar-bar"><i id="ar-b-faq"></i></div></div>
+            <div class="ar-meter"><div class="top"><span>発見可能性（llms / robots）</span><span id="ar-s-discover">0</span></div><div class="ar-bar"><i id="ar-b-discover"></i></div></div>
+          </div>
+        </div>
+
+        <p class="ar-sample">SAMPLE / 要HackⅡ測定 — 以下のモデル別枠は実AI回答の引用スコアではありません。</p>
+        <div class="ar-models" id="ar-models"></div>
+
+        <div class="ar-cols">
+          <div class="ar-card">
+            <h3>AIが評価していそうな点</h3>
+            <ul class="ar-list" id="ar-strengths"></ul>
+          </div>
+          <div class="ar-card">
+            <h3>まだ弱い / 見つからない点</h3>
+            <ul class="ar-list" id="ar-gaps"></ul>
+          </div>
+        </div>
+
+        <div class="ar-actions" aria-label="今後の施策3分類">
+          <div class="ar-act"><div class="tag">01 · NOW</div><h3>今すぐ直す</h3><ul class="ar-list" id="ar-now"></ul></div>
+          <div class="ar-act"><div class="tag">02 · 2 WEEKS</div><h3>2週間で整える</h3><ul class="ar-list" id="ar-weeks"></ul></div>
+          <div class="ar-act"><div class="tag">03 · PARTNER</div><h3>伴走・丸投げ相談</h3><ul class="ar-list" id="ar-partner"></ul></div>
+        </div>
+
+        <div class="ar-review">
+          <h3>AIレビュー（自動生成）</h3>
+          <p id="ar-review-summary"></p>
+          <p id="ar-review-conv"></p>
+          <p id="ar-review-disc" style="opacity:.75;font-size:.82rem"></p>
+          <div class="ar-cta">
+            <a class="ar-btn ar-btn-primary" id="ar-cta-meet" href="/trillionbank/meeting/?type=company&from=airreach">詳細測定と伴走を相談する</a>
+            <a class="ar-btn ar-btn-line" id="ar-cta-form" href="{{ site.data.contact.form_url }}" target="_blank" rel="noopener noreferrer">フォームで問い合わせる</a>
+            <a class="ar-btn ar-btn-line" href="/trillionbank/business/hack2/">HackⅡの説明を見る</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ar-sec ar-sec--alt">
+    <div class="ar-wrap">
+      <div class="ar-kicker">WHY NOW</div>
+      <h2 class="ar-h2">AI回答に出ないと、比較の土俵に乗れない。</h2>
+      <p class="ar-sub">ローカル検索では、AI Overviewが表示された結果ページの活動継続率が21秒で約41.9%まで低下するという観測もあります（米国セッション、ページ全体の継続率）。候補に入り、地図・公式情報で確認される流れを一体で設計する必要があります。</p>
+      <p class="ar-footnote">出典: ClickStream Solutions / Surfer SEO（約846,000の米国Google検索セッション、2024年2–3月）。AIO単体ではなく結果ページ全体の継続率。掲載保証を意味しません。</p>
+      <div class="ar-grid3" style="margin-top:28px">
+        <div class="ar-card"><h3>測る</h3><p>準備度（AirReach）と、実AI回答の言及・引用・推薦（HackⅡ）を分けて扱います。</p></div>
+        <div class="ar-card"><h3>直す</h3><p>定義・FAQ・比較軸・エンティティなど、引用されやすい一次情報を優先して整えます。</p></div>
+        <div class="ar-card"><h3>任せる</h3><p>期間限定の伴走モニター枠で、測定から改善優先度、実装相談までTrillion Bankが伴走します。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ar-sec">
+    <div class="ar-wrap">
+      <div class="ar-kicker">FLOW</div>
+      <h2 class="ar-h2">無料診断から伴走までの流れ</h2>
+      <div class="ar-flow">
+        <div class="ar-card"><h3>1. URL診断</h3><p>AirReachで準備度とギャップを可視化。</p></div>
+        <div class="ar-card"><h3>2. 実測相談</h3><p>HackⅡでモデル別の言及・引用・競合差を測定。</p></div>
+        <div class="ar-card"><h3>3. 施策3分類</h3><p>今すぐ / 2週間 / 伴走で任せる、に分解。</p></div>
+        <div class="ar-card"><h3>4. 再計測</h3><p>直したあと同条件で差分を確認。</p></div>
+      </div>
+      <div class="ar-cta" style="margin-top:28px">
+        <a class="ar-btn ar-btn-primary" href="#ar-form">もう一度URLを診断する</a>
+        <a class="ar-btn ar-btn-line" href="/trillionbank/meeting/?type=company&from=airreach-offer">特別オファーの内容を聞く</a>
+      </div>
+      <p class="ar-footnote">AirReachは無料の準備度診断です。HackⅡは限定商用検証・導入相談受付。AI回答への掲載、順位、流入、問い合わせ、売上を保証するものではありません。顧客名・料金の公開は行いません。</p>
+    </div>
+  </section>
+</main>
+{% include tb-footer.html %}
+<style>.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
+<script src="{{ '/assets/js/airreach-diagnose.js' | relative_url }}" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var form = document.getElementById('ar-form');
+  var input = document.getElementById('ar-url');
+  var btn = document.getElementById('ar-run');
+  var err = document.getElementById('ar-error');
+  var empty = document.getElementById('ar-empty');
+  var dash = document.getElementById('ar-dash');
+
+  function showError(msg) {
+    err.textContent = msg;
+    err.classList.add('is-on');
+  }
+  function clearError() {
+    err.textContent = '';
+    err.classList.remove('is-on');
+  }
+  function setMeter(id, val) {
+    document.getElementById('ar-s-' + id).textContent = val;
+    document.getElementById('ar-b-' + id).style.width = val + '%';
+  }
+  function fillList(id, items) {
+    var ul = document.getElementById(id);
+    ul.innerHTML = '';
+    (items || []).forEach(function (t) {
+      var li = document.createElement('li');
+      li.textContent = t;
+      ul.appendChild(li);
+    });
+  }
+  function render(result, url) {
+    empty.style.display = 'none';
+    dash.classList.add('is-on');
+    document.getElementById('ar-overall').innerHTML = result.overall + '<span>/100</span>';
+    document.getElementById('ar-overall-hint').textContent = result.page.title ? ('診断対象: ' + result.page.title) : '診断完了';
+    setMeter('structure', result.structure);
+    setMeter('entity', result.entity);
+    setMeter('faq', result.faq);
+    setMeter('discover', result.discover);
+    var models = document.getElementById('ar-models');
+    models.innerHTML = '';
+    result.modelPlaceholders.forEach(function (m) {
+      var d = document.createElement('div');
+      d.className = 'ar-model';
+      d.innerHTML = '<div class="name"></div><div class="st"></div><div class="note"></div>';
+      d.querySelector('.name').textContent = m.name;
+      d.querySelector('.st').textContent = m.status;
+      d.querySelector('.note').textContent = m.note;
+      models.appendChild(d);
+    });
+    fillList('ar-strengths', result.strengths);
+    fillList('ar-gaps', result.gaps);
+    fillList('ar-now', result.actions.now);
+    fillList('ar-weeks', result.actions.weeks);
+    fillList('ar-partner', result.actions.partner);
+    document.getElementById('ar-review-summary').textContent = result.review.summary;
+    document.getElementById('ar-review-conv').textContent = result.review.conversionHint;
+    document.getElementById('ar-review-disc').textContent = result.review.disclaimer;
+    var q = 'AirReach診断URL=' + encodeURIComponent(url) + '&score=' + result.overall;
+    document.getElementById('ar-cta-meet').href = '/trillionbank/meeting/?type=company&from=airreach&' + q;
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    clearError();
+    if (!window.AirReach) { showError('診断スクリプトの読み込みに失敗しました。'); return; }
+    var url = input.value;
+    btn.disabled = true;
+    btn.textContent = '診断中…';
+    window.AirReach.diagnose(url).then(function (result) {
+      render(result, window.AirReach.normalizeUrl(url).href);
+    }).catch(function (ex) {
+      showError((ex && ex.message) ? ex.message + ' 取得できない場合はフォームからURLを送ってください。' : '診断に失敗しました。');
+    }).finally(function () {
+      btn.disabled = false;
+      btn.textContent = '無料で診断する';
+    });
+  });
+
+  var params = new URLSearchParams(location.search);
+  if (params.get('url')) {
+    input.value = params.get('url');
+    form.dispatchEvent(new Event('submit'));
+  }
+});
+</script>
+</body>
+</html>

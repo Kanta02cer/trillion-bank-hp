@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="index, follow">
+  <meta name="robots" content="noindex, follow">
   <meta http-equiv="refresh" content="0; url={{ page.redirect_to }}">
   <link rel="canonical" href="{{ page.redirect_to }}">
-  <title>ページを統合しました | 株式会社Trillion Bank</title>
+  <title>ページを移動しました | 株式会社Trillion Bank</title>
 </head>
 <body>
-  <p>この記事は正規ページへ統合しました。<a href="{{ page.redirect_to }}">移動しない場合はこちら</a>をご覧ください。</p>
+  <p>このページは正規URLへ移動しました。<a href="{{ page.redirect_to }}">移動しない場合はこちら</a>をご覧ください。</p>
   <script>location.replace({{ page.redirect_to | jsonify }});</script>
 </body>
 </html>
