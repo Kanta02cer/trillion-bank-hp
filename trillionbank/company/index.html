@@ -15,6 +15,20 @@ permalink: /trillionbank/company/
   ]
 }
 </script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "https://trillion-bank.jp/trillionbank/company/#faq",
+  "mainEntity": [
+    {"@type":"Question","name":"Trillion Bankは何の会社ですか？","acceptedAnswer":{"@type":"Answer","text":"AI検索とAIエージェント時代の情報流通を、測定・証跡・運用へ変えるテクノロジー企業です。銀行業を営む会社ではありません。"}},
+    {"@type":"Question","name":"主なサービスは何ですか？","acceptedAnswer":{"@type":"Answer","text":"HackⅡ（AI検索測定・導入相談）と、Adctor / Pay per Crawl（研究開発・PoC）です。"}},
+    {"@type":"Question","name":"どこに問い合わせればよいですか？","acceptedAnswer":{"@type":"Answer","text":"お問い合わせフォーム（https://trillion-bank.jp/trillionbank/contact/）からご連絡ください。"}}
+  ]
+}
+</script>
+
 </head>
 <body>{% include tb-header.html %}
 <main id="main">
@@ -55,4 +69,26 @@ permalink: /trillionbank/company/
   <a class="btn btn-line" href="{{ '/trillionbank/contact/' | relative_url }}#form" data-event="contact_page_open" data-inquiry="company" data-cta="company_contact_form">お問い合わせフォームへ <span class="a" aria-hidden="true">→</span></a>
 </div>
 </div></section>
-</main>{% include tb-footer.html %}</body></html>
+</main>
+<section class="sec" id="company-faq" aria-labelledby="company-faq-heading">
+  <div class="wrap">
+    <p class="sl">FAQ</p>
+    <h2 class="bh" id="company-faq-heading">よくある質問</h2>
+    <div class="home-faq" style="max-width:46em">
+      <details open>
+        <summary>Trillion Bankは何の会社ですか？</summary>
+        <p style="color:var(--muted);line-height:1.85;margin-top:10px">AI検索とAIエージェント時代の情報流通を、測定・証跡・運用へ変えるテクノロジー企業です。銀行業を営む会社ではありません。</p>
+      </details>
+      <details>
+        <summary>主なサービスは何ですか？</summary>
+        <p style="color:var(--muted);line-height:1.85;margin-top:10px">HackⅡ（AI検索測定・導入相談）と、Adctor / Pay per Crawl（研究開発・PoC）です。</p>
+      </details>
+      <details>
+        <summary>どこに問い合わせればよいですか？</summary>
+        <p style="color:var(--muted);line-height:1.85;margin-top:10px">お問い合わせフォーム（https://trillion-bank.jp/trillionbank/contact/）からご連絡ください。</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+{% include tb-footer.html %}</body></html>

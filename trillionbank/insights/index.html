@@ -21,4 +21,11 @@ robots: index, follow, max-snippet:-1, max-image-preview:large
 <li><a href="/trillionbank/news/partner-co-sell-process/">共同提案の進め方</a></li>
 <li><a href="/trillionbank/news/partner-who-fits/">向いている業者の特徴</a></li>
 <li><a href="/trillionbank/guide/agency-co-proposal/">共同提案設計ガイド</a></li>
+</ul></article>
+<article class="ins-cluster"><span class="en">06</span><h2>会社選定・測定指標</h2><p>AI検索対策会社やGEO/AEO/LLMO支援を比較する前に、測定・SOV・引用分析の見方を整えます。</p><ul class="ins-cl-links">
+<li><a href="/trillionbank/news/ai-search-optimization-company/">AI検索対策会社の選び方</a></li>
+<li><a href="/trillionbank/news/geo-consulting-company/">GEOコンサル会社の選び方</a></li>
+<li><a href="/trillionbank/news/aeo-support-company/">AEO支援会社の選び方</a></li>
+<li><a href="/trillionbank/news/ai-search-sov/">AI検索SOVとは</a></li>
+<li><a href="/trillionbank/news/generative-ai-citation-analysis/">生成AI引用分析</a></li>
 </ul></article></div></div></section><section class="sec" style="background:var(--surface,#f8fafc)"><div class="wrap"><div class="khead"><span class="no">REVIEWED ARTICLES</span><h2>最新の実務解説</h2></div><div class="ins-list">{% assign insights = site.tbnews | where: 'insight', true | sort: 'date' | reverse %}{% for item in insights %}<a class="ins-item" href="{{ item.url }}"><span class="meta">{{ item.date | date:'%Y.%m.%d' }} / {{ item.category }}</span><h2>{{ item.title }}</h2><p>{{ item.tbdesc | default: item.excerpt_text | truncate: 120 }}</p><span style="color:var(--blue-600);font-weight:700">読む →</span></a>{% endfor %}</div>{% if insights.size == 0 %}<p>公開準備中です。</p>{% endif %}</div></section><section class="sec"><div class="wrap"><h2>自社のAI検索上の現在地を確認する</h2><p style="max-width:700px;color:var(--muted);line-height:1.8">記事の一般論だけでは判断しにくい場合、対象サイト、重要質問、競合を共有いただき、HackⅡが適する課題かを確認します。</p><div style="margin-top:22px;display:flex;gap:14px;flex-wrap:wrap"><a class="btn btn-primary" href="/trillionbank/meeting/?type=company">AI検索の現在地を相談する <span class="a">→</span></a><a class="btn btn-line" href="/trillionbank/meeting/?type=agency">共同提案を相談する <span class="a">→</span></a></div></div></section></main>{% include tb-footer-safe.html %}</body></html>

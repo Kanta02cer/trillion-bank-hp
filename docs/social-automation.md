@@ -44,3 +44,23 @@ Repository secrets:
 - 成果保証・最上級表現は拒否
 - CTA（お問い合わせ）必須
 - 同一 keyword × article の再投稿は state で抑制
+
+
+## Secrets 設定手順（X）
+
+1. [X Developer Portal](https://developer.x.com/) でプロジェクト／アプリを作成
+2. アプリ権限を **Read and write** にする
+3. API Key / API Secret / Access Token / Access Token Secret を発行
+4. ローカルで（値はチャットやgitに書かない）:
+
+```bash
+export X_API_KEY='...'
+export X_API_SECRET='...'
+export X_ACCESS_TOKEN='...'
+export X_ACCESS_TOKEN_SECRET='...'
+chmod +x scripts/social/setup_x_secrets.sh
+./scripts/social/setup_x_secrets.sh
+```
+
+5. GitHub Actions で `Social draft generation` を `generate` → `x-dry-run` の順に実行
+6. note は `ops/social-publisher/outbox/` の `.note.md` を確認して手動公開

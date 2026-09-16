@@ -5,7 +5,7 @@ layout: null
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   {% assign reviewed_insights = site.tbnews | where: 'insight', true | sort: 'date' | reverse %}
-  {% for post in reviewed_insights limit: 50 %}
+  {% for post in reviewed_insights %}
   <url>
     <loc>{{ site.url }}{{ post.url }}</loc>
     <news:news>

@@ -282,6 +282,57 @@ defaults:
     values:
       robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
 
+  - scope:
+      path: "_tbnews/2026-09-16-aeo-support-company.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-16-ai-brand-visibility-tool.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-16-ai-search-competitor-analysis.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-16-ai-search-inquiry-conversion.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-16-ai-search-marketing-support.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-16-ai-search-optimization-company.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-16-ai-search-sov.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-16-generative-ai-citation-analysis.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-16-geo-consulting-company.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-16-llmo-company-selection.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+
 jekyll:
   environment: production
 
