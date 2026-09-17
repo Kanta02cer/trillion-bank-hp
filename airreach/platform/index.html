@@ -38,7 +38,25 @@ robots: "noindex, follow"
 
 <section class="arp-section" id="simulator">
   <div class="arp-wrap">
-    <div class="arp-section-head"><div><div class="arp-eyebrow">GROWTH IMPACT SIMULATOR</div><h2>「いくら払うと、問い合わせがどれくらい増える可能性があるか」を試算</h2><p>現在の月間アクセス・問い合わせと、改善率の仮定を入力してください。低位・基準・高位の3シナリオで表示します。</p></div><button id="arp-demo" class="arp-btn arp-secondary" type="button">サンプル値</button></div>
+    <div class="arp-section-head"><div><div class="arp-eyebrow">GROWTH IMPACT SIMULATOR</div><h2>「いくら払うと、問い合わせがどれくらい増える可能性があるか」を試算</h2><p>可能な限りGSC/GA4の<strong>Official実数</strong>を基準にし、改善率だけを仮定（Inferred）で置きます。成果は保証しません。</p></div><button id="arp-demo" class="arp-btn arp-secondary" type="button">サンプル値</button></div>
+
+    <div class="arp-card arp-import-card">
+      <div class="arp-import-head">
+        <div>
+          <h3>実数ベースライン（Official）</h3>
+          <p class="arp-help">Search Console / GA4のCSVを取り込むと、キーワード別の表示・クリック・CTR・順位と、月次換算の訪問基準を自動入力します。ブラウザ内のみで処理します。</p>
+        </div>
+        <span class="arp-chip arp-chip-official">Official first</span>
+      </div>
+      <div class="arp-form-grid arp-import-grid">
+        <label>CSVの期間（日）<input id="arp-period-days" type="number" min="1" max="366" value="28"></label>
+        <label>GSC Performance CSV<input id="arp-gsc-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values"></label>
+        <label>GA4 CSV（任意）<input id="arp-ga4-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values"></label>
+        <label>&nbsp;<button id="arp-load-studio" class="arp-btn arp-secondary" type="button" style="width:100%">Studio計測を読み込む</button></label>
+      </div>
+      <p class="arp-import-status" id="arp-import-status">未取込。手入力でも試算できます（その場合は User Input）。</p>
+      <p class="arp-help" id="arp-baseline-badge">基準値: User Input（手入力）</p>
+    </div>
 
     <div class="arp-sim-grid">
       <div class="arp-card arp-input-card">
@@ -63,7 +81,7 @@ robots: "noindex, follow"
       </div>
 
       <div class="arp-card arp-result-card">
-        <div class="arp-result-top"><div><div class="arp-mini-label">BASE CASE</div><h3>改善後の推定インパクト</h3></div><span class="arp-chip">条件付き試算</span></div>
+        <div class="arp-result-top"><div><div class="arp-mini-label">BASE CASE</div><h3>改善後の推定インパクト</h3></div><span class="arp-chip" id="arp-result-chip">条件付き試算 · Inferred</span></div>
         <div class="arp-big-kpis">
           <div><small>追加訪問者 / 月</small><strong id="arp-extra-visitors">+0</strong></div>
           <div><small>追加問い合わせ / 月</small><strong id="arp-extra-inquiries">+0</strong></div>
@@ -74,6 +92,33 @@ robots: "noindex, follow"
         <div class="arp-roi" id="arp-roi-box"><span>投資対効果の参考</span><strong id="arp-roi">-</strong><small id="arp-roi-note">受注率・平均受注額・粗利率を入力すると表示します。</small></div>
         <p class="arp-disclaimer">* 売上・粗利は受注率、平均受注額、粗利率が入力されている場合のみ参考表示します。因果効果ではなくシナリオ計算です。</p>
       </div>
+    </div>
+
+    <div class="arp-card arp-kw-card" id="arp-kw-section" hidden style="margin-top:18px">
+      <div class="arp-import-head">
+        <div>
+          <h3>キーワード別 Official 実数</h3>
+          <p class="arp-help" id="arp-kw-meta"></p>
+        </div>
+      </div>
+      <div class="arp-scenario-table-wrap">
+        <table class="arp-scenario-table">
+          <thead>
+            <tr>
+              <th>Keyword / Page</th>
+              <th>Impr.</th>
+              <th>Clicks</th>
+              <th>CTR</th>
+              <th>Pos.</th>
+              <th>推定+Click</th>
+              <th>推定+Inquiry</th>
+              <th>種別</th>
+            </tr>
+          </thead>
+          <tbody id="arp-kw-body"></tbody>
+        </table>
+      </div>
+      <p class="arp-disclaimer">推定+Click / +Inquiry は CTRギャップ（到達CTR6%仮定）× 入力CVRに基づく Inferred です。Officialの表示・クリック・順位そのものではありません。</p>
     </div>
   </div>
 </section>
@@ -122,6 +167,17 @@ robots: "noindex, follow"
   </div>
 </section>
 
+
+<section class="arp-section" id="capability">
+  <div class="arp-wrap">
+    <div class="arp-section-head"><div><div class="arp-eyebrow">SHIPPED NOW</div><h2>いまデプロイできること / まだできないこと</h2></div></div>
+    <div class="arp-module-grid">
+      <article><span>NOW</span><h3>実数ベース試算</h3><p>GSC/GA4 CSVのOfficial数値を基準に、訪問・問い合わせ増のInferredシナリオを表示。キーワード別の実数テーブル付き。</p></article>
+      <article><span>NOW</span><h3>Studio CSV時系列</h3><p>StudioでGSC/GA4/HackⅡ手計測を端末内保存し、Platformへ読み込み可能。</p></article>
+      <article><span>NEXT</span><h3>OAuthライブ同期</h3><p>APIコードは追加済み。Vercel接続とClient Secret設定後に有効化。</p></article>
+    </div>
+  </div>
+</section>
 <section class="arp-section arp-final">
   <div class="arp-wrap arp-final-inner"><div><div class="arp-eyebrow">NEXT ACTION</div><h2>まずは「自社なら何件増える可能性があるか」から。</h2><p>無料診断 → 条件付き集客シミュレーション → 1つ無料修正 → HackⅡで実装・再計測、という営業導線を想定しています。</p></div><div class="arp-cta-row"><a href="/airreach/" class="arp-btn arp-primary">無料診断を試す</a><a href="/trillionbank/meeting/" class="arp-btn arp-secondary">商談で一緒に確認する</a></div></div>
 </section>

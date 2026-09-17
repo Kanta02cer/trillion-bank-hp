@@ -41,11 +41,13 @@ products:
 
   airreach:
     name: "AirReach"
-    status: "無料のAI検索準備度診断（公開ページ）"
-    public_definition: "公開ページのHTML・構造化データ・llms.txt・robotsなどのシグナルからAI検索準備度を算出する無料診断。実AI回答の引用率・出現率の測定はHackⅡへ接続する。"
+    status: "無料診断・Platform集客試算・Studio改善ワークベンチ（CSV実数対応）。OAuthライブ同期とHackⅡ自動測定は導入連携。"
+    public_definition: "公開ページ診断に加え、Search Console / GA4のCSV実数を基準にした集客インパクト試算、キーワード別指標、対策ファイル生成（Studio）を提供するAIO計測総合プラットフォーム。シミュレーションは仮定に基づく参考値。実AI横断測定はHackⅡ。"
     limitations:
       - "ChatGPT・Gemini・Claude・AI Overviewsなどの実回答引用率を本ツール単体では取得しない"
-      - "AI回答への掲載、順位、流入、問い合わせ、売上を保証しない"
+      - "表示の追加訪問・追加問い合わせ・ROIは仮定に基づく参考シミュレーションであり、掲載・順位・流入・問い合わせ・売上を保証しない"
+      - "GSC/GA4のCSV実数はブラウザ内で処理する。OAuthライブ同期は接続設定後に有効化する"
+      - "生成ファイルは下書きであり自動公開しない"
       - "サイト側の取得制限により診断できない場合がある"
   adctor:
     name: "Adctor"
