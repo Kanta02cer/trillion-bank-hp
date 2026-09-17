@@ -1,3 +1,5 @@
+# AirReach Growth / OS layers — Issue #24 + product brush-up
+
 # AirReach Growth layers — backend contract (Issue #24)
 
 Public site ships client-side P0–P3 surfaces. Live OAuth and HackⅡ execution stay off the static site until credentials and contracts are approved.
@@ -28,3 +30,15 @@ Public site ships client-side P0–P3 surfaces. Live OAuth and HackⅡ execution
 - No fake live AI citation rates
 - No guaranteed CV / revenue claims
 - No auto-publish
+
+
+## Free OS surface (shipped on Jekyll)
+
+- AI Understanding Map (measured from public HTML)
+- Search Foundation checks (noindex/canonical/robots/schema)
+- Decision Coverage (query bank vs page coverage, displayed /100)
+- Citation Gap + NEXT 3 ACTIONS
+- 1 FREE FIX (rule/template; no server LLM)
+- GSC CSV + AI hand log remain for numeric replacement
+- Live ChatGPT/Gemini rates still require HackⅡ
+- Vercel/Next.js migration is planned separately when project credentials are available

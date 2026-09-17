@@ -1,6 +1,6 @@
 /**
- * AIO Agent (AirReach) — free Growth Report from public page signals.
- * Estimates are labeled. Does NOT claim live AI citation rates.
+ * AirReach — measure if AI can select you, find why not, fix one thing.
+ * Page signals are measured. Live AI citation rates require HackⅡ / hand log.
  */
 (function () {
   'use strict';
@@ -550,6 +550,9 @@
       emitProgress(onProgress, 'score', 'running', '準備度スコアを算出しています');
       var result = analyze(page, llmsText, robotsText, url.href);
       result.evidence = buildEvidence(page, llmsText, robotsText);
+      if (window.AirReachOS && typeof window.AirReachOS.enrichResult === 'function') {
+        result = window.AirReachOS.enrichResult(result, page, robotsText, url.href);
+      }
       result.measurementProgress = buildMeasurementProgress(result, {});
       emitProgress(onProgress, 'score', 'done', '総合 ' + result.overall + '点（公開ページ実測）');
       emitProgress(onProgress, 'themes', 'running', '対策テーマを選定しています');
