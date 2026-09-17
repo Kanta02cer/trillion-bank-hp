@@ -368,9 +368,14 @@
         if (prev.ga4) gsc.ga4 = prev.ga4;
         saveBaseline(gsc);
         applyBaselineToForm(gsc);
+        if (window.AirReachHandoff) {
+          var seedGsc = window.AirReachHandoff.buildSimulatorSeed();
+          if (q('arp-traffic-uplift')) q('arp-traffic-uplift').value = seedGsc.trafficUpliftPct;
+          if (q('arp-cvr-uplift')) q('arp-cvr-uplift').value = seedGsc.cvrUpliftPct;
+        }
         setStatus(
           'Official取込完了: ' + gsc.keywords.length + 'キーワード · 月次換算クリック ' +
-          count(gsc.monthlyClicks),
+          count(gsc.monthlyClicks) + ' · 自動再計算済み',
           'good'
         );
         render();
@@ -401,9 +406,14 @@
         if (!baseline.source) baseline.source = 'GA4 CSV';
         saveBaseline(baseline);
         applyBaselineToForm(baseline);
+        if (window.AirReachHandoff) {
+          var seedGa = window.AirReachHandoff.buildSimulatorSeed();
+          if (q('arp-traffic-uplift')) q('arp-traffic-uplift').value = seedGa.trafficUpliftPct;
+          if (q('arp-cvr-uplift')) q('arp-cvr-uplift').value = seedGa.cvrUpliftPct;
+        }
         setStatus(
           'Official GA4取込: sessions ' + count(ga4.monthlySessions) +
-          ' / key events ' + count(ga4.monthlyKeyEvents) + '（月次換算）',
+          ' / key events ' + count(ga4.monthlyKeyEvents) + '（月次換算）· 自動再計算済み',
           'good'
         );
         render();
@@ -422,7 +432,7 @@
       var el = q(id);
       if (!el) return;
       el.addEventListener('input', function () {
-        if (id === 'arp-inquiries') el.dataset.userTouched = '1';
+        if (id === 'arp-inquiries' || id === 'arp-visitors') el.dataset.userTouched = '1';
         if (id === 'arp-visitors') el.dataset.evidence = 'User Input';
         render();
       });
@@ -471,8 +481,107 @@
       });
     }
 
-    var existing = loadBaseline();
-    if (existing) applyBaselineToForm(existing);
+    function applySeed(seed) {
+      if (!seed) return;
+      if (q('arp-visitors') && !q('arp-visitors').dataset.userTouched) {
+        q('arp-visitors').value = seed.monthlyVisitors;
+        q('arp-visitors').dataset.evidence = seed.sources.visitors;
+      }
+      if (q('arp-inquiries') && !q('arp-inquiries').dataset.userTouched) {
+        q('arp-inquiries').value = seed.monthlyInquiries;
+        q('arp-inquiries').dataset.evidence = seed.sources.inquiries;
+      }
+      if (q('arp-line')) q('arp-line').value = seed.monthlyLine;
+      if (q('arp-fee')) q('arp-fee').value = seed.monthlyFee;
+      if (q('arp-close-rate')) q('arp-close-rate').value = seed.closeRatePct;
+      if (q('arp-order-value')) q('arp-order-value').value = seed.avgDeal;
+      if (q('arp-margin')) q('arp-margin').value = seed.grossMarginPct;
+      if (q('arp-traffic-uplift')) q('arp-traffic-uplift').value = seed.trafficUpliftPct;
+      if (q('arp-cvr-uplift')) q('arp-cvr-uplift').value = seed.cvrUpliftPct;
+    }
+
+    function showHandoffBanner(seed) {
+      var banner = q('arp-handoff-banner');
+      if (!banner) return;
+      var hasHandoff = !!(seed && seed.handoff);
+      var hasOfficial = !!(seed && seed.baseline && (
+        (seed.baseline.monthlyClicks > 0) ||
+        (seed.baseline.ga4 && seed.baseline.ga4.monthlySessions > 0)
+      ));
+      if (!hasHandoff && !hasOfficial) {
+        banner.hidden = true;
+        return;
+      }
+      banner.hidden = false;
+      var title = q('arp-handoff-title');
+      var body = q('arp-handoff-body');
+      var chip = q('arp-auto-chip');
+      if (title) {
+        title.textContent = hasHandoff
+          ? ('無料診断から引き継ぎ · スコア ' + (seed.handoff.overall || '—') + '/100')
+          : 'Official実測を基準に自動計算';
+      }
+      if (body) {
+        var parts = [];
+        if (hasHandoff && seed.handoff.url) parts.push('URL: ' + seed.handoff.url);
+        if (seed.sources) {
+          parts.push('訪問基準: ' + seed.sources.visitors);
+          parts.push('問い合わせ基準: ' + seed.sources.inquiries);
+          parts.push('改善率: ' + seed.sources.uplift +
+            '（訪問 +' + seed.trafficUpliftPct + '% / CVR +' + seed.cvrUpliftPct + '%）');
+        }
+        if (seed.autoReady) {
+          parts.push('GSC/GA4実数があるため、追加訪問・追加問い合わせは入力なしで再計算済みです。');
+        } else {
+          parts.push('訪問・問い合わせは手入力のままです。GSC/GA4 CSVを取り込むと自動入力に切り替わります。');
+        }
+        parts.push('シミュレーション結果は Inferred（成果保証なし）です。');
+        body.textContent = parts.join(' · ');
+      }
+      if (chip) {
+        chip.textContent = seed.autoReady ? 'Auto · Official×Inferred' : 'Diagnose handoff';
+        chip.className = 'arp-chip' + (seed.autoReady ? ' arp-chip-official' : '');
+      }
+    }
+
+    var seed = window.AirReachHandoff
+      ? window.AirReachHandoff.buildSimulatorSeed()
+      : null;
+
+    // Prefer shared handoff seed; fall back to raw baseline only
+    if (seed) {
+      applySeed(seed);
+      showHandoffBanner(seed);
+      if (seed.autoReady) {
+        setStatus(
+          '自動計算: ' + seed.sources.visitors + ' / ' + seed.sources.inquiries +
+          ' · 改善率は診断スコア由来（Inferred）',
+          'good'
+        );
+      } else if (seed.handoff) {
+        setStatus(
+          '診断スコア ' + seed.handoff.overall +
+          ' から改善率を自動設定しました。GSC/GA4 CSVを入れると訪問・問い合わせも自動入力されます。',
+          'good'
+        );
+      }
+    } else {
+      var existing = loadBaseline();
+      if (existing) applyBaselineToForm(existing);
+    }
+
+    // URL params: score override
+    try {
+      var hash = location.hash || '';
+      var qs = hash.indexOf('?') >= 0 ? hash.slice(hash.indexOf('?') + 1) : location.search.replace(/^\?/, '');
+      var params = new URLSearchParams(qs);
+      if (params.get('score') && window.AirReachHandoff) {
+        var lifts = window.AirReachHandoff.liftsFromScore(params.get('score'), 78);
+        if (q('arp-traffic-uplift')) q('arp-traffic-uplift').value = lifts.trafficUpliftPct;
+        if (q('arp-cvr-uplift')) q('arp-cvr-uplift').value = lifts.cvrUpliftPct;
+      }
+    } catch (e) {}
+
     render();
   }
 

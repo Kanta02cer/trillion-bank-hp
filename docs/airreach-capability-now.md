@@ -10,7 +10,8 @@
 | **GA4 CSV → Official sessions / key events baseline** | `/airreach/platform/` | Official | **Shipped this commit** |
 | Studio keyword ledger + file generation | `/airreach/studio/` | User Input / draft | Live |
 | Studio GSC/GA4/HackⅡ CSV/JSON timeseries | `/airreach/studio/` | Official / Observed | Live |
-| Studio → Platform baseline handoff | shared `localStorage` | Official | **Shipped this commit** |
+| Studio → Platform baseline handoff | shared `localStorage` | Official | Shipped |
+| **Diagnose → Simulator handoff** | `/airreach/` → `/airreach/platform/` | Observed score → Inferred uplift; Official GSC/GA4 auto-fill | **Shipped** |
 
 ## Code present, not live until infra
 

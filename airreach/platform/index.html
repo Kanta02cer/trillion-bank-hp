@@ -38,7 +38,17 @@ robots: "noindex, follow"
 
 <section class="arp-section" id="simulator">
   <div class="arp-wrap">
-    <div class="arp-section-head"><div><div class="arp-eyebrow">GROWTH IMPACT SIMULATOR</div><h2>「いくら払うと、問い合わせがどれくらい増える可能性があるか」を試算</h2><p>可能な限りGSC/GA4の<strong>Official実数</strong>を基準にし、改善率だけを仮定（Inferred）で置きます。成果は保証しません。</p></div><button id="arp-demo" class="arp-btn arp-secondary" type="button">サンプル値</button></div>
+    <div class="arp-section-head"><div><div class="arp-eyebrow">GROWTH IMPACT SIMULATOR</div><h2>「いくら払うと、問い合わせがどれくらい増える可能性があるか」を試算</h2><p>無料診断スコアとGSC/GA4の<strong>Official実数</strong>がある場合は自動入力します。改善率は仮定（Inferred）。成果は保証しません。</p></div><button id="arp-demo" class="arp-btn arp-secondary" type="button">サンプル値</button></div>
+
+    <div class="arp-card arp-handoff-banner" id="arp-handoff-banner" hidden>
+      <div class="arp-import-head">
+        <div>
+          <h3 id="arp-handoff-title">無料診断から引き継ぎました</h3>
+          <p class="arp-help" id="arp-handoff-body"></p>
+        </div>
+        <span class="arp-chip" id="arp-auto-chip">Auto</span>
+      </div>
+    </div>
 
     <div class="arp-card arp-import-card">
       <div class="arp-import-head">
@@ -183,6 +193,7 @@ robots: "noindex, follow"
 </section>
 </main>
 {% include tb-footer.html %}
+<script src="/assets/js/airreach-handoff.js" defer></script>
 <script src="/assets/js/airreach-platform.js" defer></script>
 </body>
 </html>
