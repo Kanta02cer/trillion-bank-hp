@@ -1,6 +1,6 @@
 ---
 title: "AirReach｜AI検索準備度を無料診断 - Trillion Bank"
-tbdesc: "公開ページの構造・エンティティ・FAQ・発見可能性からAI検索準備度を無料診断。実AI回答の引用率・出現率の測定はHackⅡへ接続します。"
+tbdesc: "URL診断のあと、自社の訪問・問い合わせを入力して集客インパクトを条件付き試算。成果は保証しません。実AI回答の測定はHackⅡへ。"
 keywords: "AirReach,AI検索,AEO,GEO,準備度診断,HackⅡ,Trillion Bank"
 ai_summary: "AirReachは公開ページのHTML・構造化データ・llms.txt・robotsなどのシグナルからAI検索準備度を算出する無料診断。実AI回答の測定はHackⅡへ接続する。"
 ---
@@ -71,6 +71,25 @@ ai_summary: "AirReachは公開ページのHTML・構造化データ・llms.txt�
 .ar-btn-line:hover{border-color:var(--blue-600,#2563eb)}
 .ar-error{display:none;margin-top:14px;padding:12px 14px;border-radius:8px;background:#f8fafc;border:1px solid var(--border,#e5e7eb);color:#991b1b;font-size:.88rem}
 .ar-error.is-on{display:block}
+
+.ar-impact{margin:22px 0 8px;padding:20px 0 8px;border-top:1px solid var(--border,#e5e7eb)}
+.ar-impact-head{margin-bottom:14px}
+.ar-impact-head h3{margin:0 0 6px;font-size:1.15rem}
+.ar-impact-head p{margin:0;font-size:.88rem;color:var(--muted,#6b7280);line-height:1.65}
+.ar-impact-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+.ar-impact-kpi{border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:14px 16px;background:#fff}
+.ar-impact-kpi .lab{font-size:.72rem;font-weight:700;color:var(--blue-600,#2563eb);margin-bottom:6px}
+.ar-impact-kpi .val{font-size:1.45rem;font-weight:700;letter-spacing:-.02em}
+.ar-impact-kpi .sub{font-size:.78rem;color:var(--muted,#6b7280);margin-top:6px;line-height:1.45}
+.ar-impact-form{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.ar-impact-form label{display:flex;flex-direction:column;gap:4px;font-size:.75rem;color:var(--muted,#6b7280)}
+.ar-impact-form input{border:1px solid var(--border,#e5e7eb);border-radius:8px;padding:10px 12px;font:inherit}
+.ar-impact-opp{margin:12px 0;padding:12px 14px;border-radius:10px;background:var(--surface,#f8fafc);border:1px solid var(--border,#e5e7eb);font-size:.88rem;color:var(--muted,#6b7280);line-height:1.65}
+.ar-impact-table{width:100%;border-collapse:collapse;font-size:.84rem;margin-top:10px}
+.ar-impact-table th,.ar-impact-table td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border,#e5e7eb)}
+.ar-impact-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+@media(max-width:900px){.ar-impact-kpis,.ar-impact-form{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.ar-impact-kpis,.ar-impact-form{grid-template-columns:1fr}}
 @media (prefers-reduced-motion: reduce){
   .ar-bar > i{transition:none}
 }
@@ -121,7 +140,7 @@ ai_summary: "AirReachは公開ページのHTML・構造化データ・llms.txt�
     <div class="ar-wrap">
       <div class="ar-kicker">DASHBOARD</div>
       <h2 class="ar-h2">診断ダッシュボード</h2>
-      <p class="ar-sub">総合スコアは「AI施策の完成度（公開ページ準備度）」です。モデル別の数値枠は、実測が必要な項目として明示します。</p>
+      <p class="ar-sub">営業ではスコア説明より先に、自社の訪問・問い合わせを入れた集客インパクト（参考）を見てください。総合スコアは公開ページの準備度です。</p>
 
       <div id="ar-empty" class="ar-card">
         <h3>まだ診断前です</h3>
@@ -140,6 +159,42 @@ ai_summary: "AirReachは公開ページのHTML・構造化データ・llms.txt�
             <div class="ar-meter"><div class="top"><span>エンティティ（組織情報）</span><span id="ar-s-entity">0</span></div><div class="ar-bar"><i id="ar-b-entity"></i></div></div>
             <div class="ar-meter"><div class="top"><span>FAQ / 回答しやすさ</span><span id="ar-s-faq">0</span></div><div class="ar-bar"><i id="ar-b-faq"></i></div></div>
             <div class="ar-meter"><div class="top"><span>発見可能性（llms / robots）</span><span id="ar-s-discover">0</span></div><div class="ar-bar"><i id="ar-b-discover"></i></div></div>
+          </div>
+        </div>
+
+        <div class="ar-impact" id="ar-impact-panel">
+          <div class="ar-impact-head">
+            <div class="ar-kicker">GROWTH IMPACT · 参考シミュレーション</div>
+            <h3>スコアより先に、「集客がどれくらい変わりそうか」</h3>
+            <p>いまのHP訪問・問い合わせを入れると、改善後の追加訪問・追加問い合わせ・LINEの目安が出ます。売上は任意。成果は保証しません。</p>
+          </div>
+          <div class="ar-impact-opp" id="ar-impact-opp">診断後に、取りこぼしの目安と改善シナリオを表示します。</div>
+          <div class="ar-impact-form" id="ar-impact-form">
+            <label>月間HP訪問者数<input id="ar-imp-visitors" type="number" min="0" step="1" value="5000"></label>
+            <label>月間問い合わせ数<input id="ar-imp-inq" type="number" min="0" step="1" value="50"></label>
+            <label>月間LINE登録数<input id="ar-imp-line" type="number" min="0" step="1" value="20"></label>
+            <label>想定月額（円）<input id="ar-imp-fee" type="number" min="0" step="1000" value="200000"></label>
+            <label>問い合わせ→受注率 %（任意）<input id="ar-imp-close" type="number" min="0" max="100" step="0.1" value="20"></label>
+            <label>平均受注額（任意）<input id="ar-imp-deal" type="number" min="0" step="1000" value="500000"></label>
+          </div>
+          <div class="ar-impact-actions">
+            <button type="button" class="ar-btn ar-btn-primary" id="ar-imp-run" style="border:0;cursor:pointer">この数字で試算する</button>
+            <span class="ar-footnote" id="ar-imp-lift" style="margin:0"></span>
+          </div>
+          <div class="ar-impact-kpis" id="ar-impact-kpis">
+            <div class="ar-impact-kpi"><div class="lab">追加訪問 / 月</div><div class="val" id="ar-imp-add-v">—</div><div class="sub">Baseシナリオ</div></div>
+            <div class="ar-impact-kpi"><div class="lab">追加問い合わせ / 月</div><div class="val" id="ar-imp-add-i">—</div><div class="sub">いちばん見たい数字</div></div>
+            <div class="ar-impact-kpi"><div class="lab">追加LINE / 月</div><div class="val" id="ar-imp-add-l">—</div><div class="sub">任意KPI</div></div>
+            <div class="ar-impact-kpi"><div class="lab">問い合わせ1件あたり費用目安</div><div class="val" id="ar-imp-cpi">—</div><div class="sub">月額 ÷ 追加問い合わせ</div></div>
+          </div>
+          <table class="ar-impact-table">
+            <thead><tr><th>シナリオ</th><th>+訪問</th><th>+問い合わせ</th><th>+LINE</th><th>参考粗利（任意）</th></tr></thead>
+            <tbody id="ar-imp-tbody"></tbody>
+          </table>
+          <p class="ar-footnote" id="ar-imp-disc" style="margin-top:10px"></p>
+          <div class="ar-impact-actions">
+            <a class="ar-btn ar-btn-line" id="ar-cta-impact-top" href="/airreach/platform/#simulator">詳細シミュレーター（GSC/GA4実数）</a>
+            <a class="ar-btn ar-btn-line" href="/airreach/studio/">改善ファイルを作る（Studio）</a>
           </div>
         </div>
 
@@ -280,18 +335,104 @@ document.addEventListener('DOMContentLoaded', function () {
     if (window.AirReachHandoff) {
       handoff = window.AirReachHandoff.saveDiagnoseHandoff(result, url);
       var impact = document.getElementById('ar-cta-impact');
-      if (impact) impact.href = window.AirReachHandoff.platformUrl(window.AirReachHandoff.buildSimulatorSeed());
+      var impactTop = document.getElementById('ar-cta-impact-top');
+      var seed = window.AirReachHandoff.buildSimulatorSeed();
+      var plat = window.AirReachHandoff.platformUrl(seed);
+      if (impact) impact.href = plat;
+      if (impactTop) impactTop.href = plat;
       var note = document.getElementById('ar-handoff-note');
       if (note && handoff && handoff.lifts) {
         note.textContent = '診断スコア ' + handoff.overall +
           ' → 提案改善率（Inferred）訪問 +' + handoff.lifts.trafficUpliftPct +
           '% / CVR +' + handoff.lifts.cvrUpliftPct +
-          '%。PlatformでGSC/GA4実数があれば訪問・問い合わせは自動入力されます。成果は保証しません。';
+          '%。上の試算を自社数字で更新できます。成果は保証しません。';
       }
+      if (seed) {
+        var v = document.getElementById('ar-imp-visitors');
+        var i = document.getElementById('ar-imp-inq');
+        var l = document.getElementById('ar-imp-line');
+        var f = document.getElementById('ar-imp-fee');
+        if (v && !v.dataset.userTouched) v.value = seed.monthlyVisitors;
+        if (i && !i.dataset.userTouched) i.value = seed.monthlyInquiries;
+        if (l && !l.dataset.userTouched) l.value = seed.monthlyLine;
+        if (f && !f.dataset.userTouched) f.value = seed.monthlyFee;
+      }
+      window.__arLastOverall = result.overall;
+      if (typeof window.__arRenderImpact === 'function') window.__arRenderImpact();
     }
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     document.getElementById('result').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   }
+
+
+  function yen(n) {
+    if (n == null || !isFinite(n)) return '—';
+    try { return '¥' + Math.round(n).toLocaleString('ja-JP'); } catch (e) { return '¥' + Math.round(n); }
+  }
+  function readImpactInputs() {
+    return {
+      monthlyVisitors: document.getElementById('ar-imp-visitors').value,
+      monthlyInquiries: document.getElementById('ar-imp-inq').value,
+      monthlyLine: document.getElementById('ar-imp-line').value,
+      monthlyFee: document.getElementById('ar-imp-fee').value,
+      closeRatePct: document.getElementById('ar-imp-close').value,
+      avgDeal: document.getElementById('ar-imp-deal').value,
+      grossMarginPct: 50
+    };
+  }
+  window.__arRenderImpact = function () {
+    if (!window.AirReachHandoff || !window.AirReachHandoff.simulateImpact) return;
+    var inputs = readImpactInputs();
+    window.AirReachHandoff.saveImpactInputs(inputs);
+    var overall = window.__arLastOverall != null ? window.__arLastOverall : 50;
+    var sim = window.AirReachHandoff.simulateImpact(inputs, overall);
+    var b = sim.scenarios.base;
+    var opp = sim.opportunity;
+    document.getElementById('ar-impact-opp').textContent =
+      'いまのスコア ' + overall + '/100 だと、月あたり訪問 約' + opp.missedVisitors.toLocaleString('ja-JP') +
+      '・問い合わせ 約' + opp.missedInquiries.toLocaleString('ja-JP') +
+      ' を取りこぼしている可能性があります（Inferred）。改善仮定: 訪問 +' +
+      sim.lifts.trafficUpliftPct + '% / CVR +' + sim.lifts.cvrUpliftPct + '%。';
+    document.getElementById('ar-imp-add-v').textContent = '+' + b.addVisitors.toLocaleString('ja-JP');
+    document.getElementById('ar-imp-add-i').textContent = '+' + b.addInquiries.toLocaleString('ja-JP');
+    document.getElementById('ar-imp-add-l').textContent = '+' + b.addLine.toLocaleString('ja-JP');
+    document.getElementById('ar-imp-cpi').textContent =
+      b.costPerExtraInquiry != null ? yen(b.costPerExtraInquiry) : '—';
+    document.getElementById('ar-imp-lift').textContent =
+      '提案改善率（Inferred）訪問 +' + sim.lifts.trafficUpliftPct + '% / CVR +' + sim.lifts.cvrUpliftPct + '%';
+    document.getElementById('ar-imp-disc').textContent = sim.disclaimer + ' · ' + sim.evidenceClass;
+    var tb = document.getElementById('ar-imp-tbody');
+    tb.innerHTML = '';
+    ['low', 'base', 'high'].forEach(function (k) {
+      var s = sim.scenarios[k];
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + k + '</td><td>+' + s.addVisitors + '</td><td>+' + s.addInquiries +
+        '</td><td>+' + s.addLine + '</td><td>' + yen(s.addProfit) + '</td>';
+      tb.appendChild(tr);
+    });
+  };
+  var savedImp = window.AirReachHandoff && window.AirReachHandoff.loadImpactInputs && window.AirReachHandoff.loadImpactInputs();
+  if (savedImp) {
+    if (savedImp.monthlyVisitors != null) document.getElementById('ar-imp-visitors').value = savedImp.monthlyVisitors;
+    if (savedImp.monthlyInquiries != null) document.getElementById('ar-imp-inq').value = savedImp.monthlyInquiries;
+    if (savedImp.monthlyLine != null) document.getElementById('ar-imp-line').value = savedImp.monthlyLine;
+    if (savedImp.monthlyFee != null) document.getElementById('ar-imp-fee').value = savedImp.monthlyFee;
+    if (savedImp.closeRatePct != null) document.getElementById('ar-imp-close').value = savedImp.closeRatePct;
+    if (savedImp.avgDeal != null) document.getElementById('ar-imp-deal').value = savedImp.avgDeal;
+  }
+  ['ar-imp-visitors','ar-imp-inq','ar-imp-line','ar-imp-fee','ar-imp-close','ar-imp-deal'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function () {
+      el.dataset.userTouched = '1';
+      if (window.__arLastOverall != null) window.__arRenderImpact();
+    });
+  });
+  var runBtn = document.getElementById('ar-imp-run');
+  if (runBtn) runBtn.addEventListener('click', function () {
+    if (window.__arLastOverall == null) window.__arLastOverall = 50;
+    window.__arRenderImpact();
+  });
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
