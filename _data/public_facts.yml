@@ -42,7 +42,7 @@ products:
   airreach:
     name: "AirReach"
     status: "無料AI選ばれるか診断（公開ページ実測・1 FREE FIX）。GSC CSV/手計測可。OAuth・HackⅡ自動測定は導入連携。"
-    public_definition: "URL入力でAI理解マップ、Search Foundation、Decision Coverage、Citation Gap、最優先3施策、無料修正案1件を公開ページ実測から出すツール。Search Console CSVとAI回答手計測で実数置換可。横断の実AI測定・実装伴走はHackⅡ。"
+    public_definition: "URL入力でGoogle検索風プレビューとAI Overview載りやすさ（推定）、機会損失金額、AI理解マップ、Decision Coverage、無料修正案1件を出すツール。GSC CSV/手計測で実数置換可。実AI OverviewインプレッションとChatGPT等の横断測定はSearch Console生成AIレポートまたはHackⅡ。"
     limitations:
       - "ChatGPT・Gemini・Claude・AI Overviewsなどの実回答引用率を本ツール単体では取得しない"
       - "表示の金額・CVはモデル予測、またはGSC CSV/手計測の実測に基づく再計算であり、掲載・順位・流入・問い合わせ・売上を保証しない"

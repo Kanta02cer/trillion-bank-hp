@@ -553,6 +553,9 @@
       if (window.AirReachOS && typeof window.AirReachOS.enrichResult === 'function') {
         result = window.AirReachOS.enrichResult(result, page, robotsText, url.href);
       }
+      if (window.AirReachSerp && typeof window.AirReachSerp.attachSerp === 'function') {
+        result = window.AirReachSerp.attachSerp(result);
+      }
       result.measurementProgress = buildMeasurementProgress(result, {});
       emitProgress(onProgress, 'score', 'done', '総合 ' + result.overall + '点（公開ページ実測）');
       emitProgress(onProgress, 'themes', 'running', '対策テーマを選定しています');

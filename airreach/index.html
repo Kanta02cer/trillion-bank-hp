@@ -190,6 +190,48 @@ ai_summary: "AirReachは公開ページを実測し、選ばれない理由と�
 .ar-funnel span{text-align:center;font-size:.68rem;font-weight:700;padding:8px 4px;border-radius:8px;background:var(--surface,#f8fafc);border:1px solid var(--border,#e5e7eb);color:var(--muted,#6b7280)}
 .ar-funnel span.is-on{border-color:#93c5fd;color:var(--blue-600,#2563eb);background:#f8fbff}
 @media(max-width:900px){.ar-map,.ar-funnel{grid-template-columns:1fr 1fr}}
+.ar-serp-wrap{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.75fr);gap:20px;margin:8px 0 24px;align-items:start}
+.ar-serp{background:#fff;border:1px solid #dfe1e5;border-radius:12px;padding:14px 16px 18px;font-family:Arial,Helvetica,sans-serif}
+.ar-serp-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.ar-serp-logo{font-size:1.35rem;font-weight:700;letter-spacing:-.04em}
+.ar-serp-logo span:nth-child(1){color:#4285f4}.ar-serp-logo span:nth-child(2){color:#ea4335}
+.ar-serp-logo span:nth-child(3){color:#fbbc05}.ar-serp-logo span:nth-child(4){color:#4285f4}
+.ar-serp-logo span:nth-child(5){color:#34a853}.ar-serp-logo span:nth-child(6){color:#ea4335}
+.ar-serp-qbox{flex:1;border:1px solid #dfe1e5;border-radius:24px;padding:10px 16px;display:flex;gap:8px;align-items:center;box-shadow:0 1px 3px rgba(32,33,36,.08)}
+.ar-serp-qbox input{border:0;outline:0;flex:1;font:inherit;min-width:0;background:transparent}
+.ar-serp-tabs{display:flex;gap:14px;border-bottom:1px solid #dfe1e5;margin:0 0 14px;padding:0 2px 8px;font-size:.82rem;color:#5f6368}
+.ar-serp-tabs .on{color:#1a73e8;font-weight:700;border-bottom:3px solid #1a73e8;padding-bottom:6px;margin-bottom:-9px}
+.ar-aio{border:1px solid #dfe1e5;border-radius:12px;padding:14px 16px;margin-bottom:16px;background:#fff}
+.ar-aio .aio-k{font-size:.72rem;font-weight:700;color:#5f6368;margin-bottom:6px;letter-spacing:.02em}
+.ar-aio h4{margin:0 0 8px;font-size:1.05rem;color:#202124;font-weight:500;line-height:1.4}
+.ar-aio ul{margin:0 0 10px;padding-left:1.1em;color:#4d5156;font-size:.9rem;line-height:1.55}
+.ar-aio .cite{font-size:.8rem;color:#202124}
+.ar-aio .cite a{color:#1a0dab;text-decoration:none}
+.ar-aio.is-miss{background:#f8f9fa;border-style:dashed}
+.ar-aio .badge{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid #dadce0;color:#5f6368;margin-left:6px}
+.ar-aio .badge-warn{border-color:#f9ab00;color:#b06000}
+.ar-aio .badge-bad{border-color:#ea4335;color:#c5221f}
+.ar-aio .badge-ok{border-color:#34a853;color:#137333}
+.ar-org{margin:0 0 14px}
+.ar-org .u{font-size:.78rem;color:#202124;margin-bottom:2px}
+.ar-org .t{font-size:1.2rem;line-height:1.3;color:#1a0dab;margin:0 0 4px;font-weight:400}
+.ar-org .s{font-size:.88rem;color:#4d5156;line-height:1.5;margin:0}
+.ar-org .meta{font-size:.78rem;color:#70757a;margin-top:4px}
+.ar-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.ar-chips button{border:1px solid #dadce0;background:#fff;border-radius:999px;padding:6px 10px;font-size:.75rem;cursor:pointer;color:#3c4043}
+.ar-chips button.on{border-color:#1a73e8;color:#1a73e8;background:#e8f0fe}
+.ar-loss{border:1px solid #e5e7eb;border-radius:14px;padding:16px 18px;background:#fff}
+.ar-loss .big{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-.03em;margin:4px 0 2px}
+.ar-loss .sub{font-size:.84rem;color:var(--muted,#6b7280);line-height:1.55}
+.ar-loss-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.ar-loss-grid .cell{border-top:1px solid #e5e7eb;padding-top:8px}
+.ar-loss-grid .k{font-size:.72rem;color:#6b7280}
+.ar-loss-grid .v{font-size:1rem;font-weight:700;margin-top:2px}
+.ar-chatrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.ar-chatrow .cell{background:#f8fafc;border-radius:10px;padding:10px;text-align:center}
+.ar-chatrow .k{font-size:.68rem;color:#6b7280}
+.ar-chatrow .v{font-size:1.05rem;font-weight:700}
+@media(max-width:900px){.ar-serp-wrap{grid-template-columns:1fr}.ar-chatrow{grid-template-columns:1fr}}
 @media(max-width:900px){.ar-form-grid,.ar-gap-grid{grid-template-columns:1fr}}
 </style>
 <script type="application/ld+json">
@@ -268,6 +310,57 @@ ai_summary: "AirReachは公開ページを実測し、選ばれない理由と�
           <p class="host" id="ar-host">—</p>
           <p class="verdict" id="ar-verdict"></p>
           <p class="ar-footnote" id="ar-measured-at" style="margin-top:8px"></p>
+        </div>
+
+        
+        <div id="ar-serp-panel" hidden>
+          <div class="ar-kicker">SEARCH / AI OVERVIEW PREVIEW</div>
+          <h3 style="margin:0 0 6px;font-size:1.05rem">Google検索・AI Overviewでの見え方（プレビュー）</h3>
+          <p class="ar-footnote" id="ar-serp-disc" style="margin:0 0 10px"></p>
+          <div class="ar-chips" id="ar-serp-chips" aria-label="計測クエリ"></div>
+          <div class="ar-serp-wrap">
+            <div class="ar-serp" aria-label="検索結果プレビュー">
+              <div class="ar-serp-top">
+                <div class="ar-serp-logo" aria-hidden="true"><span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span></div>
+                <div class="ar-serp-qbox"><input id="ar-serp-q" type="text" readonly aria-label="検索クエリ"></div>
+              </div>
+              <div class="ar-serp-tabs"><span class="on">すべて</span><span>画像</span><span>ニュース</span><span>ショート動画</span></div>
+              <div class="ar-aio" id="ar-serp-aio">
+                <div class="aio-k">AI による概要 <span class="badge" id="ar-serp-aio-badge">プレビュー</span></div>
+                <h4 id="ar-serp-aio-title"></h4>
+                <ul id="ar-serp-aio-bullets"></ul>
+                <div class="cite" id="ar-serp-aio-cite"></div>
+                <p class="ar-footnote" id="ar-serp-aio-note" style="margin:8px 0 0"></p>
+              </div>
+              <div class="ar-org" id="ar-serp-org">
+                <div class="u" id="ar-serp-org-url"></div>
+                <h4 class="t" id="ar-serp-org-title"></h4>
+                <p class="s" id="ar-serp-org-snip"></p>
+                <div class="meta" id="ar-serp-org-meta"></div>
+              </div>
+              <div class="ar-kicker" style="margin-top:8px">AIチャットでの出方</div>
+              <div class="ar-chatrow">
+                <div class="cell"><div class="k">Mention</div><div class="v" id="ar-serp-men">—</div></div>
+                <div class="cell"><div class="k">Citation</div><div class="v" id="ar-serp-cit">—</div></div>
+                <div class="cell"><div class="k">Recommend</div><div class="v" id="ar-serp-rec">—</div></div>
+              </div>
+              <p class="ar-footnote" id="ar-serp-chat-note" style="margin-top:8px"></p>
+            </div>
+            <aside class="ar-loss" aria-label="機会損失">
+              <div class="ar-tag ar-tag-f" id="ar-loss-tag">機会損失</div>
+              <div class="label" style="font-size:.78rem;font-weight:600;color:var(--blue-600);margin:6px 0">このクエリの機会損失</div>
+              <div class="big" id="ar-loss-yen">—</div>
+              <div class="sub" id="ar-loss-sub">/ 月</div>
+              <div class="ar-loss-grid">
+                <div class="cell"><div class="k">取りこぼしクリック</div><div class="v" id="ar-loss-clicks">—</div></div>
+                <div class="cell"><div class="k">機会損失CV</div><div class="v" id="ar-loss-cv">—</div></div>
+                <div class="cell"><div class="k">粗利機会</div><div class="v" id="ar-loss-profit">—</div></div>
+                <div class="cell"><div class="k">うち AI Overview起因（予測）</div><div class="v" id="ar-loss-aio">—</div></div>
+              </div>
+              <p class="sub" id="ar-loss-formula" style="margin-top:12px"></p>
+              <p class="sub" id="ar-loss-kind" style="margin-top:6px"></p>
+            </aside>
+          </div>
         </div>
 
         <div class="ar-kicker">MEASUREMENT PROGRESS</div>
@@ -588,6 +681,7 @@ ai_summary: "AirReachは公開ページを実測し、選ばれない理由と�
 {% include tb-footer.html %}
 <style>.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
 <script src="{{ '/assets/js/airreach-os.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/airreach-serp.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-diagnose.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-growth.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-measure.js' | relative_url }}" defer></script>
@@ -728,6 +822,98 @@ document.addEventListener('DOMContentLoaded', function () {
       ? '公開ページ実測: ' + result.evidence.measuredAt.replace('T', ' ').slice(0, 19)
       : '';
   }
+  function renderSerp(result, query) {
+    var panel = document.getElementById('ar-serp-panel');
+    if (!panel || !window.AirReachSerp) return;
+    var serp = (query
+      ? window.AirReachSerp.buildSerpPreview(result, query)
+      : (result.serp || window.AirReachSerp.buildSerpPreview(result)));
+    result.serp = serp;
+    if (window.AirReachSerp.attachSerp) {
+      // keep opportunityLoss in sync for selected query
+      var tmp = window.AirReachSerp.attachSerp(Object.assign({}, result), serp.query);
+      result.opportunityLoss = tmp.opportunityLoss;
+      result.serp = tmp.serp;
+      serp = tmp.serp;
+    }
+    panel.hidden = false;
+    document.getElementById('ar-serp-disc').textContent = serp.disclaimer || '';
+    document.getElementById('ar-serp-q').value = serp.query || '';
+
+    var chips = document.getElementById('ar-serp-chips');
+    chips.innerHTML = '';
+    (serp.queries || []).forEach(function (q) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = q.query;
+      if (q.query === serp.query) b.className = 'on';
+      b.addEventListener('click', function () {
+        renderSerp(state.result, q.query);
+        // also refresh top opportunity cards from loss
+        if (state.result && state.result.opportunityLoss) {
+          var L = state.result.opportunityLoss;
+          document.getElementById('ar-opp-tag').textContent = (String(L.dataKind).indexOf('実測') >= 0) ? '実測ベース' : '予測';
+          document.getElementById('ar-opp-label').textContent = '機会損失（' + (serp.query || '') + '）';
+          document.getElementById('ar-opp-revenue').innerHTML = fmtYen(L.revenueLoss || 0) + ' <span class="unit">/ 月</span>';
+          document.getElementById('ar-opp-profit').textContent = '粗利機会: ' + fmtYen(L.profitLoss || 0) + ' / 月';
+          var cvLine = document.getElementById('ar-opp-cv-line');
+          if (cvLine) cvLine.textContent = '機会損失CV: +' + (L.cvLoss || 0) + ' / 取りこぼしクリック ' + (L.missedClicks || 0);
+        }
+      });
+      chips.appendChild(b);
+    });
+
+    var aio = serp.aiOverview || {};
+    var aioBox = document.getElementById('ar-serp-aio');
+    aioBox.classList.toggle('is-miss', !aio.shown);
+    document.getElementById('ar-serp-aio-title').textContent = aio.headline || '';
+    var badge = document.getElementById('ar-serp-aio-badge');
+    badge.textContent = aio.label + ' · ' + aio.eligibilityPct + '%';
+    badge.className = 'badge ' + (aio.status === 'appear_likely' ? 'badge-ok' : aio.status === 'borderline' ? 'badge-warn' : 'badge-bad');
+    var ul = document.getElementById('ar-serp-aio-bullets');
+    ul.innerHTML = '';
+    (aio.bullets || []).forEach(function (line) {
+      var li = document.createElement('li');
+      li.textContent = line;
+      ul.appendChild(li);
+    });
+    var cite = document.getElementById('ar-serp-aio-cite');
+    if (aio.cited) {
+      cite.innerHTML = '引用候補に自社: <a href="#">' + (aio.citeHost || '') + '</a>';
+    } else {
+      cite.textContent = 'このプレビューでは自社がAI Overviewの引用に入っていません（材料不足または未カバー）。';
+    }
+    document.getElementById('ar-serp-aio-note').textContent = aio.note || '';
+
+    var org = serp.organic || {};
+    document.getElementById('ar-serp-org-url').textContent = org.displayUrl || org.url || '';
+    document.getElementById('ar-serp-org-title').textContent = org.title || '';
+    document.getElementById('ar-serp-org-snip').textContent = org.snippet || '';
+    document.getElementById('ar-serp-org-meta').textContent = org.rankHint || '';
+
+    var chat = serp.chatAi || {};
+    document.getElementById('ar-serp-men').textContent = (chat.mentionRate != null ? chat.mentionRate + '%' : '—');
+    document.getElementById('ar-serp-cit').textContent = (chat.citationRate != null ? chat.citationRate + '%' : '—');
+    document.getElementById('ar-serp-rec').textContent = (chat.recommendationRate != null ? chat.recommendationRate + '%' : '—');
+    document.getElementById('ar-serp-chat-note').textContent =
+      (chat.dataKind || '') + (chat.label ? ' · ' + chat.label : '') +
+      '。ChatGPT等の公式出現率ではありません。手計測またはHackⅡで実測できます。';
+
+    var loss = serp.loss || {};
+    var lossTag = document.getElementById('ar-loss-tag');
+    lossTag.textContent = (String(loss.dataKind || '').indexOf('実測') >= 0) ? '機会損失 · 実測' : '機会損失 · 予測';
+    lossTag.className = 'ar-tag ' + ((String(loss.dataKind || '').indexOf('実測') >= 0) ? 'ar-tag-m' : 'ar-tag-f');
+    document.getElementById('ar-loss-yen').textContent = fmtYen(loss.revenueLoss || 0);
+    document.getElementById('ar-loss-sub').textContent = '/ 月（レンジ ' + fmtYen(loss.revenueLow || 0) + '〜' + fmtYen(loss.revenueHigh || 0) + '）';
+    document.getElementById('ar-loss-clicks').textContent = '+' + (loss.missedClicks || 0);
+    document.getElementById('ar-loss-cv').textContent = '+' + (loss.cvLoss || 0);
+    document.getElementById('ar-loss-profit').textContent = fmtYen(loss.profitLoss || 0);
+    document.getElementById('ar-loss-aio').textContent = fmtYen((loss.aio && loss.aio.revenueLoss) || 0);
+    document.getElementById('ar-loss-formula').textContent = loss.formula || '';
+    document.getElementById('ar-loss-kind').textContent =
+      'データ: ' + (loss.dataKind || '') + ' / AI Overview部分: ' + ((loss.aio && loss.aio.dataKind) || 'モデル予測');
+  }
+
   function renderOs(result) {
     var box = document.getElementById('ar-os');
     var os = result.os;
@@ -880,7 +1066,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
   function renderOpp(result) {
+    var loss = result.opportunityLoss;
     var opp = result.opportunity || {};
+    if (loss) {
+      var measured = (loss.dataKind || '').indexOf('実測') >= 0;
+      document.getElementById('ar-opp-tag').textContent = measured ? '機会損失 · 実測' : '機会損失 · 予測';
+      document.getElementById('ar-opp-tag').className = 'ar-tag ' + (measured ? 'ar-tag-m' : 'ar-tag-f');
+      document.getElementById('ar-opp-label').textContent = '機会損失' + (loss.query ? '（' + loss.query + '）' : '');
+      document.getElementById('ar-opp-revenue').innerHTML = fmtYen(loss.revenueLoss || 0) + ' <span class="unit">/ 月</span>';
+      document.getElementById('ar-opp-profit').textContent = '粗利機会: ' + fmtYen(loss.profitLoss || 0) + ' / 月 · AI Overview起因（予測） ' + fmtYen(loss.aioRevenueLoss || 0);
+      var cvLine = document.getElementById('ar-opp-cv-line');
+      if (cvLine) cvLine.textContent = '機会損失CV: +' + (loss.cvLoss || 0) + ' / 取りこぼしクリック ' + (loss.missedClicks || 0) + ' · ' + (loss.dataKind || '');
+    } else {
     var measured = (opp.dataKind || '').indexOf('実測') >= 0;
     document.getElementById('ar-opp-tag').textContent = measured ? '実測ベース' : '予測';
     document.getElementById('ar-opp-tag').className = 'ar-tag ' + (measured ? 'ar-tag-m' : 'ar-tag-f');
@@ -889,6 +1086,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('ar-opp-profit').textContent = '粗利機会: ' + fmtYen(opp.profitBase || 0) + ' / 月（' + fmtYen(opp.profitLow || 0) + '〜' + fmtYen(opp.profitHigh || 0) + '）· ' + (opp.dataKind || 'モデル予測');
     var cvLine = document.getElementById('ar-opp-cv-line');
     if (cvLine) cvLine.textContent = '追加CV: +' + (opp.cvBase || 0) + ' / 月（レンジ +' + (opp.cvLow || 0) + '〜+' + (opp.cvHigh || 0) + '）· 追加クリック ' + (opp.clicksBase || 0);
+    }
     var hiddenCv = document.getElementById('ar-opp-cv');
     if (hiddenCv) hiddenCv.textContent = '+' + (opp.cvBase || 0);
     var hiddenRange = document.getElementById('ar-opp-cv-range');
@@ -962,6 +1160,7 @@ document.addEventListener('DOMContentLoaded', function () {
     renderOpp(result);
     renderEvidence(result);
     renderOs(result);
+    renderSerp(result);
     renderGscSummary(result);
     renderAiSummary(result);
 
@@ -1082,6 +1281,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var parsed = window.AirReachMeasure.parseGscCsv(String(reader.result || ''));
         var next = window.AirReachMeasure.applyGscImport(state.result, parsed, { mode: 'replace-top' });
         state.searchMeasured = true;
+        if (window.AirReachSerp) next = window.AirReachSerp.attachSerp(next);
         document.getElementById('ar-m-note').textContent =
           'GSC実測を反映: ' + parsed.rowCount + '行 → テーマ ' + ((next.themes && next.themes.length) || 0) + '件。機会額は実測ベースです。';
         render(next, state.url);
@@ -1113,6 +1313,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       state.hack2Measured = true;
       state.hack2Sample = false;
+      if (window.AirReachSerp) next = window.AirReachSerp.attachSerp(next);
       document.getElementById('ar-ai-prompt').value = '';
       document.getElementById('ar-ai-pos').value = '';
       document.getElementById('ar-ai-url').value = '';
