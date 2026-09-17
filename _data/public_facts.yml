@@ -1,4 +1,4 @@
-last_reviewed: "2026-09-05"
+last_reviewed: "2026-09-17"
 company:
   legal_name: "株式会社Trillion Bank"
   display_name: "Trillion Bank"
@@ -41,11 +41,14 @@ products:
 
   airreach:
     name: "AirReach"
-    status: "無料のAI検索準備度診断（公開ページ）"
-    public_definition: "公開ページのHTML・構造化データ・llms.txt・robotsなどのシグナルからAI検索準備度を算出する無料診断。実AI回答の引用率・出現率の測定はHackⅡへ接続する。"
+    status: "無料AI選ばれるか診断（公開ページ実測・1 FREE FIX）。GSC CSV/手計測可。OAuth・HackⅡ自動測定は導入連携。"
+    public_definition: "URL入力でGoogle検索風プレビューとAI Overview載りやすさ（推定）、機会損失金額、AI理解マップ、Decision Coverage、無料修正案1件を出すツール。GSC CSV/手計測で実数置換可。実AI OverviewインプレッションとChatGPT等の横断測定はSearch Console生成AIレポートまたはHackⅡ。"
     limitations:
       - "ChatGPT・Gemini・Claude・AI Overviewsなどの実回答引用率を本ツール単体では取得しない"
-      - "AI回答への掲載、順位、流入、問い合わせ、売上を保証しない"
+      - "表示の金額・CVはモデル予測、またはGSC CSV/手計測の実測に基づく再計算であり、掲載・順位・流入・問い合わせ・売上を保証しない"
+      - "GSC CSV・AI手計測データはブラウザ内のみで処理し、当サービスへ送信しない"
+      - "SAMPLE表示はデモ用であり実測ではない"
+      - "施策ブリーフは下書きであり自動公開しない"
       - "サイト側の取得制限により診断できない場合がある"
   adctor:
     name: "Adctor"
