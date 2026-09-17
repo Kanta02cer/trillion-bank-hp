@@ -1,0 +1,132 @@
+---
+title: "AirReach｜AIO計測総合プラットフォーム - Trillion Bank"
+tbdesc: "AirReachは、AI検索・Google検索・サイト改善・CVを一つにつなぎ、集客改善余地と問い合わせ増分をシミュレーションできるAIO計測総合プラットフォームです。"
+keywords: "AirReach,AIO計測,AI検索,GEO,AEO,Search Console,GA4,問い合わせ,集客シミュレーション"
+ai_summary: "AirReachは、AI検索の可視性、Google検索データ、サイト改善、問い合わせ・CVを統合して、改善余地を顧客目線で可視化するTrillion BankのAIO計測総合プラットフォーム。"
+robots: "noindex, follow"
+---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+{% include tb-head.html %}
+<link rel="stylesheet" href="/assets/css/airreach-platform.css">
+</head>
+<body class="arp-page">
+{% include tb-header.html %}
+<main id="main">
+<section class="arp-hero">
+  <div class="arp-wrap">
+    <div class="arp-eyebrow">AIRREACH · AIO MEASUREMENT & GROWTH PLATFORM</div>
+    <div class="arp-hero-grid">
+      <div>
+        <h1>スコアではなく、<br><em>集客がどう変わるか</em>まで。</h1>
+        <p class="arp-lead">AI検索での言及・引用、Google検索、サイトの技術課題、GA4の問い合わせを一つにつなぎ、「今どれくらい機会を逃している可能性があるか」「改善すると訪問・問い合わせがどこまで変わり得るか」を条件付きでシミュレーションします。</p>
+        <div class="arp-cta-row"><a href="#simulator" class="arp-btn arp-primary">自社の集客インパクトを試算</a><a href="/airreach/studio/" class="arp-btn arp-secondary">改善ワークベンチを見る</a></div>
+        <p class="arp-disclaimer">※ シミュレーションは入力値と仮定に基づく参考値です。AI掲載、流入、問い合わせ、売上を保証するものではありません。</p>
+      </div>
+      <div class="arp-hero-card">
+        <div class="arp-mini-label">WHAT AIRREACH CONNECTS</div>
+        <div class="arp-flow">
+          <span>AI Visibility</span><b>→</b><span>Google Search</span><b>→</b><span>Website</span><b>→</b><span>Inquiry</span><b>→</b><span>Revenue</span>
+        </div>
+        <div class="arp-hero-metrics"><div><small>測る</small><strong>言及・引用・SOV</strong></div><div><small>直す</small><strong>FAQ / Schema / Content</strong></div><div><small>確かめる</small><strong>CTR / CVR / 問い合わせ</strong></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="arp-section" id="simulator">
+  <div class="arp-wrap">
+    <div class="arp-section-head"><div><div class="arp-eyebrow">GROWTH IMPACT SIMULATOR</div><h2>「いくら払うと、問い合わせがどれくらい増える可能性があるか」を試算</h2><p>現在の月間アクセス・問い合わせと、改善率の仮定を入力してください。低位・基準・高位の3シナリオで表示します。</p></div><button id="arp-demo" class="arp-btn arp-secondary" type="button">サンプル値</button></div>
+
+    <div class="arp-sim-grid">
+      <div class="arp-card arp-input-card">
+        <h3>現在の数値</h3>
+        <div class="arp-form-grid">
+          <label>月間HP訪問者数<input id="arp-visitors" type="number" min="0" value="5000"></label>
+          <label>月間問い合わせ数<input id="arp-inquiries" type="number" min="0" value="50"></label>
+          <label>月間LINE登録数<input id="arp-line" type="number" min="0" value="20"></label>
+          <label>月額サービス費（任意）<input id="arp-fee" type="number" min="0" value="200000"></label>
+          <label>問い合わせ→受注率（任意）<div class="arp-input-unit"><input id="arp-close-rate" type="number" min="0" max="100" step="0.1" value="20"><span>%</span></div></label>
+          <label>平均受注額（任意）<input id="arp-order-value" type="number" min="0" value="500000"></label>
+          <label>粗利率（任意）<div class="arp-input-unit"><input id="arp-margin" type="number" min="0" max="100" step="0.1" value="50"><span>%</span></div></label>
+        </div>
+        <div class="arp-sep"></div>
+        <h3>改善仮定</h3>
+        <p class="arp-help">AirReachのスコアから自動的に成果を断定せず、営業時に顧客と合意した仮定で試算します。</p>
+        <div class="arp-form-grid">
+          <label>訪問者数の改善率（基準）<div class="arp-input-unit"><input id="arp-traffic-uplift" type="number" min="0" max="300" step="1" value="15"><span>%</span></div></label>
+          <label>CVRの改善率（相対・基準）<div class="arp-input-unit"><input id="arp-cvr-uplift" type="number" min="0" max="300" step="1" value="10"><span>%</span></div></label>
+        </div>
+        <div class="arp-assumption">低位 = 基準の60% / 高位 = 基準の140%。この倍率も将来は業界別・施策別の実績データから更新します。</div>
+      </div>
+
+      <div class="arp-card arp-result-card">
+        <div class="arp-result-top"><div><div class="arp-mini-label">BASE CASE</div><h3>改善後の推定インパクト</h3></div><span class="arp-chip">条件付き試算</span></div>
+        <div class="arp-big-kpis">
+          <div><small>追加訪問者 / 月</small><strong id="arp-extra-visitors">+0</strong></div>
+          <div><small>追加問い合わせ / 月</small><strong id="arp-extra-inquiries">+0</strong></div>
+          <div><small>追加LINE登録 / 月</small><strong id="arp-extra-line">+0</strong></div>
+          <div><small>追加粗利 / 月*</small><strong id="arp-extra-profit">-</strong></div>
+        </div>
+        <div class="arp-scenario-table-wrap"><table class="arp-scenario-table"><thead><tr><th>Scenario</th><th>訪問</th><th>問い合わせ</th><th>問い合わせ増</th><th>推定追加粗利*</th></tr></thead><tbody id="arp-scenario-body"></tbody></table></div>
+        <div class="arp-roi" id="arp-roi-box"><span>投資対効果の参考</span><strong id="arp-roi">-</strong><small id="arp-roi-note">受注率・平均受注額・粗利率を入力すると表示します。</small></div>
+        <p class="arp-disclaimer">* 売上・粗利は受注率、平均受注額、粗利率が入力されている場合のみ参考表示します。因果効果ではなくシナリオ計算です。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="arp-section arp-alt" id="data">
+  <div class="arp-wrap">
+    <div class="arp-section-head"><div><div class="arp-eyebrow">DATA CATALOG</div><h2>AirReachで「何が測れるか」を一画面で</h2><p>公式データ、観測データ、推定データを混ぜずに表示します。</p></div></div>
+    <div class="arp-data-grid">
+      <article class="arp-data-card"><div class="arp-source official">OFFICIAL</div><h3>Google Search Console</h3><p>Clicks / Impressions / CTR / Position / Query / Page / Date / Country / Device</p><small>OAuth接続。通常検索データは公式API。</small></article>
+      <article class="arp-data-card"><div class="arp-source official">OFFICIAL UI</div><h3>Google生成AIレポート</h3><p>AI検索機能のImpressions / Page / Country / Device / Time series</p><small>専用API仕様が公開されるまでは公式UI/エクスポート取込を分離。</small></article>
+      <article class="arp-data-card"><div class="arp-source official">OFFICIAL</div><h3>GA4</h3><p>Sessions / Active Users / Landing Page / Key Events / Revenue</p><small>問い合わせ・LINE等をKey Eventとして結合。</small></article>
+      <article class="arp-data-card"><div class="arp-source official">OFFICIAL</div><h3>URL Inspection</h3><p>Index status / canonical / crawl / rich result information</p><small>Search Console OAuthで対象プロパティのみ。</small></article>
+      <article class="arp-data-card"><div class="arp-source public">PUBLIC</div><h3>PageSpeed / CrUX</h3><p>Performance / Lighthouse / LCP / INP / CLS / field UX</p><small>PageSpeedはキーなし利用可。CrUXは無料APIキー。</small></article>
+      <article class="arp-data-card"><div class="arp-source observed">OBSERVED</div><h3>HackⅡ AI Measurement</h3><p>Mention / Citation / SOV / Rank / Response / Cited URL / Engine</p><small>実測したPrompt・モデル・日時・Localeを保存。</small></article>
+      <article class="arp-data-card"><div class="arp-source inferred">INFERRED</div><h3>Opportunity</h3><p>追加訪問 / 追加問い合わせ / 機会損失 / ROI scenario</p><small>入力値・実測値・仮定を明示したシミュレーション。</small></article>
+      <article class="arp-data-card"><div class="arp-source action">ACTION</div><h3>AI Search Patch</h3><p>FAQ / JSON-LD / Meta / Internal link / llms / implementation guide</p><small>診断から修正ファイルとPR生成へ接続。</small></article>
+    </div>
+  </div>
+</section>
+
+<section class="arp-section" id="modules">
+  <div class="arp-wrap">
+    <div class="arp-section-head"><div><div class="arp-eyebrow">PRODUCT MODULES</div><h2>計測ツールではなく、改善まで回す総合プラットフォーム</h2></div></div>
+    <div class="arp-module-grid">
+      <article><span>01</span><h3>AI Visibility</h3><p>ChatGPT / Gemini / Claude / Perplexity / Google系の言及・引用・SOVをPrompt単位で時系列化。</p></article>
+      <article><span>02</span><h3>Search Intelligence</h3><p>GSCとGA4を統合し、Keyword → Click → Session → Inquiryまで一本化。</p></article>
+      <article><span>03</span><h3>Technical AIO</h3><p>index、canonical、robots、Schema、FAQ、内部リンク、Core Web Vitalsの不足を検出。</p></article>
+      <article><span>04</span><h3>Competitor Gap</h3><p>競合が引用されるPrompt・ページ・根拠・構造との差を特定し、優先順位を付ける。</p></article>
+      <article><span>05</span><h3>Growth Impact</h3><p>現在のアクセス・問い合わせを入力し、改善時の追加訪問・問い合わせを条件付き試算。</p></article>
+      <article><span>06</span><h3>AI Search Patch</h3><p>修正案だけでなく、FAQ・Schema・文章・設定ファイルを生成してGitHub PRへ接続。</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="arp-section arp-alt">
+  <div class="arp-wrap">
+    <div class="arp-section-head"><div><div class="arp-eyebrow">WHY AIRREACH</div><h2>競争軸を「測定項目数」から「問題解決までの距離」へ</h2></div></div>
+    <div class="arp-compare">
+      <div class="arp-compare-row head"><div>顧客の問い</div><div>一般的なAIO計測</div><div>AirReach + HackⅡ</div></div>
+      <div class="arp-compare-row"><div>AIに出ている？</div><div>計測・可視化</div><div>計測・可視化</div></div>
+      <div class="arp-compare-row"><div>なぜ出ない？</div><div>Gap / 改善提案</div><div><strong>ページ・FAQ・根拠・技術原因まで特定</strong></div></div>
+      <div class="arp-compare-row"><div>何を直す？</div><div>提案・生成</div><div><strong>修正ファイル・実装手順を生成</strong></div></div>
+      <div class="arp-compare-row"><div>誰が直す？</div><div>顧客・代理店側</div><div><strong>PR / Deploy / HackⅡ伴走まで</strong></div></div>
+      <div class="arp-compare-row"><div>意味があった？</div><div>引用・言及の変化</div><div><strong>訪問・問い合わせ・CVまでBefore/After</strong></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="arp-section arp-final">
+  <div class="arp-wrap arp-final-inner"><div><div class="arp-eyebrow">NEXT ACTION</div><h2>まずは「自社なら何件増える可能性があるか」から。</h2><p>無料診断 → 条件付き集客シミュレーション → 1つ無料修正 → HackⅡで実装・再計測、という営業導線を想定しています。</p></div><div class="arp-cta-row"><a href="/airreach/" class="arp-btn arp-primary">無料診断を試す</a><a href="/trillionbank/meeting/" class="arp-btn arp-secondary">商談で一緒に確認する</a></div></div>
+</section>
+</main>
+{% include tb-footer.html %}
+<script src="/assets/js/airreach-platform.js" defer></script>
+</body>
+</html>
