@@ -54,18 +54,27 @@
     var mode = 'generic_search';
     if (goal === 'visibility' || industryId === 'media') mode = 'branded_search';
 
+    var allowed = { restaurant:1, clinic:1, b2b:1, media:1, other:1 };
+    if (!allowed[industryId]) industryId = 'other';
+    var basePath = '/airreach/' + industryId + '/';
     var hash = '#result';
-    if (mode === 'branded_search') hash = '#result';
 
     function enc(v) { try { return encodeURIComponent(String(v || '')); } catch (e) { return ''; } }
     var q = [
-      'industry=' + enc(industryId),
       'mode=' + enc(mode),
       'onboard=1'
     ];
     if (survey.url) q.push('url=' + enc(survey.url));
     if (survey.keyword) q.push('keyword=' + enc(survey.keyword));
     if (survey.mediaUrl) q.push('media=' + enc(survey.mediaUrl));
+
+    var copyMap = {
+      restaurant: 'このエリアで探している人に、どれくらい選ばれている？',
+      clinic: 'この施術を探している人に、どれくらい選ばれている？',
+      b2b: 'この課題を探している人に、どれくらい選ばれている？',
+      media: 'AIは、御社をどの記事から理解しているか。',
+      other: '検索から、あと何件お客様を増やせそうか。'
+    };
 
     return {
       industryId: industryId,
@@ -74,11 +83,10 @@
       url: survey.url || '',
       keyword: survey.keyword || '',
       mediaUrl: survey.mediaUrl || '',
-      path: '/airreach/?' + q.join('&') + hash,
+      basePath: basePath,
+      path: basePath + '?' + q.join('&') + hash,
       salesFocus: industryId === 'media' ? 'media_visibility' : (mode === 'branded_search' ? 'brand_visibility' : 'acquisition'),
-      copy: industryId === 'media'
-        ? 'AIは、御社をどの記事から理解しているか。'
-        : '検索から、あと何件お客様を増やせそうか。'
+      copy: copyMap[industryId] || copyMap.other
     };
   }
 
@@ -87,7 +95,14 @@
     return !!(survey.industryId && survey.url && survey.keyword && survey.goal);
   }
 
+    function pathForIndustry(industryId) {
+    var allowed = { restaurant:1, clinic:1, b2b:1, media:1, other:1 };
+    if (!allowed[industryId]) industryId = 'other';
+    return '/airreach/' + industryId + '/';
+  }
+
   window.AirReachOnboard = {
+    pathForIndustry: pathForIndustry,
     KEY: KEY,
     loadSurvey: loadSurvey,
     saveSurvey: saveSurvey,
