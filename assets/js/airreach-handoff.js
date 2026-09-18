@@ -182,12 +182,15 @@
       var addProfit = addRevenue != null && margin > 0 ? addRevenue * margin : null;
       var costPerExtraInquiry = fee > 0 && addInquiries > 0 ? fee / addInquiries : null;
       var roi = addProfit != null && fee > 0 ? (addProfit - fee) / fee : null;
+      var addDeals = close > 0 ? addInquiries * close : null;
       return {
         addVisitors: addVisitors,
         addInquiries: addInquiries,
         addLine: addLine,
+        addDeals: addDeals != null ? Math.round(addDeals * 10) / 10 : null,
         projectedVisitors: Math.round(newVisitors),
         projectedInquiries: Math.round(newInquiries),
+        projectedLine: Math.round(newLine),
         addRevenue: addRevenue,
         addProfit: addProfit,
         costPerExtraInquiry: costPerExtraInquiry,
@@ -198,11 +201,41 @@
     // Opportunity framing: gap vs target as "missed share" narrative (Inferred)
     var score = num(overall != null ? overall : inputs.overall, 50);
     var missedShare = clamp((78 - score) / 100, 0.05, 0.45);
+    var missedInquiries = Math.round((visitors > 0 ? visitors * (inquiries / Math.max(visitors, 1)) : inquiries) * missedShare);
+    if (missedInquiries < 1 && inquiries > 0) missedInquiries = 1;
+    var missedDeals = close > 0 ? Math.round(missedInquiries * close * 10) / 10 : null;
     var opportunity = {
       evidenceClass: 'Inferred',
       missedVisitors: Math.round(visitors * missedShare * 0.7),
-      missedInquiries: Math.round((visitors > 0 ? visitors * (inquiries / Math.max(visitors, 1)) : inquiries) * missedShare),
+      missedInquiries: missedInquiries,
+      missedDeals: missedDeals,
       note: 'いまの準備度だと取りこぼしている可能性のある集客レンジ（仮定）。実測ではありません。'
+    };
+
+    var before = {
+      visitors: visitors,
+      inquiries: inquiries,
+      line: line,
+      revenue: close > 0 && avgDeal > 0 ? inquiries * close * avgDeal : null,
+      profit: close > 0 && avgDeal > 0 && margin > 0 ? inquiries * close * avgDeal * margin : null
+    };
+    var base = one(1);
+    var after = {
+      visitors: base.projectedVisitors,
+      inquiries: base.projectedInquiries,
+      line: base.projectedLine,
+      revenue: base.addRevenue != null && before.revenue != null ? before.revenue + base.addRevenue : base.addRevenue,
+      profit: base.addProfit != null && before.profit != null ? before.profit + base.addProfit : base.addProfit
+    };
+
+    var formulas = {
+      visitors: '改善後の訪問 ≒ いまの訪問 ×（1 + 訪問の伸び率）',
+      inquiries: '改善後の問い合わせ ≒ 改善後の訪問 ×（いまの問合せ率 ×（1 + 成約しやすさの伸び））',
+      line: '改善後のLINE ≒ 改善後の訪問 ×（いまのLINE率 ×（1 + 成約しやすさの伸び））',
+      revenue: '追加売上 ≒ 追加問い合わせ × 受注率 × 平均受注額',
+      profit: '追加粗利 ≒ 追加売上 × 粗利率',
+      fee: '問い合わせ1件あたり費用 ≒ 月額費用 ÷ 追加問い合わせ',
+      lost: '取りこぼし問い合わせ ≒ いまの問い合わせ規模 × スコア差の仮定'
     };
 
     return {
@@ -210,18 +243,24 @@
       disclaimer: '成果・掲載・流入・問い合わせ・売上を保証しません。入力と仮定に基づく参考シミュレーションです。',
       lifts: lifts,
       opportunity: opportunity,
+      before: before,
+      after: after,
+      formulas: formulas,
       inputs: {
         evidenceClass: 'User Input',
         monthlyVisitors: visitors,
         monthlyInquiries: inquiries,
         monthlyLine: line,
         monthlyFee: fee,
+        closeRatePct: close * 100,
+        avgDeal: avgDeal,
+        grossMarginPct: margin * 100,
         trafficUpliftPct: trafficPct,
         cvrUpliftPct: cvrPct
       },
       scenarios: {
         low: one(0.6),
-        base: one(1),
+        base: base,
         high: one(1.4)
       }
     };

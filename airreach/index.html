@@ -35,7 +35,7 @@ ai_summary: "AirReachは公開ページのHTML・構造化データ・llms.txt�
 .ar-h2{font-size:clamp(1.35rem,2.8vw,1.9rem);margin:0 0 12px;letter-spacing:-.01em;font-weight:700}
 .ar-grid3,.ar-flow,.ar-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .ar-flow{grid-template-columns:repeat(4,1fr)}
-@media(max-width:900px){.ar-grid3,.ar-actions,.ar-flow,.ar-models{grid-template-columns:1fr}.ar-urlbox{flex-direction:column}.ar-score-row,.ar-cols{grid-template-columns:1fr}}
+@media(max-width:900px){.ar-grid3,.ar-actions,.ar-flow,.ar-models,.ar-steps,.ar-hero-pair{grid-template-columns:1fr}.ar-urlbox{flex-direction:column}.ar-score-row,.ar-cols{grid-template-columns:1fr}}
 .ar-card,.ar-act,.ar-meter,.ar-model{background:#fff;border:0;border-top:1px solid var(--border,#e5e7eb);border-radius:0;padding:20px 0}
 .ar-card h3,.ar-act h3{margin:0 0 8px;font-size:1.02rem;font-weight:700}
 .ar-card p{margin:0;color:var(--muted,#6b7280);font-size:.9rem;line-height:1.75}
@@ -72,24 +72,59 @@ ai_summary: "AirReachは公開ページのHTML・構造化データ・llms.txt�
 .ar-error{display:none;margin-top:14px;padding:12px 14px;border-radius:8px;background:#f8fafc;border:1px solid var(--border,#e5e7eb);color:#991b1b;font-size:.88rem}
 .ar-error.is-on{display:block}
 
-.ar-impact{margin:22px 0 8px;padding:20px 0 8px;border-top:1px solid var(--border,#e5e7eb)}
+.ar-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 22px}
+.ar-step{border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:12px 14px;background:#fff}
+.ar-step .n{font-family:var(--mono,ui-monospace,monospace);font-size:.68rem;font-weight:700;letter-spacing:.12em;color:var(--blue-600,#2563eb);margin-bottom:6px}
+.ar-step p{margin:0;font-size:.82rem;color:var(--muted,#6b7280);line-height:1.55}
+.ar-hero-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px}
+.ar-score{min-height:auto}
+.ar-miss{background:linear-gradient(160deg,#eff6ff 0%,#fff 55%);border:1px solid #bfdbfe;border-radius:12px;padding:24px 26px;color:var(--ink,#0f172a);position:relative;overflow:hidden}
+.ar-miss::before{content:"";position:absolute;inset:auto -20% -40% auto;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.18),transparent 70%);pointer-events:none}
+.ar-miss .label{font-family:var(--mono,ui-monospace,monospace);font-size:.68rem;letter-spacing:.14em;color:var(--blue-600,#2563eb);margin-bottom:8px;font-weight:700}
+.ar-miss .num{font-size:clamp(2.2rem,5.5vw,3.2rem);font-weight:700;line-height:1;letter-spacing:-.03em;color:var(--blue-600,#2563eb)}
+.ar-miss .num span{font-size:1rem;font-weight:600;color:#60a5fa;margin-left:4px}
+.ar-miss .hint{margin-top:12px;font-size:.88rem;color:#1e40af;line-height:1.65;font-weight:600}
+.ar-miss .sub{margin-top:8px;font-size:.8rem;color:#64748b;line-height:1.55}
+.ar-impact{margin:18px 0 8px;padding:8px 0}
 .ar-impact-head{margin-bottom:14px}
-.ar-impact-head h3{margin:0 0 6px;font-size:1.15rem}
-.ar-impact-head p{margin:0;font-size:.88rem;color:var(--muted,#6b7280);line-height:1.65}
+.ar-impact-head h3{margin:0 0 6px;font-size:1.2rem}
+.ar-impact-head p{margin:0;font-size:.9rem;color:var(--muted,#6b7280);line-height:1.65}
+.ar-ba{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch;margin:16px 0}
+.ar-ba-card{border:1px solid var(--border,#e5e7eb);border-radius:14px;padding:16px;background:#fff}
+.ar-ba-card.is-after{border-color:#93c5fd;background:linear-gradient(180deg,#eff6ff,#fff 60%)}
+.ar-ba-card h4{margin:0 0 12px;font-size:.78rem;letter-spacing:.08em;color:var(--muted,#6b7280)}
+.ar-ba-card.is-after h4{color:var(--blue-600,#2563eb)}
+.ar-ba-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.9rem}
+.ar-ba-row:last-child{border-bottom:0}
+.ar-ba-row b{font-variant-numeric:tabular-nums}
+.ar-ba-card.is-after .ar-ba-row b{color:var(--blue-600,#2563eb)}
+.ar-ba-arrow{display:flex;align-items:center;justify-content:center;color:var(--blue-600,#2563eb);font-size:1.4rem;font-weight:700}
 .ar-impact-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
 .ar-impact-kpi{border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:14px 16px;background:#fff}
+.ar-impact-kpi.is-accent{border-color:#93c5fd;background:#eff6ff}
 .ar-impact-kpi .lab{font-size:.72rem;font-weight:700;color:var(--blue-600,#2563eb);margin-bottom:6px}
-.ar-impact-kpi .val{font-size:1.45rem;font-weight:700;letter-spacing:-.02em}
+.ar-impact-kpi .val{font-size:1.45rem;font-weight:700;letter-spacing:-.02em;color:var(--ink,#0f172a)}
+.ar-impact-kpi.is-accent .val{color:var(--blue-600,#2563eb)}
 .ar-impact-kpi .sub{font-size:.78rem;color:var(--muted,#6b7280);margin-top:6px;line-height:1.45}
-.ar-impact-form{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
-.ar-impact-form label{display:flex;flex-direction:column;gap:4px;font-size:.75rem;color:var(--muted,#6b7280)}
-.ar-impact-form input{border:1px solid var(--border,#e5e7eb);border-radius:8px;padding:10px 12px;font:inherit}
-.ar-impact-opp{margin:12px 0;padding:12px 14px;border-radius:10px;background:var(--surface,#f8fafc);border:1px solid var(--border,#e5e7eb);font-size:.88rem;color:var(--muted,#6b7280);line-height:1.65}
+.ar-impact-form{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:12px 0}
+.ar-field{border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:12px 14px;background:#fff}
+.ar-field label{display:flex;flex-direction:column;gap:6px;font-size:.86rem;font-weight:700;color:var(--ink,#0f172a)}
+.ar-field input{border:1px solid var(--border,#e5e7eb);border-radius:8px;padding:10px 12px;font:inherit}
+.ar-field .why{margin:8px 0 0;font-size:.78rem;color:var(--muted,#6b7280);line-height:1.55;font-weight:400}
+.ar-formula{margin:12px 0;padding:14px 16px;border-radius:12px;background:#f8fafc;border:1px solid var(--border,#e5e7eb);font-size:.84rem;color:#475569;line-height:1.7}
+.ar-formula strong{color:var(--blue-600,#2563eb)}
 .ar-impact-table{width:100%;border-collapse:collapse;font-size:.84rem;margin-top:10px}
 .ar-impact-table th,.ar-impact-table td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border,#e5e7eb)}
+.ar-impact-table tr.is-base td{color:var(--blue-600,#2563eb);font-weight:700}
 .ar-impact-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
-@media(max-width:900px){.ar-impact-kpis,.ar-impact-form{grid-template-columns:1fr 1fr}}
-@media(max-width:560px){.ar-impact-kpis,.ar-impact-form{grid-template-columns:1fr}}
+.ar-next{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.ar-next a,.ar-next button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:16px 18px;border-radius:12px;border:1px solid var(--border,#e5e7eb);background:#fff;text-decoration:none;color:inherit;cursor:pointer;font:inherit}
+.ar-next a:hover,.ar-next button:hover{border-color:var(--blue-600,#2563eb)}
+.ar-next .t{font-weight:700;color:var(--blue-600,#2563eb);font-size:.95rem}
+.ar-next .d{font-size:.82rem;color:var(--muted,#6b7280);line-height:1.55}
+.ar-google-note{font-size:.78rem;color:var(--muted,#6b7280);margin-top:8px;line-height:1.6}
+@media(max-width:900px){.ar-steps,.ar-hero-pair,.ar-ba,.ar-impact-kpis,.ar-impact-form,.ar-next{grid-template-columns:1fr}.ar-ba-arrow{transform:rotate(90deg);padding:4px 0}}
+@media(max-width:560px){.ar-impact-kpis{grid-template-columns:1fr}}
 @media (prefers-reduced-motion: reduce){
   .ar-bar > i{transition:none}
 }
@@ -115,8 +150,8 @@ ai_summary: "AirReachは公開ページのHTML・構造化データ・llms.txt�
     <div class="ar-wrap">
       <div class="crumb" style="margin-bottom:18px;font-size:.82rem;color:var(--muted)"><a href="/">HOME</a> ／ AirReach</div>
       <div class="ar-badge">AIRREACH · AIO READY CHECK</div>
-      <h1>URLを入れるだけで、<br><em>AI検索の準備度</em>が分かる。</h1>
-      <p class="ar-lead">AirReachは、公開ページの構造・エンティティ・FAQ・発見可能性から「AIに読まれやすいか」を無料診断します。Google AI Overviews / Gemini / ChatGPT / Claude などの<strong>実回答の引用率・出現率</strong>はHackⅡで測定し、改善の伴走につなげます。</p>
+      <h1>URLを入れるだけで、<br><em>集客の取りこぼし</em>が見える。</h1>
+      <p class="ar-lead">お店・会社のホームページURLを入れると、準備度スコアと「逃している問い合わせの目安」が出ます。いまの訪問数・問い合わせ数を入れると、改善後のイメージまでその場で試算できます（参考値・保証なし）。</p>
       <div class="ar-offer" aria-label="特別オファー">
         <span class="ar-chip">期間限定 · 伴走モニター枠</span>
         <span class="ar-chip">価格は個別案内（本ページでは非表示）</span>
@@ -138,9 +173,15 @@ ai_summary: "AirReachは公開ページのHTML・構造化データ・llms.txt�
 
   <section class="ar-sec" id="result">
     <div class="ar-wrap">
-      <div class="ar-kicker">DASHBOARD</div>
-      <h2 class="ar-h2">診断ダッシュボード</h2>
-      <p class="ar-sub">営業ではスコア説明より先に、自社の訪問・問い合わせを入れた集客インパクト（参考）を見てください。総合スコアは公開ページの準備度です。</p>
+      <div class="ar-kicker">DASHBOARD · 店舗・お店でもわかる数字</div>
+      <h2 class="ar-h2">いまの取りこぼしと、改善後のイメージ</h2>
+      <p class="ar-sub">むずかしい用語より先に、「月に何人・何件変わりそうか」を見ます。数字は参考シミュレーションで、成果は保証しません。</p>
+      <div class="ar-steps" aria-label="使い方">
+        <div class="ar-step"><div class="n">STEP 1</div><p>上でURLを診断する</p></div>
+        <div class="ar-step"><div class="n">STEP 2</div><p>いまの訪問・問い合わせを入れる</p></div>
+        <div class="ar-step"><div class="n">STEP 3</div><p>改善前→改善後の差を見る</p></div>
+        <div class="ar-step"><div class="n">STEP 4</div><p>Google連携 or 改善ファイル作成</p></div>
+      </div>
 
       <div id="ar-empty" class="ar-card">
         <h3>まだ診断前です</h3>
@@ -148,54 +189,134 @@ ai_summary: "AirReachは公開ページのHTML・構造化データ・llms.txt�
       </div>
 
       <div id="ar-dash" class="ar-dash" aria-live="polite">
-        <div class="ar-score-row">
+        <div class="ar-hero-pair">
           <div class="ar-score">
-            <div class="label">総合スコア · AI施策の完成度</div>
+            <div class="label">いまの準備度スコア</div>
             <div class="num" id="ar-overall">0<span>/100</span></div>
-            <div class="hint" id="ar-overall-hint">準備度の自動評価</div>
+            <div class="hint" id="ar-overall-hint">ホームページの「伝わりやすさ」の目安</div>
           </div>
-          <div class="ar-meters">
-            <div class="ar-meter"><div class="top"><span>構造・読みやすさ</span><span id="ar-s-structure">0</span></div><div class="ar-bar"><i id="ar-b-structure"></i></div></div>
-            <div class="ar-meter"><div class="top"><span>エンティティ（組織情報）</span><span id="ar-s-entity">0</span></div><div class="ar-bar"><i id="ar-b-entity"></i></div></div>
-            <div class="ar-meter"><div class="top"><span>FAQ / 回答しやすさ</span><span id="ar-s-faq">0</span></div><div class="ar-bar"><i id="ar-b-faq"></i></div></div>
-            <div class="ar-meter"><div class="top"><span>発見可能性（llms / robots）</span><span id="ar-s-discover">0</span></div><div class="ar-bar"><i id="ar-b-discover"></i></div></div>
+          <div class="ar-miss" id="ar-miss-card">
+            <div class="label">取りこぼし目安 · 問い合わせ</div>
+            <div class="num" id="ar-miss-inq">—<span>件 / 月</span></div>
+            <div class="hint" id="ar-miss-hint">診断後に表示されます</div>
+            <div class="sub" id="ar-miss-deals">逃している受注の目安: —</div>
           </div>
         </div>
 
+        <details style="margin:14px 0 8px">
+          <summary style="cursor:pointer;font-size:.88rem;font-weight:600;color:var(--muted,#6b7280)">内訳スコアを見る（任意）</summary>
+          <div class="ar-meters" style="margin-top:12px">
+            <div class="ar-meter"><div class="top"><span>構造・読みやすさ</span><span id="ar-s-structure">0</span></div><div class="ar-bar"><i id="ar-b-structure"></i></div></div>
+            <div class="ar-meter"><div class="top"><span>お店・会社情報の明確さ</span><span id="ar-s-entity">0</span></div><div class="ar-bar"><i id="ar-b-entity"></i></div></div>
+            <div class="ar-meter"><div class="top"><span>よくある質問の充実</span><span id="ar-s-faq">0</span></div><div class="ar-bar"><i id="ar-b-faq"></i></div></div>
+            <div class="ar-meter"><div class="top"><span>見つけやすさ</span><span id="ar-s-discover">0</span></div><div class="ar-bar"><i id="ar-b-discover"></i></div></div>
+          </div>
+        </details>
+
         <div class="ar-impact" id="ar-impact-panel">
           <div class="ar-impact-head">
-            <div class="ar-kicker">GROWTH IMPACT · 参考シミュレーション</div>
-            <h3>スコアより先に、「集客がどれくらい変わりそうか」</h3>
-            <p>いまのHP訪問・問い合わせを入れると、改善後の追加訪問・追加問い合わせ・LINEの目安が出ます。売上は任意。成果は保証しません。</p>
+            <div class="ar-kicker">STEP 2–3 · 自社の数字で試算</div>
+            <h3>いくら払うと、問い合わせがどれくらい増えそうか</h3>
+            <p>下の欄に「いまの数字」を入れると、改善前と改善後が並んで見えます。青色が改善後です。</p>
           </div>
-          <div class="ar-impact-opp" id="ar-impact-opp">診断後に、取りこぼしの目安と改善シナリオを表示します。</div>
+
           <div class="ar-impact-form" id="ar-impact-form">
-            <label>月間HP訪問者数<input id="ar-imp-visitors" type="number" min="0" step="1" value="5000"></label>
-            <label>月間問い合わせ数<input id="ar-imp-inq" type="number" min="0" step="1" value="50"></label>
-            <label>月間LINE登録数<input id="ar-imp-line" type="number" min="0" step="1" value="20"></label>
-            <label>想定月額（円）<input id="ar-imp-fee" type="number" min="0" step="1000" value="200000"></label>
-            <label>問い合わせ→受注率 %（任意）<input id="ar-imp-close" type="number" min="0" max="100" step="0.1" value="20"></label>
-            <label>平均受注額（任意）<input id="ar-imp-deal" type="number" min="0" step="1000" value="500000"></label>
+            <div class="ar-field">
+              <label>① 月間のHP訪問者数<input id="ar-imp-visitors" type="number" min="0" step="1" value="5000"></label>
+              <p class="why">意図: いま何人がサイトを見ているか。増えると「来店・問い合わせの入口」が増えます。</p>
+            </div>
+            <div class="ar-field">
+              <label>② 月間の問い合わせ数<input id="ar-imp-inq" type="number" min="0" step="1" value="50"></label>
+              <p class="why">意図: 電話・フォーム・予約など「声がかかった件数」。いちばん大事な数字です。</p>
+            </div>
+            <div class="ar-field">
+              <label>③ 月間のLINE登録数（任意）<input id="ar-imp-line" type="number" min="0" step="1" value="20"></label>
+              <p class="why">意図: 友だち追加など。問い合わせの手前の接点として使います。</p>
+            </div>
+            <div class="ar-field">
+              <label>④ 想定の月額費用（円）<input id="ar-imp-fee" type="number" min="0" step="1000" value="200000"></label>
+              <p class="why">意図: 「いくら払うと」の分子。追加問い合わせで割ると1件あたり費用の目安になります。</p>
+            </div>
+            <div class="ar-field">
+              <label>⑤ 問い合わせ→受注率 %（任意）<input id="ar-imp-close" type="number" min="0" max="100" step="0.1" value="20"></label>
+              <p class="why">意図: 問い合わせのうち何%が成約するか。売上・失注（逃した受注）の計算に使います。</p>
+            </div>
+            <div class="ar-field">
+              <label>⑥ 平均受注額（円・任意）<input id="ar-imp-deal" type="number" min="0" step="1000" value="500000"></label>
+              <p class="why">意図: 1件あたりの売上。⑤と掛けて追加売上の目安になります。</p>
+            </div>
+            <div class="ar-field">
+              <label>⑦ 粗利率 %（任意）<input id="ar-imp-margin" type="number" min="0" max="100" step="0.1" value="50"></label>
+              <p class="why">意図: 売上のうち手元に残る割合。追加粗利 ＝ 追加売上 × 粗利率。</p>
+            </div>
           </div>
+
           <div class="ar-impact-actions">
-            <button type="button" class="ar-btn ar-btn-primary" id="ar-imp-run" style="border:0;cursor:pointer">この数字で試算する</button>
+            <button type="button" class="ar-btn ar-btn-primary" id="ar-imp-run" style="border:0;cursor:pointer">この数字で計算する</button>
             <span class="ar-footnote" id="ar-imp-lift" style="margin:0"></span>
           </div>
-          <div class="ar-impact-kpis" id="ar-impact-kpis">
-            <div class="ar-impact-kpi"><div class="lab">追加訪問 / 月</div><div class="val" id="ar-imp-add-v">—</div><div class="sub">Baseシナリオ</div></div>
-            <div class="ar-impact-kpi"><div class="lab">追加問い合わせ / 月</div><div class="val" id="ar-imp-add-i">—</div><div class="sub">いちばん見たい数字</div></div>
-            <div class="ar-impact-kpi"><div class="lab">追加LINE / 月</div><div class="val" id="ar-imp-add-l">—</div><div class="sub">任意KPI</div></div>
-            <div class="ar-impact-kpi"><div class="lab">問い合わせ1件あたり費用目安</div><div class="val" id="ar-imp-cpi">—</div><div class="sub">月額 ÷ 追加問い合わせ</div></div>
+
+          <div class="ar-ba" id="ar-ba" aria-label="改善前と改善後">
+            <div class="ar-ba-card is-before">
+              <h4>改善前 · いま</h4>
+              <div class="ar-ba-row"><span>訪問</span><b id="ar-before-v">—</b></div>
+              <div class="ar-ba-row"><span>問い合わせ</span><b id="ar-before-i">—</b></div>
+              <div class="ar-ba-row"><span>LINE</span><b id="ar-before-l">—</b></div>
+              <div class="ar-ba-row"><span>参考売上</span><b id="ar-before-rev">—</b></div>
+              <div class="ar-ba-row"><span>参考粗利</span><b id="ar-before-profit">—</b></div>
+            </div>
+            <div class="ar-ba-arrow" aria-hidden="true">→</div>
+            <div class="ar-ba-card is-after">
+              <h4>改善後 · 目安</h4>
+              <div class="ar-ba-row"><span>訪問</span><b id="ar-after-v">—</b></div>
+              <div class="ar-ba-row"><span>問い合わせ</span><b id="ar-after-i">—</b></div>
+              <div class="ar-ba-row"><span>LINE</span><b id="ar-after-l">—</b></div>
+              <div class="ar-ba-row"><span>参考売上</span><b id="ar-after-rev">—</b></div>
+              <div class="ar-ba-row"><span>参考粗利</span><b id="ar-after-profit">—</b></div>
+            </div>
           </div>
+
+          <div class="ar-impact-kpis" id="ar-impact-kpis">
+            <div class="ar-impact-kpi is-accent"><div class="lab">増える問い合わせ</div><div class="val" id="ar-imp-add-i">—</div><div class="sub">いちばん見たい数字</div></div>
+            <div class="ar-impact-kpi is-accent"><div class="lab">増える訪問</div><div class="val" id="ar-imp-add-v">—</div><div class="sub">HPに来る人</div></div>
+            <div class="ar-impact-kpi"><div class="lab">増えるLINE</div><div class="val" id="ar-imp-add-l">—</div><div class="sub">任意</div></div>
+            <div class="ar-impact-kpi is-accent"><div class="lab">逃している受注の目安</div><div class="val" id="ar-imp-lost-deals">—</div><div class="sub">失注件数（仮定）</div></div>
+            <div class="ar-impact-kpi"><div class="lab">追加売上の目安</div><div class="val" id="ar-imp-add-rev">—</div><div class="sub">追加問合せ×受注率×単価</div></div>
+            <div class="ar-impact-kpi"><div class="lab">追加粗利の目安</div><div class="val" id="ar-imp-add-profit">—</div><div class="sub">追加売上×粗利率</div></div>
+            <div class="ar-impact-kpi"><div class="lab">問い合わせ1件あたり費用</div><div class="val" id="ar-imp-cpi">—</div><div class="sub">月額÷追加問い合わせ</div></div>
+            <div class="ar-impact-kpi"><div class="lab">参考ROI</div><div class="val" id="ar-imp-roi">—</div><div class="sub">（追加粗利−月額）÷月額</div></div>
+          </div>
+
+          <div class="ar-formula" id="ar-formula-box">
+            <strong>計算のしくみ（かんたん）</strong><br>
+            <span id="ar-formula-text">数字を入れると、ここに計算式が表示されます。</span>
+          </div>
+
           <table class="ar-impact-table">
-            <thead><tr><th>シナリオ</th><th>+訪問</th><th>+問い合わせ</th><th>+LINE</th><th>参考粗利（任意）</th></tr></thead>
+            <thead><tr><th>シナリオ</th><th>+訪問</th><th>+問い合わせ</th><th>+LINE</th><th>追加売上</th><th>追加粗利</th></tr></thead>
             <tbody id="ar-imp-tbody"></tbody>
           </table>
           <p class="ar-footnote" id="ar-imp-disc" style="margin-top:10px"></p>
-          <div class="ar-impact-actions">
-            <a class="ar-btn ar-btn-line" id="ar-cta-impact-top" href="/airreach/platform/#simulator">詳細シミュレーター（GSC/GA4実数）</a>
-            <a class="ar-btn ar-btn-line" href="/airreach/studio/">改善ファイルを作る（Studio）</a>
+
+          <div class="ar-next" aria-label="次のアクション">
+            <button type="button" id="ar-google-connect">
+              <span class="t">Googleと連携する</span>
+              <span class="d">Search Console / GA4の公式数字を取り込み、手入力を実数に置き換えます（未接続時はCSVでもOK）。</span>
+            </button>
+            <a href="/airreach/studio/" id="ar-cta-studio">
+              <span class="t">改善ファイルを作る</span>
+              <span class="d">FAQ・JSON-LD・llms.txt などの下書きを一括生成。公開前に人が確認します。</span>
+            </a>
+            <a href="/airreach/platform/#simulator" id="ar-cta-impact-top">
+              <span class="t">詳細シミュレーターへ</span>
+              <span class="d">キーワード別の公式数字や、より詳しい試算が必要なとき。</span>
+            </a>
+            <a href="/trillionbank/meeting/?type=company&from=airreach" id="ar-cta-meet-next">
+              <span class="t">この数字で相談する</span>
+              <span class="d">店舗・会社の実情に合わせて、優先施策を一緒に決めます。</span>
+            </a>
           </div>
+          <p class="ar-google-note" id="ar-google-note">Google連携は、接続設定が有効な環境ではワンクリックで開始します。まだの場合は Studio でCSV取り込みに案内します。</p>
         </div>
 
         <p class="ar-sample">SAMPLE / 要HackⅡ測定 — 以下のモデル別枠は実AI回答の引用スコアではありません。</p>
@@ -330,7 +451,11 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('ar-review-conv').textContent = result.review.conversionHint;
     document.getElementById('ar-review-disc').textContent = result.review.disclaimer;
     var q = 'AirReach診断URL=' + encodeURIComponent(url) + '&score=' + result.overall;
-    document.getElementById('ar-cta-meet').href = '/trillionbank/meeting/?type=company&from=airreach&' + q;
+    var meetHref = '/trillionbank/meeting/?type=company&from=airreach&' + q;
+    var meet = document.getElementById('ar-cta-meet');
+    if (meet) meet.href = meetHref;
+    var meetNext = document.getElementById('ar-cta-meet-next');
+    if (meetNext) meetNext.href = meetHref;
     var handoff = null;
     if (window.AirReachHandoff) {
       handoff = window.AirReachHandoff.saveDiagnoseHandoff(result, url);
@@ -352,10 +477,16 @@ document.addEventListener('DOMContentLoaded', function () {
         var i = document.getElementById('ar-imp-inq');
         var l = document.getElementById('ar-imp-line');
         var f = document.getElementById('ar-imp-fee');
+        var c = document.getElementById('ar-imp-close');
+        var d = document.getElementById('ar-imp-deal');
+        var m = document.getElementById('ar-imp-margin');
         if (v && !v.dataset.userTouched) v.value = seed.monthlyVisitors;
         if (i && !i.dataset.userTouched) i.value = seed.monthlyInquiries;
         if (l && !l.dataset.userTouched) l.value = seed.monthlyLine;
         if (f && !f.dataset.userTouched) f.value = seed.monthlyFee;
+        if (c && !c.dataset.userTouched) c.value = seed.closeRatePct;
+        if (d && !d.dataset.userTouched) d.value = seed.avgDeal;
+        if (m && !m.dataset.userTouched) m.value = seed.grossMarginPct;
       }
       window.__arLastOverall = result.overall;
       if (typeof window.__arRenderImpact === 'function') window.__arRenderImpact();
@@ -369,7 +500,16 @@ document.addEventListener('DOMContentLoaded', function () {
     if (n == null || !isFinite(n)) return '—';
     try { return '¥' + Math.round(n).toLocaleString('ja-JP'); } catch (e) { return '¥' + Math.round(n); }
   }
+  function cnt(n) {
+    if (n == null || !isFinite(n)) return '—';
+    try { return Math.round(n).toLocaleString('ja-JP'); } catch (e) { return String(Math.round(n)); }
+  }
+  function setTxt(id, v) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = v;
+  }
   function readImpactInputs() {
+    var marginEl = document.getElementById('ar-imp-margin');
     return {
       monthlyVisitors: document.getElementById('ar-imp-visitors').value,
       monthlyInquiries: document.getElementById('ar-imp-inq').value,
@@ -377,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function () {
       monthlyFee: document.getElementById('ar-imp-fee').value,
       closeRatePct: document.getElementById('ar-imp-close').value,
       avgDeal: document.getElementById('ar-imp-deal').value,
-      grossMarginPct: 50
+      grossMarginPct: marginEl ? marginEl.value : 50
     };
   }
   window.__arRenderImpact = function () {
@@ -388,28 +528,56 @@ document.addEventListener('DOMContentLoaded', function () {
     var sim = window.AirReachHandoff.simulateImpact(inputs, overall);
     var b = sim.scenarios.base;
     var opp = sim.opportunity;
-    document.getElementById('ar-impact-opp').textContent =
-      'いまのスコア ' + overall + '/100 だと、月あたり訪問 約' + opp.missedVisitors.toLocaleString('ja-JP') +
-      '・問い合わせ 約' + opp.missedInquiries.toLocaleString('ja-JP') +
-      ' を取りこぼしている可能性があります（Inferred）。改善仮定: 訪問 +' +
-      sim.lifts.trafficUpliftPct + '% / CVR +' + sim.lifts.cvrUpliftPct + '%。';
-    document.getElementById('ar-imp-add-v').textContent = '+' + b.addVisitors.toLocaleString('ja-JP');
-    document.getElementById('ar-imp-add-i').textContent = '+' + b.addInquiries.toLocaleString('ja-JP');
-    document.getElementById('ar-imp-add-l').textContent = '+' + b.addLine.toLocaleString('ja-JP');
-    document.getElementById('ar-imp-cpi').textContent =
-      b.costPerExtraInquiry != null ? yen(b.costPerExtraInquiry) : '—';
-    document.getElementById('ar-imp-lift').textContent =
-      '提案改善率（Inferred）訪問 +' + sim.lifts.trafficUpliftPct + '% / CVR +' + sim.lifts.cvrUpliftPct + '%';
-    document.getElementById('ar-imp-disc').textContent = sim.disclaimer + ' · ' + sim.evidenceClass;
+    var before = sim.before;
+    var after = sim.after;
+
+    setTxt('ar-miss-inq', cnt(opp.missedInquiries));
+    setTxt('ar-miss-hint',
+      'スコア ' + overall + '/100 のとき、毎月だいたいこれくらい問い合わせを逃している可能性があります（参考）');
+    setTxt('ar-miss-deals',
+      opp.missedDeals != null
+        ? ('逃している受注の目安: 約 ' + opp.missedDeals + ' 件 / 月（失注）')
+        : '受注率を入れると、逃している受注（失注）の目安も出ます');
+
+    setTxt('ar-before-v', cnt(before.visitors) + ' 人');
+    setTxt('ar-before-i', cnt(before.inquiries) + ' 件');
+    setTxt('ar-before-l', cnt(before.line) + ' 人');
+    setTxt('ar-before-rev', yen(before.revenue));
+    setTxt('ar-before-profit', yen(before.profit));
+    setTxt('ar-after-v', cnt(after.visitors) + ' 人');
+    setTxt('ar-after-i', cnt(after.inquiries) + ' 件');
+    setTxt('ar-after-l', cnt(after.line) + ' 人');
+    setTxt('ar-after-rev', yen(after.revenue));
+    setTxt('ar-after-profit', yen(after.profit));
+
+    setTxt('ar-imp-add-v', '+' + cnt(b.addVisitors));
+    setTxt('ar-imp-add-i', '+' + cnt(b.addInquiries));
+    setTxt('ar-imp-add-l', '+' + cnt(b.addLine));
+    setTxt('ar-imp-lost-deals', opp.missedDeals != null ? ('約' + opp.missedDeals + '件') : '—');
+    setTxt('ar-imp-add-rev', yen(b.addRevenue));
+    setTxt('ar-imp-add-profit', yen(b.addProfit));
+    setTxt('ar-imp-cpi', b.costPerExtraInquiry != null ? yen(b.costPerExtraInquiry) : '—');
+    setTxt('ar-imp-roi', b.roi != null ? ((b.roi >= 0 ? '+' : '') + Math.round(b.roi * 100) + '%') : '—');
+    setTxt('ar-imp-lift',
+      '改善の仮定（参考）: 訪問 +' + sim.lifts.trafficUpliftPct + '% / 問い合わせやすさ +' + sim.lifts.cvrUpliftPct + '%');
+    setTxt('ar-imp-disc', sim.disclaimer + ' · ' + sim.evidenceClass);
+    setTxt('ar-formula-text',
+      sim.formulas.visitors + ' ／ ' + sim.formulas.inquiries + ' ／ ' +
+      sim.formulas.revenue + ' ／ ' + sim.formulas.profit + ' ／ ' + sim.formulas.lost);
+
     var tb = document.getElementById('ar-imp-tbody');
-    tb.innerHTML = '';
-    ['low', 'base', 'high'].forEach(function (k) {
-      var s = sim.scenarios[k];
-      var tr = document.createElement('tr');
-      tr.innerHTML = '<td>' + k + '</td><td>+' + s.addVisitors + '</td><td>+' + s.addInquiries +
-        '</td><td>+' + s.addLine + '</td><td>' + yen(s.addProfit) + '</td>';
-      tb.appendChild(tr);
-    });
+    if (tb) {
+      tb.innerHTML = '';
+      ['low', 'base', 'high'].forEach(function (k) {
+        var s = sim.scenarios[k];
+        var tr = document.createElement('tr');
+        if (k === 'base') tr.className = 'is-base';
+        var label = k === 'low' ? '控えめ' : (k === 'base' ? '基準（おすすめ）' : '強気');
+        tr.innerHTML = '<td>' + label + '</td><td>+' + s.addVisitors + '</td><td>+' + s.addInquiries +
+          '</td><td>+' + s.addLine + '</td><td>' + yen(s.addRevenue) + '</td><td>' + yen(s.addProfit) + '</td>';
+        tb.appendChild(tr);
+      });
+    }
   };
   var savedImp = window.AirReachHandoff && window.AirReachHandoff.loadImpactInputs && window.AirReachHandoff.loadImpactInputs();
   if (savedImp) {
@@ -419,8 +587,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (savedImp.monthlyFee != null) document.getElementById('ar-imp-fee').value = savedImp.monthlyFee;
     if (savedImp.closeRatePct != null) document.getElementById('ar-imp-close').value = savedImp.closeRatePct;
     if (savedImp.avgDeal != null) document.getElementById('ar-imp-deal').value = savedImp.avgDeal;
+    if (savedImp.grossMarginPct != null && document.getElementById('ar-imp-margin')) {
+      document.getElementById('ar-imp-margin').value = savedImp.grossMarginPct;
+    }
   }
-  ['ar-imp-visitors','ar-imp-inq','ar-imp-line','ar-imp-fee','ar-imp-close','ar-imp-deal'].forEach(function (id) {
+  ['ar-imp-visitors','ar-imp-inq','ar-imp-line','ar-imp-fee','ar-imp-close','ar-imp-deal','ar-imp-margin'].forEach(function (id) {
     var el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('input', function () {
@@ -433,6 +604,26 @@ document.addEventListener('DOMContentLoaded', function () {
     if (window.__arLastOverall == null) window.__arLastOverall = 50;
     window.__arRenderImpact();
   });
+
+  var googleBtn = document.getElementById('ar-google-connect');
+  if (googleBtn) {
+    googleBtn.addEventListener('click', function () {
+      var note = document.getElementById('ar-google-note');
+      fetch('/api/google/auth', { method: 'GET', redirect: 'manual' }).then(function (res) {
+        if (res.status >= 300 && res.status < 400) {
+          var loc = res.headers.get('Location');
+          if (loc) { window.location.href = loc; return; }
+        }
+        if (res.ok) { window.location.href = '/api/google/auth'; return; }
+        throw new Error('oauth_unavailable');
+      }).catch(function () {
+        if (note) {
+          note.textContent = 'いまの公開サイトではワンクリック連携の準備中です。Studioで「Google連携」またはGSC/GA4のCSV取り込みが使えます。';
+        }
+        window.location.href = '/airreach/studio/#google';
+      });
+    });
+  }
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
