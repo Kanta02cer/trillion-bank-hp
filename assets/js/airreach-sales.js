@@ -1,7 +1,8 @@
 /**
- * AirReach Sales View — 一般検索 / 指名検索
- * First screen shows at most 4 numbers. No guarantee language.
- * Evidence: Official / Observed / Estimated / Inferred / User Input
+ * AirReach Sales View — industry-aware 4-number engine.
+ * Modes (internal): generic_search | branded_search
+ * User labels: 集客を調べる | 見え方を調べる
+ * Evidence: 実測 / 推定 / 参考予測 / ユーザー入力 / 診断
  */
 (function () {
   'use strict';
@@ -17,7 +18,19 @@
     try { return Math.round(n).toLocaleString('ja-JP'); } catch (e) { return String(Math.round(n)); }
   }
 
-  /** Stable pseudo-volume from keyword (Estimated, not Official). */
+  function normalizeMode(mode) {
+    if (mode === 'brand' || mode === 'branded' || mode === 'branded_search') return 'branded_search';
+    return 'generic_search';
+  }
+
+  function scoreMeaning(score) {
+    var s = num(score, 40);
+    if (s >= 75) return 'かなり整っています';
+    if (s >= 55) return 'まずまず。まだ伸ばせます';
+    if (s >= 35) return '改善余地があります';
+    return '大きく取りこぼしている可能性があります';
+  }
+
   function estimateSearchVolume(keyword, mode) {
     var k = String(keyword || '').trim();
     if (!k) {
@@ -27,9 +40,8 @@
     for (var i = 0; i < k.length; i++) h = ((h << 5) - h) + k.charCodeAt(i);
     h = Math.abs(h);
     var base = 800 + (h % 18000);
-    if (mode === 'brand') base = 200 + (h % 4500);
-    // intent boosts for commercial modifiers
-    if (/おすすめ|比較|料金|費用|口コミ|評判|東京|大阪|クリニック|会社/.test(k)) base = Math.round(base * 1.35);
+    if (mode === 'branded_search') base = 200 + (h % 4500);
+    if (/おすすめ|比較|料金|費用|口コミ|評判|東京|大阪|クリニック|会社|焼肉|予約/.test(k)) base = Math.round(base * 1.35);
     if (k.length <= 4) base = Math.round(base * 0.7);
     if (k.length >= 12) base = Math.round(base * 1.15);
     return {
@@ -59,7 +71,6 @@
     };
   }
 
-  /** Competitor-rank style narrative from score (Inferred). */
   function rankFromScore(score) {
     var s = clamp(num(score, 40), 0, 100);
     var rank = clamp(Math.round(11 - s / 10), 1, 10);
@@ -80,7 +91,7 @@
       multiplierLow: multLow,
       multiplierHigh: multHigh,
       evidenceClass: 'Inferred',
-      label: '改善後予測（レンジ）',
+      label: '改善後の参考レンジ',
       note: '準備度改善の仮定レンジ。成果・順位・掲載を保証しません。'
     };
   }
@@ -93,14 +104,11 @@
     if (opts.hasGa4) c += 12;
     if (opts.hasKeyword) c += 6;
     if (opts.hasBusinessInputs) c += 6;
-    if (opts.mode === 'brand' && opts.hasMediaUrl) c += 4;
+    if (opts.mode === 'branded_search' && opts.hasMediaUrl) c += 4;
+    if (opts.industryConfidence) c += Math.round((opts.industryConfidence - 50) / 10);
     return clamp(c, 35, 88);
   }
 
-  /**
-   * Inquiry lift from current inquiries + score improvement (Inferred).
-   * Prefer User Input inquiries; else derive from volume * tiny CVR assumption.
-   */
   function inquiryForecast(inputs, score, volume) {
     inputs = inputs || {};
     var currentInq = Math.max(0, num(inputs.monthlyInquiries, 0));
@@ -113,7 +121,6 @@
 
     var inqSource = 'User Input';
     if (!currentInq && volume && volume > 0) {
-      // very rough: 0.15% of search demand becomes site inquiry potential baseline
       currentInq = Math.max(3, Math.round(volume * 0.0015));
       inqSource = 'Estimated';
     }
@@ -122,7 +129,6 @@
     }
 
     var range = improvementRange(score);
-    // Sales-facing relative lift from readiness gap (still a non-guaranteed range)
     var liftLow = clamp(0.25 + (78 - score) / 220, 0.22, 0.5);
     var liftHigh = clamp(liftLow + 0.18 + (78 - score) / 280, liftLow + 0.15, 0.8);
 
@@ -163,7 +169,7 @@
       addProfitHigh: addProfitHigh,
       cpa: cpa,
       fee: fee,
-      note: '問い合わせ増加は入力値×改善仮定の参考レンジです。保証ではありません。'
+      note: '成果増加は入力値×改善仮定の参考レンジです。保証ではありません。'
     };
   }
 
@@ -181,10 +187,8 @@
     };
   }
 
-  /** Brand / named-search: information reflection + media citation potential */
   function brandReflection(diagnose, mediaUrl) {
     var base = diagnose && diagnose.overall != null ? diagnose.overall : 45;
-    // brand "情報反映度" leans on entity/faq/discover
     var score = base;
     if (diagnose && diagnose.entity != null) {
       score = Math.round(base * 0.45 + diagnose.entity * 0.25 + (diagnose.faq || 40) * 0.15 + (diagnose.discover || 40) * 0.15);
@@ -192,21 +196,21 @@
     score = clamp(score, 15, 90);
     var sources = [
       { name: '公式サイト', share: clamp(28 + Math.round(score * 0.25), 20, 55), used: true },
-      { name: 'ニュース', share: 18, used: score >= 50 },
-      { name: '口コミ', share: 12, used: false },
+      { name: 'ニュース媒体', share: 18, used: score >= 50 },
+      { name: '口コミ・評判', share: 12, used: false },
       { name: '比較サイト', share: 17, used: score < 60 },
       { name: 'その他', share: 0, used: false }
     ];
     var sum = sources.reduce(function (s, x) { return s + x.share; }, 0);
     sources[sources.length - 1].share = Math.max(5, 100 - (sum - sources[sources.length - 1].share));
 
-    var currentCite = mediaUrl ? clamp(2 + Math.round((100 - score) * 0.06), 2, 12) : null;
-    var citeLow = currentCite != null ? clamp(currentCite * 2, currentCite + 3, 30) : null;
-    var citeHigh = currentCite != null ? clamp(currentCite * 4, citeLow + 3, 40) : null;
+    var currentCite = mediaUrl ? clamp(2 + Math.round((100 - score) * 0.06), 2, 12) : clamp(3 + Math.round((100 - score) * 0.04), 2, 10);
+    var citeLow = clamp(currentCite * 2, currentCite + 3, 30);
+    var citeHigh = clamp(currentCite * 4, citeLow + 3, 40);
 
     return {
       score: score,
-      evidenceClass: diagnose ? 'Observed+Inferred' : 'Estimated',
+      evidenceClass: diagnose ? 'Observed' : 'Estimated',
       sources: sources,
       thirdPartyTrust: clamp(Math.round(score * 0.55), 15, 70),
       officialReflect: clamp(Math.round(score * 0.9), 20, 85),
@@ -214,41 +218,46 @@
       citationCurrent: currentCite,
       citationLow: citeLow,
       citationHigh: citeHigh,
-      citationEvidenceClass: 'Inferred',
-      citationNote: '指定記事が参照候補に入りやすい設計を行い、引用率を継続計測します。必ず引用されることを保証しません。'
+      citationEvidenceClass: mediaUrl ? 'Inferred' : 'Estimated',
+      citationNote: '指定記事が参照候補に入りやすい情報設計を行い、実際の引用状況を継続計測します。必ず引用されることを保証しません。'
     };
   }
 
-  function top3Actions(mode, diagnose, brand) {
-    var now = 'よく聞かれる質問（FAQ）を公式ページに追加する';
-    var weeks = '比較・選び方のページを1本つくる';
-    var partner = 'Trillion Bankに測定と改善を任せる（HackⅡ）';
-    if (mode === 'brand') {
-      now = '会社の定義・サービス内容を公式ページ冒頭で明確にする';
-      weeks = '指定メディア記事と公式情報の相互リンク・引用関係を整える';
-      partner = '指名検索の引用率をHackⅡで継続計測する';
-      if (brand && brand.mediaUrl) {
-        now = '指定記事の要点を公式FAQ・サービス説明と揃える';
-      }
-    } else if (diagnose && diagnose.actions) {
-      if (diagnose.actions.now && diagnose.actions.now[0]) now = diagnose.actions.now[0];
-      if (diagnose.actions.weeks && diagnose.actions.weeks[0]) weeks = diagnose.actions.weeks[0];
-      if (diagnose.actions.partner && diagnose.actions.partner[0]) partner = diagnose.actions.partner[0];
+  function top3Actions(industry, mode, diagnose, brand) {
+    var profile = industry || (window.AirReachIndustry && window.AirReachIndustry.getIndustry('other'));
+    var actions = (profile && profile.actions) ? profile.actions.slice(0, 3) : [];
+    if (!actions.length) {
+      actions = [
+        { slot: 'NOW', title: '今すぐ', action: 'よく聞かれる質問を追加する', cta: '作成する' },
+        { slot: '2W', title: '次に', action: '比較ページを追加する', cta: '作成する' },
+        { slot: 'PARTNER', title: '任せる', action: 'Trillion Bankに継続測定を任せる', cta: '任せる' }
+      ];
     }
-    return [
-      { slot: 'NOW', title: '今すぐ直す', action: now, cta: '作成する', href: '/airreach/studio/' },
-      { slot: '2W', title: '2週間以内', action: weeks, cta: '作成する', href: '/airreach/studio/' },
-      { slot: 'PARTNER', title: 'Trillion Bankに任せる', action: partner, cta: '相談する', href: '/trillionbank/meeting/?type=company&from=airreach' }
-    ];
+    return actions.map(function (a) {
+      return {
+        slot: a.slot,
+        title: a.title,
+        action: a.action,
+        cta: a.cta || '作成する',
+        href: a.slot === 'PARTNER'
+          ? '/trillionbank/meeting/?type=company&from=airreach'
+          : '/airreach/studio/'
+      };
+    });
   }
 
   function buildSalesReport(opts) {
     opts = opts || {};
-    var mode = opts.mode === 'brand' ? 'brand' : 'general';
+    var mode = normalizeMode(opts.mode);
     var keyword = String(opts.keyword || opts.brand || '').trim();
     var diagnose = opts.diagnose || null;
     var inputs = opts.inputs || {};
     var mediaUrl = String(opts.mediaUrl || '').trim();
+    var industryId = opts.industryId || 'other';
+    var industryDetect = opts.industryDetect || null;
+    var profile = (window.AirReachIndustry && window.AirReachIndustry.getIndustry(industryId))
+      || { id: 'other', label: 'その他', display_label: '問い合わせ', demand_label: '探している人', now_label: '今の選ばれやすさ', after_label: '改善後の参考', outcome_label: '問い合わせ', demand_meaning: '', now_meaning: '', after_meaning: '', outcome_meaning: '', hero_generic: '診断結果', hero_branded: '診断結果', cta_generic: 'まず何を直すか見る', cta_branded: 'まず何を直すか見る', impact_current_label: 'いま' };
+
     var baseline = (window.AirReachHandoff && window.AirReachHandoff.loadOfficialBaseline)
       ? window.AirReachHandoff.loadOfficialBaseline()
       : null;
@@ -261,7 +270,7 @@
     }
 
     var volume = estimateSearchVolume(keyword, mode);
-    if (opts.volumeOverride != null && isFinite(Number(opts.volumeOverride))) {
+    if (opts.volumeOverride != null && isFinite(Number(opts.volumeOverride)) && String(opts.volumeOverride).trim() !== '') {
       volume = {
         value: Number(opts.volumeOverride),
         evidenceClass: 'User Input',
@@ -279,7 +288,7 @@
     var close = clamp(num(inputs.closeRatePct, 20) / 100, 0, 1);
     var deal = Math.max(0, num(inputs.avgDeal, 0));
     var lost = opportunityLoss(inq.currentInquiries, acq.score, close, deal);
-    var brand = mode === 'brand' ? brandReflection(diagnose, mediaUrl) : null;
+    var brand = mode === 'branded_search' || industryId === 'media' ? brandReflection(diagnose, mediaUrl) : null;
     var confidence = confidenceScore({
       mode: mode,
       hasDiagnose: !!diagnose,
@@ -287,36 +296,114 @@
       hasGa4: !!(baseline && baseline.ga4 && baseline.ga4.monthlySessions > 0),
       hasKeyword: !!keyword,
       hasBusinessInputs: !!(inputs.monthlyInquiries || inputs.monthlyVisitors),
-      hasMediaUrl: !!mediaUrl
+      hasMediaUrl: !!mediaUrl,
+      industryConfidence: industryDetect && industryDetect.confidence
     });
-    var actions = top3Actions(mode, diagnose, brand);
+    var actions = top3Actions(profile, mode, diagnose, brand);
 
     var headline4;
-    if (mode === 'general') {
-      headline4 = [
-        { id: 'demand', label: '月間検索需要', value: volume.value != null ? cnt(volume.value) : '—', unit: '回', badge: volume.evidenceClass, sub: keyword ? ('「' + keyword + '」周辺') : 'キーワードを入力' },
-        { id: 'now', label: '現在の獲得力', value: String(acq.score), unit: '/ 100', badge: acq.evidenceClass, sub: '競合10社中 ' + rank.rank + '位相当（目安）' },
-        { id: 'after', label: '改善後予測', value: improve.low + '〜' + improve.high, unit: '/ 100', badge: 'Inferred', sub: '獲得力の目安 ' + improve.multiplierLow + '〜' + improve.multiplierHigh + '倍（レンジ・保証なし）' },
-        { id: 'inq', label: '追加問い合わせ見込み', value: '+' + inq.addLow + '〜' + inq.addHigh, unit: '件 / 月', badge: 'Inferred', sub: '現在 ' + cnt(inq.currentInquiries) + ' → ' + cnt(inq.afterLow) + '〜' + cnt(inq.afterHigh) + ' 件' }
-      ];
-    } else {
+    var heroTitle = mode === 'branded_search' ? profile.hero_branded : profile.hero_generic;
+
+    if (industryId === 'media' || (mode === 'branded_search' && profile.primary_conversion === 'citation')) {
       var bScore = brand ? brand.score : acq.score;
-      var bImprove = improvementRange(bScore);
+      var citeNow = brand ? brand.citationCurrent : 4;
+      var citeLow = brand ? brand.citationLow : 12;
+      var citeHigh = brand ? brand.citationHigh : 24;
       headline4 = [
-        { id: 'demand', label: '月間指名検索', value: volume.value != null ? cnt(volume.value) : '—', unit: '回', badge: volume.evidenceClass, sub: keyword ? ('「' + keyword + '」') : '会社名・サービス名を入力' },
-        { id: 'now', label: '現在の情報反映度', value: String(bScore), unit: '/ 100', badge: brand ? brand.evidenceClass : acq.evidenceClass, sub: '公式・第三者に情報がどれだけ伝わるか' },
-        { id: 'after', label: '改善後予測（情報反映度）', value: bImprove.low + '〜' + bImprove.high, unit: '/ 100', badge: 'Inferred', sub: 'メディくる等で第三者記事・公式を整えた場合の目安 · ' + bImprove.multiplierLow + '〜' + bImprove.multiplierHigh + 'x' },
-        mediaUrl && brand && brand.citationCurrent != null
-          ? { id: 'cite', label: '指定記事の参照されやすさ', value: brand.citationCurrent + '% → ' + brand.citationLow + '〜' + brand.citationHigh + '%', unit: '', badge: 'Inferred', sub: '必ず引用される保証はありません。参照候補化＋継続計測' }
-          : { id: 'inq', label: '追加問い合わせ見込み', value: '+' + inq.addLow + '〜' + inq.addHigh, unit: '件 / 月', badge: 'Inferred', sub: '現在 ' + cnt(inq.currentInquiries) + ' → ' + cnt(inq.afterLow) + '〜' + cnt(inq.afterHigh) + ' 件' }
+        {
+          id: 'demand',
+          label: profile.demand_label,
+          value: volume.value != null ? ('約 ' + cnt(volume.value)) : '—',
+          unit: '回 / 月',
+          badge: volume.evidenceClass,
+          meaning: profile.demand_meaning,
+          sub: keyword ? ('「' + keyword + '」') : '会社名・サービス名を入力'
+        },
+        {
+          id: 'now',
+          label: profile.now_label,
+          value: String(bScore),
+          unit: '/ 100',
+          badge: brand ? brand.evidenceClass : 'Observed',
+          meaning: profile.now_meaning + ' · ' + scoreMeaning(bScore),
+          sub: scoreMeaning(bScore)
+        },
+        {
+          id: 'cite_now',
+          label: '現在の第三者記事参照',
+          value: String(citeNow),
+          unit: '%',
+          badge: mediaUrl ? 'Observed' : 'Estimated',
+          meaning: mediaUrl ? '指定した記事が参照された割合の目安' : '第三者記事全体の参照目安（記事URL未指定）',
+          sub: mediaUrl ? '指定記事あり' : '記事URLを入れると指定記事の参照に切り替わります'
+        },
+        {
+          id: 'cite_after',
+          label: profile.outcome_label,
+          value: citeNow + '% → ' + citeLow + '〜' + citeHigh + '%',
+          unit: '',
+          badge: 'Inferred',
+          meaning: profile.outcome_meaning,
+          sub: '必ず引用される保証はありません'
+        }
+      ];
+      heroTitle = profile.hero_branded;
+    } else {
+      headline4 = [
+        {
+          id: 'demand',
+          label: profile.demand_label,
+          value: volume.value != null ? ('約 ' + cnt(volume.value)) : '—',
+          unit: '回 / 月',
+          badge: volume.evidenceClass,
+          meaning: profile.demand_meaning,
+          sub: keyword ? ('「' + keyword + '」周辺') : '検索テーマを入力'
+        },
+        {
+          id: 'now',
+          label: profile.now_label,
+          value: String(acq.score),
+          unit: '/ 100',
+          badge: acq.evidenceClass === 'Observed' ? 'Observed' : 'Estimated',
+          meaning: profile.now_meaning + ' · ' + scoreMeaning(acq.score),
+          sub: scoreMeaning(acq.score)
+        },
+        {
+          id: 'after',
+          label: profile.after_label,
+          value: improve.low + '〜' + improve.high,
+          unit: '/ 100',
+          badge: 'Inferred',
+          meaning: profile.after_meaning,
+          sub: '目安 ' + improve.multiplierLow + '〜' + improve.multiplierHigh + '倍（レンジ・保証なし）'
+        },
+        {
+          id: 'outcome',
+          label: profile.outcome_label,
+          value: '+' + inq.addLow + '〜' + inq.addHigh,
+          unit: '件 / 月',
+          badge: 'Inferred',
+          meaning: profile.outcome_meaning,
+          sub: '現在 ' + cnt(inq.currentInquiries) + ' → ' + cnt(inq.afterLow) + '〜' + cnt(inq.afterHigh) + ' 件'
+        }
       ];
     }
 
+    var primaryCta = mode === 'branded_search' || industryId === 'media'
+      ? (profile.cta_branded || 'どの記事が使われているか見る')
+      : (profile.cta_generic || 'まず何を直すか見る');
+    var ctaHash = industryId === 'media' ? '#brand-panel' : '#actions';
+
     return {
       mode: mode,
+      modeLabel: mode === 'branded_search' ? '見え方を調べる' : '集客を調べる',
+      industryId: industryId,
+      industryLabel: profile.label,
+      industryDetect: industryDetect,
       keyword: keyword,
       url: opts.url || '',
       measuredAt: new Date().toISOString(),
+      heroTitle: heroTitle,
       volume: volume,
       acquisition: acq,
       improve: improve,
@@ -328,28 +415,23 @@
       confidenceEvidenceClass: 'Inferred',
       headline4: headline4,
       actions: actions,
-      badges: {
-        Official: '公式データ',
-        Observed: '実測',
-        Estimated: '推定',
-        Inferred: '予測/仮定',
-        'User Input': '入力値'
-      },
-      cta: mode === 'general'
-        ? { label: '改善した場合を見る', hash: '#impact' }
-        : { label: '引用されやすい状態に改善する', hash: '#impact' },
-      disclaimer: '表示は参考シミュレーションです。検索順位・AI掲載・問い合わせ・売上を保証しません。'
+      displayLabel: profile.display_label,
+      impactCurrentLabel: profile.impact_current_label || ('いまの' + profile.display_label),
+      cta: { label: primaryCta, hash: ctaHash },
+      actionsCta: { label: 'この3つを改善する', href: '/airreach/studio/' },
+      disclaimer: '表示は参考シミュレーションです。検索順位・AI掲載・予約・問い合わせ・売上を保証しません。',
+      steps: ['現在地', '改善後', 'やること']
     };
   }
 
   function badgeLabel(b) {
     var s = String(b || '');
-    if (s.indexOf('Official') >= 0) return '実測（公式）';
-    if (s.indexOf('Observed') >= 0) return '実測';
+    if (s.indexOf('Official') >= 0) return '実測';
+    if (s.indexOf('Observed') >= 0 || s.indexOf('実測') >= 0) return '実測';
+    if (s.indexOf('User') >= 0 || s.indexOf('入力') >= 0) return 'ユーザー入力';
     if (s.indexOf('Estimated') >= 0 || s.indexOf('推定') >= 0) return '推定';
-    if (s.indexOf('Inferred') >= 0 || s.indexOf('予測') >= 0) return '予測';
-    if (s.indexOf('User') >= 0 || s.indexOf('入力') >= 0) return '入力値';
-    if (s.indexOf('未入力') >= 0) return '未入力';
+    if (s.indexOf('Inferred') >= 0 || s.indexOf('予測') >= 0 || s.indexOf('参考') >= 0) return '参考予測';
+    if (s.indexOf('診断') >= 0) return '診断';
     return s || '参考';
   }
 
@@ -358,8 +440,10 @@
     buildSalesReport: buildSalesReport,
     improvementRange: improvementRange,
     inquiryForecast: inquiryForecast,
+    normalizeMode: normalizeMode,
     yen: yen,
     cnt: cnt,
-    badgeLabel: badgeLabel
+    badgeLabel: badgeLabel,
+    scoreMeaning: scoreMeaning
   };
 })();

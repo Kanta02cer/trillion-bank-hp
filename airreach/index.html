@@ -1,8 +1,8 @@
 ---
-title: "AirReach｜検索から問い合わせ増加を30秒で診断 - Trillion Bank"
-tbdesc: "一般検索・指名検索の2モードで、検索需要・現在地・改善余地・追加問い合わせ見込みを営業向けに表示。成果は保証しません。"
-keywords: "AirReach,無料診断,問い合わせ,一般検索,指名検索,Trillion Bank"
-ai_summary: "AirReachは検索需要から問い合わせ増加見込みまでを営業画面で可視化する無料入口。詳細実測はHackⅡ、改善生成はStudio。"
+title: "AirReach｜検索からあと何件増やせるか30秒で診断 - Trillion Bank"
+tbdesc: "URLと業種を理解し、飲食なら予約・BtoBなら問い合わせ・メディアなら記事参照など、意味のある数字だけを返す無料診断。成果は保証しません。"
+keywords: "AirReach,無料診断,予約,問い合わせ,記事参照,Trillion Bank"
+ai_summary: "AirReachは業種ごとに予約・問い合わせ・記事参照など経営者向けKPIだけを返す営業診断。詳細実測はHackⅡ、改善生成はStudio。"
 ---
 <!DOCTYPE html>
 <html lang="ja">
@@ -10,85 +10,93 @@ ai_summary: "AirReachは検索需要から問い合わせ増加見込みまで�
 <meta charset="UTF-8">
 {% include tb-head.html %}
 <style>
-.ar-page{color:#0f172a;background:#fff}
-.ar-wrap{width:min(920px,calc(100% - 40px));margin:0 auto}
-.ar-hero{padding:clamp(72px,10vw,110px) 0 40px;border-bottom:1px solid #e5e7eb;background:linear-gradient(180deg,#f8fbff,#fff 70%)}
-.ar-badge{font:700 .68rem/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;color:#2563eb;margin-bottom:12px}
-.ar-hero h1{font-size:clamp(1.75rem,4.2vw,2.75rem);line-height:1.2;letter-spacing:-.03em;margin:0 0 12px;font-weight:700;max-width:14em}
+.ar-page{color:#0f172a;background:#fff;font-size:18px}
+.ar-wrap{width:min(880px,calc(100% - 36px));margin:0 auto}
+.ar-hero{padding:clamp(64px,9vw,100px) 0 36px;border-bottom:1px solid #e5e7eb;background:#f8fbff}
+.ar-badge{font:700 .72rem/1.4 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#1d4ed8;margin-bottom:12px}
+.ar-hero h1{font-size:clamp(1.85rem,4.4vw,2.85rem);line-height:1.22;letter-spacing:-.03em;margin:0 0 14px;font-weight:700;max-width:15em}
 .ar-hero h1 em{font-style:normal;color:#2563eb}
-.ar-lead{color:#64748b;line-height:1.8;max-width:36em;margin:0 0 22px;font-size:1rem}
-.ar-modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 18px}
-.ar-mode{border:1px solid #e5e7eb;border-radius:14px;padding:16px;background:#fff;cursor:pointer;text-align:left;font:inherit}
-.ar-mode:hover,.ar-mode.is-on{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-.ar-mode .t{font-weight:700;font-size:1.05rem;margin-bottom:6px;color:#0f172a}
-.ar-mode .d{font-size:.86rem;color:#64748b;line-height:1.55}
-.ar-form{display:grid;gap:10px}
-.ar-form label{display:grid;gap:6px;font-size:.82rem;font-weight:700;color:#334155}
-.ar-form input{border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;font:inherit}
-.ar-form input:focus{outline:2px solid rgba(37,99,235,.25);border-color:#2563eb}
-.ar-row{display:grid;grid-template-columns:1fr auto;gap:8px}
-.ar-btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:10px;font-weight:700;border:1px solid transparent;cursor:pointer;text-decoration:none;font-size:.92rem}
+.ar-lead{color:#334155;line-height:1.75;max-width:34em;margin:0 0 22px;font-size:1.05rem}
+.ar-modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 16px}
+.ar-mode{border:2px solid #e2e8f0;border-radius:14px;padding:18px;background:#fff;cursor:pointer;text-align:left;font:inherit;min-height:112px}
+.ar-mode:hover,.ar-mode.is-on{border-color:#2563eb;background:#eff6ff}
+.ar-mode .t{font-weight:800;font-size:1.2rem;margin-bottom:8px;color:#0f172a}
+.ar-mode .d{font-size:1rem;color:#475569;line-height:1.55}
+.ar-form{display:grid;gap:12px}
+.ar-form label{display:grid;gap:6px;font-size:1rem;font-weight:700;color:#1e293b}
+.ar-form input,.ar-form select{border:2px solid #e2e8f0;border-radius:12px;padding:14px 16px;font:inherit;font-size:1.05rem;min-height:56px}
+.ar-form input:focus,.ar-form select:focus{outline:3px solid rgba(37,99,235,.25);border-color:#2563eb}
+.ar-row{display:grid;grid-template-columns:1fr auto;gap:10px}
+.ar-btn{display:inline-flex;align-items:center;justify-content:center;padding:16px 22px;border-radius:12px;font-weight:800;border:2px solid transparent;cursor:pointer;text-decoration:none;font-size:1.05rem;min-height:56px}
 .ar-btn-primary{background:#2563eb;color:#fff}
-.ar-btn-line{background:#fff;border-color:#e5e7eb;color:#0f172a}
+.ar-btn-line{background:#fff;border-color:#cbd5e1;color:#0f172a}
 .ar-btn-line:hover{border-color:#2563eb}
-.ar-note{font-size:.78rem;color:#94a3b8;line-height:1.65;margin-top:12px}
-.ar-consent{display:flex;gap:10px;align-items:flex-start;font-size:.8rem;color:#64748b;margin-top:10px;line-height:1.55}
-.ar-error{display:none;margin-top:12px;padding:10px 12px;border-radius:8px;border:1px solid #e5e7eb;color:#991b1b;font-size:.86rem}
+.ar-note{font-size:.95rem;color:#64748b;line-height:1.65;margin-top:12px}
+.ar-consent{display:flex;gap:10px;align-items:flex-start;font-size:.95rem;color:#475569;margin-top:10px;line-height:1.55}
+.ar-error{display:none;margin-top:12px;padding:12px;border-radius:10px;border:2px solid #fecaca;color:#991b1b;font-size:1rem}
 .ar-error.is-on{display:block}
-.ar-sec{padding:clamp(36px,6vw,64px) 0}
-.ar-empty{padding:28px 0;color:#64748b}
+.ar-sec{padding:clamp(32px,5vw,56px) 0}
+.ar-empty{padding:24px 0;color:#64748b;font-size:1.05rem}
 .ar-dash{display:none}
 .ar-dash.is-on{display:block}
-.ar-kicker{font:700 .68rem/1.4 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#2563eb;margin-bottom:8px}
-.ar-h2{font-size:clamp(1.3rem,2.6vw,1.8rem);margin:0 0 8px}
-.ar-sub{color:#64748b;line-height:1.7;margin:0 0 20px}
-.ar-chain{display:grid;gap:0;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;background:#fff}
-.ar-stepn{padding:18px 20px;border-bottom:1px solid #eef2f7;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
-.ar-stepn:last-child{border-bottom:0;background:linear-gradient(180deg,#eff6ff,#fff)}
-.ar-stepn .ix{width:28px;height:28px;border-radius:999px;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800}
-.ar-stepn .lab{font-size:.78rem;color:#64748b;margin-bottom:4px}
-.ar-stepn .val{font-size:clamp(1.5rem,3.5vw,2.1rem);font-weight:800;letter-spacing:-.03em;color:#0f172a;line-height:1.1}
-.ar-stepn.is-accent .val{color:#2563eb}
-.ar-stepn .unit{font-size:.9rem;font-weight:700;color:#94a3b8;margin-left:4px}
-.ar-stepn .sub{font-size:.8rem;color:#64748b;margin-top:6px;line-height:1.45}
-.ar-badge-e{display:inline-block;font-size:.65rem;font-weight:800;padding:3px 7px;border-radius:999px;border:1px solid #e5e7eb;color:#64748b;white-space:nowrap}
-.ar-badge-e.is-obs{background:#ecfdf5;border-color:#bbf7d0;color:#047857}
-.ar-badge-e.is-est{background:#fff7ed;border-color:#fed7aa;color:#c2410c}
-.ar-badge-e.is-inf{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
-.ar-badge-e.is-user{background:#f8fafc;color:#475569}
-.ar-conf{margin:14px 0 0;font-size:.84rem;color:#475569}
-.ar-conf b{color:#2563eb}
-.ar-cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-.ar-panel{margin-top:28px;padding-top:22px;border-top:1px solid #e5e7eb}
+.ar-steps{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.ar-steps span{padding:8px 12px;border-radius:999px;border:2px solid #e2e8f0;font-size:.95rem;font-weight:700;color:#64748b}
+.ar-steps span.is-on{border-color:#2563eb;color:#1d4ed8;background:#eff6ff}
+.ar-kicker{font:700 .72rem/1.4 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:#1d4ed8;margin-bottom:8px}
+.ar-h2{font-size:clamp(1.45rem,3vw,2rem);margin:0 0 10px;line-height:1.3}
+.ar-sub{color:#475569;line-height:1.7;margin:0 0 18px;font-size:1.05rem}
+.ar-ind{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 14px;font-size:1rem;color:#334155}
+.ar-ind b{color:#0f172a}
+.ar-chain{display:grid;gap:0;border:2px solid #e2e8f0;border-radius:16px;overflow:hidden;background:#fff}
+.ar-stepn{padding:20px 22px;border-bottom:1px solid #eef2f7;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start}
+.ar-stepn:last-child{border-bottom:0;background:#eff6ff}
+.ar-stepn .ix{width:32px;height:32px;border-radius:999px;background:#dbeafe;color:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;margin-top:4px}
+.ar-stepn .lab{font-size:1rem;color:#475569;margin-bottom:6px;font-weight:700}
+.ar-stepn .val{font-size:clamp(2rem,5vw,2.75rem);font-weight:800;letter-spacing:-.03em;color:#0f172a;line-height:1.05}
+.ar-stepn.is-accent .val{color:#1d4ed8}
+.ar-stepn .unit{font-size:1.05rem;font-weight:700;color:#64748b;margin-left:6px}
+.ar-stepn .meaning{font-size:1rem;color:#334155;margin-top:8px;line-height:1.5;font-weight:600}
+.ar-stepn .sub{font-size:.95rem;color:#64748b;margin-top:4px;line-height:1.45}
+.ar-badge-e{display:inline-block;font-size:.8rem;font-weight:800;padding:6px 10px;border-radius:999px;border:2px solid #e2e8f0;color:#475569;white-space:nowrap;margin-top:4px}
+.ar-badge-e.is-obs{background:#ecfdf5;border-color:#86efac;color:#047857}
+.ar-badge-e.is-est{background:#fff7ed;border-color:#fdba74;color:#c2410c}
+.ar-badge-e.is-inf{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
+.ar-badge-e.is-user{background:#f8fafc;border-color:#cbd5e1;color:#334155}
+.ar-conf{margin:16px 0 0;font-size:1rem;color:#334155}
+.ar-conf b{color:#1d4ed8}
+.ar-cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.ar-cta-row .ar-btn-primary{flex:1;min-width:220px}
+.ar-panel{margin-top:36px;padding-top:28px;border-top:2px solid #e2e8f0}
 .ar-ba{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}
-.ar-ba-card{border:1px solid #e5e7eb;border-radius:12px;padding:14px}
+.ar-ba-card{border:2px solid #e2e8f0;border-radius:12px;padding:16px}
 .ar-ba-card.is-after{border-color:#93c5fd;background:#eff6ff}
-.ar-ba-card h4{margin:0 0 10px;font-size:.75rem;color:#64748b}
-.ar-ba-card.is-after h4{color:#2563eb}
-.ar-ba-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:.9rem}
+.ar-ba-card h4{margin:0 0 10px;font-size:.95rem;color:#64748b}
+.ar-ba-card.is-after h4{color:#1d4ed8}
+.ar-ba-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:1.05rem;gap:12px}
 .ar-ba-row:last-child{border-bottom:0}
-.ar-ba-card.is-after .ar-ba-row b{color:#2563eb}
-.ar-ba-arrow{display:flex;align-items:center;color:#2563eb;font-weight:800;font-size:1.25rem}
-.ar-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.ar-field{border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#fff}
-.ar-field label{display:grid;gap:6px;font-size:.82rem;font-weight:700}
-.ar-field .why{font-size:.75rem;color:#64748b;line-height:1.5;font-weight:400;margin:0}
-.ar-actions3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.ar-act{border-top:2px solid #2563eb;padding-top:12px}
-.ar-act .tag{font-size:.72rem;font-weight:800;color:#2563eb;margin-bottom:6px}
-.ar-act h3{margin:0 0 8px;font-size:1rem}
-.ar-act p{margin:0 0 12px;color:#64748b;font-size:.88rem;line-height:1.55}
-.ar-source{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:10px}
-.ar-source th,.ar-source td{text-align:left;padding:8px 6px;border-bottom:1px solid #e5e7eb}
-.ar-next{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.ar-next a,.ar-next button{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;padding:14px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;text-decoration:none;color:inherit;font:inherit;cursor:pointer}
-.ar-next .t{font-weight:800;color:#2563eb}
-.ar-next .d{font-size:.8rem;color:#64748b;line-height:1.5}
-.ar-disc{font-size:.78rem;color:#94a3b8;line-height:1.65;margin-top:14px}
+.ar-ba-card.is-after .ar-ba-row b{color:#1d4ed8}
+.ar-ba-arrow{display:flex;align-items:center;color:#2563eb;font-weight:800;font-size:1.4rem}
+.ar-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ar-field{border:2px solid #e2e8f0;border-radius:12px;padding:14px;background:#fff}
+.ar-field label{display:grid;gap:6px;font-size:1rem;font-weight:700}
+.ar-field .why{font-size:.9rem;color:#64748b;line-height:1.5;font-weight:400;margin:0}
+.ar-actions3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ar-act{border-top:3px solid #2563eb;padding-top:14px}
+.ar-act .tag{font-size:.9rem;font-weight:800;color:#1d4ed8;margin-bottom:8px}
+.ar-act h3{margin:0 0 8px;font-size:1.2rem;line-height:1.35}
+.ar-act p{margin:0;color:#475569;font-size:1rem;line-height:1.55}
+.ar-source{width:100%;border-collapse:collapse;font-size:1.05rem;margin-top:10px}
+.ar-source th,.ar-source td{text-align:left;padding:12px 8px;border-bottom:1px solid #e5e7eb}
+.ar-disc{font-size:.95rem;color:#64748b;line-height:1.65;margin-top:14px}
+.ar-confirm{display:none;margin:14px 0;padding:16px;border:2px solid #fbbf24;border-radius:12px;background:#fffbeb}
+.ar-confirm.is-on{display:block}
+.ar-confirm p{margin:0 0 10px;font-weight:700;color:#92400e}
 @media(max-width:800px){
-  .ar-modes,.ar-form-grid,.ar-actions3,.ar-next,.ar-ba{grid-template-columns:1fr}
+  .ar-modes,.ar-form-grid,.ar-actions3,.ar-ba{grid-template-columns:1fr}
   .ar-row{grid-template-columns:1fr}
   .ar-ba-arrow{justify-content:center;transform:rotate(90deg)}
+  .ar-stepn{grid-template-columns:auto 1fr;grid-template-rows:auto auto}
+  .ar-stepn .ar-badge-e{grid-column:2}
 }
 </style>
 </head>
@@ -98,35 +106,47 @@ ai_summary: "AirReachは検索需要から問い合わせ増加見込みまで�
   <section class="ar-hero">
     <div class="ar-wrap">
       <p class="ar-note" style="margin:0 0 10px"><a href="/">HOME</a> ／ AirReach</p>
-      <div class="ar-badge">AIRREACH · SALES VIEW</div>
-      <h1>検索から、<em>あと何件</em><br>問い合わせを増やせるか。</h1>
-      <p class="ar-lead">専門用語は後回し。まず「どれくらい検索されているか」「いまどれだけ取れているか」「改善すると問い合わせが何件増えそうか」だけを見ます。</p>
+      <div class="ar-badge">AIRREACH · 集客の健康診断</div>
+      <h1>検索から、<em>あと何件</em><br>お客様を増やせそうか。</h1>
+      <p class="ar-lead">URLを入れると業種を推定し、飲食なら「予約」、BtoBなら「問い合わせ」、メディアなら「記事参照」など、その会社に意味のある数字だけを返します。</p>
 
-      <div class="ar-modes" role="tablist" aria-label="分析モード">
-        <button type="button" class="ar-mode is-on" data-mode="general" id="mode-general">
-          <div class="t">一般検索</div>
-          <div class="d">新しい顧客を取りたい検索ワード向け。<br>例）豊胸 東京 / AI SEO 会社</div>
+      <div class="ar-modes" role="tablist" aria-label="調べ方">
+        <button type="button" class="ar-mode is-on" data-mode="generic_search" id="mode-generic">
+          <div class="t">集客を調べる</div>
+          <div class="d">新しいお客様に見つけてもらえる状態かを見る</div>
         </button>
-        <button type="button" class="ar-mode" data-mode="brand" id="mode-brand">
-          <div class="t">指名検索</div>
-          <div class="d">会社名・商品名の見え方向け。<br>例）○○クリニック 評判</div>
+        <button type="button" class="ar-mode" data-mode="branded_search" id="mode-branded">
+          <div class="t">見え方を調べる</div>
+          <div class="d">会社名・商品名で調べられたとき、どんな情報が見られているかを見る</div>
         </button>
       </div>
 
       <form id="ar-form" class="ar-form" action="#" method="get">
-        <label id="kw-label">集客したい検索ワード
-          <input id="ar-keyword" type="text" placeholder="例）産後ケアホテル 東京" required>
-        </label>
         <label>サイトURL
           <div class="ar-row">
             <input id="ar-url" type="url" inputmode="url" placeholder="https://example.com/" required>
-            <button class="ar-btn ar-btn-primary" id="ar-run" type="submit">無料で診断する</button>
+            <button class="ar-btn ar-btn-primary" id="ar-run" type="submit">無料で調べる</button>
           </div>
         </label>
-        <label id="media-wrap" hidden>AIにもっと参照してほしい記事URL（任意・メディくる等）
+        <label id="kw-label">調べたい言葉（地域＋業種、または会社名）
+          <input id="ar-keyword" type="text" placeholder="例）盛岡 焼肉 / 株式会社○○" required>
+        </label>
+        <div id="ar-industry-confirm" class="ar-confirm" role="region" aria-live="polite">
+          <p>業種の判定に自信がありません。どれに近いですか？</p>
+          <label>業種
+            <select id="ar-industry">
+              <option value="restaurant">飲食店</option>
+              <option value="b2b">BtoB企業</option>
+              <option value="media">メディア</option>
+              <option value="clinic">美容・クリニック</option>
+              <option value="other">その他</option>
+            </select>
+          </label>
+        </div>
+        <label id="media-wrap" hidden>このニュース記事を追跡（任意・メディくる等）
           <input id="ar-media" type="url" placeholder="https://news.example.com/your-article">
         </label>
-        <label>月間検索数を知っている場合（任意・上書き）
+        <label>月間検索数を知っている場合（任意）
           <input id="ar-volume" type="number" min="0" step="1" placeholder="例）12400 ※空欄なら推定">
         </label>
         <label class="ar-consent">
@@ -134,41 +154,56 @@ ai_summary: "AirReachは検索需要から問い合わせ増加見込みまで�
           <span>直接取得できない場合、診断のためURL（認証情報除去後）を取得サーバーへ送ることに同意します。</span>
         </label>
         <div id="ar-error" class="ar-error" role="alert"></div>
-        <p class="ar-note">成果・掲載・問い合わせ増を保証しません。数字には「実測 / 推定 / 予測」のラベルが付きます。</p>
+        <p class="ar-note">成果を保証しません。数字には「実測 / 推定 / 参考予測 / ユーザー入力」のラベルが付きます。</p>
       </form>
     </div>
   </section>
 
   <section class="ar-sec" id="result">
     <div class="ar-wrap">
-      <div id="ar-empty" class="ar-empty">上でモードとキーワード・URLを入れると、ここに営業用の4つの数字が出ます。</div>
+      <div id="ar-empty" class="ar-empty">URLと調べたい言葉を入れると、ここに結論の4つの数字が出ます。</div>
 
       <div id="ar-dash" class="ar-dash" aria-live="polite">
+        <div class="ar-steps" id="ar-steps" aria-label="進捗">
+          <span class="is-on" data-step="1">1 現在地</span>
+          <span data-step="2">2 改善後</span>
+          <span data-step="3">3 やること</span>
+        </div>
         <div class="ar-kicker" id="ar-analyzing">SALES RESULT</div>
+        <p class="ar-ind" id="ar-industry-line"></p>
         <h2 class="ar-h2" id="ar-title">診断結果</h2>
-        <p class="ar-sub" id="ar-subtitle">30秒で伝える用の要約です。詳細は下にあります。</p>
+        <p class="ar-sub" id="ar-subtitle">いまどうなっているか → 改善するとどう変わりそうか → まず何をするか</p>
 
         <div class="ar-chain" id="ar-chain"></div>
         <p class="ar-conf">予測の信頼度 <b id="ar-confidence">—</b>% · <span id="ar-confidence-note">データが増えるほど上がります</span></p>
         <p class="ar-disc" id="ar-disc"></p>
 
         <div class="ar-cta-row">
-          <a class="ar-btn ar-btn-primary" href="#impact" id="ar-cta-main">改善した場合を見る</a>
-          <a class="ar-btn ar-btn-line" href="#actions">次に直す3つ</a>
+          <a class="ar-btn ar-btn-primary" href="#actions" id="ar-cta-main">まず何を直すか見る</a>
+        </div>
+
+        <div class="ar-panel" id="brand-panel" hidden>
+          <div class="ar-kicker">INFORMATION SOURCES</div>
+          <h2 class="ar-h2">AIはどこから情報を取っている？</h2>
+          <table class="ar-source"><thead><tr><th>情報源</th><th>構成比</th><th>状態</th></tr></thead><tbody id="brand-sources"></tbody></table>
+          <p class="ar-disc" id="brand-cite-note"></p>
+          <div class="ar-cta-row">
+            <a class="ar-btn ar-btn-primary" href="#actions" id="ar-cta-brand-next">まず何を直すか見る</a>
+          </div>
         </div>
 
         <div class="ar-panel" id="impact">
           <div class="ar-kicker">GROWTH IMPACT</div>
           <h2 class="ar-h2">改善すると、事業数字はどう変わる？</h2>
-          <p class="ar-sub">自社の訪問・問い合わせを入れると、追加件数と費用対効果の目安が出ます。</p>
+          <p class="ar-sub">自社の訪問と成果件数を入れると、追加件数の目安が出ます（参考予測）。</p>
           <div class="ar-form-grid" id="ar-biz-form">
-            <div class="ar-field"><label>月間HP訪問者数<input id="biz-visitors" type="number" min="0" value="5000"><p class="why">入口の人数。増えると問い合わせの母数が増えます。</p></label></div>
-            <div class="ar-field"><label>月間問い合わせ数<input id="biz-inq" type="number" min="0" value="20"><p class="why">いちばん大事な数字。予測の基準になります。</p></label></div>
-            <div class="ar-field"><label>月間LINE登録数<input id="biz-line" type="number" min="0" value="10"><p class="why">任意。問い合わせの手前の接点。</p></label></div>
-            <div class="ar-field"><label>想定月額費用（円）<input id="biz-fee" type="number" min="0" value="200000"><p class="why">「いくら払うと」の分子。</p></label></div>
-            <div class="ar-field"><label>問い合わせ→受注率 %<input id="biz-close" type="number" min="0" max="100" step="0.1" value="20"><p class="why">売上・失注の計算に使用。</p></label></div>
-            <div class="ar-field"><label>平均受注額（円）<input id="biz-deal" type="number" min="0" value="500000"><p class="why">1件あたり売上。</p></label></div>
-            <div class="ar-field"><label>粗利率 %<input id="biz-margin" type="number" min="0" max="100" step="0.1" value="60"><p class="why">追加粗利＝追加売上×粗利率。</p></label></div>
+            <div class="ar-field"><label>月間HP訪問者数<input id="biz-visitors" type="number" min="0" value="5000"><p class="why">入口の人数。</p></label></div>
+            <div class="ar-field"><label id="biz-inq-label">月間予約・問い合わせ数<input id="biz-inq" type="number" min="0" value="20"><p class="why" id="biz-inq-why">いちばん大事な数字。予測の基準になります。</p></label></div>
+            <div class="ar-field"><label>月間LINE登録数<input id="biz-line" type="number" min="0" value="10"><p class="why">任意。</p></label></div>
+            <div class="ar-field"><label>想定月額費用（円）<input id="biz-fee" type="number" min="0" value="200000"><p class="why">費用対効果の分子。</p></label></div>
+            <div class="ar-field"><label>成果→受注率 %<input id="biz-close" type="number" min="0" max="100" step="0.1" value="20"><p class="why">任意。売上まで見る場合。</p></label></div>
+            <div class="ar-field"><label>平均受注額（円）<input id="biz-deal" type="number" min="0" value="500000"><p class="why">任意。</p></label></div>
+            <div class="ar-field"><label>粗利率 %<input id="biz-margin" type="number" min="0" max="100" step="0.1" value="60"><p class="why">任意。</p></label></div>
           </div>
           <div class="ar-cta-row">
             <button type="button" class="ar-btn ar-btn-primary" id="biz-run">この数字で再計算</button>
@@ -176,54 +211,42 @@ ai_summary: "AirReachは検索需要から問い合わせ増加見込みまで�
           <div class="ar-ba" style="margin-top:16px">
             <div class="ar-ba-card">
               <h4>いま</h4>
-              <div class="ar-ba-row"><span>問い合わせ</span><b id="ba-now-i">—</b></div>
+              <div class="ar-ba-row"><span id="ba-now-i-label">成果</span><b id="ba-now-i">—</b></div>
               <div class="ar-ba-row"><span>訪問</span><b id="ba-now-v">—</b></div>
               <div class="ar-ba-row"><span>参考売上</span><b id="ba-now-rev">—</b></div>
             </div>
             <div class="ar-ba-arrow">→</div>
             <div class="ar-ba-card is-after">
-              <h4>改善後（基準レンジ）</h4>
-              <div class="ar-ba-row"><span>問い合わせ</span><b id="ba-aft-i">—</b></div>
+              <h4>改善後（参考レンジ）</h4>
+              <div class="ar-ba-row"><span id="ba-aft-i-label">成果</span><b id="ba-aft-i">—</b></div>
               <div class="ar-ba-row"><span>追加見込み</span><b id="ba-aft-add">—</b></div>
               <div class="ar-ba-row"><span>1件あたり費用</span><b id="ba-aft-cpa">—</b></div>
             </div>
           </div>
-          <p class="ar-disc" id="ba-formula">追加売上 ≒ 追加問い合わせ × 受注率 × 平均受注額 ／ 追加粗利 ≒ 追加売上 × 粗利率</p>
-        </div>
-
-        <div class="ar-panel" id="brand-panel" hidden>
-          <div class="ar-kicker">BRAND SOURCES</div>
-          <h2 class="ar-h2">AI・検索は、この情報から御社を理解しがちです</h2>
-          <table class="ar-source"><thead><tr><th>情報源</th><th>構成比（目安）</th><th>状態</th></tr></thead><tbody id="brand-sources"></tbody></table>
-          <p class="ar-disc" id="brand-cite-note"></p>
+          <p class="ar-disc">追加成果は参考予測です。売上まで出す場合も保証ではありません。</p>
         </div>
 
         <div class="ar-panel" id="actions">
           <div class="ar-kicker">NEXT 3</div>
           <h2 class="ar-h2">まず、この3つです。</h2>
           <div class="ar-actions3" id="ar-actions3"></div>
-        </div>
-
-        <div class="ar-panel">
-          <div class="ar-kicker">NEXT ACTIONS</div>
-          <div class="ar-next">
-            <button type="button" id="ar-google-connect"><span class="t">Googleと連携する</span><span class="d">Search Console / GA4の公式数字に置き換え（未接続時はCSV）</span></button>
-            <a href="/airreach/studio/"><span class="t">改善を実装する</span><span class="d">FAQ・Schema・llms などを生成して実装へ</span></a>
-            <a href="/airreach/platform/#simulator"><span class="t">詳細シミュレーター</span><span class="d">キーワード別・Expert向け</span></a>
-            <a id="ar-cta-meet" href="/trillionbank/meeting/?type=company&from=airreach"><span class="t">この数字で相談する</span><span class="d">HackⅡ実測・伴走へ</span></a>
+          <div class="ar-cta-row">
+            <a class="ar-btn ar-btn-primary" href="/airreach/studio/" id="ar-cta-actions">この3つを改善する</a>
           </div>
-          <p class="ar-note" id="ar-google-note"></p>
         </div>
 
         <details class="ar-panel">
-          <summary style="cursor:pointer;font-weight:700;color:#475569">Expert View（技術詳細）を開く</summary>
-          <p class="ar-sub" style="margin-top:12px">準備度の内訳・モデル別測定・Studio/Platformはこちら。</p>
+          <summary style="cursor:pointer;font-weight:800;color:#334155;font-size:1.05rem">詳しいデータを見る（Expert View）</summary>
+          <p class="ar-sub" style="margin-top:12px">技術指標・モデル別・Studio / Platform / HackⅡはこちら。</p>
           <div class="ar-cta-row">
             <a class="ar-btn ar-btn-line" href="/airreach/platform/">Platform</a>
             <a class="ar-btn ar-btn-line" href="/airreach/studio/">Studio</a>
             <a class="ar-btn ar-btn-line" href="/trillionbank/business/hack2/">HackⅡ</a>
+            <a class="ar-btn ar-btn-line" id="ar-cta-meet" href="/trillionbank/meeting/?type=company&from=airreach">Trillion Bankに任せる</a>
           </div>
           <div id="ar-expert-meters" style="margin-top:14px"></div>
+          <p class="ar-note" id="ar-google-note"></p>
+          <button type="button" class="ar-btn ar-btn-line" id="ar-google-connect" style="margin-top:10px">Googleと連携する（実測）</button>
         </details>
       </div>
     </div>
@@ -232,27 +255,33 @@ ai_summary: "AirReachは検索需要から問い合わせ増加見込みまで�
 {% include tb-footer.html %}
 <script src="{{ '/assets/js/airreach-handoff.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-diagnose.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/airreach-industry.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-sales.js' | relative_url }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  var mode = 'general';
+  var mode = 'generic_search';
   var lastReport = null;
   var lastDiagnose = null;
   var lastUrl = '';
+  var industryId = 'other';
+  var industryDetect = null;
 
   function $(id){ return document.getElementById(id); }
   function showError(m){ var e=$('ar-error'); e.textContent=m; e.classList.add('is-on'); }
   function clearError(){ var e=$('ar-error'); e.textContent=''; e.classList.remove('is-on'); }
 
   function setMode(m) {
-    mode = m;
+    mode = (window.AirReachSales && AirReachSales.normalizeMode) ? AirReachSales.normalizeMode(m) : m;
     document.querySelectorAll('.ar-mode').forEach(function (btn) {
-      btn.classList.toggle('is-on', btn.getAttribute('data-mode') === m);
+      btn.classList.toggle('is-on', btn.getAttribute('data-mode') === mode);
     });
-    $('kw-label').firstChild.textContent = m === 'brand' ? '会社名 / サービス名' : '集客したい検索ワード';
-    $('ar-keyword').placeholder = m === 'brand' ? '例）株式会社○○ / ○○クリニック' : '例）産後ケアホテル 東京';
-    $('media-wrap').hidden = m !== 'brand';
-    $('ar-cta-main').textContent = m === 'brand' ? '引用されやすい状態に改善する' : '改善した場合を見る';
+    $('kw-label').firstChild.textContent = mode === 'branded_search'
+      ? '会社名 / サービス名'
+      : '調べたい言葉（地域＋業種など）';
+    $('ar-keyword').placeholder = mode === 'branded_search'
+      ? '例）株式会社○○ / ○○クリニック'
+      : '例）盛岡 焼肉 / 産後ケアホテル 東京';
+    $('media-wrap').hidden = mode !== 'branded_search' && industryId !== 'media';
   }
   document.querySelectorAll('.ar-mode').forEach(function (btn) {
     btn.addEventListener('click', function () { setMode(btn.getAttribute('data-mode')); });
@@ -260,10 +289,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function badgeClass(b) {
     if (!b) return '';
-    if (String(b).indexOf('Observed') >= 0 || b === 'Official') return 'is-obs';
+    if (String(b).indexOf('Observed') >= 0 || b === 'Official' || b === '実測') return 'is-obs';
     if (String(b).indexOf('Estimated') >= 0 || b === '推定') return 'is-est';
     if (String(b).indexOf('Inferred') >= 0 || String(b).indexOf('予測') >= 0) return 'is-inf';
     return 'is-user';
+  }
+
+  function setStep(n) {
+    document.querySelectorAll('#ar-steps span').forEach(function (el) {
+      el.classList.toggle('is-on', Number(el.getAttribute('data-step')) <= n);
+    });
+  }
+
+  function applyIndustryUi() {
+    var profile = window.AirReachIndustry ? AirReachIndustry.getIndustry(industryId) : null;
+    var label = profile ? profile.display_label : '問い合わせ';
+    $('biz-inq-label').childNodes[0].textContent = '月間' + label + '数';
+    $('biz-inq-why').textContent = label + 'の予測の基準になります。';
+    $('ba-now-i-label').textContent = profile ? profile.impact_current_label : 'いまの成果';
+    $('ba-aft-i-label').textContent = label;
+    $('media-wrap').hidden = !(mode === 'branded_search' || industryId === 'media');
+    if (profile && profile.default_mode && !industryDetect) {
+      /* keep user mode */
+    }
   }
 
   function readBiz() {
@@ -280,18 +328,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function renderReport(report) {
     lastReport = report;
+    industryId = report.industryId || industryId;
+    applyIndustryUi();
     $('ar-empty').style.display = 'none';
     $('ar-dash').classList.add('is-on');
-    $('ar-analyzing').textContent = report.mode === 'brand' ? '指名検索 · SALES RESULT' : '一般検索 · SALES RESULT';
-    $('ar-title').textContent = report.keyword
-      ? ('「' + report.keyword + '」で分析しています')
-      : '診断結果';
-    $('ar-subtitle').textContent = 'まずはこの4つだけ。詳細はスクロールしてください。';
+    setStep(1);
+    $('ar-analyzing').textContent = report.modeLabel + ' · ' + (report.industryLabel || '');
+    $('ar-industry-line').innerHTML = '業種：<b>' + (report.industryLabel || '—') + '</b>' +
+      (report.industryDetect ? ' · 判定信頼度 ' + report.industryDetect.confidence + '%' : '');
+    $('ar-title').textContent = report.heroTitle || (report.keyword ? ('「' + report.keyword + '」で調べました') : '診断結果');
+    $('ar-subtitle').textContent = report.keyword
+      ? ('「' + report.keyword + '」向けの結論です。数字の下に意味とデータの種類があります。')
+      : '数字の下に意味とデータの種類があります。';
     $('ar-disc').textContent = report.disclaimer;
     $('ar-confidence').textContent = String(report.confidence);
-    $('ar-confidence-note').textContent = 'GSC/GA4接続や測定回数で上がります（Inferred）';
+    $('ar-confidence-note').textContent = '実測データが増えるほど上がります（参考）';
     $('ar-cta-main').href = report.cta.hash;
     $('ar-cta-main').textContent = report.cta.label;
+    if (report.actionsCta) {
+      $('ar-cta-actions').href = report.actionsCta.href;
+      $('ar-cta-actions').textContent = report.actionsCta.label;
+    }
 
     var chain = $('ar-chain');
     chain.innerHTML = '';
@@ -301,14 +358,15 @@ document.addEventListener('DOMContentLoaded', function () {
       row.innerHTML =
         '<div class="ix">' + (i + 1) + '</div>' +
         '<div><div class="lab">' + h.label + '</div>' +
-        '<div class="val">' + h.value + '<span class="unit">' + h.unit + '</span></div>' +
-        '<div class="sub">' + h.sub + '</div></div>' +
+        '<div class="val">' + h.value + '<span class="unit">' + (h.unit || '') + '</span></div>' +
+        '<div class="meaning">' + (h.meaning || '') + '</div>' +
+        '<div class="sub">' + (h.sub || '') + '</div></div>' +
         '<span class="ar-badge-e ' + badgeClass(h.badge) + '">' + (AirReachSales.badgeLabel ? AirReachSales.badgeLabel(h.badge) : h.badge) + '</span>';
       chain.appendChild(row);
     });
 
-    // impact before/after
     var inq = report.inquiries;
+    var unit = report.displayLabel || '件';
     $('ba-now-i').textContent = AirReachSales.cnt(inq.currentInquiries) + ' 件';
     $('ba-now-v').textContent = AirReachSales.cnt(inq.currentVisitors) + ' 人';
     var close = Number($('biz-close').value) / 100;
@@ -319,30 +377,25 @@ document.addEventListener('DOMContentLoaded', function () {
     $('ba-aft-add').textContent = '+' + inq.addLow + '〜' + inq.addHigh + ' 件';
     $('ba-aft-cpa').textContent = AirReachSales.yen(inq.cpa);
 
-    // actions
     var box = $('ar-actions3');
     box.innerHTML = '';
     report.actions.forEach(function (a) {
       var el = document.createElement('div');
       el.className = 'ar-act';
-      el.innerHTML = '<div class="tag">' + a.slot + ' · ' + a.title + '</div><h3></h3><p></p><a class="ar-btn ar-btn-line" href=""></a>';
+      el.innerHTML = '<div class="tag">' + a.title + '</div><h3></h3><p></p>';
       el.querySelector('h3').textContent = a.action;
-      el.querySelector('p').textContent = a.slot === 'PARTNER' ? '測定と改善をまとめて任せる' : '期待：問い合わせ・検索での選ばれやすさ改善';
-      var link = el.querySelector('a');
-      link.href = a.href;
-      link.textContent = a.cta;
+      el.querySelector('p').textContent = a.slot === 'PARTNER' ? '測定と改善をまとめて任せられます' : '次に起きること：情報が伝わりやすくなり、選ばれやすさが上がる可能性';
       box.appendChild(el);
     });
 
-    // brand panel
     var bp = $('brand-panel');
-    if (report.mode === 'brand' && report.brand) {
+    if ((report.mode === 'branded_search' || report.industryId === 'media') && report.brand) {
       bp.hidden = false;
       var tb = $('brand-sources');
       tb.innerHTML = '';
       report.brand.sources.forEach(function (s) {
         var tr = document.createElement('tr');
-        tr.innerHTML = '<td>' + s.name + '</td><td>' + s.share + '%</td><td>' + (s.used ? '使われやすい' : '弱い/未充足') + '</td>';
+        tr.innerHTML = '<td>' + s.name + '</td><td><b>' + s.share + '%</b></td><td>' + (s.used ? '使われやすい' : '弱い／未充足') + '</td>';
         tb.appendChild(tr);
       });
       $('brand-cite-note').textContent = report.brand.citationNote || '';
@@ -350,10 +403,9 @@ document.addEventListener('DOMContentLoaded', function () {
       bp.hidden = true;
     }
 
-    // expert meters
     var ex = $('ar-expert-meters');
     if (lastDiagnose) {
-      ex.innerHTML = '<p class="ar-note">準備度内訳（Observed）: 構造 ' + lastDiagnose.structure +
+      ex.innerHTML = '<p class="ar-note">準備度内訳（実測）: 構造 ' + lastDiagnose.structure +
         ' / エンティティ ' + lastDiagnose.entity + ' / FAQ ' + lastDiagnose.faq +
         ' / 発見 ' + lastDiagnose.discover + '</p>';
     } else {
@@ -367,22 +419,28 @@ document.addEventListener('DOMContentLoaded', function () {
     var meet = $('ar-cta-meet');
     if (meet) {
       meet.href = '/trillionbank/meeting/?type=company&from=airreach&q=' +
-        encodeURIComponent((report.keyword || '') + ' score=' + (report.acquisition && report.acquisition.score));
+        encodeURIComponent((report.keyword || '') + ' industry=' + report.industryId + ' score=' + (report.acquisition && report.acquisition.score));
     }
   }
 
-  function rebuildFromBiz() {
-    if (!window.AirReachSales) return;
-    var report = window.AirReachSales.buildSalesReport({
+  function buildReport(diagnose) {
+    return window.AirReachSales.buildSalesReport({
       mode: mode,
       keyword: $('ar-keyword').value,
       url: lastUrl,
       mediaUrl: $('ar-media').value,
       volumeOverride: $('ar-volume').value,
-      diagnose: lastDiagnose,
-      inputs: readBiz()
+      diagnose: diagnose,
+      inputs: readBiz(),
+      industryId: industryId,
+      industryDetect: industryDetect
     });
-    renderReport(report);
+  }
+
+  function rebuildFromBiz() {
+    if (!window.AirReachSales) return;
+    renderReport(buildReport(lastDiagnose));
+    setStep(2);
   }
 
   $('biz-run').addEventListener('click', rebuildFromBiz);
@@ -390,73 +448,98 @@ document.addEventListener('DOMContentLoaded', function () {
     $(id).addEventListener('change', rebuildFromBiz);
   });
 
+  $('ar-industry').addEventListener('change', function () {
+    industryId = $('ar-industry').value;
+    applyIndustryUi();
+    if (lastReport) renderReport(buildReport(lastDiagnose));
+  });
+
+  $('ar-cta-main').addEventListener('click', function () { setStep(3); });
+  $('ar-cta-brand-next').addEventListener('click', function () { setStep(3); });
+  $('ar-cta-actions').addEventListener('click', function () { setStep(3); });
+
   $('ar-google-connect').addEventListener('click', function () {
     fetch('/api/google/auth').then(function (res) {
       if (res.redirected) { location.href = res.url; return; }
       if (res.ok) { location.href = '/api/google/auth'; return; }
       throw new Error('no');
     }).catch(function () {
-      $('ar-google-note').textContent = '公開環境ではワンクリック連携準備中です。StudioのGoogle連携 / CSVへ案内します。';
+      $('ar-google-note').textContent = '公開環境ではワンクリック連携準備中です。StudioのCSVへ案内します。';
       location.href = '/airreach/studio/#google';
     });
   });
 
+  function afterDiagnose(result, url) {
+    lastDiagnose = result;
+    lastUrl = url;
+    industryDetect = window.AirReachIndustry.detectIndustry({
+      url: url,
+      keyword: $('ar-keyword').value,
+      diagnose: result
+    });
+    industryId = industryDetect.id;
+    $('ar-industry').value = ['restaurant','b2b','media','clinic','other'].indexOf(industryId) >= 0 ? industryId : 'other';
+    var confirm = $('ar-industry-confirm');
+    if (industryDetect.needsConfirm) {
+      confirm.classList.add('is-on');
+    } else {
+      confirm.classList.remove('is-on');
+    }
+    // Media sites default toward branded search
+    if (industryId === 'media' && mode === 'generic_search') {
+      setMode('branded_search');
+    }
+    applyIndustryUi();
+    renderReport(buildReport(result));
+  }
+
   $('ar-form').addEventListener('submit', function (e) {
     e.preventDefault();
     clearError();
-    if (!window.AirReach || !window.AirReachSales) {
+    if (!window.AirReach || !window.AirReachSales || !window.AirReachIndustry) {
       showError('スクリプトの読み込みに失敗しました。');
       return;
     }
     var url = $('ar-url').value;
     var keyword = $('ar-keyword').value;
-    if (!keyword.trim()) { showError('キーワード（または会社名）を入力してください。'); return; }
+    if (!keyword.trim()) { showError('調べたい言葉（または会社名）を入力してください。'); return; }
     var btn = $('ar-run');
     btn.disabled = true;
-    btn.textContent = '診断中…';
+    btn.textContent = '調べています…';
     var allowProxy = !!($('ar-proxy-consent') && $('ar-proxy-consent').checked);
     window.AirReach.diagnose(url, { allowProxy: allowProxy }).then(function (result) {
-      lastDiagnose = result;
-      lastUrl = window.AirReach.normalizeUrl(url).href;
-      var report = window.AirReachSales.buildSalesReport({
-        mode: mode,
-        keyword: keyword,
-        url: lastUrl,
-        mediaUrl: $('ar-media').value,
-        volumeOverride: $('ar-volume').value,
-        diagnose: result,
-        inputs: readBiz()
-      });
-      renderReport(report);
+      afterDiagnose(result, window.AirReach.normalizeUrl(url).href);
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       $('result').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
     }).catch(function (ex) {
-      // Still show sales estimate without diagnose (Estimated score)
       lastDiagnose = null;
       lastUrl = url;
-      var report = window.AirReachSales.buildSalesReport({
-        mode: mode,
-        keyword: keyword,
+      industryDetect = window.AirReachIndustry.detectIndustry({
         url: url,
-        mediaUrl: $('ar-media').value,
-        volumeOverride: $('ar-volume').value,
-        diagnose: null,
-        inputs: readBiz()
+        keyword: keyword,
+        diagnose: null
       });
-      renderReport(report);
+      industryId = industryDetect.id;
+      $('ar-industry').value = ['restaurant','b2b','media','clinic','other'].indexOf(industryId) >= 0 ? industryId : 'other';
+      $('ar-industry-confirm').classList.toggle('is-on', !!industryDetect.needsConfirm);
+      applyIndustryUi();
+      renderReport(buildReport(null));
       showError((ex && ex.message ? ex.message + ' ' : '') + 'サイト取得に失敗したため、キーワード起点の推定のみ表示しています。');
     }).finally(function () {
       btn.disabled = false;
-      btn.textContent = '無料で診断する';
+      btn.textContent = '無料で調べる';
     });
   });
 
-  // deep link ?mode=brand&keyword=
   try {
     var params = new URLSearchParams(location.search);
-    if (params.get('mode') === 'brand') setMode('brand');
+    if (params.get('mode') === 'brand' || params.get('mode') === 'branded_search') setMode('branded_search');
     if (params.get('keyword')) $('ar-keyword').value = params.get('keyword');
     if (params.get('url')) $('ar-url').value = params.get('url');
+    if (params.get('industry')) {
+      industryId = params.get('industry');
+      $('ar-industry').value = industryId;
+    }
   } catch (e) {}
 });
 </script>

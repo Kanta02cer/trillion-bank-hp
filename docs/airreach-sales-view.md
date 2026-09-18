@@ -1,23 +1,34 @@
-# AirReach Sales View (v2 P0) — 漆沢FB対応
+# AirReach Sales View — 業種別UX（P0）
 
-## 最優先（これだけでまずはいい）
+## 原則
+1. 今どうなっているか
+2. 改善するとどう変わりそうか
+3. まず何をすればいいか
 
-### 一般検索
-1. 今どれだけ検索されているか（月間需要 · Estimated / User Input / Official）
-2. うちはどれだけ入れるか（獲得力スコア · Observed from URL診断）
-3. サービスで何倍に増やせるか（改善後レンジ · Inferred · 倍表記）
-4. 問い合わせ見込み（+件レンジ · Inferred）
+裏側の診断・計測は共通。表のKPIだけ業種で変える。
 
-### 指名検索（メディくる組み込み想定）
-1. 今どれだけ指名検索されているか
-2. 情報反映度スコア
-3. メディくる等で整えた場合の改善後スコアレンジ
-4. 記事URL登録時は指定記事の参照されやすさ（保証なし）／未登録時は問い合わせ見込み
+## ユーザー向け入口（内部名）
+- 集客を調べる → `generic_search`
+- 見え方を調べる → `branded_search`
 
-## UI規則
-- 最初の画面は4数字まで
-- AIO/GEO/SchemaはExpert Viewのみ
-- 「必ず引用」「2倍になります」断定禁止 → レンジ＋ラベル
+## 先に完成させる3業種
+| 業種 | Primary KPI |
+|---|---|
+| restaurant | 予約 |
+| b2b | 問い合わせ |
+| media | 記事参照 |
 
-## ルート
-`/airreach/` Sales View · `/airreach/studio/` 実装 · `/airreach/platform/` Expert · HackⅡ 実測
+## Sales Viewの4数字
+1. 需要
+2. 現在
+3. 改善後
+4. 成果（業種別ラベル）
+
+## ラベル
+実測 / 推定 / 参考予測 / ユーザー入力
+
+## 禁止
+- 最初の画面で AIO / GEO / Schema / Citation 等を強調
+- 「必ず引用」「2倍になる」断定
+- Sales ViewでCTAを複数並べる
+- 施策を4件以上出す
