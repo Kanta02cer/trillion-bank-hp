@@ -501,13 +501,13 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
     </div>
 
     <div class="ar-gate-step is-on" data-step="1">
-      <p class="ar-gate-kicker">STEP 1 / 4 ・ 業種</p>
-      <h1 id="gate-title">業種を選ぶ</h1>
+      <p class="ar-gate-kicker">STEP 1 / 4 ・ お店・会社</p>
+      <h1 id="gate-title">どんなお店・会社ですか？</h1>
       <div class="ar-pick" id="gate-industry">
-        <button type="button" data-industry="restaurant" data-tip="予約・来店を増やしたいお店向け。見る数字は予約です。"><div class="t">飲食店</div></button>
-        <button type="button" data-industry="clinic" data-tip="予約・相談を増やしたい方向け。見る数字は予約・相談です。"><div class="t">美容・クリニック</div></button>
-        <button type="button" data-industry="b2b" data-tip="問い合わせ・商談を増やしたい方向け。見る数字は問い合わせです。"><div class="t">BtoB・会社サービス</div></button>
-        <button type="button" data-industry="media" data-tip="記事やブランドの見え方を調べたい方向け。見る数字は記事参照です。"><div class="t">メディア・広報・PR</div></button>
+        <button type="button" data-industry="restaurant" data-tip="予約や来店を増やしたいお店向け。あとで見る数字は予約です。"><div class="t">飲食店</div></button>
+        <button type="button" data-industry="clinic" data-tip="予約や相談を増やしたい方向け。あとで見る数字は予約・相談です。"><div class="t">美容・クリニック</div></button>
+        <button type="button" data-industry="b2b" data-tip="問い合わせや商談を増やしたい方向け。あとで見る数字は問い合わせです。"><div class="t">会社向けサービス</div></button>
+        <button type="button" data-industry="media" data-tip="記事や社名の見え方を知りたい方向け。あとで見る数字は記事の使われ方です。"><div class="t">メディア・広報</div></button>
         <button type="button" data-industry="other" data-tip="上に当てはまらない場合。問い合わせを基準にします。"><div class="t">その他</div></button>
       </div>
       <div class="ar-gate-actions">
@@ -516,9 +516,9 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
     </div>
 
     <div class="ar-gate-step" data-step="2">
-      <p class="ar-gate-kicker">STEP 2 / 4 ・ サイト</p>
-      <h1>サイトURL</h1>
-      <label class="ar-field-big"><span data-tip="診断する公式サイトのURLです。">サイトURL</span>
+      <p class="ar-gate-kicker">STEP 2 / 4 ・ ホームページ</p>
+      <h1>ホームページの住所は？</h1>
+      <label class="ar-field-big"><span data-tip="お店や会社の公式サイトのURLです。">ホームページのURL</span>
         <input id="gate-url" type="url" inputmode="url" placeholder="https://example.com/" autocomplete="url" required>
       </label>
       <div class="ar-gate-actions">
@@ -528,14 +528,14 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
     </div>
 
     <div class="ar-gate-step" data-step="3">
-      <p class="ar-gate-kicker">STEP 3 / 4 ・ 目的</p>
-      <h1>目的を選ぶ</h1>
+      <p class="ar-gate-kicker">STEP 3 / 4 ・ 知りたいこと</p>
+      <h1>何を知りたいですか？</h1>
       <div class="ar-pick" id="gate-goal">
-        <button type="button" data-goal="acquisition" data-tip="新しいお客様に見つけてもらえる状態かを見ます。">
-          <div class="t">集客を調べる</div>
+        <button type="button" data-goal="acquisition" data-tip="新しいお客さんに、お店やサービスが見つかっているかを見ます。">
+          <div class="t">新しいお客さん向け</div>
         </button>
-        <button type="button" data-goal="visibility" data-tip="会社名・商品名で調べられたとき、どんな情報が見られているかを見ます。">
-          <div class="t">見え方を調べる</div>
+        <button type="button" data-goal="visibility" data-tip="店名・会社名・商品名で調べられたとき、どんな情報が出ているかを見ます。">
+          <div class="t">名前で調べられたとき</div>
         </button>
       </div>
       <div class="ar-gate-actions">
@@ -545,22 +545,22 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
     </div>
 
     <div class="ar-gate-step" data-step="4">
-      <p class="ar-gate-kicker">STEP 4 / 4 ・ 調べる言葉</p>
-      <h1 id="gate-kw-title">集客したい言葉を入力</h1>
+      <p class="ar-gate-kicker">STEP 4 / 4 ・ お客さんの言葉</p>
+      <h1 id="gate-kw-title">お客さんが調べそうな言葉は？</h1>
       <p class="lead" id="gate-kw-lead" hidden></p>
-      <label class="ar-field-big" id="gate-kw-label"><span data-tip="地域＋サービスなど、新しいお客様が使いそうな言葉です。例：盛岡 焼肉">調べたい言葉</span>
+      <label class="ar-field-big" id="gate-kw-label"><span data-tip="地域＋メニューなど、新しいお客さんが使いそうな言葉です。例：盛岡 焼肉">お客さんが使いそうな言葉</span>
         <input id="gate-keyword" type="text" placeholder="例）盛岡 焼肉" required autocomplete="off">
       </label>
-      <label class="ar-field-big" id="gate-media-label" hidden><span data-tip="特定のニュース記事の使われ方を見るときに入力します。">記事URL</span>
+      <label class="ar-field-big" id="gate-media-label" hidden><span data-tip="特定の記事がどう使われているかを見るときに入れます。">見たい記事のURL（任意）</span>
         <input id="gate-media" type="url" placeholder="https://news.example.com/article">
       </label>
       <label class="ar-consent-card" id="gate-consent-card" for="gate-proxy">
         <input id="gate-proxy" type="checkbox" required aria-required="true">
-        <span class="ar-consent-title" data-tip="直接取れないときだけ、認証情報を除いたURLを取得サーバーへ送ります。成果・掲載は保証しません。">取得に同意する</span>
+        <span class="ar-consent-title" data-tip="サイト情報を調べるために必要な同意です。直接取れないときだけ、ログイン情報を除いたURLを取得します。成果や掲載は保証しません。">サイト情報の取得に同意する</span>
       </label>
       <div class="ar-gate-actions">
         <button type="button" class="ar-btn ar-btn-line" id="gate-back-4">戻る</button>
-        <button type="button" class="ar-btn ar-btn-primary" id="gate-submit" disabled data-tip="同意と調べたい言葉が必要です。結果の掲載や成果は保証しません。">無料で調べる</button>
+        <button type="button" class="ar-btn ar-btn-primary" id="gate-submit" disabled data-tip="同意と、お客さんが使いそうな言葉が必要です。結果の掲載や成果は保証しません。">無料で調べる</button>
       </div>
     </div>
 
@@ -572,19 +572,19 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
   <section class="ar-hero">
     <div class="ar-wrap">
       <p class="ar-crumb"><a href="/">HOME</a> ／ AirReach</p>
-      <div class="ar-badge" data-tip="業種に合わせて、見るべき数字だけを出す無料診断です。">AirReach</div>
+      <div class="ar-badge" data-tip="お店・会社の種類に合わせて、見るべき数字だけを出す無料診断です。">AirReach</div>
       <h1 id="ar-hero-title">検索から、<em>あと何件</em>増やせるか。</h1>
       <p class="ar-lead" id="ar-hero-lead" hidden></p>
 
       <div id="ar-summary" class="ar-summary" aria-live="polite">
-        <p>業種：<b id="sum-industry">—</b></p>
-        <p>サイト：<b id="sum-url">—</b></p>
-        <p>目的：<b id="sum-goal">—</b></p>
-        <p>調べる言葉：<b id="sum-keyword">—</b></p>
+        <p>お店・会社：<b id="sum-industry">—</b></p>
+        <p>ホームページ：<b id="sum-url">—</b></p>
+        <p>知りたいこと：<b id="sum-goal">—</b></p>
+        <p>お客さんの言葉：<b id="sum-keyword">—</b></p>
       </div>
 
       <div class="ar-cta-row" id="ar-restart-row" hidden>
-        <button type="button" class="ar-btn ar-btn-line" id="ar-restart">アンケートからやり直す</button>
+        <button type="button" class="ar-btn ar-btn-line" id="ar-restart">最初からやり直す</button>
       </div>
 
       <form id="ar-form" class="ar-form" action="#" method="get" hidden>
@@ -603,15 +603,15 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 
   <section class="ar-sec" id="result">
     <div class="ar-wrap">
-      <div id="ar-empty" class="ar-empty">アンケート後に、結論の4つが出ます。</div>
+      <div id="ar-empty" class="ar-empty">上の質問に答えると、結論の4つが出ます。</div>
 
       <div id="ar-dash" class="ar-dash" aria-live="polite">
         <div class="ar-steps" id="ar-steps" aria-label="進捗">
-          <span class="is-on" data-step="1">1 現在地</span>
-          <span data-step="2">2 詳細分析</span>
-          <span data-step="3">3 次にやること</span>
+          <span class="is-on" data-step="1">1 いま</span>
+          <span data-step="2">2 くわしく見る</span>
+          <span data-step="3">3 やること</span>
         </div>
-        <div class="ar-kicker" id="ar-analyzing" data-tip="営業向けの結論だけを先に表示しています。">結論</div>
+        <div class="ar-kicker" id="ar-analyzing" data-tip="お店・会社の担当者向けに、結論だけを先に出しています。">結論</div>
         <p class="ar-ind" id="ar-industry-line"></p>
         <h2 class="ar-h2" id="ar-title">診断結果</h2>
         <p class="ar-sub" id="ar-subtitle" hidden></p>
@@ -632,7 +632,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         </section>
 
         <div class="ar-cta-row">
-          <a class="ar-btn ar-btn-primary" href="#expert-view" id="ar-cta-main">詳細分析を見る</a>
+          <a class="ar-btn ar-btn-primary" href="#expert-view" id="ar-cta-main">くわしく見る</a>
         </div>
 
         <div class="ar-panel is-hidden" id="brand-panel">
@@ -641,7 +641,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <table class="ar-source"><thead><tr><th>情報源</th><th>構成比</th><th>状態</th></tr></thead><tbody id="brand-sources"></tbody></table>
           <p class="ar-disc" id="brand-cite-note" hidden></p>
           <div class="ar-cta-row">
-            <a class="ar-btn ar-btn-primary" href="#expert-view" id="ar-cta-brand-next">詳細分析を見る</a>
+            <a class="ar-btn ar-btn-primary" href="#expert-view" id="ar-cta-brand-next">くわしく見る</a>
           </div>
         </div>
 
@@ -668,7 +668,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         </div>
 
         <div class="ar-panel is-hidden" id="expert-view">
-          <div class="ar-kicker" data-tip="公開ページの実測チェックから、良い点・不足・次の一手を整理します。">詳細分析</div>
+          <div class="ar-kicker" data-tip="ホームページの内容から、良い点・足りない点・次にやることを整理します。">くわしく見る</div>
           <h2 class="ar-h2">なにがあって、なにが足りないか</h2>
           <div class="ar-expert-shell" id="ar-expert-shell"></div>
           <div class="ar-logic" id="ar-logic-wrap">
@@ -784,12 +784,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (n === 4) {
       var vis = surveyState.goal === 'visibility' || surveyState.industryId === 'media';
-      $('gate-kw-title').textContent = vis ? '会社名・商品名を入力' : '集客したい言葉を入力';
+      $('gate-kw-title').textContent = vis ? '調べられるときの名前は？' : 'お客さんが調べそうな言葉は？';
       if ($('gate-kw-lead')) $('gate-kw-lead').hidden = true;
       $('gate-kw-lead').textContent = vis
-        ? '会社名や商品名で調べられたときの見え方を見ます。'
-        : '地域＋サービスなど、新しいお客様が使いそうな言葉を入れてください。';
-      $('gate-keyword').placeholder = vis ? '例）株式会社○○' : '例）盛岡 焼肉';
+        ? '店名・会社名・商品名で調べられたときに、どんな情報が出るかを見ます。'
+        : '地域＋メニューなど、新しいお客さんが使いそうな言葉を入れてください。';
+      $('gate-keyword').placeholder = vis ? '例）メディくる' : '例）盛岡 焼肉';
+      var kwLab = document.querySelector('#gate-kw-label span');
+      if (kwLab) {
+        kwLab.setAttribute('data-tip', vis
+          ? 'お客さんが店名・会社名・商品名で調べるときの名前です。'
+          : '地域＋メニューなど、新しいお客さんが使いそうな言葉です。例：盛岡 焼肉');
+        if (kwLab.firstChild && kwLab.firstChild.nodeType === 3) {
+          kwLab.firstChild.nodeValue = vis ? '調べられるときの名前' : 'お客さんが使いそうな言葉';
+        }
+      }
       $('gate-media-label').hidden = !vis;
       $('gate-media-label').style.display = vis ? '' : 'none';
     }
@@ -813,7 +822,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   $('gate-next-1').addEventListener('click', function () {
-    if (!surveyState.industryId) { gateErr('業種を選んでください。'); return; }
+    if (!surveyState.industryId) { gateErr('お店・会社の種類を選んでください。'); return; }
     setGateStep(2);
     $('gate-url').focus();
   });
@@ -844,17 +853,17 @@ document.addEventListener('DOMContentLoaded', function () {
     $('ar-proxy-consent').checked = !!survey.proxyConsent;
     lastUrl = survey.url || '';
 
-    var labels = { restaurant: '飲食店', clinic: '美容・クリニック', b2b: 'BtoB・会社サービス', media: 'メディア・広報・PR', other: 'その他' };
+    var labels = { restaurant: '飲食店', clinic: '美容・クリニック', b2b: '会社向けサービス', media: 'メディア・広報', other: 'その他' };
     $('sum-industry').textContent = labels[industryId] || industryId;
     $('sum-url').textContent = survey.url || '—';
-    $('sum-goal').textContent = survey.goal === 'visibility' ? '自社の見え方を調べる' : '集客を調べる';
+    $('sum-goal').textContent = survey.goal === 'visibility' ? '名前で調べられたとき' : '新しいお客さん向け';
     $('sum-keyword').textContent = survey.keyword || '—';
     $('ar-summary').classList.add('is-on');
 
     $('ar-hero-title').innerHTML = route.copy.indexOf('記事') >= 0
       ? 'AIは、御社を<em>どの記事</em>から<br>理解しているか。'
       : '検索から、<em>あと何件</em><br>お客様を増やせそうか。';
-    $('ar-hero-lead').textContent = 'アンケート回答に合わせた画面です。結論の数字以外は、次のボタンを押すまで隠ししています。';
+    $('ar-hero-lead').textContent = '答えた内容に合わせた画面です。結論の数字以外は、次のボタンを押すまで隠しています。';
   }
 
   function setStep(n) {
@@ -909,7 +918,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if ($('actions')) $('actions').classList.add('is-hidden');
 
     $('ar-analyzing').textContent = report.modeLabel + ' · ' + (report.industryLabel || '');
-    $('ar-industry-line').innerHTML = '業種：<b>' + (report.industryLabel || '—') + '</b> · サイト：<b>' + (report.url || lastUrl || '—') + '</b>';
+    $('ar-industry-line').innerHTML = 'お店・会社：<b>' + (report.industryLabel || '—') + '</b> · ホームページ：<b>' + (report.url || lastUrl || '—') + '</b>';
     $('ar-title').textContent = report.keyword
       ? ('「' + report.keyword + '」で調べました')
       : (report.heroTitle || '診断結果');
@@ -934,7 +943,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
       $('brand-panel').classList.add('is-hidden');
       $('ar-cta-main').href = '#expert-view';
-      $('ar-cta-main').textContent = '詳細分析を見る';
+      $('ar-cta-main').textContent = 'くわしく見る';
     }
 
     var chain = $('ar-chain');
@@ -948,7 +957,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return '公開ページや取込データから観測した値です。AI掲載率そのものではありません。';
       }
       if (s.indexOf('User') >= 0 || s.indexOf('入力') >= 0) return 'フォームに入れた値です。';
-      if (s.indexOf('Estimated') >= 0 || s.indexOf('推定') >= 0) return 'キーワード特徴などからの推定です。公式検索ボリュームではありません。';
+      if (s.indexOf('Estimated') >= 0 || s.indexOf('推定') >= 0) return 'お客さんの言葉などからの目安です。公式の検索回数そのものではありません。';
       return '仮定に基づく参考予測です。成果・順位・掲載を保証しません。';
     }
     report.headline4.forEach(function (h, i) {
@@ -1166,7 +1175,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     var url = $('ar-url').value;
     var keyword = $('ar-keyword').value;
-    if (!url || !keyword) { showError('URLと調べたい言葉が必要です。'); return; }
+    if (!url || !keyword) { showError('ホームページのURLと、お客さんの言葉が必要です。'); return; }
     var allowProxy = !!$('ar-proxy-consent').checked;
     window.AirReach.diagnose(url, { allowProxy: allowProxy }).then(function (result) {
       lastDiagnose = result;
@@ -1182,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', function () {
         label: (window.AirReachIndustry.getIndustry(industryId) || {}).label || industryDetect.label,
         confidence: 100,
         needsConfirm: false,
-        source: 'User Input（アンケート）'
+        source: 'User Input（質問回答）'
       });
       renderReport(buildReport(result));
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1195,7 +1204,7 @@ document.addEventListener('DOMContentLoaded', function () {
         label: (window.AirReachIndustry.getIndustry(industryId) || {}).label || industryId,
         confidence: 100,
         needsConfirm: false,
-        source: 'User Input（アンケート）'
+        source: 'User Input（質問回答）'
       };
       renderReport(buildReport(null));
       showError((ex && ex.message ? ex.message + ' ' : '') + 'サイト取得に失敗したため、推定のみ表示しています。');
@@ -1204,7 +1213,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function finishSurvey() {
     var kw = ($('gate-keyword').value || '').trim();
-    if (!kw) { gateErr('調べたい言葉を入力してください。'); return; }
+    if (!kw) { gateErr('お客さんが使いそうな言葉を入力してください。'); return; }
     if (!$('gate-proxy').checked) {
       gateErr('「取得に同意する」にチェックしてください。');
       updateGateSubmit();
