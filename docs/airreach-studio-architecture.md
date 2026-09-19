@@ -1,30 +1,32 @@
 # AirReach Studio / HackⅡ integration architecture
 
+> **現行 Phase 1 の正本:** [`airreach-studio-orchestrator.md`](airreach-studio-orchestrator.md)。本書は旧統合案の技術参考であり、機能範囲・接続状態・出荷条件が矛盾する場合は正本を優先する。
+
 ## Product boundary
 
 AirReach Studio separates three data classes so the UI never presents estimates as measured facts.
 
 1. **Readiness** — deterministic checks on public HTML, metadata, structured data, robots and supporting files.
-2. **Google performance** — measured Search Console and GA4 data after OAuth authorization.
-3. **HackⅡ AI measurement** — measured prompt/engine results including mention, citation, SOV and run status.
+2. **Google performance** — measured Search Console and GA4 data from manual CSV import in Phase 1. OAuth sync is planned.
+3. **HackⅡ AI evidence** — Phase 1は顧客提供JSONの手動取込だけを扱う。mention、citation、SOVのライブ測定と自動同期はplannedとする。
 
 ## Modules
 
 - `/airreach/` — free URL readiness check.
 - `/airreach/studio/` — remediation workbench.
 - `assets/js/airreach-studio.js` — browser-side MVP: gap analysis, generator, keyword registry, CSV import, time series, HackⅡ JSON import.
-- `api/google/auth.js` — Google OAuth start endpoint for Vercel.
-- `api/google/callback.js` — OAuth callback.
-- `api/google/gsc.js` — Search Console `date + query + page` sync.
-- `api/google/ga4.js` — GA4 `date + landingPagePlusQueryString` with sessions/keyEvents sync.
+- `api/google/auth.js` — planned Google OAuth start endpoint for a later phase.
+- `api/google/callback.js` — planned OAuth callback.
+- `api/google/gsc.js` — planned Search Console sync.
+- `api/google/ga4.js` — planned GA4 sync.
 
-## Environment variables for Vercel
+## Planned environment variables for a later phase
 
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 - `GOOGLE_REDIRECT_URI` (optional; defaults to `/api/google/callback` on the active origin)
 
-The OAuth client must allow the production callback URL, e.g. `https://trillion-bank.jp/api/google/callback` when the site/API is served by Vercel.
+These variables and callback settings are not connected in Studio Phase 1. They apply only after the planned server-side OAuth work is approved and deployed.
 
 ## Metric definitions
 
@@ -122,9 +124,9 @@ This enables charts to overlay implementation dates with GSC/GA4/HackⅡ changes
 - CSV fallback
 - time-series aggregation
 - HackⅡ JSON ingestion
-- Vercel Google OAuth/API endpoints
 
 ### Phase 2
+- connect and validate the planned Vercel Google OAuth/API endpoints
 - persist workspaces in a database instead of localStorage
 - wire Studio buttons directly to `/api/google/*`
 - background/scheduled sync

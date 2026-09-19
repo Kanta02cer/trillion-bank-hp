@@ -19,6 +19,7 @@ const routes = [
   { name: 'terms', url: '/trillionbank/terms/', text: '株式会社Trillion Bank', formalLegalName: true },
   { name: 'security', url: '/trillionbank/security/', text: '株式会社Trillion Bank', formalLegalName: true },
   { name: 'article', url: '/trillionbank/news/seo-aeo-geo-aio-llmo-difference/', text: 'SEO' },
+  { name: 'studio', url: '/airreach/studio/', text: 'サイト全体を分析する', expectedNoindex: true },
 ];
 
 const viewports = [
@@ -141,7 +142,8 @@ try {
         }
 
         const robots = await page.locator('meta[name="robots"]').getAttribute('content');
-        if (!robots || robots.toLowerCase().includes('noindex')) {
+        const isNoindex = Boolean(robots && robots.toLowerCase().includes('noindex'));
+        if (routeInfo.expectedNoindex ? !isNoindex : (!robots || isNoindex)) {
           addIssue(viewport, routeInfo, 'robots', `Unexpected robots directive: ${robots}`);
         }
 
@@ -194,6 +196,20 @@ try {
           }
           if ((await page.locator('a[href*="calendar.app.google"]').count()) === 0) {
             addIssue(viewport, routeInfo, 'meeting', 'Calendar booking link is missing');
+          }
+        }
+
+        if (routeInfo.name === 'studio') {
+          if ((await page.locator('#analysis-form').count()) !== 1) {
+            addIssue(viewport, routeInfo, 'studio', 'Overview analysis form is missing');
+          }
+          const expert = page.locator('#expert-panels');
+          if ((await expert.count()) !== 1 || await expert.getAttribute('open') !== null) {
+            addIssue(viewport, routeInfo, 'studio', 'Expert View is missing or open by default');
+          }
+          const prButton = page.locator('#github-pr-button');
+          if ((await prButton.count()) !== 1 || !(await prButton.isDisabled())) {
+            addIssue(viewport, routeInfo, 'studio', 'GitHub PR control must be present and disabled');
           }
         }
 

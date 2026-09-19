@@ -54,13 +54,14 @@
     });
   }
 
-  function fetchWithFallbacks(targetUrl, allowProxy) {
+  function fetchWithFallbacks(targetUrl, allowProxy, allowThirdPartyProxy) {
     return fetchText(targetUrl, 10000).catch(function (directErr) {
       if (!allowProxy) {
         throw new Error('このサイトはブラウザから直接取得できません。取得代行（外部プロキシ）への同意にチェックするか、フォームからURLを送ってください。');
       }
       var chain = Promise.reject(directErr);
-      PROXY_BUILDERS.forEach(function (build) {
+      var builders = allowThirdPartyProxy === false ? PROXY_BUILDERS.slice(0, 1) : PROXY_BUILDERS;
+      builders.forEach(function (build) {
         chain = chain.catch(function () { return fetchText(build(targetUrl), 16000); });
       });
       return chain.catch(function () {
@@ -234,12 +235,13 @@
   function diagnose(inputUrl, options) {
     options = options || {};
     var allowProxy = !!options.allowProxy;
+    var allowThirdPartyProxy = options.allowThirdPartyProxy !== false;
     var url = normalizeUrl(inputUrl);
     var base = url.origin + '/';
     return Promise.all([
-      fetchWithFallbacks(url.href, allowProxy),
-      fetchWithFallbacks(absUrl(base, '/llms.txt'), allowProxy).catch(function () { return ''; }),
-      fetchWithFallbacks(absUrl(base, '/robots.txt'), allowProxy).catch(function () { return ''; })
+      fetchWithFallbacks(url.href, allowProxy, allowThirdPartyProxy),
+      fetchWithFallbacks(absUrl(base, '/llms.txt'), allowProxy, allowThirdPartyProxy).catch(function () { return ''; }),
+      fetchWithFallbacks(absUrl(base, '/robots.txt'), allowProxy, allowThirdPartyProxy).catch(function () { return ''; })
     ]).then(function (parts) {
       var html = parts[0];
       if (!html || html.length < 40) throw new Error('ページ内容を取得できませんでした。');

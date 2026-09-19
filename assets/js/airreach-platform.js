@@ -7,7 +7,8 @@
   'use strict';
 
   var BASELINE_KEY = 'airreach_official_baseline_v1';
-  var STUDIO_KEY = 'airreach_studio_v1';
+  var STUDIO_KEY = 'airreach_studio_v2';
+  var baselineMode = 'official';
 
   function q(id) { return document.getElementById(id); }
   function n(id) {
@@ -79,6 +80,157 @@
   function scaleToMonthly(total, periodDays) {
     var days = periodDays > 0 ? periodDays : 28;
     return Math.round((total / days) * 30);
+  }
+
+  function propertyMatchesTarget(property, targetUrl) {
+    var target;
+    var propertyUrl;
+    var domain;
+    try { target = new URL(targetUrl); } catch (e) { return false; }
+    property = String(property || '').trim();
+    if (!property) return false;
+    if (property.indexOf('sc-domain:') === 0) {
+      domain = property.slice('sc-domain:'.length).toLowerCase().replace(/^www\./, '');
+      return !!domain && (target.hostname.toLowerCase() === domain || target.hostname.toLowerCase().slice(-(domain.length + 1)) === '.' + domain);
+    }
+    try {
+      propertyUrl = new URL(property);
+      if (propertyUrl.origin !== target.origin) return false;
+      if (!propertyUrl.pathname || propertyUrl.pathname === '/') return true;
+      if (target.pathname === propertyUrl.pathname) return true;
+      return propertyUrl.pathname.charAt(propertyUrl.pathname.length - 1) === '/'
+        ? target.pathname.indexOf(propertyUrl.pathname) === 0
+        : target.pathname.indexOf(propertyUrl.pathname + '/') === 0;
+    } catch (e2) {
+      return false;
+    }
+  }
+
+  function hasValidBaselineBinding(baseline) {
+    var binding = baseline && (baseline.property || baseline.targetUrl);
+    var domain;
+    if (!binding) return false;
+    binding = String(binding).trim();
+    if (binding.indexOf('sc-domain:') === 0) {
+      domain = binding.slice('sc-domain:'.length).toLowerCase().replace(/^www\./, '');
+      return /^[a-z0-9.-]+$/.test(domain) && domain.indexOf('.') > 0;
+    }
+    try {
+      var parsed = new URL(binding);
+      return /^https?:$/i.test(parsed.protocol) && !!parsed.hostname;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function periodDaysFromMeta(meta) {
+    var start;
+    var end;
+    var difference;
+    meta = meta || {};
+    if (meta.period_start && meta.period_end) {
+      start = new Date(meta.period_start + 'T00:00:00Z');
+      end = new Date(meta.period_end + 'T00:00:00Z');
+      difference = Math.round((end.getTime() - start.getTime()) / 86400000) + 1;
+      if (isFinite(difference) && difference > 0) return difference;
+    }
+    return 28;
+  }
+
+  function loadDiagnoseHandoff() {
+    return window.AirReachHandoff && typeof window.AirReachHandoff.loadDiagnoseHandoff === 'function'
+      ? window.AirReachHandoff.loadDiagnoseHandoff()
+      : null;
+  }
+
+  function rowUrlMatchesTarget(raw, targetUrl) {
+    var target;
+    var rowUrl;
+    try {
+      target = new URL(targetUrl);
+      rowUrl = new URL(String(raw || '').trim(), target.href);
+      return /^https?:$/i.test(rowUrl.protocol) && rowUrl.origin === target.origin;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function gscRowsMatchTarget(rows, targetUrl) {
+    var relevant = rows.filter(function (row) {
+      return !!String(pick(row, ['query', 'Query', 'クエリ', '検索クエリ', 'keyword', 'Keyword']) || '').trim() ||
+        !!String(pick(row, ['page', 'Page', 'ページ', '上位のページ', 'url', 'URL']) || '').trim();
+    });
+    return relevant.length > 0 && relevant.every(function (row) {
+      var page = pick(row, ['page', 'Page', 'ページ', '上位のページ', 'url', 'URL']);
+      return !!String(page || '').trim() && rowUrlMatchesTarget(page, targetUrl);
+    });
+  }
+
+  function ga4RowsMatchTarget(rows, targetUrl) {
+    var relevant = rows.filter(function (row) {
+      return !!String(pick(row, ['landingPagePlusQueryString', 'Landing page + query string', 'landingPage', 'Landing page', 'url', 'URL']) || '').trim() ||
+        numCell(pick(row, ['sessions', 'Sessions', 'セッション'])) > 0 ||
+        numCell(pick(row, ['keyEvents', 'Key events', 'キーイベント', 'conversions', 'Conversions', 'コンバージョン'])) > 0;
+    });
+    return relevant.length > 0 && relevant.every(function (row) {
+      var page = pick(row, ['landingPagePlusQueryString', 'Landing page + query string', 'landingPage', 'Landing page', 'url', 'URL']);
+      return !!String(page || '').trim() && rowUrlMatchesTarget(page, targetUrl);
+    });
+  }
+
+  function inferOriginProperty(values) {
+    var origin = '';
+    var valid = values.length > 0 && values.every(function (value) {
+      var parsed;
+      try {
+        parsed = new URL(String(value || '').trim());
+        if (!/^https?:$/i.test(parsed.protocol)) return false;
+        if (origin && parsed.origin !== origin) return false;
+        origin = parsed.origin;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    });
+    return valid && origin ? origin + '/' : null;
+  }
+
+  function inferGscProperty(rows) {
+    var relevant = rows.filter(function (row) {
+      return !!String(pick(row, ['query', 'Query', 'クエリ', '検索クエリ', 'keyword', 'Keyword']) || '').trim() ||
+        !!String(pick(row, ['page', 'Page', 'ページ', '上位のページ', 'url', 'URL']) || '').trim();
+    });
+    return inferOriginProperty(relevant.map(function (row) {
+      return pick(row, ['page', 'Page', 'ページ', '上位のページ', 'url', 'URL']);
+    }));
+  }
+
+  function inferGa4Property(rows) {
+    var relevant = rows.filter(function (row) {
+      return !!String(pick(row, ['landingPagePlusQueryString', 'Landing page + query string', 'landingPage', 'Landing page', 'url', 'URL']) || '').trim() ||
+        numCell(pick(row, ['sessions', 'Sessions', 'セッション'])) > 0 ||
+        numCell(pick(row, ['keyEvents', 'Key events', 'キーイベント', 'conversions', 'Conversions', 'コンバージョン'])) > 0;
+    });
+    return inferOriginProperty(relevant.map(function (row) {
+      return pick(row, ['landingPagePlusQueryString', 'Landing page + query string', 'landingPage', 'Landing page', 'url', 'URL']);
+    }));
+  }
+
+  function ga4RowsMatchProperty(rows, property) {
+    var base = property.indexOf('sc-domain:') === 0
+      ? 'https://' + property.slice('sc-domain:'.length) + '/'
+      : property;
+    var relevant = rows.filter(function (row) {
+      return !!String(pick(row, ['landingPagePlusQueryString', 'Landing page + query string', 'landingPage', 'Landing page', 'url', 'URL']) || '').trim() ||
+        numCell(pick(row, ['sessions', 'Sessions', 'セッション'])) > 0 ||
+        numCell(pick(row, ['keyEvents', 'Key events', 'キーイベント', 'conversions', 'Conversions', 'コンバージョン'])) > 0;
+    });
+    return relevant.length > 0 && relevant.every(function (row) {
+      var raw = pick(row, ['landingPagePlusQueryString', 'Landing page + query string', 'landingPage', 'Landing page', 'url', 'URL']);
+      var resolved;
+      try { resolved = new URL(String(raw || '').trim(), base).href; } catch (e) { return false; }
+      return !!String(raw || '').trim() && propertyMatchesTarget(property, resolved);
+    });
   }
 
   function aggregateGscRows(rows, periodDays) {
@@ -161,9 +313,31 @@
     };
   }
 
+  function baselineMatchesCurrentHandoff(baseline) {
+    var handoff;
+    var binding;
+    if (!baseline) return true;
+    handoff = loadDiagnoseHandoff();
+    if (!handoff || !handoff.url) return true;
+    binding = baseline.property || baseline.targetUrl;
+    return !!binding && propertyMatchesTarget(binding, handoff.url);
+  }
+
   function loadBaseline() {
-    try { return JSON.parse(localStorage.getItem(BASELINE_KEY) || 'null'); }
-    catch (e) { return null; }
+    var baseline;
+    try {
+      baseline = JSON.parse(localStorage.getItem(BASELINE_KEY) || 'null');
+      if (baseline && baseline.evidenceClass !== 'Official') return null;
+      if (baseline && !hasValidBaselineBinding(baseline)) return null;
+      if (baseline && baseline.ga4 && baseline.ga4.evidenceClass !== 'Official') {
+        baseline = JSON.parse(JSON.stringify(baseline));
+        delete baseline.ga4;
+      }
+      if (!baselineMatchesCurrentHandoff(baseline)) return null;
+      return baseline;
+    } catch (e) {
+      return null;
+    }
   }
 
   function saveBaseline(baseline) {
@@ -174,8 +348,20 @@
     try {
       var studio = JSON.parse(localStorage.getItem(STUDIO_KEY) || '{}');
       var measurements = studio.measurements || [];
-      if (!measurements.length) return null;
-      var asGsc = measurements.map(function (m) {
+      var sources = studio.sources || {};
+      var gscMeta = sources.gsc || {};
+      var ga4Meta = sources.ga4 || {};
+      var property = String(gscMeta.property || '').trim();
+      var targetUrl = (studio.analysis_job && studio.analysis_job.input && (studio.analysis_job.input.url || studio.analysis_job.input.target_url)) ||
+        (studio.profile && studio.profile.url) || '';
+      var periodDays = periodDaysFromMeta(gscMeta);
+      var ga4PeriodDays = periodDaysFromMeta(ga4Meta);
+      if (!property || gscMeta.status !== 'imported' || (targetUrl && !propertyMatchesTarget(property, targetUrl))) return null;
+      var officialGsc = measurements.filter(function (m) {
+        return m && m.source_type === 'gsc' && m.evidence_class === 'Official' && (!m.url || propertyMatchesTarget(property, m.url));
+      });
+      if (!officialGsc.length) return null;
+      var asGsc = officialGsc.map(function (m) {
         return {
           query: m.keyword || '',
           page: m.url || '',
@@ -184,38 +370,51 @@
           position: m.position || 0
         };
       }).filter(function (r) { return r.query || r.page; });
-      var gsc = aggregateGscRows(asGsc, 28);
-      var sessions = measurements.reduce(function (s, m) { return s + (Number(m.sessions) || 0); }, 0);
-      var keyEvents = measurements.reduce(function (s, m) { return s + (Number(m.keyEvents) || 0); }, 0);
+      var gsc = aggregateGscRows(asGsc, periodDays);
+      var officialGa4 = measurements.filter(function (m) {
+        return m && m.source_type === 'ga4' && m.evidence_class === 'Official';
+      });
+      if (officialGa4.some(function (m) { return !m.url || !propertyMatchesTarget(property, m.url); })) officialGa4 = [];
+      var sessions = officialGa4.reduce(function (s, m) { return s + (Number(m.sessions) || 0); }, 0);
+      var keyEvents = officialGa4.reduce(function (s, m) { return s + (Number(m.key_events) || 0); }, 0);
       if (sessions > 0 || keyEvents > 0) {
         gsc.ga4 = {
           evidenceClass: 'Official',
-          source: 'Studio measurements',
-          monthlySessions: scaleToMonthly(sessions, 28),
-          monthlyKeyEvents: scaleToMonthly(keyEvents, 28)
+          source: 'Studio GA4 CSV only',
+          periodDays: ga4PeriodDays,
+          monthlySessions: scaleToMonthly(sessions, ga4PeriodDays),
+          monthlyKeyEvents: scaleToMonthly(keyEvents, ga4PeriodDays)
         };
       }
-      gsc.source = 'Studio localStorage';
+      gsc.source = 'Studio Official CSV only';
+      gsc.producer = 'airreach-studio';
+      gsc.property = property;
+      gsc.targetUrl = targetUrl || null;
+      gsc.periodStart = gscMeta.period_start || null;
+      gsc.periodEnd = gscMeta.period_end || null;
       return gsc;
     } catch (e) {
       return null;
     }
   }
 
-  function applyBaselineToForm(baseline) {
+  function applyBaselineToForm(baseline, forceOfficial) {
     if (!baseline) return;
     var visitorsEl = q('arp-visitors');
     var inqEl = q('arp-inquiries');
     if (baseline.ga4 && baseline.ga4.monthlySessions > 0 && visitorsEl) {
       visitorsEl.value = baseline.ga4.monthlySessions;
       visitorsEl.dataset.evidence = 'Official';
+      if (forceOfficial) delete visitorsEl.dataset.userTouched;
     } else if (baseline.monthlyClicks > 0 && visitorsEl) {
       visitorsEl.value = baseline.monthlyClicks;
       visitorsEl.dataset.evidence = 'Official';
+      if (forceOfficial) delete visitorsEl.dataset.userTouched;
     }
-    if (baseline.ga4 && baseline.ga4.monthlyKeyEvents > 0 && inqEl && !inqEl.dataset.userTouched) {
+    if (baseline.ga4 && baseline.ga4.monthlyKeyEvents > 0 && inqEl && (forceOfficial || !inqEl.dataset.userTouched)) {
       inqEl.value = baseline.ga4.monthlyKeyEvents;
       inqEl.dataset.evidence = 'Official';
+      if (forceOfficial) delete inqEl.dataset.userTouched;
     }
   }
 
@@ -273,6 +472,11 @@
     var el = q('arp-baseline-badge');
     var chip = q('arp-result-chip');
     if (!el) return;
+    if (baselineMode === 'sample') {
+      el.textContent = '基準値: Sample（デモ入力）';
+      if (chip) chip.textContent = 'Sample × Inferred';
+      return;
+    }
     if (!baseline) {
       el.textContent = '基準値: User Input（手入力）';
       if (chip) chip.textContent = '条件付き試算 · Inferred';
@@ -319,7 +523,7 @@
   }
 
   function render() {
-    var baseline = loadBaseline();
+    var baseline = baselineMode === 'official' ? loadBaseline() : null;
     var low = scenario(0.6);
     var base = scenario(1);
     var high = scenario(1.4);
@@ -362,12 +566,22 @@
       try {
         var rows = parseCsv(reader.result);
         var period = n('arp-period-days') || 28;
+        var handoff = loadDiagnoseHandoff();
+        var inferredProperty = inferGscProperty(rows);
+        if (handoff && handoff.url && !gscRowsMatchTarget(rows, handoff.url)) {
+          throw new Error('Page列から現在の診断URLと同じサイトを確認できません');
+        }
+        if (!handoff && !inferredProperty) {
+          throw new Error('Page列から対象サイトを確認できません');
+        }
         var gsc = aggregateGscRows(rows, period);
         if (!gsc.keywords.length) throw new Error('クエリ/ページ行が見つかりません');
-        var prev = loadBaseline() || {};
-        if (prev.ga4) gsc.ga4 = prev.ga4;
+        gsc.producer = 'airreach-platform';
+        gsc.targetUrl = handoff && handoff.url ? handoff.url : null;
+        gsc.property = handoff && handoff.url ? new URL(handoff.url).origin + '/' : inferredProperty;
         saveBaseline(gsc);
-        applyBaselineToForm(gsc);
+        baselineMode = 'official';
+        applyBaselineToForm(gsc, true);
         if (window.AirReachHandoff) {
           var seedGsc = window.AirReachHandoff.buildSimulatorSeed();
           if (q('arp-traffic-uplift')) q('arp-traffic-uplift').value = seedGsc.trafficUpliftPct;
@@ -392,20 +606,39 @@
       try {
         var rows = parseCsv(reader.result);
         var period = n('arp-period-days') || 28;
+        var handoff = loadDiagnoseHandoff();
+        var existingBaseline = loadBaseline();
+        var inferredProperty = inferGa4Property(rows);
+        var binding = handoff && handoff.url
+          ? handoff.url
+          : (existingBaseline && (existingBaseline.property || existingBaseline.targetUrl)) || inferredProperty;
+        if (!binding) {
+          throw new Error('Landing page列から対象サイトを確認できません');
+        }
+        if (handoff && handoff.url && !ga4RowsMatchTarget(rows, handoff.url)) {
+          throw new Error('Landing page列から現在の診断URLと同じサイトを確認できません');
+        }
+        if ((!handoff || !handoff.url) && !ga4RowsMatchProperty(rows, binding)) {
+          throw new Error('Landing page列と保存済みの対象サイトが一致しません');
+        }
         var ga4 = aggregateGa4Rows(rows, period);
-        var baseline = loadBaseline() || {
+        var baseline = existingBaseline || {
           evidenceClass: 'Official',
           source: 'GA4 CSV',
+          producer: 'airreach-platform',
           periodDays: period,
           keywords: [],
           monthlyClicks: 0,
           monthlyImpressions: 0,
           avgCtr: 0
         };
+        if (!baseline.targetUrl && handoff && handoff.url) baseline.targetUrl = handoff.url;
+        if (!baseline.property) baseline.property = inferredProperty || (handoff && handoff.url ? new URL(handoff.url).origin + '/' : null);
         baseline.ga4 = ga4;
         if (!baseline.source) baseline.source = 'GA4 CSV';
         saveBaseline(baseline);
-        applyBaselineToForm(baseline);
+        baselineMode = 'official';
+        applyBaselineToForm(baseline, true);
         if (window.AirReachHandoff) {
           var seedGa = window.AirReachHandoff.buildSimulatorSeed();
           if (q('arp-traffic-uplift')) q('arp-traffic-uplift').value = seedGa.trafficUpliftPct;
@@ -432,8 +665,11 @@
       var el = q(id);
       if (!el) return;
       el.addEventListener('input', function () {
+        if (baselineMode === 'official' && (id === 'arp-inquiries' || id === 'arp-visitors')) baselineMode = 'manual';
         if (id === 'arp-inquiries' || id === 'arp-visitors') el.dataset.userTouched = '1';
-        if (id === 'arp-visitors') el.dataset.evidence = 'User Input';
+        if (id === 'arp-visitors' || id === 'arp-inquiries') {
+          el.dataset.evidence = baselineMode === 'sample' ? 'Sample' : 'User Input';
+        }
         render();
       });
     });
@@ -450,6 +686,10 @@
         q('arp-margin').value = 55;
         q('arp-traffic-uplift').value = 18;
         q('arp-cvr-uplift').value = 12;
+        baselineMode = 'sample';
+        q('arp-visitors').dataset.evidence = 'Sample';
+        q('arp-inquiries').dataset.evidence = 'Sample';
+        setStatus('サンプル条件を表示中です。Official実測ではありません。', 'warn');
         render();
       };
     }
@@ -474,8 +714,13 @@
           setStatus('Studioに計測データがありません。StudioでGSC/GA4 CSVを取り込んでください。', 'warn');
           return;
         }
+        if (!baselineMatchesCurrentHandoff(baseline)) {
+          setStatus('StudioのGSC対象と現在の診断URLが一致しないため、Official計測を読み込みませんでした。', 'warn');
+          return;
+        }
         saveBaseline(baseline);
-        applyBaselineToForm(baseline);
+        baselineMode = 'official';
+        applyBaselineToForm(baseline, true);
         setStatus('StudioのOfficial計測を基準値として読み込みました。', 'good');
         render();
       });

@@ -69,10 +69,65 @@
   }
 
   function loadOfficialBaseline() {
+    var baseline;
     try {
-      return JSON.parse(localStorage.getItem(BASELINE_KEY) || 'null');
+      baseline = JSON.parse(localStorage.getItem(BASELINE_KEY) || 'null');
+      if (!baseline || baseline.evidenceClass !== 'Official' || !hasValidBaselineBinding(baseline)) return null;
+      if (baseline.ga4 && baseline.ga4.evidenceClass !== 'Official') {
+        baseline = JSON.parse(JSON.stringify(baseline));
+        delete baseline.ga4;
+      }
+      return baseline;
     } catch (e) {
       return null;
+    }
+  }
+
+  function propertyMatchesTarget(property, targetUrl) {
+    var target;
+    var propertyUrl;
+    var domain;
+    try { target = new URL(targetUrl); } catch (e) { return false; }
+    property = String(property || '').trim();
+    if (!property) return false;
+    if (property.indexOf('sc-domain:') === 0) {
+      domain = property.slice('sc-domain:'.length).toLowerCase().replace(/^www\./, '');
+      return !!domain && (target.hostname.toLowerCase() === domain || target.hostname.toLowerCase().slice(-(domain.length + 1)) === '.' + domain);
+    }
+    try {
+      propertyUrl = new URL(property);
+      if (propertyUrl.origin !== target.origin) return false;
+      if (!propertyUrl.pathname || propertyUrl.pathname === '/') return true;
+      if (target.pathname === propertyUrl.pathname) return true;
+      return propertyUrl.pathname.charAt(propertyUrl.pathname.length - 1) === '/'
+        ? target.pathname.indexOf(propertyUrl.pathname) === 0
+        : target.pathname.indexOf(propertyUrl.pathname + '/') === 0;
+    } catch (e2) {
+      return false;
+    }
+  }
+
+  function baselineMatchesHandoff(baseline, handoff) {
+    var binding;
+    if (!baseline || !handoff || !handoff.url) return true;
+    binding = baseline.property || baseline.targetUrl;
+    return !!binding && propertyMatchesTarget(binding, handoff.url);
+  }
+
+  function hasValidBaselineBinding(baseline) {
+    var binding = baseline && (baseline.property || baseline.targetUrl);
+    var domain;
+    if (!binding) return false;
+    binding = String(binding).trim();
+    if (binding.indexOf('sc-domain:') === 0) {
+      domain = binding.slice('sc-domain:'.length).toLowerCase().replace(/^www\./, '');
+      return /^[a-z0-9.-]+$/.test(domain) && domain.indexOf('.') > 0;
+    }
+    try {
+      var parsed = new URL(binding);
+      return /^https?:$/i.test(parsed.protocol) && !!parsed.hostname;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -84,6 +139,17 @@
     defaults = defaults || {};
     var handoff = loadDiagnoseHandoff();
     var baseline = loadOfficialBaseline();
+    if (baseline && baseline.evidenceClass !== 'Official') baseline = null;
+    if (baseline && !hasValidBaselineBinding(baseline)) baseline = null;
+    if (!baselineMatchesHandoff(baseline, handoff)) baseline = null;
+    if (baseline && baseline.ga4 && baseline.ga4.evidenceClass !== 'Official') {
+      try {
+        baseline = JSON.parse(JSON.stringify(baseline));
+        delete baseline.ga4;
+      } catch (e) {
+        baseline = null;
+      }
+    }
     var seed = {
       monthlyVisitors: defaults.monthlyVisitors != null ? defaults.monthlyVisitors : 5000,
       monthlyInquiries: defaults.monthlyInquiries != null ? defaults.monthlyInquiries : 50,
@@ -281,6 +347,7 @@
     saveDiagnoseHandoff: saveDiagnoseHandoff,
     loadDiagnoseHandoff: loadDiagnoseHandoff,
     loadOfficialBaseline: loadOfficialBaseline,
+    baselineMatchesHandoff: baselineMatchesHandoff,
     buildSimulatorSeed: buildSimulatorSeed,
     platformUrl: platformUrl,
     simulateImpact: simulateImpact,
