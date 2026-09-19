@@ -25,7 +25,7 @@ products:
     name: "HackⅡ"
     aliases: ["ハックツ", "Hack2", "HackII"]
     status: "限定商用検証・導入相談受付"
-    public_definition: "選定した質問について、AI回答本文、引用URL、自社・競合の言及、測定日時・条件を保存し、AI検索上の現在地と改善判断を支援するサービス。"
+    public_definition: "選定した質問について、AI回答本文、引用URL、自社・競合の言及、測定日時・条件を保存し、AI検索上の現在地と改善判断を支援するサービス。伴走コンサルティングはHackⅡ Teamsとして提供する。"
     verified_scope:
       - "質問・競合の測定設計"
       - "AI回答本文と引用URLの保存"
@@ -41,8 +41,8 @@ products:
 
   airreach:
     name: "AirReach"
-    status: "営業向け無料診断。アンケート後に飲食/BtoB/メディア等の業種専用ページへ遷移し、結論の4数字だけを表示。"
-    public_definition: "すりガラスの全画面アンケートで業種・会社URL・目的・調べたい言葉を取得し、/airreach/restaurant/ /b2b/ /media/ など業種専用ページへ遷移する無料入口。飲食なら予約、BtoBなら問い合わせ、メディアなら記事参照など意味のある数字だけを返す。詳細実測はHackⅡ、改善生成はStudio。数字は実測/推定/参考予測/ユーザー入力を区別する。"
+    status: "営業向け無料診断。アンケート後に飲食/BtoB/メディア等の業種専用ページへ遷移し、結論の4数字と最優先の対策3つを表示。"
+    public_definition: "すりガラスの全画面アンケートで業種・会社URL・目的・調べたい言葉を取得し、/airreach/restaurant/ /b2b/ /media/ など業種専用ページへ遷移する無料入口。飲食なら予約、BtoBなら問い合わせ、メディアなら記事参照など意味のある数字と、診断に応じた最優先の対策3つを返す。対策ファイル生成はHackⅡ Studio、詳細分析はHackⅡ Platform、伴走コンサルはHackⅡ Teams。数字は実測/推定/参考予測/ユーザー入力を区別し、算出式・代入値はExpert Viewに開示する。画面は短い文言を基本とし、専門用語の詳細はホバー説明で補う。"
     limitations:
       - "ChatGPT・Gemini・Claude・AI Overviewsなどの実回答引用率を本ツール単体では取得しない"
       - "開始時の業種・URL・目的アンケートは必須。回答は端末内（localStorage）に保存し、適切なSales画面への案内に使う"
@@ -52,6 +52,28 @@ products:
       - "指定メディアの引用改善は参照候補化と継続計測を意味し、必ず引用されることを保証しない"
       - "Google OAuthライブ連携は接続環境の準備後に有効。未接続時はStudioのCSV取り込みを案内する"
       - "生成ファイルは下書きであり自動公開しない"
+  hack2_studio:
+    name: "HackⅡ Studio"
+    aliases: ["ハックツ・スタジオ", "Hack2 Studio", "AirReach Studio"]
+    status: "ブラウザ内実行OS（Overview司令塔）。分析→キーワード→施策→ZIP／下書きPRまで。"
+    public_definition: "URL・目的・対策キーワード件数を入力すると、サイト理解・キーワード選定・AI向け質問・Gap・優先施策・実装パッケージ（ZIP）までを一連のジョブとして進める実行画面。市場検索需要は推定が既定で、Keyword Planner CSV取込時のみ公式ボリュームを行単位で上書き表示する。GSC ImpressionsとHackⅡ言及・引用は実測として分離する。公開や順位・引用・売上を保証しない。GitHubへの下書きPRはユーザーPATと人間承認前提。本番自動Deployはしない。"
+    limitations:
+      - "生成ファイルは下書きであり自動公開しない"
+      - "市場の検索ボリュームは推定が既定。Keyword Planner CSV取込時のみ当該行を公式ボリュームとして扱う"
+      - "GSC Impressionsと市場需要を同一の「検索回数」として混ぜない"
+      - "GitHub PRは下書き作成まで。マージと本番Deployは人間が行う（自動Deployなし）"
+      - "HackⅡライブAPI未接続時はJSON手動取込。競合SERP自動取得は未接続時は推定・手動に留める"
+      - "GitHub Personal Access TokenはブラウザのsessionStorageにのみ保持し、リポジトリへ保存しない"
+  hack2_platform:
+    name: "HackⅡ Platform"
+    aliases: ["ハックツ・プラットフォーム", "Hack2 Platform", "AirReach Platform"]
+    status: "詳細分析・シミュレーション（参考値）"
+    public_definition: "GSC/GA4等の実数と診断結果をつなぎ、訪問・問い合わせなどの改善余地をより詳細に分析・試算する画面。成果を保証しない。"
+  hack2_teams:
+    name: "HackⅡ Teams"
+    aliases: ["ハックツ・チームス", "Hack2 Teams"]
+    status: "導入相談・伴走コンサルティング"
+    public_definition: "HackⅡ本体の測定設計から優先順位整理・継続改善までを、コンサルティングとして一緒に進める伴走枠。"
   adctor:
     name: "Adctor"
     status: "研究開発・PoC相談"

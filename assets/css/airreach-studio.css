@@ -29,3 +29,139 @@
 .ars-sep{height:1px;background:var(--ars-line);margin:18px 0}.ars-inline-kpi{display:flex;gap:18px;flex-wrap:wrap}.ars-inline-kpi>div{min-width:120px}.ars-inline-kpi b{display:block;font-size:18px}.ars-inline-kpi small{color:#64748b}
 @media(max-width:980px){.ars-shell{grid-template-columns:1fr}.ars-side{position:relative;border-right:0;border-bottom:1px solid var(--ars-line);display:flex;gap:4px;overflow:auto;padding:10px}.ars-side .group{display:none}.ars-side button{width:auto;white-space:nowrap}.ars-main{padding:22px 16px 64px}.ars-c8,.ars-c7,.ars-c6,.ars-c5,.ars-c4,.ars-c3{grid-column:span 12}.ars-model-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:620px){.ars-wrap{width:min(100% - 24px,1240px)}.ars-hero{padding-top:84px}.ars-model-grid{grid-template-columns:1fr}.ars-title-row{display:block}.ars-title-row .ars-row{margin-top:12px}}
+
+
+/* Accessibility: larger type, B&W + blue accents */
+.ars-page{font-size:18px;line-height:1.65;font-family:'Noto Sans JP','Hiragino Sans','Hiragino Kaku Gothic ProN',Meiryo,sans-serif;background:#fff;color:#0f172a}
+.ars-hero p{font-size:1.1rem;color:#334155}
+.ars-badge{font-size:14px;border-radius:8px;border-color:#93c5fd;color:#1e293b}
+.ars-side button{font-size:15px;padding:14px 12px;min-height:48px}
+.ars-side .group{font-size:12px;color:#64748b;letter-spacing:.08em}
+.ars-title-row h2{font-size:clamp(1.6rem,3vw,2rem)}
+.ars-title-row p{font-size:1.05rem;color:#334155}
+.ars-card h3{font-size:1.15rem;margin:0 0 14px;color:#0f172a}
+.ars-help,.ars-note{font-size:1rem;color:#475569}
+.ars-field label{font-size:1rem;font-weight:800;color:#0f172a}
+.ars-input,.ars-select,.ars-textarea{border:2px solid #93c5fd;border-radius:10px;padding:14px 16px;font-size:1.05rem;min-height:52px;color:#0f172a;background:#fff}
+.ars-textarea{min-height:140px}
+.ars-input:focus,.ars-select:focus,.ars-textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.2)}
+.ars-btn{font-size:1.05rem;padding:14px 18px;min-height:52px;border-radius:10px}
+.ars-list li{font-size:1.02rem;padding:14px;line-height:1.6}
+.ars-table{font-size:14px}
+.ars-kicker-inline{font:800 .78rem/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#1d4ed8;margin-bottom:6px}
+.ars-product-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:18px;border:2px solid #bfdbfe;background:#f8fbff}
+.ars-product{display:grid;gap:4px;padding:12px;border-left:3px solid #2563eb}
+.ars-product strong{font-size:1.05rem;color:#0f172a}
+.ars-product span{font-size:1rem;color:#475569;line-height:1.5}
+.ars-product a{font-weight:800;color:#1d4ed8;text-decoration:none;margin-top:4px}
+.ars-priority3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ars-prio{border-top:3px solid #2563eb;padding-top:14px}
+.ars-prio .n{font-size:1rem;font-weight:800;color:#1d4ed8;margin-bottom:8px}
+.ars-prio h4{margin:0 0 8px;font-size:1.25rem;line-height:1.4;color:#0f172a}
+.ars-prio p{margin:0;font-size:1.05rem;line-height:1.55;color:#334155}
+.ars-prio .fx{margin-top:10px;font-size:1rem;color:#64748b;line-height:1.5}
+@media(max-width:980px){.ars-product-strip,.ars-priority3{grid-template-columns:1fr}}
+
+
+/* A11y pass 2026-09: low-vision / small-text */
+.ars-page{font-size:19px;line-height:1.7;color:#0f172a;background:#fff}
+.ars-kicker{font-size:13px !important;color:#1d4ed8}
+.ars-hero p,.ars-title-row p,.ars-help,.ars-note,.ars-muted,.ars-file small,.ars-model small,.ars-legend{font-size:1.05rem !important;color:#334155 !important;line-height:1.65}
+.ars-side .group{font-size:13px !important;color:#475569 !important}
+.ars-side button{font-size:1.02rem !important;min-height:52px;color:#1e293b}
+.ars-card h3,.ars-prio h4{font-size:1.2rem !important;color:#0f172a}
+.ars-stat .lab{font-size:13px !important;color:#475569 !important}
+.ars-stat .sub{font-size:1rem !important;color:#334155 !important}
+.ars-field label{font-size:1.05rem !important}
+.ars-input,.ars-select,.ars-textarea{font-size:1.08rem !important;min-height:54px;border:2px solid #93c5fd !important;color:#0f172a}
+.ars-btn{font-size:1.08rem !important;min-height:54px}
+.ars-table{font-size:1rem !important}
+.ars-table th{color:#1e293b !important;font-size:1rem !important}
+.ars-chip{font-size:13px !important;padding:6px 10px}
+.ars-list li{font-size:1.05rem !important;color:#1e293b}
+.ars-prio .fx{color:#334155 !important;font-size:1.05rem !important}
+.ars-disclaimer,.ars-tree{font-size:1rem !important}
+@media (prefers-contrast: more){
+  .ars-page{color:#000}
+  .ars-help,.ars-note,.ars-hero p{color:#000 !important}
+  .ars-input,.ars-select,.ars-textarea{border-color:#2563eb !important}
+}
+
+
+/* Short-copy + tip mode */
+.ars-help,.ars-prio .fx,.ars-file small,.ars-model small,.ars-legend,.ars-stat .sub,.ars-stat .lab{display:none !important}
+.ars-note{font-size:1.08rem !important;color:#1e293b !important}
+.ars-kicker,.ars-kicker-inline,.ars-side .group{font-size:1.05rem !important;letter-spacing:0 !important;text-transform:none !important;color:#1d4ed8 !important}
+.ars-badge{font-size:1.05rem !important;padding:10px 12px}
+.ars-page{font-size:20px}
+.ars-product span{display:none}
+.ars-title-row p{display:none}
+
+
+/* Overview Orchestrator */
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.ars-hero-compact{padding:88px 0 28px}
+.ars-hero-compact h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:8px 0 0}
+.ars-orch-shell{width:min(1080px,calc(100% - 40px));margin:0 auto 80px}
+.ars-orch-launch{margin-top:8px;padding:28px}
+.ars-orch-form{display:grid;gap:18px}
+.ars-label{display:block;font-weight:800;font-size:1.05rem;margin-bottom:8px;color:#0f172a}
+.orch-kw-pills{display:flex;flex-wrap:wrap;gap:10px}
+.orch-kw-pill{display:inline-flex;align-items:center;gap:8px;border:2px solid #93c5fd;border-radius:12px;padding:12px 16px;font-size:1.08rem;font-weight:800;cursor:pointer;background:#fff;color:#0f172a}
+.orch-kw-pill.is-on,.orch-kw-pill:has(input:checked){background:#eff6ff;border-color:#2563eb;color:#1d4ed8}
+.orch-kw-pill input{accent-color:#2563eb;width:18px;height:18px}
+.ars-btn-xl{width:100%;min-height:60px;font-size:1.15rem}
+.ars-consent-row{display:flex;gap:10px;align-items:flex-start;font-size:1.05rem;color:#1e293b;line-height:1.5}
+.orch-progress{display:grid;gap:10px;margin-top:12px}
+.orch-step{display:flex;justify-content:space-between;gap:16px;padding:14px 16px;border:2px solid #e2e8f0;border-radius:12px;font-size:1.08rem;font-weight:700;color:#334155}
+.orch-step.is-done{border-color:#86efac;background:#ecfdf5;color:#047857}
+.orch-step.is-run{border-color:#93c5fd;background:#eff6ff;color:#1d4ed8}
+.orch-step-mark{font-variant-numeric:tabular-nums;min-width:3ch;text-align:right}
+.orch-four{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0 22px}
+.orch-four-card{border:2px solid #e2e8f0;border-radius:14px;padding:18px;background:#fff}
+.orch-four-card .lab{font-size:1.05rem;font-weight:800;color:#1e293b;margin-bottom:10px}
+.orch-four-card .val{font-size:clamp(1.8rem,3.5vw,2.4rem);font-weight:800;letter-spacing:-.03em;color:#0f172a;line-height:1.1}
+.orch-four-card .unit{margin-top:8px;font-size:1.05rem;color:#334155;font-weight:700}
+.orch-badge-est,.orch-badge-off{display:inline-block;font-size:1rem;font-weight:800;padding:4px 8px;border-radius:8px;border:2px solid #93c5fd;color:#1d4ed8;background:#eff6ff}
+.orch-badge-off{border-color:#86efac;color:#047857;background:#ecfdf5}
+.orch-conclusion-card{border-color:#93c5fd;background:#f8fbff}
+.orch-conclusion{font-size:1.2rem;font-weight:800;line-height:1.55;color:#0f172a;margin:0}
+.orch-compress-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.orch-compress-grid>div{border:2px solid #e2e8f0;border-radius:12px;padding:14px;text-align:center}
+.orch-compress-grid b{display:block;font-size:1.6rem;color:#0f172a}
+.orch-compress-grid span{font-size:1.02rem;color:#334155;font-weight:700}
+.orch-impl-summary{font-size:1.15rem;font-weight:800;margin:16px 0 0;color:#0f172a}
+.orch-kw-table th,.orch-kw-table td{font-size:1.02rem;white-space:normal}
+.ars-orch-expert{margin-top:8px;border-top:2px solid #e2e8f0;padding-top:20px}
+.ars-orch-expert .ars-shell{min-height:480px}
+@media(max-width:900px){
+  .orch-four,.orch-compress-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:620px){
+  .orch-four,.orch-compress-grid{grid-template-columns:1fr}
+}
+
+.orch-gsc-note{font-size:1.05rem;color:#1e293b;font-weight:700;margin:0 0 12px;line-height:1.5}
+
+.orch-gsc-status{margin:8px 0 0;font-size:1.02rem;font-weight:700;color:#334155}
+.orch-gsc-status.is-ok{color:#047857}
+.orch-gsc-status.is-warn{color:#b45309}
+.orch-kw-toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center;margin:0 0 14px}
+.orch-kw-filters{display:flex;flex-wrap:wrap;gap:8px}
+.orch-filter{border:2px solid #cbd5e1;background:#fff;color:#334155;border-radius:10px;padding:8px 12px;font-weight:800;font-size:1rem;cursor:pointer}
+.orch-filter.is-on{border-color:#2563eb;background:#eff6ff;color:#1d4ed8}
+.orch-prio{display:inline-block;min-width:2.4em;font-weight:800;color:#1d4ed8}
+.orch-seed{display:inline-block;margin-left:6px;font-size:.9rem;font-weight:800;color:#047857;border:1.5px solid #86efac;border-radius:6px;padding:1px 6px;background:#ecfdf5}
+.orch-kw-count{margin:10px 0 0;font-size:1.02rem;font-weight:700;color:#475569}
+#orch-gsc-csv{display:block;margin-top:6px;max-width:100%}
+
+.orch-phase2-status{margin:12px 0 0;font-size:1.02rem;font-weight:700}
+.orch-phase2-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.orch-dialog{border:none;border-radius:16px;padding:0;max-width:min(560px,calc(100vw - 24px));box-shadow:0 24px 60px rgba(15,23,42,.25)}
+.orch-dialog::backdrop{background:rgba(15,23,42,.45)}
+.orch-dialog-inner{padding:24px}
+.orch-dialog-lead{font-size:1.02rem;line-height:1.55;color:#334155;font-weight:600;margin:0 0 16px}
+.orch-checklist{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.orch-checklist label{display:flex;gap:10px;align-items:flex-start;font-weight:700;color:#0f172a;font-size:1.02rem}
+.ars-muted{font-weight:600;color:#64748b;font-size:.95em}
+@media (max-width:720px){.orch-phase2-grid{grid-template-columns:1fr}}

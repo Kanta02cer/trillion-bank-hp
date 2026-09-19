@@ -223,27 +223,340 @@
     };
   }
 
+  function gapToPlainAction(gap, industryId) {
+    var g = String(gap || '');
+    if (/FAQ|質問/.test(g)) {
+      return {
+        title: 'よく聞かれる質問を公式に置く',
+        action: industryId === 'restaurant'
+          ? '予約・価格・席・アクセスなど、来店前に聞かれることを公式ページで答える'
+          : industryId === 'media'
+            ? '会社の定義・評判・料金など、指名検索で聞かれやすい質問に公式で答える'
+            : '導入前に必ず聞かれる質問を、公式FAQとして分かりやすく置く',
+        effect: '次に起きること：選ぶときの迷いが減り、問い合わせ・予約につながりやすくなる可能性'
+      };
+    }
+    if (/Organization|LocalBusiness|エンティティ|会社名|組織/.test(g)) {
+      return {
+        title: '会社・お店の基本情報を揃える',
+        action: '正式名称・所在地・連絡先・何のサービスかを、検索やAIが取り違えない形で書く',
+        effect: '次に起きること：御社として正しく認識されやすくなる可能性'
+      };
+    }
+    if (/llms|発見|robots|canonical|H1|構造|meta/i.test(g)) {
+      return {
+        title: 'サイトの案内情報を整える',
+        action: '重要ページへの案内と、ページの主題（見出し）を分かりやすくそろえる',
+        effect: '次に起きること：探している人に見つけてもらいやすくなる可能性'
+      };
+    }
+    if (/問い合わせ|相談|導線|contact/i.test(g)) {
+      return {
+        title: '次の一歩をはっきり書く',
+        action: '予約・問い合わせ・資料請求など、「何をすればいいか」をページ内で一目で分かる位置に置く',
+        effect: '次に起きること：興味を持った人が行動しやすくなる可能性'
+      };
+    }
+    return {
+      title: '不足している説明を補う',
+      action: g.replace(/構造化データ|Schema|JSON-LD|Entity|llms\.txt/gi, '公式の案内情報').slice(0, 80),
+      effect: '次に起きること：御社の強みが伝わりやすくなる可能性'
+    };
+  }
+
   function top3Actions(industry, mode, diagnose, brand) {
     var profile = industry || (window.AirReachIndustry && window.AirReachIndustry.getIndustry('other'));
-    var actions = (profile && profile.actions) ? profile.actions.slice(0, 3) : [];
-    if (!actions.length) {
-      actions = [
-        { slot: 'NOW', title: '今すぐ', action: 'よく聞かれる質問を追加する', cta: '作成する' },
-        { slot: '2W', title: '次に', action: '比較ページを追加する', cta: '作成する' },
-        { slot: 'PARTNER', title: '任せる', action: 'Trillion Bankに継続測定を任せる', cta: '任せる' }
-      ];
+    var industryId = (profile && profile.id) || 'other';
+    var defaults = (profile && profile.actions) ? profile.actions.slice(0, 3) : [];
+    var actions = [];
+
+    // 個別課題：診断ギャップから最大2件を平易な対策に翻訳
+    if (diagnose && diagnose.gaps && diagnose.gaps.length) {
+      diagnose.gaps.slice(0, 2).forEach(function (gap, i) {
+        var plain = gapToPlainAction(gap, industryId);
+        actions.push({
+          slot: i === 0 ? 'NOW' : '2W',
+          title: plain.title,
+          action: plain.action,
+          effect: plain.effect,
+          cta: 'HackⅡ Studioで作る',
+          href: '/airreach/studio/'
+        });
+      });
     }
-    return actions.map(function (a) {
-      return {
-        slot: a.slot,
-        title: a.title,
-        action: a.action,
-        cta: a.cta || '作成する',
-        href: a.slot === 'PARTNER'
-          ? '/trillionbank/meeting/?type=company&from=airreach'
-          : '/airreach/studio/'
-      };
+
+    // 足りない分は業種デフォルトで埋める（PARTNER以外）
+    defaults.forEach(function (d) {
+      if (actions.length >= 2) return;
+      if (d.slot === 'PARTNER') return;
+      actions.push({
+        slot: actions.length === 0 ? 'NOW' : '2W',
+        title: d.title,
+        action: d.action,
+        effect: '次に起きること：情報が伝わりやすくなり、選ばれやすさが上がる可能性',
+        cta: 'HackⅡ Studioで作る',
+        href: '/airreach/studio/'
+      });
     });
+
+    while (actions.length < 2) {
+      actions.push({
+        slot: actions.length === 0 ? 'NOW' : '2W',
+        title: 'よく聞かれる質問を追加する',
+        action: '購入・予約・相談の前に聞かれることを公式に置く',
+        effect: '次に起きること：迷いが減り、行動につながりやすくなる可能性',
+        cta: 'HackⅡ Studioで作る',
+        href: '/airreach/studio/'
+      });
+    }
+
+    // 3つ目は常に Teams（コンサル）
+    actions = actions.slice(0, 2);
+    actions.push({
+      slot: 'PARTNER',
+      title: 'HackⅡ Teamsに任せる',
+      action: '優先順位の設計から、継続測定・改善伴走までコンサルティングとして一緒に進める',
+      effect: '測定と改善をまとめて任せられます',
+      cta: '相談する',
+      href: '/trillionbank/meeting/?type=company&from=airreach-teams'
+    });
+
+    return actions;
+  }
+
+
+  function buildExpertMethodology(ctx) {
+    ctx = ctx || {};
+    var diagnose = ctx.diagnose || null;
+    var volume = ctx.volume || {};
+    var acq = ctx.acquisition || {};
+    var improve = ctx.improve || {};
+    var inq = ctx.inquiries || {};
+    var lost = ctx.opportunity || {};
+    var confidence = ctx.confidence;
+    var confOpts = ctx.confidenceBreakdown || {};
+    var rank = ctx.rank || null;
+    var score = num(acq.score, diagnose && diagnose.overall != null ? diagnose.overall : 40);
+    var sections = [];
+
+    var parts = acq.parts || (diagnose ? {
+      structure: diagnose.structure,
+      entity: diagnose.entity,
+      faq: diagnose.faq,
+      discover: diagnose.discover
+    } : null);
+    var readinessRows = [];
+    if (parts) {
+      var weights = [
+        { key: 'structure', label: '構造（title/H1/meta/canonical等）', weight: 0.30, maxPts: '12点満点→100換算' },
+        { key: 'entity', label: 'エンティティ（Organization/Service等）', weight: 0.25, maxPts: '10点満点→100換算' },
+        { key: 'faq', label: 'FAQ（FAQPage・可視FAQ）', weight: 0.20, maxPts: '8点満点→100換算' },
+        { key: 'discover', label: '発見性（robots/llms/内部リンク等）', weight: 0.25, maxPts: '発見系チェック→100換算' }
+      ];
+      var recon = 0;
+      weights.forEach(function (row) {
+        var v = num(parts[row.key], 0);
+        var contrib = Math.round(v * row.weight * 10) / 10;
+        recon += v * row.weight;
+        readinessRows.push({
+          label: row.label,
+          formula: 'score(' + row.key + ') × ' + row.weight,
+          value: v + ' × ' + row.weight + ' = ' + contrib,
+          note: row.maxPts,
+          evidence: acq.evidenceClass || 'Observed'
+        });
+      });
+      readinessRows.push({
+        label: '総合準備度（overall）',
+        formula: '0.30·S + 0.25·E + 0.20·F + 0.25·D',
+        value: Math.round(recon) + ' / 100（表示値 ' + score + '）',
+        note: '公開HTMLの観測に基づく。AI実回答の引用率ではない。',
+        evidence: acq.evidenceClass || 'Observed'
+      });
+    } else {
+      readinessRows.push({
+        label: '総合準備度',
+        formula: '診断未実施時の仮値',
+        value: String(score),
+        note: 'URL診断前。診断後に実測へ置換。',
+        evidence: 'Estimated'
+      });
+    }
+    sections.push({
+      id: 'readiness',
+      title: '1. 公開ページ準備度スコア',
+      summary: '公開ページの機械可読性・案内の揃い具合を 0–100 で合成。AI回答への掲載を保証しない。',
+      rows: readinessRows
+    });
+
+    var volVal = volume.value;
+    sections.push({
+      id: 'volume',
+      title: '2. 月間検索需要',
+      summary: volume.note || 'キーワード特徴からの推定モデル。Search Console公式ボリュームではない。',
+      rows: [
+        {
+          label: '推定需要 V',
+          formula: 'hash(keyword) → base ∈ [800,18800]（指名検索は [200,4700]）→ 語特徴で係数補正',
+          value: volVal != null ? ('V = ' + cnt(volVal) + ' 回/月') : 'キーワード未入力のため未算出',
+          note: 'evidence = ' + (volume.evidenceClass || 'Estimated'),
+          evidence: volume.evidenceClass || 'Estimated'
+        },
+        {
+          label: '関連質問・商用質問（派生）',
+          formula: 'related ≈ max(40, round(V×0.08)) / commercial ≈ max(8, round(V×0.012))',
+          value: volVal != null
+            ? ('related ' + cnt(volume.relatedQuestions) + ' / commercial ' + cnt(volume.commercialQuestions))
+            : '—',
+          note: '需要の内訳目安。公式クエリ数ではない。',
+          evidence: 'Estimated'
+        }
+      ]
+    });
+
+    var gap = clamp(78 - score, 8, 45);
+    sections.push({
+      id: 'improve',
+      title: '3. 改善後スコア・相対位置',
+      summary: improve.note || '準備度が上がった場合の参考レンジ。',
+      rows: [
+        {
+          label: 'ギャップ gap',
+          formula: 'clamp(78 − score, 8, 45)',
+          value: 'clamp(78 − ' + score + ', 8, 45) = ' + gap,
+          note: '目標アンカー78は「十分整った公開ページ」の社内基準点（仮定）。',
+          evidence: 'Inferred'
+        },
+        {
+          label: '改善後レンジ [low, high]',
+          formula: 'low = clamp(round(s + gap×0.55), s+5, 92); high = clamp(round(s + gap×0.95), low+4, 96)',
+          value: 's=' + score + ' → [' + improve.low + ', ' + improve.high + '] / 100',
+          note: '倍率 ' + improve.multiplierLow + '〜' + improve.multiplierHigh + '×（表示用）。成果保証なし。',
+          evidence: improve.evidenceClass || 'Inferred'
+        },
+        {
+          label: '相対位置（目安順位）',
+          formula: 'rank = clamp(round(11 − score/10), 1, 10)',
+          value: rank ? ('約 ' + rank.rank + ' / ' + rank.of) : '—',
+          note: '競合SERP実測ではない。スコアからの相対位置の便宜指標。',
+          evidence: 'Inferred'
+        }
+      ]
+    });
+
+    var liftLow = clamp(0.25 + (78 - score) / 220, 0.22, 0.5);
+    var liftHigh = clamp(liftLow + 0.18 + (78 - score) / 280, liftLow + 0.15, 0.8);
+    var visitLift = clamp(((improve.low || score) + (improve.high || score)) / 2 / Math.max(score, 1) - 1, 0.05, 0.5);
+    sections.push({
+      id: 'impact',
+      title: '4. 問い合わせ・訪問の改善レンジ',
+      summary: inq.note || '入力値×改善仮定の参考レンジ。',
+      rows: [
+        {
+          label: '現在の成果件数 I₀',
+          formula: 'ユーザー入力。未入力時は max(3, round(V×0.0015))',
+          value: 'I₀ = ' + cnt(inq.currentInquiries) + '（source: ' + (inq.inquiriesSource || '—') + '）',
+          note: '訪問者は未入力時 max(I₀×40, round(V×0.08)) で補完。',
+          evidence: inq.inquiriesSource === 'User Input' ? 'User Input' : 'Estimated'
+        },
+        {
+          label: 'リフト率 λ',
+          formula: 'λ_low = clamp(0.25+(78−s)/220, 0.22, 0.5); λ_high = clamp(λ_low+0.18+(78−s)/280, λ_low+0.15, 0.8)',
+          value: 's=' + score + ' → λ ∈ [' + (Math.round(liftLow * 1000) / 1000) + ', ' + (Math.round(liftHigh * 1000) / 1000) + ']',
+          note: 'スコアが低いほどリフト上限が広がる（仮定）。因果推定ではない。',
+          evidence: 'Inferred'
+        },
+        {
+          label: '追加件数 ΔI',
+          formula: 'ΔI_low = max(1, round(I₀·λ_low)); ΔI_high = max(ΔI_low+1, round(I₀·λ_high))',
+          value: 'ΔI = +' + cnt(inq.addLow) + '〜+' + cnt(inq.addHigh) + ' → 改善後 ' + cnt(inq.afterLow) + '〜' + cnt(inq.afterHigh),
+          note: '訪問増加 ≈ 現訪問 × visitLift（visitLift=' + (Math.round(visitLift * 1000) / 1000) + '）',
+          evidence: 'Inferred'
+        },
+        {
+          label: '1件あたり費用（参考）',
+          formula: 'CPA = 月額費用 / ΔI_mid（ΔI_mid = round((ΔI_low+ΔI_high)/2)）',
+          value: inq.cpa != null ? ('CPA ≈ ' + yen(inq.cpa) + '（費用 ' + yen(inq.fee) + ' / mid ' + cnt(inq.addMid) + '）') : '費用未入力のため未算出',
+          note: '広告CPAの代替ではない。試算用。',
+          evidence: 'Inferred'
+        }
+      ]
+    });
+
+    var missedShare = clamp((78 - score) / 100, 0.05, 0.45);
+    sections.push({
+      id: 'loss',
+      title: '5. 機会損失（仮定）',
+      summary: lost.note || 'いま取りこぼしている可能性のある件数。',
+      rows: [
+        {
+          label: '取りこぼし率 m',
+          formula: 'm = clamp((78 − score)/100, 0.05, 0.45)',
+          value: 'm = ' + (Math.round(missedShare * 1000) / 1000) + '（score=' + score + '）',
+          note: '準備度ギャップを機会損失率に写像した仮定。',
+          evidence: 'Inferred'
+        },
+        {
+          label: '取りこぼし件数',
+          formula: 'missedInq = max(1, round(I₀ · m)); deals/rev は close×deal を乗算',
+          value: '問い合わせ ≈ ' + cnt(lost.missedInquiries)
+            + (lost.missedDeals != null ? (' / 受注 ≈ ' + lost.missedDeals) : '')
+            + (lost.missedRevenue != null ? (' / 売上機会 ≈ ' + yen(lost.missedRevenue)) : ''),
+          note: '表示は参考。実測の逸失需要ではない。',
+          evidence: 'Inferred'
+        }
+      ]
+    });
+
+    var confRows = [
+      { label: '基準点', formula: 'base = 42', value: '+42', on: true },
+      { label: 'URL診断あり', formula: '+18', value: confOpts.hasDiagnose ? '+18' : '0', on: !!confOpts.hasDiagnose },
+      { label: 'GSC実数あり', formula: '+16', value: confOpts.hasGsc ? '+16' : '0', on: !!confOpts.hasGsc },
+      { label: 'GA4実数あり', formula: '+12', value: confOpts.hasGa4 ? '+12' : '0', on: !!confOpts.hasGa4 },
+      { label: 'キーワード入力', formula: '+6', value: confOpts.hasKeyword ? '+6' : '0', on: !!confOpts.hasKeyword },
+      { label: '事業数字入力', formula: '+6', value: confOpts.hasBusinessInputs ? '+6' : '0', on: !!confOpts.hasBusinessInputs },
+      { label: '指名×記事URL', formula: '+4（branded時）', value: (confOpts.mode === 'branded_search' && confOpts.hasMediaUrl) ? '+4' : '0', on: !!(confOpts.mode === 'branded_search' && confOpts.hasMediaUrl) },
+      { label: '業種推定補正', formula: 'round((industryConfidence−50)/10)', value: confOpts.industryConfidence != null ? String(Math.round((confOpts.industryConfidence - 50) / 10)) : '0', on: confOpts.industryConfidence != null }
+    ];
+    confRows.push({
+      label: '信頼度（表示）',
+      formula: 'clamp(Σ, 35, 88)',
+      value: String(confidence) + ' %',
+      on: true,
+      note: 'モデル確度の社内指標。統計的信頼区間ではない。'
+    });
+    sections.push({
+      id: 'confidence',
+      title: '6. 予測の信頼度',
+      summary: '入力・実測の充足度による 35–88 の加点モデル。高いほど「根拠が厚い」が、正しさの保証ではない。',
+      rows: confRows.map(function (r) {
+        return {
+          label: r.label,
+          formula: r.formula,
+          value: r.value + (r.on === false ? '（未適用）' : ''),
+          note: r.note || '',
+          evidence: 'Inferred'
+        };
+      })
+    });
+
+    sections.push({
+      id: 'legend',
+      title: '7. エビデンス区分',
+      summary: '画面上のラベルは次の定義に従う。',
+      rows: [
+        { label: '実測（Observed / Official）', formula: '公開HTML診断・GSC/GA4取込など観測値', value: '—', note: '取得条件付き。全AI面の網羅ではない。', evidence: 'Observed' },
+        { label: '推定（Estimated）', formula: 'キーワード特徴モデル等', value: '—', note: '公式ボリュームの代替ではない。', evidence: 'Estimated' },
+        { label: '参考予測（Inferred）', formula: '仮定パラメータによるシミュレーション', value: '—', note: '成果・順位・掲載を保証しない。', evidence: 'Inferred' },
+        { label: 'ユーザー入力（User Input）', formula: 'フォーム入力値', value: '—', note: '計算の起点。精度は入力に依存。', evidence: 'User Input' }
+      ]
+    });
+
+    return {
+      audience: 'データ分析・マーケティング計測の実務者向け。営業画面の4数字の裏側。',
+      asOf: new Date().toISOString().slice(0, 10),
+      sections: sections
+    };
   }
 
   function buildSalesReport(opts) {
@@ -289,7 +602,7 @@
     var deal = Math.max(0, num(inputs.avgDeal, 0));
     var lost = opportunityLoss(inq.currentInquiries, acq.score, close, deal);
     var brand = mode === 'branded_search' || industryId === 'media' ? brandReflection(diagnose, mediaUrl) : null;
-    var confidence = confidenceScore({
+    var confidenceBreakdown = {
       mode: mode,
       hasDiagnose: !!diagnose,
       hasGsc: !!(baseline && baseline.monthlyClicks > 0),
@@ -298,7 +611,8 @@
       hasBusinessInputs: !!(inputs.monthlyInquiries || inputs.monthlyVisitors),
       hasMediaUrl: !!mediaUrl,
       industryConfidence: industryDetect && industryDetect.confidence
-    });
+    };
+    var confidence = confidenceScore(confidenceBreakdown);
     var actions = top3Actions(profile, mode, diagnose, brand);
 
     var headline4;
@@ -413,14 +727,26 @@
       brand: brand,
       confidence: confidence,
       confidenceEvidenceClass: 'Inferred',
+      confidenceBreakdown: confidenceBreakdown,
+      methodology: buildExpertMethodology({
+        diagnose: diagnose,
+        volume: volume,
+        acquisition: acq,
+        improve: improve,
+        inquiries: inq,
+        opportunity: lost,
+        confidence: confidence,
+        confidenceBreakdown: confidenceBreakdown,
+        rank: rank
+      }),
       headline4: headline4,
       actions: actions,
       displayLabel: profile.display_label,
       impactCurrentLabel: profile.impact_current_label || ('いまの' + profile.display_label),
       cta: { label: primaryCta, hash: ctaHash },
-      actionsCta: { label: 'この3つを改善する', href: '/airreach/studio/' },
+      actionsCta: { label: '最優先の対策をHackⅡ Studioで進める', href: '/airreach/studio/' },
       disclaimer: '表示は参考シミュレーションです。検索順位・AI掲載・予約・問い合わせ・売上を保証しません。',
-      steps: ['現在地', '改善後', 'やること']
+      steps: ['現在地', '改善後', '最優先の対策']
     };
   }
 
@@ -440,6 +766,7 @@
     buildSalesReport: buildSalesReport,
     improvementRange: improvementRange,
     inquiryForecast: inquiryForecast,
+    buildExpertMethodology: buildExpertMethodology,
     normalizeMode: normalizeMode,
     yen: yen,
     cnt: cnt,

@@ -7,3 +7,42 @@
 @media(max-width:980px){.arp-import-grid{grid-template-columns:1fr 1fr}}@media(max-width:640px){.arp-import-grid{grid-template-columns:1fr}}
 
 .arp-handoff-banner{margin-bottom:18px;border-color:#bfdbfe;background:#eff6ff}.arp-handoff-banner h3{margin:0 0 6px;font-size:16px}
+
+/* Accessibility: larger type, blue inputs */
+.arp-page{font-size:18px;font-family:'Noto Sans JP','Hiragino Sans',Meiryo,sans-serif}
+.arp-lead{font-size:1.12rem;color:#334155}
+.arp-btn{font-size:1.05rem;padding:14px 18px;min-height:52px}
+.arp-form-grid label{font-size:1rem}
+.arp-form-grid input,.arp-input-unit{border:2px solid #93c5fd;border-radius:10px;font-size:1.05rem;min-height:52px}
+.arp-form-grid input:focus,.arp-input-unit:focus-within{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.2)}
+.arp-card h3{font-size:1.15rem}
+.arp-help{font-size:1rem}
+.arp-big-kpis strong{font-size:1.6rem}
+
+
+/* A11y pass 2026-09: low-vision / small-text */
+.arp-page{font-size:19px;line-height:1.7;color:#0f172a;background:#fff}
+.arp-eyebrow,.arp-mini-label{font-size:13px !important;color:#1d4ed8 !important;letter-spacing:.1em}
+.arp-lead,.arp-help,.arp-import-status,.arp-disclaimer,.arp-assumption,.arp-section-head p,.arp-final p{font-size:1.08rem !important;color:#1e293b !important;line-height:1.7}
+.arp-btn{font-size:1.08rem !important;min-height:54px;padding:14px 18px}
+.arp-form-grid label{font-size:1.05rem !important;color:#0f172a}
+.arp-form-grid input,.arp-input-unit{font-size:1.08rem !important;min-height:54px;border:2px solid #93c5fd !important}
+.arp-card h3,.arp-data-card h3,.arp-module-grid h3{font-size:1.2rem !important;color:#0f172a}
+.arp-data-card p,.arp-module-grid p,.arp-compare-row>div{font-size:1.05rem !important;color:#1e293b !important}
+.arp-data-card small,.arp-hero-metrics small,.arp-big-kpis small,.arp-roi span,.arp-roi small,.arp-chip{font-size:1rem !important;color:#334155 !important}
+.arp-big-kpis strong,.arp-roi strong{font-size:1.55rem !important}
+.arp-source{font-size:12px !important;padding:5px 8px}
+.arp-scenario-table{font-size:1rem !important}
+@media (prefers-contrast: more){
+  .arp-page{color:#000}
+  .arp-lead,.arp-help{color:#000 !important}
+  .arp-form-grid input{border-color:#2563eb !important}
+}
+
+
+/* Short-copy + tip mode */
+.arp-disclaimer[hidden],.arp-help,.arp-assumption,.arp-data-card small,.arp-hero-metrics small,.arp-big-kpis small,.arp-roi span,.arp-roi small{display:none !important}
+.arp-import-status{font-size:1.08rem !important;color:#1e293b !important}
+.arp-eyebrow,.arp-mini-label,.arp-chip,.arp-source{font-size:1.05rem !important;letter-spacing:0 !important;text-transform:none !important}
+.arp-page{font-size:20px}
+.arp-section-head p{font-size:1.1rem;color:#1e293b}
