@@ -76,7 +76,9 @@ deployment_run: { type: github_draft_pr, status: awaiting_human_review, auto_dep
 
 Persisted in `localStorage` key `airreach_studio_orch_v1`.
 
-## ZIP package (Phase 1)
+## ZIP package (Phase 1+)
+
+詳細な設計図・列定義・ERは [`airreach-studio-package-blueprint.md`](./airreach-studio-package-blueprint.md) を正とする。
 
 ```text
 airreach-implementation/
@@ -98,6 +100,10 @@ Rules baked into AGENT_PROMPT:
 - Do not invent prices, cases, customers, or metrics
 - JSON-LD must match visible content
 - Human approval before production publish
+
+## Package blueprint
+
+ディレクトリ構造・ER・CSV列・GitHub配置の設計図: [`docs/airreach-studio-package-blueprint.md`](./airreach-studio-package-blueprint.md)
 
 ## Related code
 
