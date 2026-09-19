@@ -439,7 +439,9 @@
       '## Hard rules',
       '- Do not invent prices, case studies, customers, rankings, or metrics.',
       '- JSON-LD must match visible page content.',
-      '- Market demand volumes are Estimated; GSC impressions (if present) are Official.',
+      '- Market demand volumes are Estimated by default; Official only when Keyword Planner CSV was applied (volume_source=Official).',
+      '- GSC impressions (if present) are Official and must stay in a separate column from market demand.',
+      '- HackⅡ mention/citation rates (if present) are Observed and must not be mixed into acquisition score.',
       '- Human approval is required before production publish. Do not open a PR or deploy automatically.',
       '',
       '## Goal',
@@ -465,20 +467,53 @@
       'Generated: ' + manifest.generated_at,
       'Site: ' + job.url,
       'Service: ' + service,
+      'Goal: ' + (job.goal || ''),
       '',
-      'This ZIP is a **draft**. It does not publish anything.',
-      'Market demand = Estimated. GSC impressions = Official when imported.'
+      'This package is a **draft**. It does not publish anything.',
+      '',
+      '## Directory layout',
+      '',
+      '```',
+      'airreach-implementation/',
+      '  README.md',
+      '  MANIFEST.json',
+      '  AGENT_PROMPT.md',
+      '  strategy/keywords.csv',
+      '  strategy/prompts.csv',
+      '  strategy/actions.csv',
+      '  schema/*.jsonld',
+      '  public/llms.txt',
+      '  public/llms-full.txt',
+      '  content/faq.md',
+      '  validation/VALIDATION.md',
+      '```',
+      '',
+      '## Evidence',
+      '',
+      '- Market demand (`volume`): Estimated unless `volume_source=Official` (Keyword Planner CSV)',
+      '- GSC impressions: Official, separate from market demand',
+      '- Acquisition score: Observed diagnose or Estimated fallback',
+      '- HackⅡ mention/citation: Observed JSON import only',
+      '',
+      '## Publish',
+      '',
+      'Human review required. No auto-merge and no production auto-deploy from Studio.',
+      'See `validation/VALIDATION.md` and `MANIFEST.json`.'
     ].join('\n');
 
+    var validationItems = (window.AirReachPackageSchema && window.AirReachPackageSchema.VALIDATION_ITEMS) || [
+      '料金・事例・顧客名・数値の捏造がない',
+      'FAQ回答を人間が事実確認した',
+      'JSON-LDが公開文面と一致する',
+      'llms.txtのリンクが解決する',
+      'ステークホルダーが公開を承認した'
+    ];
     var validation = [
       '# Validation checklist',
       '',
-      '- [ ] No invented prices / customers / metrics',
-      '- [ ] FAQ answers verified by a human',
-      '- [ ] JSON-LD matches visible content',
-      '- [ ] llms.txt links resolve',
-      '- [ ] Stakeholder approved before publish'
-    ].join('\n');
+      'Studio does not auto-deploy. Complete every item before merge/publish.',
+      ''
+    ].concat(validationItems.map(function (item) { return '- [ ] ' + item; })).join('\n');
 
     var llms = [
       '# ' + brand,
@@ -497,13 +532,13 @@
       return '## Q' + (i + 1) + '. ' + q + '\n\n（下書き）公開前に事実確認してください。\n';
     }).join('\n');
 
-    return {
+    var files = {
       'README.md': readme,
       'MANIFEST.json': JSON.stringify(manifest, null, 2),
       'AGENT_PROMPT.md': agent,
-      'strategy/keywords.csv': toCsv(kwRows, ['priority', 'keyword', 'volume', 'volume_source', 'gsc_impressions', 'gsc_clicks', 'ai_mention_rate', 'ai_citation_rate', 'intent', 'cluster', 'gap', 'action', 'seed_source']),
-      'strategy/prompts.csv': toCsv(promptRows, ['keyword', 'prompt', 'intent', 'commercial_score']),
-      'strategy/actions.csv': toCsv(actionRows, ['type', 'count', 'note']),
+      'strategy/keywords.csv': toCsv(kwRows, (window.AirReachPackageSchema && window.AirReachPackageSchema.KEYWORD_CSV_COLUMNS) || ['priority', 'keyword', 'volume', 'volume_source', 'gsc_impressions', 'gsc_clicks', 'ai_mention_rate', 'ai_citation_rate', 'intent', 'cluster', 'gap', 'action', 'seed_source']),
+      'strategy/prompts.csv': toCsv(promptRows, (window.AirReachPackageSchema && window.AirReachPackageSchema.PROMPT_CSV_COLUMNS) || ['keyword', 'prompt', 'intent', 'commercial_score']),
+      'strategy/actions.csv': toCsv(actionRows, (window.AirReachPackageSchema && window.AirReachPackageSchema.ACTION_CSV_COLUMNS) || ['type', 'count', 'note']),
       'schema/organization.jsonld': JSON.stringify(org, null, 2),
       'schema/service.jsonld': JSON.stringify(svc, null, 2),
       'schema/faq.jsonld': JSON.stringify(faqLd, null, 2),
@@ -512,6 +547,14 @@
       'content/faq.md': faqMd,
       'validation/VALIDATION.md': validation
     };
+    if (window.AirReachPackageSchema && window.AirReachPackageSchema.validatePackageFiles) {
+      var check = window.AirReachPackageSchema.validatePackageFiles(files);
+      if (!check.ok) {
+        console.warn('[AirReachPackage] blueprint validation failed', check);
+      }
+      files._validation = check;
+    }
+    return files;
   }
 
   function crc32(buf) {
@@ -587,7 +630,20 @@
     return out;
   }
   function downloadZip(filename, files) {
-    var data = buildZip(files);
+    var clean = {};
+    Object.keys(files || {}).forEach(function (k) {
+      if (k === '_validation') return;
+      clean[k] = files[k];
+    });
+    if (window.AirReachPackageSchema && window.AirReachPackageSchema.validatePackageFiles) {
+      var v = window.AirReachPackageSchema.validatePackageFiles(clean);
+      if (!v.ok) {
+        alert('パッケージ構造が設計図と一致しません: ' + (v.errors || v.missing || []).join('; '));
+        return;
+      }
+    }
+    filename = filename || (window.AirReachPackageSchema && window.AirReachPackageSchema.ZIP_FILENAME) || 'airreach-implementation.zip';
+    var data = buildZip(clean);
     var blob = new Blob([data], { type: 'application/zip' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -610,7 +666,11 @@
         };
       });
       st.competitors = job.competitors;
-      st.generated = job.files;
+      st.generated = {};
+      Object.keys(job.files || {}).forEach(function (k) {
+        if (k === '_validation') return;
+        st.generated[k] = job.files[k];
+      });
       localStorage.setItem('airreach_studio_v1', JSON.stringify(st));
       if (window.AirReachStudio && window.AirReachStudio.getState) {
         var live = window.AirReachStudio.getState();
@@ -1095,20 +1155,28 @@
           alert('先に分析を完了してください');
           return;
         }
+        var cols = (window.AirReachPackageSchema && window.AirReachPackageSchema.KEYWORD_CSV_COLUMNS) || [
+          'priority', 'keyword', 'volume', 'volume_source', 'gsc_impressions', 'gsc_clicks',
+          'ai_mention_rate', 'ai_citation_rate', 'intent', 'cluster', 'gap', 'action', 'seed_source'
+        ];
         var rows = filteredKeywords(job).map(function (k) {
           return {
             priority: k.priority,
             keyword: k.keyword,
-            volume_estimated: k.volume,
+            volume: k.volume,
             volume_source: k.volume_source,
             gsc_impressions: k.gsc_impressions == null ? '' : k.gsc_impressions,
-            strength: k.strength,
+            gsc_clicks: k.gsc_clicks == null ? '' : k.gsc_clicks,
+            ai_mention_rate: k.ai_mention_rate == null ? '' : k.ai_mention_rate,
+            ai_citation_rate: k.ai_citation_rate == null ? '' : k.ai_citation_rate,
+            intent: k.intent,
+            cluster: k.cluster,
             gap: k.gap,
             action: k.action,
             seed_source: k.seed_source || ''
           };
         });
-        downloadText('airreach-keywords.csv', toCsv(rows, ['priority', 'keyword', 'volume_estimated', 'volume_source', 'gsc_impressions', 'strength', 'gap', 'action', 'seed_source']), 'text/csv;charset=utf-8');
+        downloadText('airreach-keywords.csv', toCsv(rows, cols), 'text/csv;charset=utf-8');
       });
     }
 
@@ -1190,7 +1258,7 @@
           alert('先に分析を完了してください');
           return;
         }
-        downloadZip('airreach-implementation.zip', job.files);
+        downloadZip((window.AirReachPackageSchema && window.AirReachPackageSchema.ZIP_FILENAME) || 'airreach-implementation.zip', job.files);
       });
     }
 
@@ -1224,7 +1292,8 @@
     refreshJobArtifacts: refreshJobArtifacts,
     renderResult: renderResult,
     parseCsv: parseCsv,
-    STEPS: STEPS
+    STEPS: STEPS,
+    PackageSchema: window.AirReachPackageSchema || null
   };
 
   document.addEventListener('DOMContentLoaded', bindOverview);

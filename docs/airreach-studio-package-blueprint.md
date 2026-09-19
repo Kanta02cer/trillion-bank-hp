@@ -2,7 +2,8 @@
 
 この文書は、Overview が生成する **ZIP（ダウンロード）** と **GitHub 下書きPR** が共有するディレクトリ構造と、ブラウザ内データモデルの設計図です。
 
-- 実装: `assets/js/airreach-orchestrator.js`, `assets/js/airreach-orch-phase2.js`
+- 実装: `assets/js/airreach-orchestrator.js`, `assets/js/airreach-orch-phase2.js`, `assets/js/airreach-package-schema.js`
+- 検証: `node scripts/validate_studio_package.js --smoke`
 - 画面: `/airreach/studio/`
 - 公開方針: 下書きのみ。自動マージ・本番自動Deployなし
 
@@ -405,8 +406,10 @@ PR本文には人間向けチェックリストと「自動マージ・本番Dep
 
 | ファイル | 役割 |
 |----------|------|
+| `assets/js/airreach-package-schema.js` | 必須パス・CSV列・バリデーション（設計図の実行契約） |
 | `assets/js/airreach-orchestrator.js` | ジョブ・ZIP生成・表描画 |
 | `assets/js/airreach-orch-phase2.js` | Planner / HackⅡ / Draft PR / 公開前チェック |
+| `scripts/validate_studio_package.js` | パッケージ構造のCLI検証 |
 | `assets/js/airreach-studio.js` | Expert View・measurements |
 | `docs/airreach-studio-orchestrator.md` | プロダクト仕様（本設計図の上位） |
 | `_data/public_facts.yml` → `hack2_studio` | 公開可能な定義・制限 |

@@ -268,7 +268,7 @@
     var repo = parts[1];
     var base = cfg.base || 'main';
     var branch = cfg.branch || ('airreach/' + Date.now().toString(36));
-    var prefix = String(cfg.path || 'airreach-implementation').replace(/^\/+|\/+$/g, '');
+    var prefix = String(cfg.path || (window.AirReachPackageSchema && window.AirReachPackageSchema.PACKAGE_ROOT) || 'airreach-implementation').replace(/^\/+|\/+$/g, '');
     var token = cfg.token;
     if (!token) throw new Error('Personal Access Tokenが必要です');
     if (!cfg.approved) throw new Error('人間レビュー同意が必要です');
@@ -279,7 +279,15 @@
     var baseCommit = await gh('/repos/' + owner + '/' + repo + '/git/commits/' + baseSha, token);
     var baseTree = baseCommit.tree && baseCommit.tree.sha;
 
-    var files = job.files;
+    var files = {};
+    Object.keys(job.files || {}).forEach(function (k) {
+      if (k === '_validation') return;
+      files[k] = job.files[k];
+    });
+    if (window.AirReachPackageSchema && window.AirReachPackageSchema.validatePackageFiles) {
+      var chk = window.AirReachPackageSchema.validatePackageFiles(files);
+      if (!chk.ok) throw new Error('パッケージ構造が設計図と不一致: ' + (chk.errors || chk.missing || []).join('; '));
+    }
     var tree = [];
     var names = Object.keys(files);
     for (var i = 0; i < names.length; i++) {
@@ -395,7 +403,19 @@
     }
   }
 
+  function syncDeployChecklist() {
+    var ul = q('orch-deploy-check');
+    var items = (window.AirReachPackageSchema && window.AirReachPackageSchema.VALIDATION_ITEMS) || null;
+    if (!ul || !items) return;
+    ul.innerHTML = items.map(function (item) {
+      return '<li><label><input type="checkbox"> ' + String(item).replace(/[&<>]/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c];
+      }) + '</label></li>';
+    }).join('');
+  }
+
   function bind() {
+    syncDeployChecklist();
     var prBtn = q('orch-pr');
     var prDialog = q('orch-pr-dialog');
     var deployBtn = q('orch-deploy');
