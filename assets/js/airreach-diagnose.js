@@ -163,20 +163,30 @@
     var discover = scoreBlock(Math.max(0, discPts), discMax);
     var overall = Math.round(structure * 0.3 + entity * 0.25 + faq * 0.2 + discover * 0.25);
 
+    var checks = [
+      { factor: 'structure', label: 'ページタイトルがある', ok: !!page.title, tip: '検索結果やAIが主題を読む最初の手がかりです。', points: page.title ? 2 : 0, max: 2 },
+      { factor: 'structure', label: 'H1が1つ', ok: page.h1.length === 1, tip: '主題が一目で分かる見出しが1つあるか。', points: page.h1.length === 1 ? 3 : (page.h1.length > 1 ? 1 : 0), max: 3 },
+      { factor: 'structure', label: '説明文（meta）が十分', ok: !!(page.metaDesc && page.metaDesc.length >= 40), tip: 'サービスの対象が短い説明で伝わるか。', points: (page.metaDesc && page.metaDesc.length >= 40) ? 2 : 0, max: 2 },
+      { factor: 'structure', label: 'canonicalがある', ok: !!page.canonical, tip: '正規URLが明示されているか。', points: page.canonical ? 2 : 0, max: 2 },
+      { factor: 'structure', label: '本文量がある', ok: page.textLen > 800, tip: '案内の厚みの目安です。', points: page.textLen > 800 ? 2 : 0, max: 2 },
+      { factor: 'entity', label: '会社情報（Organization等）', ok: !!(page.types.Organization || page.types.LocalBusiness), tip: '誰のサイトかを機械が読めるか。', points: (page.types.Organization || page.types.LocalBusiness) ? 4 : 0, max: 4 },
+      { factor: 'entity', label: 'WebSite / WebPage', ok: !!(page.types.WebSite || page.types.WebPage), tip: 'サイト種別の構造化があるか。', points: (page.types.WebSite || page.types.WebPage) ? 2 : 0, max: 2 },
+      { factor: 'entity', label: 'Service / Product', ok: !!(page.types.Service || page.types.Product), tip: '何のサービスかを定義しているか。', points: (page.types.Service || page.types.Product) ? 2 : 0, max: 2 },
+      { factor: 'entity', label: '問い合わせ導線', ok: !!page.hasContact, tip: '相談・予約・問い合わせの文言があるか。', points: page.hasContact ? 1 : 0, max: 1 },
+      { factor: 'faq', label: 'FAQPageがある', ok: !!page.types.FAQPage, tip: 'FAQの構造化データがあるか。', points: page.types.FAQPage ? 3 : 0, max: 3 },
+      { factor: 'faq', label: 'FAQが3問以上', ok: page.faqCount >= 3, tip: '購入前の疑問に答えられる量があるか。', points: page.faqCount >= 3 ? 3 : (page.faqCount > 0 ? 1 : 0), max: 3 },
+      { factor: 'faq', label: '画面上のFAQらしき領域', ok: !!page.visibleFaq, tip: '人が読めるFAQブロックがあるか。', points: page.visibleFaq ? 2 : 0, max: 2 },
+      { factor: 'discover', label: 'llms.txtがある', ok: !!(llmsText && llmsText.length > 80), tip: 'AI向けの案内ファイルがあるか。', points: (llmsText && llmsText.length > 80) ? 4 : 0, max: 4 },
+      { factor: 'discover', label: 'robots.txtがある', ok: !!robotsText, tip: 'クローラ向けの案内があるか。', points: robotsText ? 2 : 0, max: 2 },
+      { factor: 'discover', label: '主要AIボットの記載', ok: !!(robotsText && /GPTBot|ClaudeBot|PerplexityBot|Google-Extended|OAI-SearchBot/i.test(robotsText)), tip: 'AIボット向けの方針が書かれているか。', points: (robotsText && /GPTBot|ClaudeBot|PerplexityBot|Google-Extended|OAI-SearchBot/i.test(robotsText)) ? 2 : 0, max: 2 },
+      { factor: 'discover', label: 'sitemap案内', ok: !!(robotsText && /sitemap/i.test(robotsText)), tip: 'サイトマップへの案内があるか。', points: (robotsText && /sitemap/i.test(robotsText)) ? 2 : 0, max: 2 }
+    ];
     var strengths = [];
     var gaps = [];
-    if (page.h1.length === 1) strengths.push('H1が1つに整理されている');
-    else gaps.push('H1が無い、または複数あり主題が散っている');
-    if (page.types.Organization || page.types.LocalBusiness) strengths.push('Organization系の構造化データがある');
-    else gaps.push('Organization（またはLocalBusiness）の構造化データが見つからない');
-    if (page.types.FAQPage && page.faqCount > 0) strengths.push('FAQPageが検出された（' + page.faqCount + '問）');
-    else gaps.push('可視FAQと一致するFAQPageが弱い／無い');
-    if (llmsText && llmsText.length > 80) strengths.push('llms.txt（または同等テキスト）を取得できた');
-    else gaps.push('llms.txtが見つからない、または内容が薄い');
-    if (page.hasContact) strengths.push('問い合わせ・相談の導線らしき文言がある');
-    else gaps.push('問い合わせ導線が本文から見つけにくい');
-    if (page.canonical) strengths.push('canonicalが設定されている');
-    else gaps.push('canonicalが無い');
+    checks.forEach(function (c) {
+      if (c.ok) strengths.push(c.label);
+      else gaps.push(c.label + 'がない／弱い');
+    });
 
     var actions = { now: [], weeks: [], partner: [] };
     if (!page.types.Organization) actions.now.push('会社名・公式URL・ロゴを含むOrganization schemaを追加する');
@@ -204,6 +214,7 @@
       discover: discover,
       strengths: strengths,
       gaps: gaps,
+      checks: checks,
       actions: actions,
       review: {
         summary: host + ' の公開ページ準備度は ' + overall + ' / 100 です。' + tone,

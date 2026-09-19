@@ -326,6 +326,49 @@
 
 
 
+
+  function buildExpertInsight(diagnose, actions) {
+    var d = diagnose || {};
+    var checks = d.checks || [];
+    var good = checks.filter(function (c) { return c.ok; });
+    var bad = checks.filter(function (c) { return !c.ok; });
+    var factorNames = {
+      structure: 'ページの骨格',
+      entity: '会社・サービス情報',
+      faq: 'よくある質問',
+      discover: '見つけやすさ'
+    };
+    var byFactor = {};
+    checks.forEach(function (c) {
+      byFactor[c.factor] = byFactor[c.factor] || { id: c.factor, label: factorNames[c.factor] || c.factor, good: [], bad: [], score: d[c.factor] };
+      if (c.ok) byFactor[c.factor].good.push(c);
+      else byFactor[c.factor].bad.push(c);
+    });
+    var nextNow = (d.actions && d.actions.now) || [];
+    var nextWeeks = (d.actions && d.actions.weeks) || [];
+    var salesActions = (actions || []).slice(0, 3).map(function (a) {
+      return {
+        title: a.title || a.n || '対策',
+        action: a.action || '',
+        tip: a.effect || '優先して直す項目です。',
+        href: a.href || '/airreach/studio/'
+      };
+    });
+    return {
+      summary: (d.review && d.review.summary) || (d.overall != null ? ('準備度 ' + d.overall + ' / 100') : '診断前の仮評価'),
+      evidenceClass: d.overall != null ? 'Observed' : 'Estimated',
+      evidenceTip: '公開HTML等から観測した準備度です。AI回答の掲載率・予約増を保証しません。',
+      good: good,
+      bad: bad,
+      byFactor: Object.keys(byFactor).map(function (k) { return byFactor[k]; }),
+      nextNow: nextNow,
+      nextWeeks: nextWeeks,
+      nextSales: salesActions,
+      formula: '総合 = 骨格×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25',
+      overall: d.overall
+    };
+  }
+
   function buildFactorBreakdown(diagnose) {
     var d = diagnose || {};
     var parts = [
@@ -730,6 +773,7 @@
     };
     var confidence = confidenceScore(confidenceBreakdown);
     var actions = top3Actions(profile, mode, diagnose, brand);
+    var expertInsight = buildExpertInsight(diagnose, actions);
 
     var headline4;
     var heroTitle = mode === 'branded_search' ? profile.hero_branded : profile.hero_generic;
@@ -845,6 +889,7 @@
       confidenceEvidenceClass: 'Inferred',
       confidenceBreakdown: confidenceBreakdown,
       factors: buildFactorBreakdown(diagnose),
+      expertInsight: expertInsight,
       methodology: buildExpertMethodology({
         diagnose: diagnose,
         volume: volume,
@@ -885,6 +930,7 @@
     inquiryForecast: inquiryForecast,
     buildExpertMethodology: buildExpertMethodology,
     buildFactorBreakdown: buildFactorBreakdown,
+    buildExpertInsight: buildExpertInsight,
     normalizeMode: normalizeMode,
     yen: yen,
     cnt: cnt,

@@ -181,6 +181,39 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 details.ar-panel>summary{cursor:pointer;font-weight:800;color:#0f172a;font-size:1.15rem;line-height:1.4;padding:8px 0;list-style-position:outside}
 details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-offset:2px}
 
+
+.ar-field{border:3px solid #93c5fd;border-radius:16px;padding:18px 20px;background:#f8fbff}
+.ar-field label{font-size:1.2rem;font-weight:800;gap:10px;color:#0f172a}
+.ar-field input[type=number],.ar-field input[type=text],.ar-field input[type=url]{
+  border:3px solid #60a5fa;border-radius:14px;padding:18px;font:inherit;font-size:1.35rem;font-weight:800;
+  min-height:68px;color:#0f172a;background:#fff;width:100%;box-sizing:border-box}
+.ar-field input:focus{outline:3px solid rgba(37,99,235,.28);border-color:#2563eb}
+.ar-expert-shell{display:grid;gap:18px;margin-top:12px}
+.ar-expert-hero{border:3px solid #93c5fd;border-radius:18px;padding:20px 22px;background:#eff6ff}
+.ar-expert-hero .score{font-size:clamp(2.4rem,6vw,3.4rem);font-weight:900;letter-spacing:-.04em;color:#1d4ed8;line-height:1}
+.ar-expert-hero .lbl{font-size:1.15rem;font-weight:800;color:#0f172a;margin-bottom:8px}
+.ar-expert-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ar-expert-col{border:3px solid #e2e8f0;border-radius:16px;padding:18px;background:#fff}
+.ar-expert-col.is-good{border-color:#86efac;background:#ecfdf5}
+.ar-expert-col.is-bad{border-color:#fca5a5;background:#fef2f2}
+.ar-expert-col h3{margin:0 0 12px;font-size:1.25rem;font-weight:900}
+.ar-check-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ar-check-list li{display:flex;gap:10px;align-items:flex-start;font-size:1.08rem;font-weight:800;line-height:1.4;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.7)}
+.ar-check-list .mark{flex:0 0 auto;width:1.6em;height:1.6em;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:900}
+.ar-check-list .mark.ok{background:#16a34a;color:#fff}
+.ar-check-list .mark.ng{background:#dc2626;color:#fff}
+.ar-next-grid{display:grid;gap:12px}
+.ar-next-card{border:3px solid #93c5fd;border-radius:16px;padding:18px;background:#fff}
+.ar-next-card .when{font-size:1rem;font-weight:900;color:#1d4ed8;margin-bottom:8px}
+.ar-next-card .what{font-size:1.2rem;font-weight:800;color:#0f172a;line-height:1.45;margin:0}
+.ar-logic details{border:3px solid #cbd5e1;border-radius:16px;padding:14px 18px;background:#fff;margin-top:16px}
+.ar-logic summary{cursor:pointer;font-size:1.2rem;font-weight:900;color:#0f172a;list-style:none}
+.ar-logic summary::-webkit-details-marker{display:none}
+.ar-logic summary::before{content:"＋ ";color:#2563eb}
+.ar-logic details[open] summary::before{content:"− "}
+.ar-logic .ar-expert-block .sum{display:block !important;font-weight:700;color:#1e293b}
+@media(max-width:800px){.ar-expert-cols{grid-template-columns:1fr}}
+
 /* Accessibility pass: larger type, darker muted text */
 .ar-page,.ar-gate,.ar-gate-card{font-size:19px}
 .ar-kicker,.ar-badge,.ar-gate-kicker{font-size:.85rem !important;letter-spacing:.1em}
@@ -342,8 +375,8 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
       <div id="ar-dash" class="ar-dash" aria-live="polite">
         <div class="ar-steps" id="ar-steps" aria-label="進捗">
           <span class="is-on" data-step="1">1 現在地</span>
-          <span data-step="2">2 改善した場合</span>
-          <span data-step="3">3 やること</span>
+          <span data-step="2">2 詳細分析</span>
+          <span data-step="3">3 次にやること</span>
         </div>
         <div class="ar-kicker" id="ar-analyzing" data-tip="営業向けの結論だけを先に表示しています。">結論</div>
         <p class="ar-ind" id="ar-industry-line"></p>
@@ -366,7 +399,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         </section>
 
         <div class="ar-cta-row">
-          <a class="ar-btn ar-btn-primary" href="#impact" id="ar-cta-main">改善後を見る</a>
+          <a class="ar-btn ar-btn-primary" href="#expert-view" id="ar-cta-main">詳細分析を見る</a>
         </div>
 
         <div class="ar-panel is-hidden" id="brand-panel">
@@ -375,72 +408,62 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <table class="ar-source"><thead><tr><th>情報源</th><th>構成比</th><th>状態</th></tr></thead><tbody id="brand-sources"></tbody></table>
           <p class="ar-disc" id="brand-cite-note" hidden></p>
           <div class="ar-cta-row">
-            <a class="ar-btn ar-btn-primary" href="#impact" id="ar-cta-brand-next">改善後を見る</a>
+            <a class="ar-btn ar-btn-primary" href="#expert-view" id="ar-cta-brand-next">詳細分析を見る</a>
           </div>
         </div>
 
-        <div class="ar-panel is-hidden" id="impact">
-          <div class="ar-kicker" data-tip="自社の数字を入れると、追加件数の目安（参考予測）が出ます。保証ではありません。">改善した場合</div>
-          <h2 class="ar-h2">事業数字はどう変わる？</h2>
-          <p class="ar-sub" hidden></p>
-          <div class="ar-form-grid">
-            <div class="ar-field"><label><span data-tip="月あたりのサイト訪問者数。GA4があれば実数を入れてください。">月間訪問</span><input id="biz-visitors" type="number" min="0" value="5000"></label></div>
-            <div class="ar-field"><label id="biz-inq-label"><span data-tip="月あたりの予約・問い合わせなど、成果の件数。予測の基準になります。" id="biz-inq-why">月間成果</span><input id="biz-inq" type="number" min="0" value="20"></label></div>
-            <div class="ar-field"><label><span data-tip="任意。LINE登録がある場合のみ。">月間LINE</span><input id="biz-line" type="number" min="0" value="10"></label></div>
-            <div class="ar-field"><label><span data-tip="改善にかけられる月額の目安。1件あたり費用の計算に使います。">月額費用</span><input id="biz-fee" type="number" min="0" value="200000"></label></div>
-            <div class="ar-field"><label><span data-tip="成果のうち受注につながる割合（%）。">受注率%</span><input id="biz-close" type="number" min="0" max="100" step="0.1" value="20"></label></div>
-            <div class="ar-field"><label><span data-tip="1件あたりの平均受注額。">平均受注額</span><input id="biz-deal" type="number" min="0" value="500000"></label></div>
-            <div class="ar-field"><label><span data-tip="売上に対する粗利の割合（%）。">粗利率%</span><input id="biz-margin" type="number" min="0" max="100" step="0.1" value="60"></label></div>
+        <div id="impact" hidden aria-hidden="true">
+          <input id="biz-visitors" type="hidden" value="5000">
+          <input id="biz-inq" type="hidden" value="20">
+          <input id="biz-line" type="hidden" value="10">
+          <input id="biz-fee" type="hidden" value="200000">
+          <input id="biz-close" type="hidden" value="20">
+          <input id="biz-deal" type="hidden" value="500000">
+          <input id="biz-margin" type="hidden" value="60">
+          <span id="biz-inq-label" hidden></span>
+          <span id="biz-inq-why" hidden></span>
+          <span id="ba-now-i-label" hidden></span>
+          <span id="ba-aft-i-label" hidden></span>
+          <span id="ba-now-i" hidden></span>
+          <span id="ba-now-v" hidden></span>
+          <span id="ba-now-rev" hidden></span>
+          <span id="ba-aft-i" hidden></span>
+          <span id="ba-aft-add" hidden></span>
+          <span id="ba-aft-cpa" hidden></span>
+          <button type="button" id="biz-run" hidden></button>
+          <a id="ar-cta-to-actions" href="#actions" hidden></a>
+        </div>
+
+        <div class="ar-panel is-hidden" id="expert-view">
+          <div class="ar-kicker" data-tip="公開ページの実測チェックから、良い点・不足・次の一手を整理します。">詳細分析</div>
+          <h2 class="ar-h2">なにがあって、なにが足りないか</h2>
+          <div class="ar-expert-shell" id="ar-expert-shell"></div>
+          <div class="ar-logic" id="ar-logic-wrap">
+            <details id="ar-logic">
+              <summary><span data-tip="点数の式・代入値・エビデンス区分です。必要な人だけ開いてください。">算出ロジックの根拠を見る</span></summary>
+              <div id="ar-expert-meters" style="margin-top:16px"></div>
+              <div id="ar-expert-method" style="margin-top:12px" aria-live="polite"></div>
+            </details>
           </div>
           <div class="ar-cta-row">
-            <button type="button" class="ar-btn ar-btn-primary" id="biz-run">この数字で再計算</button>
-          </div>
-          <div class="ar-ba" style="margin-top:16px">
-            <div class="ar-ba-card">
-              <h4>いま</h4>
-              <div class="ar-ba-row"><span id="ba-now-i-label">成果</span><b id="ba-now-i">—</b></div>
-              <div class="ar-ba-row"><span>訪問</span><b id="ba-now-v">—</b></div>
-              <div class="ar-ba-row"><span data-tip="成果×受注率×平均受注額の参考値。">売上機会</span><b id="ba-now-rev">—</b></div>
-            </div>
-            <div class="ar-ba-arrow">→</div>
-            <div class="ar-ba-card is-after">
-              <h4><span data-tip="仮定に基づく参考レンジです。成果を保証しません。">改善後</span></h4>
-              <div class="ar-ba-row"><span id="ba-aft-i-label">成果</span><b id="ba-aft-i">—</b></div>
-              <div class="ar-ba-row"><span data-tip="いまより増える可能性のある件数の幅。">追加</span><b id="ba-aft-add">—</b></div>
-              <div class="ar-ba-row"><span data-tip="月額費用 ÷ 追加件数の中央値。広告CPAの代替ではありません。">1件費用</span><b id="ba-aft-cpa">—</b></div>
-            </div>
-          </div>
-          <div class="ar-cta-row">
-            <a class="ar-btn ar-btn-primary" href="#actions" id="ar-cta-to-actions">対策3つを見る</a>
+            <a class="ar-btn ar-btn-primary" href="#actions" id="ar-cta-to-actions-main">次にやることへ</a>
           </div>
         </div>
 
         <div class="ar-panel is-hidden" id="actions">
-          <div class="ar-kicker" data-tip="診断結果から、いま手を付けるべき3つです。">最優先</div>
+          <div class="ar-kicker" data-tip="診断結果から、いま手を付けるべき3つです。">次にやること</div>
           <h2 class="ar-h2">最優先の対策3つ</h2>
-          <p class="ar-sub" hidden></p>
           <div class="ar-actions3" id="ar-actions3"></div>
           <div class="ar-cta-row">
-            <a class="ar-btn ar-btn-primary" href="/airreach/studio/" id="ar-cta-actions" data-tip="AI特化の学習データ・構造化データをディレクトリごと自動生成する対策パッケージです。">HackⅡ Studioで作る</a>
+            <a class="ar-btn ar-btn-primary" href="/airreach/studio/" id="ar-cta-actions" data-tip="対策ファイルをディレクトリごと生成します。">HackⅡ Studioで作る</a>
+            <a class="ar-btn ar-btn-line" id="ar-cta-meet" href="/trillionbank/meeting/?type=company&from=airreach-teams" data-tip="優先順位の設計から継続改善まで伴走します。">HackⅡ Teamsに相談</a>
           </div>
           <div class="ar-cta-row">
-            <a class="ar-btn ar-btn-line" id="ar-cta-meet" href="/trillionbank/meeting/?type=company&from=airreach-teams" data-tip="優先順位の設計から継続改善まで、コンサルティングとして伴走します。">HackⅡ Teamsに相談</a>
+            <a class="ar-btn ar-btn-line" href="/airreach/platform/" data-tip="GSC/GA4の実数とつなぐ詳細分析です。">HackⅡ Platform</a>
+            <button type="button" class="ar-btn ar-btn-line" id="ar-google-connect">Googleと連携する（実測）</button>
           </div>
+          <p class="ar-note" id="ar-google-note" hidden></p>
         </div>
-
-        <details class="ar-panel" id="expert-view">
-          <summary data-tip="式・代入値・エビデンス区分を開示します。データ分析者向け。">Expert View</summary>
-          <p class="ar-expert-sum" hidden></p>
-          <div class="ar-cta-row">
-            <a class="ar-btn ar-btn-line" href="/airreach/platform/" data-tip="GSC/GA4等をつなぎ、改善余地をより詳細に分析・試算します。">HackⅡ Platform</a>
-            <a class="ar-btn ar-btn-line" href="/airreach/studio/" data-tip="対策ファイルをディレクトリごと生成します。">HackⅡ Studio</a>
-            <a class="ar-btn ar-btn-line" href="/trillionbank/meeting/?type=company&from=airreach-teams" data-tip="伴走コンサルティングです。">HackⅡ Teams</a>
-          </div>
-          <div id="ar-expert-meters" style="margin-top:18px"></div>
-          <div id="ar-expert-method" style="margin-top:18px" aria-live="polite"></div>
-          <p class="ar-note" id="ar-google-note"></p>
-          <button type="button" class="ar-btn ar-btn-line" id="ar-google-connect" style="margin-top:10px">Googleと連携する（実測）</button>
-        </details>
       </div>
     </div>
   </section>
@@ -615,22 +638,10 @@ document.addEventListener('DOMContentLoaded', function () {
   function applyIndustryUi() {
     var profile = window.AirReachIndustry ? AirReachIndustry.getIndustry(industryId) : null;
     var label = profile ? profile.display_label : '問い合わせ';
-    var lab = $('biz-inq-label');
-    if (lab) {
-      // keep structure: text node + input + why
-      var why = $('biz-inq-why');
-      var input = $('biz-inq');
-      lab.innerHTML = '';
-      lab.appendChild(document.createTextNode('月間' + label + '数'));
-      if (input) lab.appendChild(input);
-      if (why) {
-        why.textContent = label + 'の予測の基準になります。';
-        why.className = 'why';
-        lab.appendChild(why);
-      }
-    }
-    $('ba-now-i-label').textContent = profile ? profile.impact_current_label : 'いまの成果';
-    $('ba-aft-i-label').textContent = label;
+    var nowLab = $('ba-now-i-label');
+    var aftLab = $('ba-aft-i-label');
+    if (nowLab) nowLab.textContent = profile ? profile.impact_current_label : 'いまの成果';
+    if (aftLab) aftLab.textContent = label;
   }
 
   function readBiz() {
@@ -661,8 +672,8 @@ document.addEventListener('DOMContentLoaded', function () {
     $('ar-dash').classList.add('is-on');
     setStep(1);
     // hide later panels again for progressive disclosure
-    $('impact').classList.add('is-hidden');
-    $('actions').classList.add('is-hidden');
+    if ($('expert-view')) $('expert-view').classList.add('is-hidden');
+    if ($('actions')) $('actions').classList.add('is-hidden');
 
     $('ar-analyzing').textContent = report.modeLabel + ' · ' + (report.industryLabel || '');
     $('ar-industry-line').innerHTML = '業種：<b>' + (report.industryLabel || '—') + '</b> · サイト：<b>' + (report.url || lastUrl || '—') + '</b>';
@@ -677,7 +688,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var showBrand = (report.mode === 'branded_search' || report.industryId === 'media') && report.brand;
     if (showBrand) {
       $('ar-cta-main').href = '#brand-panel';
-      $('ar-cta-main').textContent = '使われている記事を見る';
+      $('ar-cta-main').textContent = '情報源を見る';
       revealPanel('brand-panel');
       var tb = $('brand-sources');
       tb.innerHTML = '';
@@ -689,8 +700,8 @@ document.addEventListener('DOMContentLoaded', function () {
       $('brand-cite-note').textContent = report.brand.citationNote || '';
     } else {
       $('brand-panel').classList.add('is-hidden');
-      $('ar-cta-main').href = '#impact';
-      $('ar-cta-main').textContent = '改善した場合を見る';
+      $('ar-cta-main').href = '#expert-view';
+      $('ar-cta-main').textContent = '詳細分析を見る';
     }
 
     var chain = $('ar-chain');
@@ -799,28 +810,75 @@ document.addEventListener('DOMContentLoaded', function () {
       if (report.actionsCta.href) actCta.href = report.actionsCta.href;
     }
 
+    function renderCheckList(items, ok) {
+      if (!items || !items.length) {
+        return '<ul class="ar-check-list"><li><span class="mark ' + (ok ? 'ok' : 'ng') + '">' + (ok ? '✓' : '!') + '</span><span>該当なし</span></li></ul>';
+      }
+      return '<ul class="ar-check-list">' + items.map(function (c) {
+        var label = typeof c === 'string' ? c : (c.label || '');
+        var tip = (typeof c === 'object' && c.tip) ? c.tip : (ok ? '検出できた項目です。' : '不足している項目です。');
+        return '<li><span class="mark ' + (ok ? 'ok' : 'ng') + '">' + (ok ? '✓' : '×') + '</span>' +
+          '<span data-tip="' + tipAttr(tip) + '">' + tipAttr(label) + '</span></li>';
+      }).join('') + '</ul>';
+    }
+
+    var shell = $('ar-expert-shell');
+    var insight = report.expertInsight || (window.AirReachSales && AirReachSales.buildExpertInsight
+      ? AirReachSales.buildExpertInsight(lastDiagnose, report.actions) : null);
+    if (shell && insight) {
+      var nextHtml = '';
+      (insight.nextNow || []).forEach(function (t) {
+        nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="今すぐ着手できる公開ページの修正です。">今すぐ</span></div><p class="what">' + tipAttr(t) + '</p></div>';
+      });
+      (insight.nextWeeks || []).slice(0, 3).forEach(function (t) {
+        nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="1〜2週間で整えると効果が出やすい項目です。">次に</span></div><p class="what">' + tipAttr(t) + '</p></div>';
+      });
+      (insight.nextSales || []).forEach(function (a) {
+        nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="' + tipAttr(a.tip || '') + '">優先対策</span></div><p class="what">' + tipAttr(a.action || a.title) + '</p></div>';
+      });
+      if (!nextHtml) {
+        nextHtml = '<div class="ar-next-card"><div class="when">次に</div><p class="what">不足項目の確認後、HackⅡ Studioで実装パッケージを作成してください。</p></div>';
+      }
+      var badgeTxt = (AirReachSales.badgeLabel ? AirReachSales.badgeLabel(insight.evidenceClass) : insight.evidenceClass) || '';
+      shell.innerHTML =
+        '<div class="ar-expert-hero">' +
+        '<div class="lbl"><span data-tip="' + tipAttr(insight.evidenceTip) + '">公開ページ準備度</span> <span class="ar-badge-e ' + badgeClass(insight.evidenceClass) + '">' + tipAttr(badgeTxt) + '</span></div>' +
+        '<div class="score">' + tipAttr(insight.overall != null ? String(insight.overall) : '—') + ' <span style="font-size:1.1rem;color:#334155">/ 100</span></div>' +
+        '<div style="margin-top:10px;font-weight:800;color:#1e293b;font-size:1.05rem"><span data-tip="' + tipAttr(insight.formula) + '">計算で出た点数</span></div>' +
+        '</div>' +
+        '<div class="ar-expert-cols">' +
+        '<div class="ar-expert-col is-good"><h3><span data-tip="公開ページで検出できた良い点です。">あるもの</span></h3>' + renderCheckList(insight.good, true) + '</div>' +
+        '<div class="ar-expert-col is-bad"><h3><span data-tip="足りない・弱い点です。総合点が下がる主因です。">ないもの</span></h3>' + renderCheckList(insight.bad, false) + '</div>' +
+        '</div>' +
+        '<div><h3 style="margin:0 0 12px;font-size:1.25rem;font-weight:900"><span data-tip="不足を埋めるための具体的な次の一手です。">次にやること</span></h3><div class="ar-next-grid">' + nextHtml + '</div></div>';
+      if (window.AirReachTip) window.AirReachTip.enhance(shell);
+    } else if (shell) {
+      shell.innerHTML = '<p class="ar-note">診断データがまだありません。</p>';
+    }
+
     var ex = $('ar-expert-meters');
-    if (lastDiagnose) {
-      ex.innerHTML =
-        '<div class="ar-expert-block">' +
-        '<h3>診断サマリー（公開HTML・実測）</h3>' +
-        '<p class="sum">overall = 0.30·構造 + 0.25·エンティティ + 0.20·FAQ + 0.25·発見</p>' +
-        '<table class="ar-expert-table"><tbody>' +
-        '<tr><th>構造</th><td class="val">' + lastDiagnose.structure + ' / 100</td><td class="note">weight 0.30</td></tr>' +
-        '<tr><th>エンティティ</th><td class="val">' + lastDiagnose.entity + ' / 100</td><td class="note">weight 0.25</td></tr>' +
-        '<tr><th>FAQ</th><td class="val">' + lastDiagnose.faq + ' / 100</td><td class="note">weight 0.20</td></tr>' +
-        '<tr><th>発見</th><td class="val">' + lastDiagnose.discover + ' / 100</td><td class="note">weight 0.25</td></tr>' +
-        '<tr><th>総合</th><td class="val">' + lastDiagnose.overall + ' / 100</td><td class="note">AI掲載率ではない</td></tr>' +
-        '</tbody></table></div>';
-    } else {
-      ex.innerHTML = '<p class="ar-note">URL診断前のため、準備度は仮値です。診断後に実測内訳が入ります。</p>';
+    if (ex) {
+      if (lastDiagnose) {
+        ex.innerHTML =
+          '<div class="ar-expert-block">' +
+          '<h3><span data-tip="4要素の加重平均です。AI掲載率ではありません。">総合点の内訳</span></h3>' +
+          '<p class="sum">' + tipAttr((insight && insight.formula) || '総合 = 骨格×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25') + '</p>' +
+          '<table class="ar-expert-table"><tbody>' +
+          '<tr><th><span data-tip="title / H1 / meta / canonical 等">骨格</span></th><td class="val">' + lastDiagnose.structure + ' / 100</td><td class="formula">× 0.30</td></tr>' +
+          '<tr><th><span data-tip="Organization / Service 等">会社情報</span></th><td class="val">' + lastDiagnose.entity + ' / 100</td><td class="formula">× 0.25</td></tr>' +
+          '<tr><th><span data-tip="FAQPage・可視FAQ">FAQ</span></th><td class="val">' + lastDiagnose.faq + ' / 100</td><td class="formula">× 0.20</td></tr>' +
+          '<tr><th><span data-tip="llms.txt / robots 等">見つけやすさ</span></th><td class="val">' + lastDiagnose.discover + ' / 100</td><td class="formula">× 0.25</td></tr>' +
+          '<tr><th>総合</th><td class="val">' + lastDiagnose.overall + ' / 100</td><td class="formula">計算結果</td></tr>' +
+          '</tbody></table></div>';
+      } else {
+        ex.innerHTML = '<p class="ar-note">URL診断前のため、準備度は仮値です。</p>';
+      }
     }
 
     var methodBox = $('ar-expert-method');
     if (methodBox && report.methodology && report.methodology.sections) {
       var m = report.methodology;
-      var html = '<p class="ar-expert-meta"><b>対象:</b> ' + m.audience +
-        ' · <b>as of:</b> ' + m.asOf + '</p>';
+      var html = '<p class="ar-expert-meta"><span data-tip="各数字の式と代入値です。">算出の詳細</span> · as of ' + tipAttr(m.asOf) + '</p>';
       m.sections.forEach(function (sec) {
         html += '<div class="ar-expert-block" id="expert-' + sec.id + '">';
         html += '<h3><span data-tip="' + tipAttr(sec.summary) + '">' + tipAttr(sec.title) + '</span></h3>';
@@ -975,46 +1033,42 @@ document.addEventListener('DOMContentLoaded', function () {
     openGate();
   });
 
-  $('biz-run').addEventListener('click', function () {
-    if (!window.AirReachSales) return;
-    renderReport(buildReport(lastDiagnose));
-    revealPanel('impact');
-    setStep(2);
-  });
-  ['biz-visitors','biz-inq','biz-line','biz-fee','biz-close','biz-deal','biz-margin'].forEach(function (id) {
-    $(id).addEventListener('change', function () {
-      if (!lastReport) return;
+  if ($('biz-run')) {
+    $('biz-run').addEventListener('click', function () {
+      if (!window.AirReachSales) return;
       renderReport(buildReport(lastDiagnose));
-      revealPanel('impact');
-      setStep(2);
     });
-  });
+  }
 
   $('ar-cta-main').addEventListener('click', function (e) {
     var href = $('ar-cta-main').getAttribute('href') || '';
     if (href.indexOf('brand-panel') >= 0) {
       revealPanel('brand-panel');
       setStep(1);
-    } else {
-      e.preventDefault();
-      revealPanel('impact');
-      setStep(2);
-      $('impact').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      $('ar-cta-main').textContent = 'まず直す3つを見る';
-      $('ar-cta-main').href = '#actions';
+      return;
     }
-  });
-  $('ar-cta-brand-next').addEventListener('click', function (e) {
     e.preventDefault();
-    revealPanel('impact');
+    revealPanel('expert-view');
     setStep(2);
-    $('impact').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-  $('ar-cta-to-actions').addEventListener('click', function () {
+  if ($('ar-cta-brand-next')) {
+    $('ar-cta-brand-next').addEventListener('click', function (e) {
+      e.preventDefault();
+      revealPanel('expert-view');
+      setStep(2);
+      $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+  function goActions(e) {
+    if (e) e.preventDefault();
     revealPanel('actions');
     setStep(3);
-  });
-  $('ar-cta-actions').addEventListener('click', function () { setStep(3); });
+    $('actions').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  if ($('ar-cta-to-actions')) $('ar-cta-to-actions').addEventListener('click', goActions);
+  if ($('ar-cta-to-actions-main')) $('ar-cta-to-actions-main').addEventListener('click', goActions);
+  if ($('ar-cta-actions')) $('ar-cta-actions').addEventListener('click', function () { setStep(3); });
 
   $('ar-google-connect').addEventListener('click', function () {
     fetch('/api/google/auth').then(function (res) {
@@ -1022,7 +1076,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (res.ok) { location.href = '/api/google/auth'; return; }
       throw new Error('no');
     }).catch(function () {
-      $('ar-google-note').textContent = '公開環境ではワンクリック連携準備中です。StudioのCSVへ案内します。';
+      var gn = $('ar-google-note');
+      if (gn) { gn.hidden = false; gn.textContent = '公開環境ではワンクリック連携準備中です。StudioのCSVへ案内します。'; }
       location.href = '/airreach/studio/#google';
     });
   });
