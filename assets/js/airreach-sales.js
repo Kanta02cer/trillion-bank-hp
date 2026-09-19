@@ -325,6 +325,122 @@
   }
 
 
+
+  function buildFactorBreakdown(diagnose) {
+    var d = diagnose || {};
+    var parts = [
+      {
+        id: 'structure',
+        label: 'ページの骨格',
+        tip: 'タイトル・H1・説明文など、ページの基本骨格です。主題が伝わるかを見ます。',
+        score: d.structure,
+        weight: 0.30,
+        missingWhen: function (diag) {
+          var out = [];
+          if (!diag || !diag.page) return ['診断前のため未確認'];
+          var p = diag.page;
+          if (!p.h1) out.push('主見出し（H1）が弱い');
+          if (!(p.title)) out.push('タイトルが弱い');
+          return out;
+        }
+      },
+      {
+        id: 'entity',
+        label: '会社・サービス情報',
+        tip: 'Organization / Service など、誰の何のサービスかを機械が読むための情報です。',
+        score: d.entity,
+        weight: 0.25,
+        missingWhen: function (diag) {
+          var out = [];
+          if (!diag || !diag.page) return ['診断前のため未確認'];
+          var types = (diag.page.types || []).join(' ');
+          if (!/Organization|LocalBusiness/.test(types)) out.push('会社情報の構造化データが無い');
+          if (!/Service|Product/.test(types)) out.push('サービス定義が弱い');
+          return out;
+        }
+      },
+      {
+        id: 'faq',
+        label: 'よくある質問',
+        tip: '購入・予約前に聞かれる質問を公式に置いているか。AIが抜き出しやすいFAQです。',
+        score: d.faq,
+        weight: 0.20,
+        missingWhen: function (diag) {
+          var out = [];
+          if (!diag || !diag.page) return ['診断前のため未確認'];
+          if ((diag.page.faqCount || 0) < 3) out.push('FAQが少ない／無い');
+          var types = (diag.page.types || []).join(' ');
+          if (!/FAQPage/.test(types)) out.push('FAQPageの構造化が無い');
+          return out;
+        }
+      },
+      {
+        id: 'discover',
+        label: '見つけやすさ',
+        tip: 'robots・llms.txt・案内リンクなど、ページが発見・参照されやすいかです。',
+        score: d.discover,
+        weight: 0.25,
+        missingWhen: function (diag) {
+          var out = [];
+          if (!diag) return ['診断前のため未確認'];
+          if (!diag.page || !diag.page.hasLlms) out.push('llms.txtが無い／薄い');
+          if (!diag.page || !diag.page.hasRobots) out.push('robots.txtを確認できなかった');
+          return out;
+        }
+      }
+    ];
+
+    function level(score) {
+      score = Number(score);
+      if (!isFinite(score)) return { key: 'unknown', label: '未計測', tone: 'muted' };
+      if (score < 45) return { key: 'low', label: '弱い', tone: 'bad' };
+      if (score < 70) return { key: 'mid', label: '普通', tone: 'warn' };
+      return { key: 'high', label: '良い', tone: 'good' };
+    }
+
+    var factors = parts.map(function (p) {
+      var score = p.score == null ? null : Number(p.score);
+      var lv = level(score);
+      var missing = p.missingWhen(d);
+      // also pull matching gaps text
+      (d.gaps || []).forEach(function (g) {
+        var t = String(g || '');
+        if (p.id === 'structure' && /H1|タイトル|meta/i.test(t) && missing.indexOf(t) < 0) missing.push(t);
+        if (p.id === 'entity' && /Organization|エンティティ|構造化|問い合わせ導線/i.test(t) && missing.indexOf(t) < 0) missing.push(t);
+        if (p.id === 'faq' && /FAQ/i.test(t) && missing.indexOf(t) < 0) missing.push(t);
+        if (p.id === 'discover' && /llms|robots|発見/i.test(t) && missing.indexOf(t) < 0) missing.push(t);
+      });
+      var contrib = score == null ? null : Math.round(score * p.weight * 10) / 10;
+      return {
+        id: p.id,
+        label: p.label,
+        tip: p.tip,
+        score: score,
+        weight: p.weight,
+        weightPct: Math.round(p.weight * 100),
+        contribution: contrib,
+        level: lv,
+        missing: missing.slice(0, 3),
+        formula: p.label + ' × ' + p.weight
+      };
+    });
+
+    var overall = d.overall != null ? Number(d.overall) : null;
+    var weak = factors.filter(function (f) { return f.score != null && f.score < 60; })
+      .sort(function (a, b) { return (a.score || 0) - (b.score || 0); });
+
+    return {
+      overall: overall,
+      formula: '総合 = 骨格×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25',
+      formulaTip: '公開HTMLの準備度です。AI回答の掲載率や予約増を保証しません。',
+      factors: factors,
+      weakFactors: weak,
+      gaps: (d.gaps || []).slice(0, 5),
+      strengths: (d.strengths || []).slice(0, 4),
+      evidenceClass: d.overall != null ? 'Observed' : 'Estimated'
+    };
+  }
+
   function buildExpertMethodology(ctx) {
     ctx = ctx || {};
     var diagnose = ctx.diagnose || null;
@@ -728,6 +844,7 @@
       confidence: confidence,
       confidenceEvidenceClass: 'Inferred',
       confidenceBreakdown: confidenceBreakdown,
+      factors: buildFactorBreakdown(diagnose),
       methodology: buildExpertMethodology({
         diagnose: diagnose,
         volume: volume,
@@ -767,6 +884,7 @@
     improvementRange: improvementRange,
     inquiryForecast: inquiryForecast,
     buildExpertMethodology: buildExpertMethodology,
+    buildFactorBreakdown: buildFactorBreakdown,
     normalizeMode: normalizeMode,
     yen: yen,
     cnt: cnt,
