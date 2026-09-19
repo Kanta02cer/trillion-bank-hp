@@ -2590,6 +2590,7 @@
       var validatedUrl = sanitizePublicUrl(input.url, false);
       clearMismatchedOfficialBaseline(validatedUrl);
       state.profile.url = validatedUrl;
+      setValue('site-url', validatedUrl);
       persist(false);
     } catch (inputError) {
       // The orchestrator creates a fresh failed job so stale results and ZIP

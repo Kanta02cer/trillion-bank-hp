@@ -181,6 +181,14 @@ test('Overview structure, noindex, Expert containment, and script order stay fix
   assert.match(studioCss, /content: attr\(data-label\)/);
 });
 
+test('Overview target stays synchronized with the Expert generator URL', () => {
+  assert.match(
+    studioSource,
+    /state\.profile\.url = validatedUrl;\s+setValue\('site-url', validatedUrl\);\s+persist\(false\);/,
+    'an Overview run must not leave the Expert generator pointed at a stale URL'
+  );
+});
+
 test('public APIs generate exactly 20, 50, and 100 unique keyword candidates', async () => {
   for (const count of [20, 50, 100]) {
     const { runtime, job } = await runAnalysis({ count });
