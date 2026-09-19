@@ -44,6 +44,43 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-gate-err.is-on{display:block}
 .ar-gate-note{font-size:.95rem;color:#475569;line-height:1.6;margin-top:14px}
 .ar-consent-gate{display:flex;gap:10px;align-items:flex-start;font-size:1rem;color:#334155;line-height:1.55;margin-top:8px}
+.ar-gate-kicker{font:800 1rem/1.4 inherit;letter-spacing:0;color:#1d4ed8;margin:0 0 12px}
+.ar-gate h1{font-size:clamp(1.9rem,4.5vw,2.5rem);margin:0 0 22px}
+.ar-gate .lead{display:none !important}
+.ar-gate label.ar-field-big{font-size:1.25rem;margin-bottom:18px}
+.ar-gate input[type=url],.ar-gate input[type=text]{border-width:3px;border-color:#60a5fa;font-size:1.2rem;min-height:64px;padding:18px}
+.ar-pick button{border-width:3px;border-color:#bfdbfe;padding:20px 22px;min-height:80px;background:#f8fbff}
+.ar-pick button.is-on{border-color:#2563eb;background:#dbeafe;box-shadow:0 0 0 3px rgba(37,99,235,.18)}
+.ar-pick .t{font-size:1.35rem;margin:0;color:#0f172a}
+.ar-btn{font-size:1.15rem;min-height:64px;padding:18px 24px;border-width:3px}
+.ar-btn-primary{background:#2563eb;border-color:#1d4ed8;color:#fff;box-shadow:0 8px 20px rgba(37,99,235,.25)}
+.ar-btn-primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.ar-btn-line{border-color:#93c5fd;color:#1d4ed8;background:#fff;font-weight:800}
+.ar-consent-card{display:flex;gap:14px;align-items:center;border:3px solid #93c5fd;border-radius:16px;padding:18px 20px;margin:8px 0 20px;background:#eff6ff;cursor:pointer;font-size:1.2rem;font-weight:800;color:#0f172a}
+.ar-consent-card.is-on{border-color:#16a34a;background:#ecfdf5;color:#14532d}
+.ar-consent-card input{width:26px;height:26px;accent-color:#16a34a;flex:0 0 auto}
+.ar-consent-card .ar-consent-title{display:flex;align-items:center;flex-wrap:wrap;gap:4px;line-height:1.35}
+.ar-factors{margin:22px 0;display:grid;gap:14px}
+.ar-factors-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ar-factors-head h3{margin:0;font-size:1.35rem;font-weight:800;color:#0f172a}
+.ar-factor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ar-factor-card{border:3px solid #e2e8f0;border-radius:16px;padding:16px 18px;background:#fff}
+.ar-factor-card.is-bad{border-color:#fca5a5;background:#fef2f2}
+.ar-factor-card.is-warn{border-color:#fcd34d;background:#fffbeb}
+.ar-factor-card.is-good{border-color:#86efac;background:#ecfdf5}
+.ar-factor-card.is-muted{border-color:#cbd5e1;background:#f8fafc}
+.ar-factor-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.ar-factor-label{font-size:1.15rem;font-weight:800;color:#0f172a}
+.ar-factor-score{font-size:1.8rem;font-weight:900;letter-spacing:-.03em;color:#0f172a}
+.ar-factor-meta{font-size:1rem;font-weight:700;color:#334155;margin-bottom:8px}
+.ar-factor-miss{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.ar-factor-miss li{font-size:1.02rem;font-weight:700;color:#9f1239;padding:8px 10px;border-radius:10px;background:rgba(254,226,226,.7)}
+.ar-factor-miss li.is-ok{color:#047857;background:rgba(209,250,229,.7)}
+.ar-factor-formula{margin-top:10px;padding:14px 16px;border:3px solid #93c5fd;border-radius:14px;background:#eff6ff;font-size:1.05rem;font-weight:800;color:#1e3a8a;line-height:1.5}
+.ar-gap-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.ar-gap-list li{border:3px solid #fecaca;background:#fff1f2;border-radius:12px;padding:12px 14px;font-weight:800;color:#9f1239;font-size:1.05rem}
+@media (max-width:640px){.ar-factor-grid{grid-template-columns:1fr}}
+
 .ar-hero{padding:clamp(56px,8vw,88px) 0 28px;border-bottom:1px solid #e5e7eb;background:#f8fbff}
 .ar-badge{font:700 .72rem/1.4 var(--mono,'Space Grotesk',monospace);letter-spacing:.14em;color:#1d4ed8;margin-bottom:12px}
 .ar-hero h1{font-size:clamp(1.85rem,4.4vw,2.85rem);line-height:1.22;letter-spacing:-.03em;margin:0 0 14px;font-weight:700;max-width:15em}
@@ -81,7 +118,7 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-chain{display:grid;gap:0;border:2px solid #e2e8f0;border-radius:16px;overflow:hidden;background:#fff}
 .ar-stepn{padding:20px 22px;border-bottom:1px solid #eef2f7;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start}
 .ar-stepn:last-child{border-bottom:0;background:#eff6ff}
-.ar-stepn .ix{width:32px;height:32px;border-radius:999px;background:#dbeafe;color:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;margin-top:4px}
+.ar-stepn .ix{width:40px;height:40px;border-radius:999px;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:900;margin-top:4px}
 .ar-stepn .lab{font-size:1.05rem;color:#475569;margin-bottom:6px;font-weight:700}
 .ar-stepn .val{font-size:clamp(2.1rem,5.2vw,3rem);font-weight:800;letter-spacing:-.03em;color:#0f172a;line-height:1.05}
 .ar-stepn.is-accent .val{color:#1d4ed8}
@@ -198,7 +235,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
     </div>
 
     <div class="ar-gate-step is-on" data-step="1">
-      <p class="ar-gate-kicker">1 / 4</p>
+      <p class="ar-gate-kicker">STEP 1 / 4 ・ 業種</p>
       <h1 id="gate-title">業種を選ぶ</h1>
       <div class="ar-pick" id="gate-industry">
         <button type="button" data-industry="restaurant" data-tip="予約・来店を増やしたいお店向け。見る数字は予約です。"><div class="t">飲食店</div></button>
@@ -213,9 +250,9 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
     </div>
 
     <div class="ar-gate-step" data-step="2">
-      <p class="ar-gate-kicker">2 / 4</p>
+      <p class="ar-gate-kicker">STEP 2 / 4 ・ サイト</p>
       <h1>サイトURL</h1>
-      <label><span data-tip="診断する公式サイトのURL。このあと画面にも表示します。">サイトURL</span>
+      <label class="ar-field-big"><span data-tip="診断する公式サイトのURLです。">サイトURL</span>
         <input id="gate-url" type="url" inputmode="url" placeholder="https://example.com/" autocomplete="url" required>
       </label>
       <div class="ar-gate-actions">
@@ -225,7 +262,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
     </div>
 
     <div class="ar-gate-step" data-step="3">
-      <p class="ar-gate-kicker">3 / 4</p>
+      <p class="ar-gate-kicker">STEP 3 / 4 ・ 目的</p>
       <h1>目的を選ぶ</h1>
       <div class="ar-pick" id="gate-goal">
         <button type="button" data-goal="acquisition" data-tip="新しいお客様に見つけてもらえる状態かを見ます。">
@@ -242,22 +279,22 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
     </div>
 
     <div class="ar-gate-step" data-step="4">
-      <p class="ar-gate-kicker">4 / 4</p>
-      <h1 id="gate-kw-title">調べる言葉</h1>
+      <p class="ar-gate-kicker">STEP 4 / 4 ・ 調べる言葉</p>
+      <h1 id="gate-kw-title">集客したい言葉を入力</h1>
       <p class="lead" id="gate-kw-lead" hidden></p>
-      <label id="gate-kw-label"><span data-tip="地域やサービス名・会社名など、実際に検索されそうな言葉。">調べる言葉</span>
-        <input id="gate-keyword" type="text" placeholder="例）盛岡 焼肉" required>
+      <label class="ar-field-big" id="gate-kw-label"><span data-tip="地域＋サービスなど、新しいお客様が使いそうな言葉です。例：盛岡 焼肉">調べたい言葉</span>
+        <input id="gate-keyword" type="text" placeholder="例）盛岡 焼肉" required autocomplete="off">
       </label>
-      <label id="gate-media-label" hidden><span data-tip="特定のニュース記事がどれくらい使われそうかを見るときに入力します。">記事URL（任意）</span>
+      <label class="ar-field-big" id="gate-media-label" hidden><span data-tip="特定のニュース記事の使われ方を見るときに入力します。">記事URL</span>
         <input id="gate-media" type="url" placeholder="https://news.example.com/article">
       </label>
-      <label class="ar-consent-gate">
-        <input id="gate-proxy" type="checkbox" style="margin-top:4px">
-        <span data-tip="直接取得できない場合、診断のためURL（認証情報除去後）を取得サーバーへ送ります。成果・掲載は保証しません。">診断のための取得に同意</span>
+      <label class="ar-consent-card" id="gate-consent-card" for="gate-proxy">
+        <input id="gate-proxy" type="checkbox" required aria-required="true">
+        <span class="ar-consent-title" data-tip="直接取れないときだけ、認証情報を除いたURLを取得サーバーへ送ります。成果・掲載は保証しません。">取得に同意する</span>
       </label>
       <div class="ar-gate-actions">
         <button type="button" class="ar-btn ar-btn-line" id="gate-back-4">戻る</button>
-        <button type="button" class="ar-btn ar-btn-primary" id="gate-submit" data-tip="回答は端末内に保存し、画面案内に使います。成果は保証しません。">調べる</button>
+        <button type="button" class="ar-btn ar-btn-primary" id="gate-submit" disabled data-tip="同意と調べたい言葉が必要です。結果の掲載や成果は保証しません。">無料で調べる</button>
       </div>
     </div>
 
@@ -317,6 +354,16 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         <p class="ar-conf"><span data-tip="入力や実測が増えるほど上がる参考指標です。統計的な信頼区間ではありません。">信頼度</span> <b id="ar-confidence">—</b>%</p>
         <p class="ar-disc" id="ar-disc" hidden></p>
         <span id="ar-confidence-note" hidden></span>
+
+        <section class="ar-factors" id="ar-factors" hidden aria-label="点数の内訳">
+          <div class="ar-factors-head">
+            <h3><span data-tip="公開ページの準備度を4つの要素に分けた内訳です。AI掲載率そのものではありません。">なぜこの点数？</span></h3>
+          </div>
+          <div class="ar-factor-formula" id="ar-factor-formula"></div>
+          <div class="ar-factor-grid" id="ar-factor-cards"></div>
+          <h3 style="margin:8px 0 0;font-size:1.2rem;font-weight:800"><span data-tip="点数が低い主な不足です。ここから直すと総合点が上がりやすいです。">足りないもの</span></h3>
+          <ul class="ar-gap-list" id="ar-factor-gaps"></ul>
+        </section>
 
         <div class="ar-cta-row">
           <a class="ar-btn ar-btn-primary" href="#impact" id="ar-cta-main">改善後を見る</a>
@@ -426,6 +473,14 @@ document.addEventListener('DOMContentLoaded', function () {
   function showError(m){ var e=$('ar-error'); e.textContent=m; e.classList.add('is-on'); }
   function clearError(){ var e=$('ar-error'); e.textContent=''; e.classList.remove('is-on'); }
   function gateErr(m){ var e=$('gate-err'); e.textContent=m||''; e.classList.toggle('is-on', !!m); }
+  function updateGateSubmit() {
+    var kw = ($('gate-keyword').value || '').trim();
+    var ok = !!$('gate-proxy').checked && !!kw;
+    var btn = $('gate-submit');
+    if (btn) btn.disabled = !ok;
+    var card = $('gate-consent-card');
+    if (card) card.classList.toggle('is-on', !!$('gate-proxy').checked);
+  }
 
   function openGate() {
     document.body.classList.add('ar-gated');
@@ -474,6 +529,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (n === 4) {
       var vis = surveyState.goal === 'visibility' || surveyState.industryId === 'media';
       $('gate-kw-title').textContent = vis ? '会社名・商品名を入力' : '集客したい言葉を入力';
+      if ($('gate-kw-lead')) $('gate-kw-lead').hidden = true;
       $('gate-kw-lead').textContent = vis
         ? '会社名や商品名で調べられたときの見え方を見ます。'
         : '地域＋サービスなど、新しいお客様が使いそうな言葉を入れてください。';
@@ -663,6 +719,53 @@ document.addEventListener('DOMContentLoaded', function () {
         '<span class="ar-badge-e ' + badgeClass(h.badge) + '" data-tip="' + tipAttr(evidenceTip(h.badge)) + '">' + tipAttr(badge) + '</span>';
       chain.appendChild(row);
     });
+    if (window.AirReachTip) window.AirReachTip.enhance(chain);
+
+    var factorsWrap = $('ar-factors');
+    var factorCards = $('ar-factor-cards');
+    var factorGaps = $('ar-factor-gaps');
+    var factorFormula = $('ar-factor-formula');
+    var fb = report.factors || (window.AirReachSales && AirReachSales.buildFactorBreakdown
+      ? AirReachSales.buildFactorBreakdown(lastDiagnose) : null);
+    if (factorsWrap && factorCards && fb) {
+      factorsWrap.hidden = false;
+      if (factorFormula) {
+        factorFormula.innerHTML = '<span data-tip="' + tipAttr(fb.formulaTip || '') + '">計算式</span>　' + tipAttr(fb.formula || '');
+        if (fb.overall != null) {
+          factorFormula.innerHTML += '　→　<span data-tip="4要素の加重平均です。">総合 ' + tipAttr(String(fb.overall)) + ' / 100</span>';
+        }
+      }
+      factorCards.innerHTML = '';
+      (fb.factors || []).forEach(function (f) {
+        var card = document.createElement('div');
+        card.className = 'ar-factor-card is-' + ((f.level && f.level.tone) || 'muted');
+        var miss = (f.missing && f.missing.length)
+          ? '<ul class="ar-factor-miss">' + f.missing.map(function (m) {
+              return '<li>' + tipAttr(m) + '</li>';
+            }).join('') + '</ul>'
+          : '<ul class="ar-factor-miss"><li class="is-ok">大きな不足は見当たりません</li></ul>';
+        var scoreTxt = f.score == null ? '—' : String(f.score);
+        card.innerHTML =
+          '<div class="ar-factor-top">' +
+          '<div class="ar-factor-label"><span data-tip="' + tipAttr(f.tip) + '">' + tipAttr(f.label) + '</span></div>' +
+          '<div class="ar-factor-score">' + tipAttr(scoreTxt) + '</div></div>' +
+          '<div class="ar-factor-meta"><span data-tip="' + tipAttr(f.formula) + '">配点 ' + tipAttr(String(f.weightPct)) + '%</span>' +
+          (f.contribution != null ? ' · 寄与 ' + tipAttr(String(f.contribution)) + '点' : '') +
+          ' · ' + tipAttr((f.level && f.level.label) || '') + '</div>' + miss;
+        factorCards.appendChild(card);
+      });
+      if (factorGaps) {
+        var gaps = (fb.gaps && fb.gaps.length) ? fb.gaps : (fb.weakFactors || []).map(function (w) {
+          return w.label + 'が弱い（' + w.score + '点）';
+        });
+        factorGaps.innerHTML = gaps.length
+          ? gaps.map(function (g) { return '<li>' + tipAttr(g) + '</li>'; }).join('')
+          : '<li style="border-color:#86efac;background:#ecfdf5;color:#047857">大きな不足は検出されませんでした</li>';
+      }
+      if (window.AirReachTip) window.AirReachTip.enhance(factorsWrap);
+    } else if (factorsWrap) {
+      factorsWrap.hidden = true;
+    }
 
     var inq = report.inquiries;
     $('ba-now-i').textContent = AirReachSales.cnt(inq.currentInquiries) + ' 件';
@@ -811,9 +914,14 @@ document.addEventListener('DOMContentLoaded', function () {
   function finishSurvey() {
     var kw = ($('gate-keyword').value || '').trim();
     if (!kw) { gateErr('調べたい言葉を入力してください。'); return; }
+    if (!$('gate-proxy').checked) {
+      gateErr('「取得に同意する」にチェックしてください。');
+      updateGateSubmit();
+      return;
+    }
     surveyState.keyword = kw;
     surveyState.mediaUrl = ($('gate-media').value || '').trim();
-    surveyState.proxyConsent = !!$('gate-proxy').checked;
+    surveyState.proxyConsent = true;
     if (!surveyState.url) { gateErr('会社のリンクが未入力です。'); return; }
 
     var survey = window.AirReachOnboard.saveSurvey({
@@ -836,6 +944,16 @@ document.addEventListener('DOMContentLoaded', function () {
   $('gate-keyword').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') { e.preventDefault(); finishSurvey(); }
   });
+  ['input', 'change'].forEach(function (ev) {
+    $('gate-keyword').addEventListener(ev, updateGateSubmit);
+    $('gate-proxy').addEventListener(ev, updateGateSubmit);
+  });
+  $('gate-consent-card').addEventListener('click', function (e) {
+    if (e.target && e.target.id === 'gate-proxy') return;
+    // label already toggles checkbox; sync UI
+    setTimeout(updateGateSubmit, 0);
+  });
+  updateGateSubmit();
 
   $('ar-restart').addEventListener('click', function () {
     window.AirReachOnboard.clearSurvey();
@@ -851,6 +969,7 @@ document.addEventListener('DOMContentLoaded', function () {
     $('gate-keyword').value = '';
     $('gate-media').value = '';
     $('gate-proxy').checked = false;
+    updateGateSubmit();
     $('ar-dash').classList.remove('is-on');
     $('ar-empty').style.display = '';
     openGate();

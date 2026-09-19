@@ -65,3 +65,24 @@ button.ar-tip,a.ar-tip{border-left:0;border-right:0;border-top:0;border-radius:0
 @media (prefers-reduced-motion:reduce){
   .ar-tip-bubble{transform:none}
 }
+
+.ar-tip-q{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:1.35em;
+  height:1.35em;
+  margin-left:.35em;
+  border-radius:999px;
+  border:2px solid #2563eb;
+  background:#eff6ff;
+  color:#1d4ed8;
+  font-size:.72em;
+  font-weight:900;
+  line-height:1;
+  vertical-align:middle;
+  box-sizing:border-box;
+}
+.ar-tip:hover .ar-tip-q,.ar-tip:focus .ar-tip-q,.ar-tip.is-on .ar-tip-q{
+  background:#2563eb;color:#fff;border-color:#1d4ed8;
+}

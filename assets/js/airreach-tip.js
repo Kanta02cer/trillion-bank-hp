@@ -21,6 +21,13 @@
       if (!el.getAttribute('aria-label')) {
         el.setAttribute('aria-label', (el.textContent || '').trim() + '（詳細あり）');
       }
+      if (!el.querySelector('.ar-tip-q')) {
+        var mark = document.createElement('span');
+        mark.className = 'ar-tip-q';
+        mark.setAttribute('aria-hidden', 'true');
+        mark.textContent = '?';
+        el.appendChild(mark);
+      }
       var bubble = document.createElement('span');
       bubble.className = 'ar-tip-bubble';
       bubble.setAttribute('role', 'tooltip');
