@@ -2,7 +2,7 @@
 title: "HackⅡ Studio｜改善実行OS - Trillion Bank"
 tbdesc: "HackⅡ Studioは、URLを入れると分析からキーワード選定・施策・実装ZIPまでを1画面で進めるブラウザ内実行OSです。市場需要は推定、GSCは実測として分離します。"
 keywords: "HackⅡ Studio,ハックツ・スタジオ,AI検索対策,実装ZIP,キーワード戦略"
-ai_summary: "HackⅡ Studio Overviewは分析→キーワード→施策→ZIPまでを一連ジョブで進める実行画面。GitHub PRと本番Deployは未提供。"
+ai_summary: "HackⅡ Studio Overviewは分析→キーワード→施策→ZIP／下書きPRまでを一連ジョブで進める。本番自動Deployはしない。"
 robots: "noindex, follow"
 ---
 <!DOCTYPE html>
@@ -132,6 +132,7 @@ robots: "noindex, follow"
                 <th>キーワード</th>
                 <th>月間需要</th>
                 <th>GSC</th>
+                <th data-tip="HackⅡ実測の言及率 / 引用率。準備度スコアではありません。">AI言及/引用</th>
                 <th>今の状態</th>
                 <th>AI質問</th>
                 <th>競合との差</th>
@@ -153,9 +154,63 @@ robots: "noindex, follow"
         <h3>実装パッケージ</h3>
         <div class="ars-row">
           <button type="button" class="ars-btn ars-btn-primary" id="orch-zip" data-tip="MANIFEST・AGENT_PROMPT・schema・strategyを含むZIPをダウンロードします。">ZIPを生成</button>
-          <button type="button" class="ars-btn ars-btn-secondary" id="orch-pr" disabled data-tip="GitHub PR自動作成は準備中です。本番公開は人間承認が前提です。">GitHub PRを作成（準備中）</button>
+          <button type="button" class="ars-btn ars-btn-secondary" id="orch-pr" data-tip="GitHubに下書きPRを作ります。PATはsessionStorageのみ。マージは人間承認が必要です。">GitHubに下書きPR</button>
+          <button type="button" class="ars-btn ars-btn-secondary" id="orch-deploy" data-tip="自動Deployはありません。公開前チェックリストを表示します。">公開前チェック</button>
         </div>
+        <p id="orch-phase2-status" class="orch-phase2-status" hidden></p>
       </div>
+
+      <div class="ars-card" id="orch-phase2-data">
+        <h3 data-tip="公式・実測データは推定と混ぜず、行単位で併記します。">公式・実測データ（任意）</h3>
+        <div class="orch-phase2-grid">
+          <div class="ars-field">
+            <label for="orch-planner-csv"><span data-tip="Google Ads Keyword PlannerのエクスポートCSV。該当キーワードの月間需要を公式値に置き換えます。">Keyword Planner CSV</span></label>
+            <input id="orch-planner-csv" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values">
+          </div>
+          <div class="ars-field">
+            <label for="orch-hack2-file"><span data-tip="HackⅡ測定JSON。言及・引用をキーワード行に併記します。準備度スコアとは別です。">HackⅡ測定 JSON</span></label>
+            <input id="orch-hack2-file" type="file" accept=".json,application/json,.txt">
+          </div>
+        </div>
+        <p id="orch-phase2-data-status" class="orch-gsc-status" hidden></p>
+      </div>
+
+      <dialog id="orch-pr-dialog" class="orch-dialog">
+        <form method="dialog" id="orch-pr-form" class="orch-dialog-inner">
+          <h3>GitHubに下書きPR</h3>
+          <p class="orch-dialog-lead">マージと本番公開は人間が行います。トークンはsessionStorageのみに保持し、サーバーへ送りません。</p>
+          <div class="ars-field"><label for="orch-gh-repo">リポジトリ <span class="ars-muted">(owner/repo)</span></label><input id="orch-gh-repo" class="ars-input" required placeholder="acme/website" autocomplete="off"></div>
+          <div class="ars-field"><label for="orch-gh-base">ベースブランチ</label><input id="orch-gh-base" class="ars-input" value="main" required></div>
+          <div class="ars-field"><label for="orch-gh-branch">作成ブランチ</label><input id="orch-gh-branch" class="ars-input" required></div>
+          <div class="ars-field"><label for="orch-gh-path">コミット先パス</label><input id="orch-gh-path" class="ars-input" value="airreach-implementation" required></div>
+          <div class="ars-field"><label for="orch-gh-token">Personal Access Token <span class="ars-muted">(repo権限・下書きPR可)</span></label><input id="orch-gh-token" class="ars-input" type="password" required autocomplete="off"></div>
+          <label class="ars-consent-row"><input id="orch-gh-approve" type="checkbox" required> <span>内容を人間がレビューしてからマージすることを理解しました</span></label>
+          <div class="ars-row" style="margin-top:16px">
+            <button type="submit" class="ars-btn ars-btn-primary" id="orch-gh-submit" value="create">下書きPRを作成</button>
+            <button type="submit" class="ars-btn ars-btn-secondary" value="cancel">キャンセル</button>
+          </div>
+          <p id="orch-gh-msg" class="orch-gsc-status" hidden></p>
+        </form>
+      </dialog>
+
+      <dialog id="orch-deploy-dialog" class="orch-dialog">
+        <div class="orch-dialog-inner">
+          <h3>公開前チェック</h3>
+          <p class="orch-dialog-lead">本番自動Deployはありません。下書きPRをレビューし、人間がマージしてください。</p>
+          <ul class="orch-checklist" id="orch-deploy-check">
+            <li><label><input type="checkbox"> 料金・事例・顧客名・数値の捏造がない</label></li>
+            <li><label><input type="checkbox"> FAQ回答を人間が事実確認した</label></li>
+            <li><label><input type="checkbox"> JSON-LDが公開文面と一致する</label></li>
+            <li><label><input type="checkbox"> llms.txtのリンクが解決する</label></li>
+            <li><label><input type="checkbox"> ステークホルダーが公開を承認した</label></li>
+          </ul>
+          <div class="ars-row" style="margin-top:16px">
+            <a class="ars-btn ars-btn-primary" id="orch-deploy-pr-link" href="#" target="_blank" rel="noopener" hidden>下書きPRを開く</a>
+            <button type="button" class="ars-btn ars-btn-secondary" id="orch-deploy-close">閉じる</button>
+          </div>
+          <p class="orch-gsc-status is-warn">自動マージ・Pages自動公開・Deployボタンからの本番反映は提供しません。</p>
+        </div>
+      </dialog>
     </section>
 
     <div class="ars-row" style="margin:24px 0">
@@ -269,5 +324,6 @@ robots: "noindex, follow"
 <script src="/assets/js/airreach-diagnose.js" defer></script>
 <script src="/assets/js/airreach-studio.js" defer></script>
 <script src="/assets/js/airreach-orchestrator.js" defer></script>
+<script src="/assets/js/airreach-orch-phase2.js" defer></script>
 </body>
 </html>

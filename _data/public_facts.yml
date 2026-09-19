@@ -55,14 +55,15 @@ products:
   hack2_studio:
     name: "HackⅡ Studio"
     aliases: ["ハックツ・スタジオ", "Hack2 Studio", "AirReach Studio"]
-    status: "ブラウザ内実行OS（Overview司令塔）。分析→キーワード→施策→ZIP下書きまでを1画面で進める。"
-    public_definition: "URL・目的・対策キーワード件数を入力すると、サイト理解・キーワード選定・AI向け質問・Gap・優先施策・実装パッケージ（ZIP）までを一連のジョブとして進める実行画面。市場検索需要は推定、GSC Impressionsは実測として分離する。公開や順位・引用・売上を保証しない。GitHub PR・本番Deployは未提供。"
+    status: "ブラウザ内実行OS（Overview司令塔）。分析→キーワード→施策→ZIP／下書きPRまで。"
+    public_definition: "URL・目的・対策キーワード件数を入力すると、サイト理解・キーワード選定・AI向け質問・Gap・優先施策・実装パッケージ（ZIP）までを一連のジョブとして進める実行画面。市場検索需要は推定が既定で、Keyword Planner CSV取込時のみ公式ボリュームを行単位で上書き表示する。GSC ImpressionsとHackⅡ言及・引用は実測として分離する。公開や順位・引用・売上を保証しない。GitHubへの下書きPRはユーザーPATと人間承認前提。本番自動Deployはしない。"
     limitations:
       - "生成ファイルは下書きであり自動公開しない"
-      - "市場の検索ボリュームは推定モデルであり、Keyword Planner等の公式数値ではない"
+      - "市場の検索ボリュームは推定が既定。Keyword Planner CSV取込時のみ当該行を公式ボリュームとして扱う"
       - "GSC Impressionsと市場需要を同一の「検索回数」として混ぜない"
-      - "GitHub PR自動作成・本番自動Deployは未提供（人間承認前提の将来機能）"
-      - "HackⅡライブ測定・競合SERP自動取得は未接続時は推定・手動取込に留める"
+      - "GitHub PRは下書き作成まで。マージと本番Deployは人間が行う（自動Deployなし）"
+      - "HackⅡライブAPI未接続時はJSON手動取込。競合SERP自動取得は未接続時は推定・手動に留める"
+      - "GitHub Personal Access TokenはブラウザのsessionStorageにのみ保持し、リポジトリへ保存しない"
   hack2_platform:
     name: "HackⅡ Platform"
     aliases: ["ハックツ・プラットフォーム", "Hack2 Platform", "AirReach Platform"]

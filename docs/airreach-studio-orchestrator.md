@@ -51,6 +51,22 @@ Keep the same Overview flow. Additions:
 - Diagnose uses `allowProxy` from the consent checkbox; score shows Observed vs Estimated
 - Service name field drives keyword generation (falls back to page H1 / title)
 
+
+
+## Phase 2 (human-approved handoff)
+
+Same Overview flow. Additions that stay browser-local unless infra is connected:
+
+1. **Keyword Planner CSV** — Official monthly volume on matching rows (`volume_source: Official`). Unmatched rows stay Estimated.
+2. **HackⅡ measurement JSON** — mention / citation rates on keyword rows (Observed). Not mixed into acquisition score.
+3. **GitHub draft PR** — user PAT in `sessionStorage` only; creates a **draft** PR from the ZIP files. No auto-merge.
+4. **Publish checklist** — validation UI only. **No production auto-deploy.**
+5. **Optional** `/api/google/gsc` sync from Expert View when Vercel Google OAuth is configured; otherwise CSV remains the path.
+
+```text
+deployment_run: { type: github_draft_pr, status: awaiting_human_review, auto_deploy: false }
+```
+
 ## Browser data model (local)
 
 - `analysis_job`: id, status, keyword_limit, locale, goal, url, steps[], result
@@ -86,6 +102,7 @@ Rules baked into AGENT_PROMPT:
 ## Related code
 
 - `assets/js/airreach-orchestrator.js` — job state machine + UI bind for Overview
+- `assets/js/airreach-orch-phase2.js` — Planner CSV, HackⅡ JSON, draft PR, publish checklist
 - `assets/js/airreach-studio.js` — Expert panels + package helpers
 - `airreach/studio/index.html` — Overview command center
 

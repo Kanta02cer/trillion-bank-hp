@@ -379,10 +379,12 @@
       return {
         priority: k.priority,
         keyword: k.keyword,
-        volume_estimated: k.volume,
+        volume: k.volume,
         volume_source: k.volume_source,
         gsc_impressions: k.gsc_impressions == null ? '' : k.gsc_impressions,
         gsc_clicks: k.gsc_clicks == null ? '' : k.gsc_clicks,
+        ai_mention_rate: k.ai_mention_rate == null ? '' : k.ai_mention_rate,
+        ai_citation_rate: k.ai_citation_rate == null ? '' : k.ai_citation_rate,
         intent: k.intent,
         cluster: k.cluster,
         gap: k.gap,
@@ -419,9 +421,11 @@
       service: service,
       keyword_count: (job.keywords || []).length,
       evidence: {
-        market_demand: 'Estimated',
+        market_demand: (job.keywords || []).some(function (k) { return k.volume_source === 'Official'; }) ? 'Official (partial) + Estimated' : 'Estimated',
         acquisition_score: job.diagnose_source === 'Observed' ? 'Observed' : 'Estimated',
-        gsc: gscKeys ? 'Official (partial)' : 'Unavailable'
+        gsc: gscKeys ? 'Official (partial)' : 'Unavailable',
+        hack2: job.hack2_imported ? 'Observed (imported JSON)' : 'Unavailable',
+        deployment: (job.deployment_run && job.deployment_run.pr_url) ? 'Draft PR awaiting human review' : 'ZIP only'
       },
       conclusion: job.conclusion || '',
       compression: c
@@ -497,7 +501,7 @@
       'README.md': readme,
       'MANIFEST.json': JSON.stringify(manifest, null, 2),
       'AGENT_PROMPT.md': agent,
-      'strategy/keywords.csv': toCsv(kwRows, ['priority', 'keyword', 'volume_estimated', 'volume_source', 'gsc_impressions', 'gsc_clicks', 'intent', 'cluster', 'gap', 'action', 'seed_source']),
+      'strategy/keywords.csv': toCsv(kwRows, ['priority', 'keyword', 'volume', 'volume_source', 'gsc_impressions', 'gsc_clicks', 'ai_mention_rate', 'ai_citation_rate', 'intent', 'cluster', 'gap', 'action', 'seed_source']),
       'strategy/prompts.csv': toCsv(promptRows, ['keyword', 'prompt', 'intent', 'commercial_score']),
       'strategy/actions.csv': toCsv(actionRows, ['type', 'count', 'note']),
       'schema/organization.jsonld': JSON.stringify(org, null, 2),
@@ -860,15 +864,30 @@
     var list = filteredKeywords(job);
     var shown = list.slice(0, uiState.shown);
     body.innerHTML = shown.map(function (k) {
-      var volTip = '市場需要の推定です。GSCの表示回数ではありません。';
+      var official = k.volume_source === 'Official';
+      var volTip = official
+        ? 'Keyword Planner等の公式ボリュームです。GSC表示回数ではありません。'
+        : '市場需要の推定です。GSCの表示回数ではありません。';
+      var volBadge = official
+        ? ' <span class="orch-badge-off" data-tip="公式ボリューム">公式</span>'
+        : ' <span class="orch-badge-est" data-tip="推定ボリューム">推定</span>';
       var gscCell = k.gsc_impressions != null
         ? '<span class="orch-badge-off" data-tip="Search ConsoleのImpressions（実測）">' + Number(k.gsc_impressions).toLocaleString('ja-JP') + '</span>'
         : '—';
+      var seed = '';
+      if (k.seed_source === 'GSC') seed = ' <span class="orch-seed" data-tip="GSCクエリから採用">GSC</span>';
+      if (k.seed_source === 'KeywordPlanner') seed = ' <span class="orch-seed" data-tip="Keyword Plannerから採用">KP</span>';
+      var aiCell = (k.ai_mention_rate != null || k.ai_citation_rate != null)
+        ? ('<span data-tip="HackⅡ実測の言及率 / 引用率">' +
+           (k.ai_mention_rate != null ? k.ai_mention_rate + '%' : '—') + ' / ' +
+           (k.ai_citation_rate != null ? k.ai_citation_rate + '%' : '—') + '</span>')
+        : '—';
       return '<tr>' +
         '<td><span class="orch-prio">' + esc(k.priority || 'P2') + '</span></td>' +
-        '<td>' + esc(k.keyword) + (k.seed_source === 'GSC' ? ' <span class="orch-seed" data-tip="GSCクエリから採用">実測種</span>' : '') + '</td>' +
-        '<td><span data-tip="' + esc(volTip) + '">' + Number(k.volume).toLocaleString('ja-JP') + '</span></td>' +
+        '<td>' + esc(k.keyword) + seed + '</td>' +
+        '<td><span data-tip="' + esc(volTip) + '">' + Number(k.volume).toLocaleString('ja-JP') + '</span>' + volBadge + '</td>' +
         '<td>' + gscCell + '</td>' +
+        '<td>' + aiCell + '</td>' +
         '<td>' + esc(k.strength) + '</td>' +
         '<td>' + (k.prompt_count || (k.prompts && k.prompts.length) || 0) + '</td>' +
         '<td>' + esc(k.gap) + '</td>' +
@@ -895,7 +914,16 @@
     wrap.hidden = false;
     var h = job.headline4 || {};
     if (q('orch-n-kw')) q('orch-n-kw').textContent = String(h.keywords || 0);
-    if (q('orch-n-demand')) q('orch-n-demand').textContent = '約 ' + Number(h.demand || 0).toLocaleString('ja-JP');
+    if (q('orch-n-demand')) {
+      q('orch-n-demand').textContent = '約 ' + Number(h.demand || 0).toLocaleString('ja-JP');
+      var dUnit = q('orch-n-demand').parentElement && q('orch-n-demand').parentElement.querySelector('.unit');
+      var hasOfficialVol = (job.keywords || []).some(function (k) { return k.volume_source === 'Official'; });
+      if (dUnit) {
+        dUnit.innerHTML = hasOfficialVol
+          ? '回 <span class="orch-badge-off" data-tip="一部キーワードはKeyword Planner公式ボリューム">公式混在</span>'
+          : '回 <span class="orch-badge-est">推定</span>';
+      }
+    }
     if (q('orch-n-score')) {
       var scoreLabel = String(h.score || 0);
       q('orch-n-score').textContent = scoreLabel;
@@ -1174,12 +1202,28 @@
     }
   }
 
+  function refreshJobArtifacts(job) {
+    if (!job) return job;
+    job.totalDemand = (job.keywords || []).reduce(function (s, k) { return s + (Number(k.volume) || 0); }, 0);
+    if (job.headline4) {
+      job.headline4.keywords = (job.keywords || []).length;
+      job.headline4.demand = job.totalDemand;
+      if (job.compression) job.headline4.implSites = job.compression.implSites;
+    }
+    job.files = buildPackageFiles(job);
+    persistJob(job);
+    return job;
+  }
+
   window.AirReachOrchestrator = {
     runJob: runJob,
     buildPackageFiles: buildPackageFiles,
     downloadZip: downloadZip,
     importGscRows: importGscRows,
     reattachGscToJob: reattachGscToJob,
+    refreshJobArtifacts: refreshJobArtifacts,
+    renderResult: renderResult,
+    parseCsv: parseCsv,
     STEPS: STEPS
   };
 
