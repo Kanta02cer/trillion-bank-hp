@@ -142,3 +142,15 @@
 }
 
 .orch-gsc-note{font-size:1.05rem;color:#1e293b;font-weight:700;margin:0 0 12px;line-height:1.5}
+
+.orch-gsc-status{margin:8px 0 0;font-size:1.02rem;font-weight:700;color:#334155}
+.orch-gsc-status.is-ok{color:#047857}
+.orch-gsc-status.is-warn{color:#b45309}
+.orch-kw-toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center;margin:0 0 14px}
+.orch-kw-filters{display:flex;flex-wrap:wrap;gap:8px}
+.orch-filter{border:2px solid #cbd5e1;background:#fff;color:#334155;border-radius:10px;padding:8px 12px;font-weight:800;font-size:1rem;cursor:pointer}
+.orch-filter.is-on{border-color:#2563eb;background:#eff6ff;color:#1d4ed8}
+.orch-prio{display:inline-block;min-width:2.4em;font-weight:800;color:#1d4ed8}
+.orch-seed{display:inline-block;margin-left:6px;font-size:.9rem;font-weight:800;color:#047857;border:1.5px solid #86efac;border-radius:6px;padding:1px 6px;background:#ecfdf5}
+.orch-kw-count{margin:10px 0 0;font-size:1.02rem;font-weight:700;color:#475569}
+#orch-gsc-csv{display:block;margin-top:6px;max-width:100%}

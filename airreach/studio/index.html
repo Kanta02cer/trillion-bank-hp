@@ -32,6 +32,10 @@ robots: "noindex, follow"
           <input class="ars-input" id="orch-url" type="url" inputmode="url" placeholder="https://example.com/" autocomplete="url">
         </div>
         <div class="ars-field">
+          <label for="orch-service"><span data-tip="キーワード生成の核になるサービス名・商品名。空欄なら診断結果やドメインから推定します。">サービス名</span></label>
+          <input class="ars-input" id="orch-service" type="text" placeholder="例: AI検索対策" autocomplete="organization-title">
+        </div>
+        <div class="ars-field">
           <label for="orch-goal"><span data-tip="この分析で増やしたい成果">目標</span></label>
           <select class="ars-select" id="orch-goal">
             <option value="問い合わせを増やす">問い合わせを増やす</option>
@@ -55,6 +59,11 @@ robots: "noindex, follow"
             <option value="大阪">大阪</option>
             <option value="指定">指定（URLから推定）</option>
           </select>
+        </div>
+        <div class="ars-field">
+          <label for="orch-gsc-csv"><span data-tip="Search ConsoleのパフォーマンスCSV。市場需要（推定）とは別に、実測Impressionsをキーワードへ紐づけます。">GSC CSV（任意・実測）</span></label>
+          <input id="orch-gsc-csv" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values">
+          <p id="orch-gsc-status" class="orch-gsc-status" hidden></p>
         </div>
         <label class="ars-consent-row">
           <input id="orch-proxy" type="checkbox">
@@ -102,6 +111,19 @@ robots: "noindex, follow"
       <div class="ars-card">
         <h3 data-tip="ユーザーが見る中心の表です。需要は推定、GSCがある行だけ実測を併記します。">対策キーワード</h3>
         <p id="orch-gsc-note" class="orch-gsc-note" hidden></p>
+        <div class="orch-kw-toolbar">
+          <div class="orch-kw-filters" role="group" aria-label="優先度フィルタ">
+            <button type="button" class="orch-filter is-on" data-orch-filter="all">すべて</button>
+            <button type="button" class="orch-filter" data-orch-filter="P0">P0</button>
+            <button type="button" class="orch-filter" data-orch-filter="P1">P1</button>
+            <button type="button" class="orch-filter" data-orch-filter="P2">P2</button>
+            <button type="button" class="orch-filter" data-orch-filter="gsc">GSCあり</button>
+          </div>
+          <div class="ars-row">
+            <button type="button" class="ars-btn ars-btn-secondary" id="orch-kw-csv" data-tip="対策キーワード表をCSVで書き出します。">キーワードCSV</button>
+            <button type="button" class="ars-btn ars-btn-secondary" id="orch-kw-more" hidden>さらに表示</button>
+          </div>
+        </div>
         <div class="ars-table-wrap">
           <table class="ars-table orch-kw-table">
             <thead>
@@ -109,6 +131,7 @@ robots: "noindex, follow"
                 <th>優先</th>
                 <th>キーワード</th>
                 <th>月間需要</th>
+                <th>GSC</th>
                 <th>今の状態</th>
                 <th>AI質問</th>
                 <th>競合との差</th>
@@ -118,6 +141,7 @@ robots: "noindex, follow"
             <tbody id="orch-kw-body"></tbody>
           </table>
         </div>
+        <p id="orch-kw-count" class="orch-kw-count" hidden></p>
       </div>
 
       <div class="ars-card">

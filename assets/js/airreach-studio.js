@@ -93,6 +93,7 @@ load();document.addEventListener('DOMContentLoaded',function(){fillProfile();bin
 
 window.AirReachStudio={
   getState:function(){return state},
+  importGscRows:function(rows){mapGsc(rows);save();return state.measurements},
   setProfile:function(p){state.profile=Object.assign({},state.profile,p||{});fillProfile();save()},
   seedKeywords:seedKeywords,
   generateFiles:generateFiles,

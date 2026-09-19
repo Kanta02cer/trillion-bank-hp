@@ -39,6 +39,18 @@ URL + goal + kwLimit + region
 
 GitHub PR, Keyword Planner, live HackⅡ, and production deploy are **Phase 2+** (UI may show disabled controls).
 
+## Phase 1.5 (usability / real data)
+
+Keep the same Overview flow. Additions:
+
+- Optional **GSC Performance CSV** on Overview (Official impressions; never mixed into market demand)
+- Soft-match GSC queries onto keyword rows; high-impression queries become keyword seeds
+- Prefill URL / service / goal from `?url=` query, onboard survey, diagnose handoff, or last Studio profile
+- Restore last completed job from `localStorage`
+- Keyword table: priority filter, GSC column, show-more, CSV export
+- Diagnose uses `allowProxy` from the consent checkbox; score shows Observed vs Estimated
+- Service name field drives keyword generation (falls back to page H1 / title)
+
 ## Browser data model (local)
 
 - `analysis_job`: id, status, keyword_limit, locale, goal, url, steps[], result
