@@ -1,7 +1,7 @@
 /**
  * AirReach Sales View — industry-aware 4-number engine.
  * Modes (internal): generic_search | branded_search
- * User labels: 集客を調べる | 見え方を調べる
+ * User labels: 新しいお客さん向け | 名前で調べられたとき
  * Evidence: 実測 / 推定 / 参考予測 / ユーザー入力 / 診断
  */
 (function () {
@@ -34,7 +34,7 @@
   function estimateSearchVolume(keyword, mode) {
     var k = String(keyword || '').trim();
     if (!k) {
-      return { value: null, evidenceClass: 'Estimated', label: 'キーワード未入力', note: 'キーワードを入れると推定需要を出します。' };
+      return { value: null, evidenceClass: 'Estimated', label: 'お客さんの言葉が未入力', note: 'お客さんが使いそうな言葉を入れると、探している人の目安が出ます。' };
     }
     var h = 0;
     for (var i = 0; i < k.length; i++) h = ((h << 5) - h) + k.charCodeAt(i);
@@ -47,7 +47,7 @@
     return {
       value: base,
       evidenceClass: 'Estimated',
-      label: '推定月間検索需要',
+      label: '探している人の目安（月）',
       note: '公開の需要推定モデル（キーワード特徴から算出）。公式Search Console実数ではありません。',
       relatedQuestions: Math.max(40, Math.round(base * 0.08)),
       commercialQuestions: Math.max(8, Math.round(base * 0.012))
@@ -91,7 +91,7 @@
       multiplierLow: multLow,
       multiplierHigh: multHigh,
       evidenceClass: 'Inferred',
-      label: '改善後の参考レンジ',
+      label: '直したあとの目安',
       note: '準備度改善の仮定レンジ。成果・順位・掲載を保証しません。'
     };
   }
@@ -557,7 +557,7 @@
         {
           label: '推定需要 V',
           formula: 'hash(keyword) → base ∈ [800,18800]（指名検索は [200,4700]）→ 語特徴で係数補正',
-          value: volVal != null ? ('V = ' + cnt(volVal) + ' 回/月') : 'キーワード未入力のため未算出',
+          value: volVal != null ? ('V = ' + cnt(volVal) + ' 回/月') : 'お客さんの言葉未入力のため未算出',
           note: 'evidence = ' + (volume.evidenceClass || 'Estimated'),
           evidence: volume.evidenceClass || 'Estimated'
         },
@@ -672,7 +672,7 @@
       { label: 'URL診断あり', formula: '+18', value: confOpts.hasDiagnose ? '+18' : '0', on: !!confOpts.hasDiagnose },
       { label: 'GSC実数あり', formula: '+16', value: confOpts.hasGsc ? '+16' : '0', on: !!confOpts.hasGsc },
       { label: 'GA4実数あり', formula: '+12', value: confOpts.hasGa4 ? '+12' : '0', on: !!confOpts.hasGa4 },
-      { label: 'キーワード入力', formula: '+6', value: confOpts.hasKeyword ? '+6' : '0', on: !!confOpts.hasKeyword },
+      { label: 'お客さんの言葉入力', formula: '+6', value: confOpts.hasKeyword ? '+6' : '0', on: !!confOpts.hasKeyword },
       { label: '事業数字入力', formula: '+6', value: confOpts.hasBusinessInputs ? '+6' : '0', on: !!confOpts.hasBusinessInputs },
       { label: '指名×記事URL', formula: '+4（branded時）', value: (confOpts.mode === 'branded_search' && confOpts.hasMediaUrl) ? '+4' : '0', on: !!(confOpts.mode === 'branded_search' && confOpts.hasMediaUrl) },
       { label: '業種推定補正', formula: 'round((industryConfidence−50)/10)', value: confOpts.industryConfidence != null ? String(Math.round((confOpts.industryConfidence - 50) / 10)) : '0', on: confOpts.industryConfidence != null }
@@ -728,7 +728,7 @@
     var industryId = opts.industryId || 'other';
     var industryDetect = opts.industryDetect || null;
     var profile = (window.AirReachIndustry && window.AirReachIndustry.getIndustry(industryId))
-      || { id: 'other', label: 'その他', display_label: '問い合わせ', demand_label: '探している人', now_label: '今の選ばれやすさ', after_label: '改善後の参考', outcome_label: '問い合わせ', demand_meaning: '', now_meaning: '', after_meaning: '', outcome_meaning: '', hero_generic: '診断結果', hero_branded: '診断結果', cta_generic: 'まず何を直すか見る', cta_branded: 'まず何を直すか見る', impact_current_label: 'いま' };
+      || { id: 'other', label: 'その他', display_label: '問い合わせ', demand_label: 'この言葉で探している人', now_label: '今、選ばれそうな度合い', after_label: '直したあとの目安', outcome_label: '問い合わせ', demand_meaning: '', now_meaning: '', after_meaning: '', outcome_meaning: '', hero_generic: '診断結果', hero_branded: '診断結果', cta_generic: 'まず何を直すか見る', cta_branded: 'まず何を直すか見る', impact_current_label: 'いま' };
 
     var baseline = (window.AirReachHandoff && window.AirReachHandoff.loadOfficialBaseline)
       ? window.AirReachHandoff.loadOfficialBaseline()
@@ -786,12 +786,12 @@
       headline4 = [
         {
           id: 'demand',
-          label: profile.demand_label,
+          label: keyword ? ('「' + keyword + '」で探している人') : profile.demand_label,
           value: volume.value != null ? ('約 ' + cnt(volume.value)) : '—',
           unit: '回 / 月',
           badge: volume.evidenceClass,
           meaning: profile.demand_meaning,
-          sub: keyword ? ('「' + keyword + '」') : '会社名・サービス名を入力'
+          sub: keyword ? ('「' + keyword + '」') : '調べられるときの名前を入力'
         },
         {
           id: 'now',
@@ -804,12 +804,12 @@
         },
         {
           id: 'cite_now',
-          label: '現在の第三者記事参照',
+          label: 'いま記事から見えている割合',
           value: String(citeNow),
           unit: '%',
           badge: mediaUrl ? 'Observed' : 'Estimated',
-          meaning: mediaUrl ? '指定した記事が参照された割合の目安' : '第三者記事全体の参照目安（記事URL未指定）',
-          sub: mediaUrl ? '指定記事あり' : '記事URLを入れると指定記事の参照に切り替わります'
+          meaning: mediaUrl ? '指定した記事が答えの中で使われた割合の目安' : '記事全体が使われている割合の目安（記事URL未指定）',
+          sub: mediaUrl ? '指定した記事あり' : '記事URLを入れると、その記事の使われ方に切り替わります'
         },
         {
           id: 'cite_after',
@@ -818,7 +818,7 @@
           unit: '',
           badge: 'Inferred',
           meaning: profile.outcome_meaning,
-          sub: '必ず引用される保証はありません'
+          sub: '必ず使われる保証はありません'
         }
       ];
       heroTitle = profile.hero_branded;
@@ -826,12 +826,12 @@
       headline4 = [
         {
           id: 'demand',
-          label: profile.demand_label,
+          label: keyword ? ('「' + keyword + '」で探している人') : profile.demand_label,
           value: volume.value != null ? ('約 ' + cnt(volume.value)) : '—',
           unit: '回 / 月',
           badge: volume.evidenceClass,
           meaning: profile.demand_meaning,
-          sub: keyword ? ('「' + keyword + '」周辺') : '検索テーマを入力'
+          sub: keyword ? ('「' + keyword + '」') : 'お客さんが使いそうな言葉を入力'
         },
         {
           id: 'now',
@@ -870,7 +870,7 @@
 
     return {
       mode: mode,
-      modeLabel: mode === 'branded_search' ? '見え方を調べる' : '集客を調べる',
+      modeLabel: mode === 'branded_search' ? '名前で調べられたとき' : '新しいお客さん向け',
       industryId: industryId,
       industryLabel: profile.label,
       industryDetect: industryDetect,
@@ -908,7 +908,7 @@
       cta: { label: primaryCta, hash: ctaHash },
       actionsCta: { label: '最優先の対策をHackⅡ Studioで進める', href: '/airreach/studio/' },
       disclaimer: '表示は参考シミュレーションです。検索順位・AI掲載・予約・問い合わせ・売上を保証しません。',
-      steps: ['現在地', '改善後', '最優先の対策']
+      steps: ['いま', '直したあと', 'やること']
     };
   }
 
