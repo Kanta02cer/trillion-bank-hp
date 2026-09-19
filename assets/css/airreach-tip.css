@@ -1,0 +1,55 @@
+/* Shared, keyboard-accessible glossary tip for AirReach surfaces. */
+.ars-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-inline-start: .2rem;
+  border: 1px solid #9db0c8;
+  border-radius: 999px;
+  background: #fff;
+  color: #244a7c;
+  font: 800 .78rem/1 system-ui, sans-serif;
+  cursor: help;
+  vertical-align: middle;
+}
+
+.ars-tip::after {
+  content: attr(aria-label);
+  position: absolute;
+  z-index: 30;
+  inset-block-start: calc(100% + .55rem);
+  inset-inline-start: 50%;
+  width: min(19rem, 78vw);
+  padding: .72rem .8rem;
+  border: 1px solid #cbd8e8;
+  border-radius: .65rem;
+  background: #10213a;
+  color: #fff;
+  font: 600 .82rem/1.55 system-ui, sans-serif;
+  letter-spacing: 0;
+  text-align: start;
+  white-space: normal;
+  box-shadow: 0 12px 32px rgba(15, 36, 68, .2);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -.2rem);
+  transition: opacity .15s ease, transform .15s ease;
+}
+
+.ars-tip:hover::after,
+.ars-tip:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.ars-tip:focus-visible {
+  outline: 3px solid #155eef;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ars-tip::after { transition: none; }
+}

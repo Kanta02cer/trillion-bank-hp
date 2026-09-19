@@ -261,6 +261,13 @@
     var baseline = (window.AirReachHandoff && window.AirReachHandoff.loadOfficialBaseline)
       ? window.AirReachHandoff.loadOfficialBaseline()
       : null;
+    var baselineHandoff = (window.AirReachHandoff && window.AirReachHandoff.loadDiagnoseHandoff)
+      ? window.AirReachHandoff.loadDiagnoseHandoff()
+      : null;
+    if (!baselineHandoff || !window.AirReachHandoff.baselineMatchesHandoff ||
+        !window.AirReachHandoff.baselineMatchesHandoff(baseline, baselineHandoff)) {
+      baseline = null;
+    }
 
     if (baseline && baseline.ga4 && baseline.ga4.monthlySessions > 0 && !inputs.monthlyVisitors) {
       inputs.monthlyVisitors = baseline.ga4.monthlySessions;
