@@ -1,0 +1,67 @@
+/* AirReach shared tip: short labels + large hover/focus detail (no small print) */
+.ar-tip{
+  position:relative;
+  display:inline;
+  cursor:help;
+  border-bottom:2px dotted #2563eb;
+  color:inherit;
+  font:inherit;
+  font-weight:inherit;
+  background:transparent;
+  padding:0;
+  margin:0;
+  text-align:inherit;
+  line-height:inherit;
+  max-width:100%;
+}
+button.ar-tip,a.ar-tip{border-left:0;border-right:0;border-top:0;border-radius:0}
+.ar-tip-bubble{
+  position:absolute;
+  z-index:120;
+  left:0;
+  bottom:calc(100% + 12px);
+  width:min(380px,calc(100vw - 28px));
+  box-sizing:border-box;
+  padding:16px 18px;
+  border:2px solid #2563eb;
+  border-radius:12px;
+  background:#fff;
+  color:#0f172a;
+  font-size:1.08rem;
+  font-weight:600;
+  line-height:1.6;
+  letter-spacing:0;
+  text-transform:none;
+  white-space:normal;
+  text-align:left;
+  box-shadow:0 14px 36px rgba(15,23,42,.14);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transform:translateY(6px);
+}
+.ar-tip-bubble::after{
+  content:"";
+  position:absolute;
+  left:18px;
+  top:100%;
+  border:8px solid transparent;
+  border-top-color:#2563eb;
+}
+.ar-tip.is-on .ar-tip-bubble,
+.ar-tip:hover .ar-tip-bubble,
+.ar-tip:focus .ar-tip-bubble,
+.ar-tip:focus-within .ar-tip-bubble{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transform:translateY(0);
+}
+.ar-tip--block{display:inline-block;max-width:100%}
+@media (hover:none){
+  .ar-tip:hover .ar-tip-bubble{opacity:0;visibility:hidden}
+  .ar-tip.is-on .ar-tip-bubble{opacity:1;visibility:visible;pointer-events:auto}
+}
+@media (prefers-reduced-motion:reduce){
+  .ar-tip-bubble{transform:none}
+}

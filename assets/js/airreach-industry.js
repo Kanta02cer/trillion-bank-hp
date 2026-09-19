@@ -28,7 +28,7 @@
       actions: [
         { slot: 'NOW', title: 'お店情報を揃える', action: '営業時間・場所・メニュー・特徴などを、検索やAIが理解しやすい形にする', cta: '作成する' },
         { slot: '2W', title: 'よく聞かれる質問を追加する', action: '予約・価格・席・アクセス・利用シーンなどへの答えを公式に置く', cta: '作成する' },
-        { slot: 'PARTNER', title: '選ばれる理由を明確にする', action: '近隣店との違いや「誰に向いている店か」を分かりやすくする。継続測定はTrillion Bankへ', cta: '任せる' }
+        { slot: 'PARTNER', title: 'HackⅡ Teamsに相談する', action: '近隣店との違いの打ち出しと継続改善を、コンサルティングとして任せる', cta: '相談する' }
       ],
       cta_generic: 'まず何を直すか見る',
       cta_branded: 'まず何を直すか見る'
@@ -55,7 +55,7 @@
       actions: [
         { slot: 'NOW', title: 'よくある質問を追加する', action: '料金・ダウンタイム・適応・予約方法を公式FAQにまとめる', cta: '作成する' },
         { slot: '2W', title: '比較されやすいページを整える', action: '施術の違い・向いている人を1ページで説明する', cta: '作成する' },
-        { slot: 'PARTNER', title: '継続測定する', action: '競合クリニックとの差をHackⅡで測り、優先順位を更新する', cta: '任せる' }
+        { slot: 'PARTNER', title: 'HackⅡ Teamsに相談する', action: '競合との差の測り方と優先順位を、コンサルティングとして一緒に決める', cta: '相談する' }
       ],
       cta_generic: 'まず何を直すか見る',
       cta_branded: 'まず何を直すか見る'
@@ -82,7 +82,7 @@
       actions: [
         { slot: 'NOW', title: 'サービス定義を冒頭で明確にする', action: '誰向けか・何ができるか・何をしないかを1画面で書く', cta: '作成する' },
         { slot: '2W', title: '比較・選び方ページを追加する', action: '導入前に比較される軸を公式ページで先回りする', cta: '作成する' },
-        { slot: 'PARTNER', title: '継続測定する', action: '競合Win/Lossと問い合わせ増をHackⅡで追う', cta: '任せる' }
+        { slot: 'PARTNER', title: 'HackⅡ Teamsに相談する', action: '競合との差と問い合わせ増を、伴走コンサルで追う', cta: '相談する' }
       ],
       cta_generic: 'まず何を直すか見る',
       cta_branded: 'まず何を直すか見る'
@@ -109,7 +109,7 @@
       actions: [
         { slot: 'NOW', title: '会社と記事の関係を明確にする', action: '指定記事と公式情報の相互参照・要点一致を整える', cta: '作成する' },
         { slot: '2W', title: 'よく聞かれるブランド質問に答える', action: '「とは／評判／料金／サービス内容」への公式回答を揃える', cta: '作成する' },
-        { slot: 'PARTNER', title: '記事参照を継続計測する', action: '複数AIで指定記事の参照有無をHackⅡで追跡する', cta: '任せる' }
+        { slot: 'PARTNER', title: 'HackⅡ Teamsに相談する', action: '指定記事の参照状況の設計と継続計測を、伴走で進める', cta: '相談する' }
       ],
       cta_generic: 'どの記事が使われているか見る',
       cta_branded: 'どの記事が使われているか見る'
@@ -136,7 +136,7 @@
       actions: [
         { slot: 'NOW', title: 'よく聞かれる質問を追加する', action: '購入・相談前の疑問を公式FAQにまとめる', cta: '作成する' },
         { slot: '2W', title: '比較されやすいページを整える', action: '選ぶ基準と向いている人を1ページで書く', cta: '作成する' },
-        { slot: 'PARTNER', title: '継続測定する', action: '測定と改善優先順位をTrillion Bankに任せる', cta: '任せる' }
+        { slot: 'PARTNER', title: 'HackⅡ Teamsに相談する', action: '測定と改善の優先順位を、コンサルティングとして一緒に進める', cta: '相談する' }
       ],
       cta_generic: 'まず何を直すか見る',
       cta_branded: 'まず何を直すか見る'
