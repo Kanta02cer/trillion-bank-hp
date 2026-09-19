@@ -34,9 +34,20 @@
       bubble.textContent = text;
       el.appendChild(bubble);
 
+      function placeBubble() {
+        var b = el.querySelector('.ar-tip-bubble');
+        if (!b) return;
+        b.classList.remove('is-below', 'is-end');
+        var rect = el.getBoundingClientRect();
+        var spaceAbove = rect.top;
+        var spaceBelow = window.innerHeight - rect.bottom;
+        if (spaceAbove < 140 && spaceBelow > spaceAbove) b.classList.add('is-below');
+        if (rect.left > window.innerWidth * 0.52) b.classList.add('is-end');
+      }
+      el.addEventListener('mouseenter', placeBubble);
+      el.addEventListener('focus', placeBubble);
       el.addEventListener('click', function (e) {
         if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-        // 選択・遷移ボタンはタップ動作を優先（説明は長押し相当の focus で表示）
         if (el.hasAttribute('data-industry') || el.hasAttribute('data-goal') || el.tagName === 'A' || el.type === 'submit') {
           return;
         }
@@ -45,7 +56,10 @@
         var self = e.currentTarget;
         var open = !self.classList.contains('is-on');
         document.querySelectorAll('.ar-tip.is-on').forEach(function (x) { x.classList.remove('is-on'); });
-        if (open) self.classList.add('is-on');
+        if (open) {
+          placeBubble();
+          self.classList.add('is-on');
+        }
       });
     }
   }
