@@ -6,6 +6,46 @@ theme: null
 timezone: Asia/Tokyo
 future: false
 
+
+  # AirReach tool / state URLs: do not compete with the product pillar /airreach/
+  - scope:
+      path: "airreach/result"
+    values:
+      robots: "noindex, follow"
+  - scope:
+      path: "airreach/sales"
+    values:
+      robots: "noindex, follow"
+  - scope:
+      path: "airreach/studio"
+    values:
+      robots: "noindex, follow"
+  - scope:
+      path: "airreach/platform"
+    values:
+      robots: "noindex, follow"
+  - scope:
+      path: "airreach/other"
+    values:
+      robots: "noindex, follow"
+  - scope:
+      path: "airreach/restaurant"
+    values:
+      robots: "noindex, follow"
+  - scope:
+      path: "airreach/clinic"
+    values:
+      robots: "noindex, follow"
+  - scope:
+      path: "airreach/b2b"
+    values:
+      robots: "noindex, follow"
+  - scope:
+      path: "airreach/media"
+    values:
+      robots: "noindex, follow"
+
+
 collections:
   news:
     output: true

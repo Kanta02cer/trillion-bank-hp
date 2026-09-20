@@ -1,6 +1,8 @@
 ---
-title: Pay per Crawl / AI Access Gateway | AIコンテンツ利用を制御・記録 | 株式会社トリリオンバンク
-tbdesc: Pay per Crawl / AI Access Gatewayは、AIクローラー・RAG・MCP事業者によるコンテンツ利用を制御・記録し、正規ライセンス・利用ログ・将来の請求へ接続するAIコンテンツ利用管理基盤。研究開発・PoC相談受付。
+title: Pay per Crawlとは？AIクローラーの利用記録・課金の仕組み｜Trillion Bank
+tbdesc: Pay per Crawlとは、AIクローラーがWebコンテンツを取得した事実を記録し、契約・価格条件に応じて利用料へつなげる考え方です。Trillion BankではAdctorの一機能として研究開発しています。
+page_summary: Pay per Crawlとは、AIクローラーがWebコンテンツを取得した事実を記録し、契約・価格条件に応じて利用料へつなげる考え方です。Trillion BankではAdctorの一機能として、Usage LedgerやEvidenceと連携する基盤を研究開発しています。
+ai_summary: Pay per CrawlはAIによるWeb情報利用を記録し対価へつなぐ仕組みの研究開発。法的拘束力の保証ではなく、契約・請求の根拠となる証跡を目指す。
 permalink: /trillionbank/business/pay-per-crawl/
 ---
 <!DOCTYPE html>
@@ -19,51 +21,51 @@ permalink: /trillionbank/business/pay-per-crawl/
   {
     "@context": "https://schema.org",
     "@type": "Service",
-    "name": "Adctor / Pay per Crawl / AI Access Gateway",
-    "provider": {
-      "@type": "Organization",
-      "name": "株式会社Trillion Bank"
-    },
-    "description": "AIクローラーによるコンテンツ利用を制御・記録する（研究開発・PoC相談受付）",
-    "serviceType": "AIコンテンツ利用管理"
+    "name": "Adctor / Pay per Crawl",
+    "provider": { "@type": "Organization", "name": "株式会社Trillion Bank" },
+    "description": "AIクローラー・AI Agentによるコンテンツアクセスの証跡記録と、契約・請求接続を目指す研究開発・PoC",
+    "serviceType": "AI情報利用管理"
   }
 ]
 </script>
 </head>
 <body>{% include tb-header.html %}
 <main id="main">
-<section class="phero"><div class="wrap"><div class="crumb"><a href="/">HOME</a> ／ <a href="/trillionbank/business/">事業概要</a> ／ Pay per Crawl</div><span class="badge poc">研究開発・PoC相談受付</span><br><span class="ey">AI CONTENT ACCESS INFRASTRUCTURE</span><h1>AIに読まれるだけで終わらせない</h1><p>AIクローラー・RAG・MCP事業者によるWebコンテンツへのアクセスを制御・記録し、正規ライセンス／利用ログ／月次請求／将来の収益分配へ接続する、AIコンテンツ利用管理基盤「Adctor（Pay per Crawl / AI Access Gateway）」の研究開発・実証を行っています。</p><div style="margin-top:28px"><a class="btn btn-primary" href="{{ site.data.contact.meeting_url }}" target="_blank" rel="noopener noreferrer" data-event="meeting_booking_click" data-service="ppc">PoC商談を予約する <span class="a">→</span></a></div></div></section>
-
-<section class="sec"><div class="wrap"><div class="khead"><span class="no">01 — CONCEPT</span><h2 class="rv">Allow / Licensed / Block / Log</h2></div>
-<div class="steps rv" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr))">
-  <div class="step"><div class="sn">01</div><h4>アクセス</h4><p>AIクローラー/RAG/MCPが到達</p></div>
-  <div class="step"><div class="sn">02</div><h4>判定</h4><p>Edge/Gatewayでポリシー判定</p></div>
-  <div class="step"><div class="sn">03</div><h4>許可</h4><p>契約済みは通過（200）</p></div>
-  <div class="step"><div class="sn">04</div><h4>制御</h4><p>未契約は402/403＋申請導線</p></div>
-  <div class="step"><div class="sn">05</div><h4>記録</h4><p>Usage Ledgerへ記録</p></div>
-  <div class="step"><div class="sn">06</div><h4>請求</h4><p>月額・従量で請求（構想）</p></div>
+<section class="phero"><div class="wrap">
+  <div class="crumb"><a href="/">HOME</a> ／ <a href="/trillionbank/business/">事業概要</a> ／ Pay per Crawl</div>
+  <span class="badge poc">研究開発・PoC相談受付</span>
+  {% include tb-page-summary.html %}
+  <span class="ey">AI USAGE ACCOUNTING · ADCTOR</span>
+  <h1>Pay per Crawlとは？AIによるWeb情報利用を記録し、対価へつなぐ仕組み</h1>
+  <p>Gatewayで直接証明できるのは基本的に「要求し、コンテンツを受け取った」までです。モデル学習や推論に使ったことまでの自動証明は対象外とし、契約・請求の根拠として使える証跡づくりを目指します。</p>
+  <div style="margin-top:28px"><a class="btn btn-primary" href="{{ site.data.contact.meeting_url }}" target="_blank" rel="noopener noreferrer" data-event="meeting_booking_click" data-service="ppc">PoC商談を予約する <span class="a">→</span></a></div>
+</div></section>
+<section class="sec"><div class="wrap"><div class="khead"><span class="no">01 — FLOW</span><h2 class="rv">証跡から請求までの流れ（構想）</h2></div>
+<div class="steps rv" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr))">
+  <div class="step"><div class="sn">01</div><h4>AI Agent</h4><p>取得要求</p></div>
+  <div class="step"><div class="sn">02</div><h4>取得</h4><p>Webコンテンツ</p></div>
+  <div class="step"><div class="sn">03</div><h4>Receipt</h4><p>利用レシート</p></div>
+  <div class="step"><div class="sn">04</div><h4>Evidence</h4><p>証跡保存</p></div>
+  <div class="step"><div class="sn">05</div><h4>License</h4><p>契約条件</p></div>
+  <div class="step"><div class="sn">06</div><h4>Pricing</h4><p>価格ルール</p></div>
+  <div class="step"><div class="sn">07</div><h4>Billing</h4><p>請求イベント</p></div>
+  <div class="step"><div class="sn">08</div><h4>Invoice</h4><p>請求書（構想）</p></div>
 </div></div></section>
-
 <section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">02 — SCOPE</span><h2 class="rv">初期スコープと将来構想</h2></div>
 <div class="pcards" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))">
-  <div class="card rv" style="padding:clamp(26px,3vw,38px)"><h3 style="font-weight:700;margin-bottom:12px">初期スコープ（PoC）</h3><p style="color:var(--muted);font-size:.9rem">1ドメイン／限定パス・リソース、APIキー・HMAC、200/402/403/429、Usage Event・Ledger、Pricing Rule、月次請求CSV、監査ログ、最小管理画面。</p></div>
-  <div class="card rv" style="padding:clamp(26px,3vw,38px)"><h3 style="font-weight:700;margin-bottom:12px">将来構想</h3><p style="color:var(--muted);font-size:.9rem">Pay per Citation、Pay per Use、MCP Tool Call課金、自動決済、自動収益分配、AIデータライセンス市場（いずれも構想段階）。</p></div>
+  <div class="card rv" style="padding:clamp(26px,3vw,38px)"><h3 style="font-weight:700;margin-bottom:12px">初期スコープ（PoC）</h3><p style="color:var(--muted);font-size:.9rem">1ドメイン／限定パス、APIキー・HMAC、200/402/403/429、Usage Event・Ledger、Pricing Rule、月次請求CSV、監査ログ、最小管理画面。</p></div>
+  <div class="card rv" style="padding:clamp(26px,3vw,38px)"><h3 style="font-weight:700;margin-bottom:12px">将来構想</h3><p style="color:var(--muted);font-size:.9rem"><a href="/trillionbank/business/pay-per-citation/">Pay per Citation</a>、Pay per Use、MCP Tool Call課金、自動決済、収益分配（いずれも構想段階）。</p></div>
 </div></div></section>
-
-<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">03 — FOR WHOM</span><h2 class="rv">対象</h2></div>
-<p class="lead rv">専門メディア、法務・税務・医療データ、比較サイト、会員制コンテンツ、業界データベース、レビューデータなど、AIに読まれる価値の高い情報をお持ちの事業者。</p></div></section>
-
 <section class="sec" style="padding-top:0"><div class="wrap">
 <div class="card rv" style="padding:clamp(28px,3.4vw,44px);background:var(--bg)">
   <h3 style="font-weight:700;margin-bottom:14px">明言しないこと</h3>
   <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;color:var(--muted);font-size:.9rem">
+    <li>・法的拘束力のある請求を現時点で保証しません</li>
     <li>・AI Botを100%識別できるとは表現しません</li>
-    <li>・AI企業から自動的に通行料を徴収できるとは断定しません</li>
-    <li>・Cloudflare Pay Per Crawlと完全互換とは表現しません</li>
+    <li>・学習・推論利用まで自動証明できるとは断定しません</li>
     <li>・導入すれば必ず収益化できるとは述べません</li>
-    <li>・SEOへの影響が一切ないとは述べません</li>
   </ul>
 </div>
-<div style="margin-top:36px"><a class="btn btn-primary" href="{{ site.data.contact.meeting_url }}" target="_blank" rel="noopener noreferrer" data-event="meeting_booking_click" data-service="ppc">Readiness診断・PoC商談を予約する <span class="a">→</span></a></div>
+<div style="margin-top:36px"><a class="btn btn-primary" href="{{ site.data.contact.meeting_url }}" target="_blank" rel="noopener noreferrer">Readiness診断・PoC商談を予約する <span class="a">→</span></a></div>
 </div></section>
 </main>{% include tb-footer.html %}</body></html>

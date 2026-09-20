@@ -18,8 +18,8 @@ company:
   website: "https://trillion-bank.jp/"
   bank_disclaimer: "株式会社Trillion Bankは銀行業を営む会社ではありません。"
 positioning:
-  short: "AI検索とAIエージェント時代の情報流通を、測定・証跡・運用へ変えるテクノロジー企業。"
-  long: "企業やブランドがAI回答でどのように説明・比較・引用されるかを測定し、正しい一次情報と改善判断へつなげる事業に取り組んでいます。"
+  short: "AI検索集客とAI情報利用管理に取り組むテクノロジー企業。"
+  long: "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。"
 products:
   hack2:
     name: "HackⅡ"

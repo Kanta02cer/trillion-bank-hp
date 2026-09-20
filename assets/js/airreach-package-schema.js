@@ -38,10 +38,102 @@
     'FAQ回答を人間が事実確認した',
     'JSON-LDが公開文面と一致する',
     'llms.txtのリンクが解決する',
-    'ステークホルダーが公開を承認した'
+    'ステークホルダーが公開を承認した',
+    'Entity Lock（ドメイン・組織・サービス一致）を通過した'
   ];
 
-  function validatePackageFiles(files) {
+  function hostOf(url) {
+    try {
+      var u = String(url || '').trim();
+      if (!u) return '';
+      if (u.indexOf('http') !== 0) u = 'https://' + u;
+      return new URL(u).hostname.replace(/^www\./, '').toLowerCase();
+    } catch (e) { return ''; }
+  }
+
+  function parseJsonMaybe(v) {
+    if (v == null) return null;
+    if (typeof v === 'object') return v;
+    try { return JSON.parse(String(v)); } catch (e) { return null; }
+  }
+
+  /**
+   * Entity Lock: DOMAIN → ORGANIZATION → SERVICE must agree.
+   * Blocks mixed-brand packages from being treated as publishable.
+   */
+  function validateEntityLock(files, opts) {
+    opts = opts || {};
+    var map = files || {};
+    var errors = [];
+    var warnings = [];
+    var manifest = parseJsonMaybe(map['MANIFEST.json']) || {};
+    var org = parseJsonMaybe(map['schema/organization.jsonld']) || {};
+    var service = parseJsonMaybe(map['schema/service.jsonld']) || {};
+    var targetHost = hostOf(opts.targetUrl || manifest.target_url || manifest.url || '');
+    var orgUrl = org.url || (org['@id'] || '');
+    var orgHost = hostOf(orgUrl);
+    var orgName = String(org.name || org.legalName || '').trim();
+    var serviceName = String(service.name || '').trim();
+    var serviceProvider = '';
+    if (service.provider) {
+      serviceProvider = typeof service.provider === 'string'
+        ? service.provider
+        : String(service.provider.name || '');
+    }
+
+    if (!targetHost) {
+      errors.push('Entity Lock: target URL / MANIFEST target_url が必要です');
+    }
+    if (!orgName) errors.push('Entity Lock: organization.name が空です');
+    if (targetHost && orgHost && targetHost !== orgHost) {
+      errors.push('Entity Lock: 対象ドメイン(' + targetHost + ')と organization.url(' + orgHost + ')が一致しません。公開不可・要確認');
+    }
+    if (serviceProvider && orgName && serviceProvider.indexOf(orgName) === -1 && orgName.indexOf(serviceProvider) === -1) {
+      warnings.push('Entity Lock: service.provider と organization.name が一致しない可能性');
+    }
+
+    var kwBody = String(map['strategy/keywords.csv'] || '');
+    var badKw = [];
+    kwBody.split(/\r?\n/).slice(1).forEach(function (line) {
+      if (!line.trim()) return;
+      var cells = line.split(',');
+      var kw = String(cells[1] || cells[0] || '').trim();
+      if (/^関連\s*\d+$/i.test(kw) || /^related\s*\d+$/i.test(kw)) badKw.push(kw);
+    });
+    if (badKw.length) {
+      errors.push('Entity Lock: 機械的キーワードは公開不可: ' + badKw.slice(0, 5).join(', '));
+    }
+
+    // Cross-brand residue: other known demo brands mixed into text
+    var blob = [
+      String(map['content/faq.md'] || ''),
+      String(map['public/llms.txt'] || ''),
+      String(map['README.md'] || ''),
+      JSON.stringify(org),
+      JSON.stringify(service)
+    ].join('\n');
+    var lockedBrand = orgName;
+    if (lockedBrand && /メディくる|CROSSONE|amasora|豊胸/i.test(blob)) {
+      var hits = [];
+      if (/メディくる/i.test(blob) && !/メディくる/i.test(lockedBrand)) hits.push('メディくる');
+      if (/CROSSONE/i.test(blob) && !/CROSSONE/i.test(lockedBrand)) hits.push('CROSSONE');
+      if (/amasora/i.test(blob) && !/amasora/i.test(lockedBrand)) hits.push('amasora');
+      if (hits.length) errors.push('Entity Lock: 別ブランド痕跡が混在: ' + hits.join(', ') + '。公開不可・要確認');
+    }
+
+    return {
+      ok: errors.length === 0,
+      publishable: errors.length === 0,
+      errors: errors,
+      warnings: warnings,
+      targetHost: targetHost,
+      orgHost: orgHost,
+      orgName: orgName,
+      serviceName: serviceName
+    };
+  }
+
+  function validatePackageFiles(files, opts) {
     var missing = [];
     var extra = [];
     var map = files || {};
@@ -69,11 +161,15 @@
     KEYWORD_CSV_COLUMNS.forEach(function (col) {
       if (kwHead.indexOf(col) === -1) errors.push('keywords.csv missing column: ' + col);
     });
+    var lock = validateEntityLock(map, opts || {});
+    lock.errors.forEach(function (e) { errors.push(e); });
     return {
       ok: errors.length === 0 && missing.length === 0,
       missing: missing,
       extra: extra,
-      errors: errors
+      errors: errors,
+      entityLock: lock,
+      publishable: errors.length === 0 && missing.length === 0 && lock.publishable
     };
   }
 
@@ -85,7 +181,8 @@
     PROMPT_CSV_COLUMNS: PROMPT_CSV_COLUMNS,
     ACTION_CSV_COLUMNS: ACTION_CSV_COLUMNS,
     VALIDATION_ITEMS: VALIDATION_ITEMS,
-    validatePackageFiles: validatePackageFiles
+    validatePackageFiles: validatePackageFiles,
+    validateEntityLock: validateEntityLock
   };
 
   root.AirReachPackageSchema = api;

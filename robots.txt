@@ -11,6 +11,10 @@ Disallow: /skill-collector/
 Disallow: /HackⅡ/
 Disallow: /ai-coupon-system/
 Disallow: /docs/
+Disallow: /airreach/result/
+Disallow: /airreach/sales/
+Disallow: /airreach/studio/
+Disallow: /airreach/platform/
 
 User-agent: OAI-SearchBot
 Allow: /

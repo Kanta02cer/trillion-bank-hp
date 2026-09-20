@@ -569,8 +569,9 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
   <section class="ar-hero">
     <div class="ar-wrap">
       <p class="ar-crumb"><a href="/">HOME</a> ／ AirReach</p>
-      <div class="ar-badge" data-tip="お店・会社の種類に合わせて、見るべき数字だけを出す無料診断です。">AirReach</div>
-      <h1 id="ar-hero-title">検索から、<em>あと何件</em>増やせるか。</h1>
+      {% include tb-page-summary.html %}
+      <div class="ar-badge" data-tip="URLを入れるだけで、見つかりやすさと最初に直すことを返す無料診断です。">AirReach</div>
+      <h1 id="ar-hero-title">{% if page.airreach_industry and page.airreach_industry != '' %}検索から、<em>あと何件</em>増やせるか。{% else %}URLを入れるだけ。AI検索・SEOの改善余地を30秒診断。{% endif %}</h1>
       <p class="ar-lead" id="ar-hero-lead" hidden></p>
 
       <div id="ar-summary" class="ar-summary" aria-live="polite">
