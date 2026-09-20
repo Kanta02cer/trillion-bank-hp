@@ -1,0 +1,57 @@
+---
+title: "AirReach Sales｜営業用診断履歴 - Trillion Bank"
+tbdesc: "営業マン向けの診断履歴（端末内）。新しいお客様の診断と案件確認。成果は保証しません。"
+keywords: "AirReach,Sales,営業,診断履歴,Trillion Bank"
+ai_summary: "AirReach Sales Modeの最小版。端末内の診断履歴から案件を再開する。"
+layout: default
+permalink: /airreach/sales/
+---
+<style>
+.ars{max-width:720px;margin:40px auto 80px;padding:0 20px;font-family:var(--sans,'Noto Sans JP',sans-serif);color:#0f172a}
+.ars h1{font-size:1.75rem;margin:0 0 8px}
+.ars .lead{color:#64748b;margin:0 0 20px}
+.ars .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 18px;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;text-decoration:none;border:0}
+.ars .btn-line{background:#fff;color:#0f172a;border:1px solid #e2e8f0}
+.ars .list{list-style:none;padding:0;margin:24px 0;display:grid;gap:10px}
+.ars .item{border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;background:#fff;display:grid;gap:4px}
+.ars .item a{color:#1d4ed8;font-weight:700;text-decoration:none}
+.ars .meta{font-size:.85rem;color:#64748b}
+.ars .empty{padding:24px;border:1px dashed #cbd5e1;border-radius:12px;color:#64748b}
+.ars .note{font-size:.85rem;color:#94a3b8;margin-top:24px}
+</style>
+<div class="ars">
+  <p style="font-size:.8rem;font-weight:700;color:#1d4ed8;margin:0 0 8px">AirReach SALES · P0</p>
+  <h1>営業用の診断履歴</h1>
+  <p class="lead">新しいお客様を診断し、この端末に残った案件を開き直します。ログインやサーバー保存は次フェーズです。</p>
+  <p>
+    <a class="btn" href="/airreach/?fresh=1">＋ 新しいお客様を診断</a>
+    <a class="btn btn-line" href="/airreach/">店舗向け診断トップ</a>
+  </p>
+  <h2 style="font-size:1.1rem;margin:28px 0 8px">最近の案件</h2>
+  <ul class="list" id="ars-list"></ul>
+  <p class="note">※ P0はブラウザ内（localStorage）保存です。端末が変わると見えません。成果・掲載は保証しません。</p>
+</div>
+<script src="{{ '/assets/js/airreach-scan-store.js' | relative_url }}"></script>
+<script>
+(function () {
+  var list = document.getElementById('ars-list');
+  if (!window.AirReachScanStore) {
+    list.innerHTML = '<li class="empty">履歴ストアを読み込めませんでした。</li>';
+    return;
+  }
+  var rows = AirReachScanStore.listScans();
+  if (!rows.length) {
+    list.innerHTML = '<li class="empty">まだ案件がありません。「新しいお客様を診断」から始めてください。</li>';
+    return;
+  }
+  var ind = { restaurant:'飲食店', clinic:'美容・クリニック', b2b:'会社向けサービス', media:'メディア・広報', other:'その他' };
+  list.innerHTML = rows.map(function (r) {
+    var href = AirReachScanStore.resultPath(r.id);
+    var when = (r.savedAt || '').slice(0, 16).replace('T', ' ');
+    var score = r.scoreOverall != null ? ('参考 ' + r.scoreOverall + '点') : '診断済み';
+    return '<li class="item"><a href="' + href + '">' + (r.displayName || r.url || r.id) + '</a>'
+      + '<div class="meta">' + (ind[r.industryId] || r.industryId || '') + ' · ' + score + ' · ' + when + '</div>'
+      + '<div class="meta">' + (r.url || '') + '</div></li>';
+  }).join('');
+})();
+</script>
