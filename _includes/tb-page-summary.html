@@ -1,0 +1,19 @@
+{% comment %}
+  Answer-first "ページの概要" block.
+  Prefer page.page_summary, then page.ai_summary, then page.tbdesc.
+{% endcomment %}
+{% assign _ps = page.page_summary | default: page.ai_summary | default: page.tbdesc %}
+{% if _ps and _ps != '' %}
+<section class="tb-page-summary" aria-labelledby="tb-page-summary-title">
+  <div class="tb-page-summary-inner">
+    <p class="tb-page-summary-label" id="tb-page-summary-title">ページの概要</p>
+    <p class="tb-page-summary-body">{{ _ps }}</p>
+  </div>
+</section>
+<style>
+.tb-page-summary{margin:0 0 clamp(20px,3vw,32px)}
+.tb-page-summary-inner{max-width:46em;padding:14px 16px;border-left:3px solid #2563eb;background:#f8fafc}
+.tb-page-summary-label{margin:0 0 6px;font-family:var(--mono,'Space Grotesk',ui-monospace,monospace);font-size:.65rem;letter-spacing:.14em;font-weight:700;color:#1d4ed8}
+.tb-page-summary-body{margin:0;font-size:clamp(.95rem,1.1vw,1.05rem);line-height:1.75;color:#0f172a;font-weight:600}
+</style>
+{% endif %}

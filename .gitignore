@@ -64,3 +64,4 @@ tools/dynamic-aio/data/
 # Social drafts may be committed selectively; ignore local secrets
 ops/social-publisher/.env
 ops/social-publisher/**/*.secret
+ops/crawler-observability/package-lock.json
