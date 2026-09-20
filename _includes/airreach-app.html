@@ -703,6 +703,8 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
               <a class="ar-btn ar-btn-line" href="/airreach/studio/" id="ar-cta-actions" data-tip="対策ファイルをディレクトリごと生成します。">直す材料を作る</a>
               <a class="ar-btn ar-btn-line" href="/airreach/platform/" data-tip="Googleの実数とつなぐ詳細分析です。">くわしい分析</a>
               <button type="button" class="ar-btn ar-btn-line" id="ar-google-connect">Googleと連携（実測）</button>
+              <a class="ar-btn ar-btn-line" id="ar-cta-sales-deal" href="/airreach/sales/" hidden>営業用に開く</a>
+              <a class="ar-btn ar-btn-line" id="ar-cta-sales-present" href="/airreach/sales/" hidden>商談モード</a>
             </div>
           </details>
           <p class="ar-note" id="ar-google-note" hidden></p>
@@ -1015,8 +1017,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function badgeClass(b) {
     if (!b) return '';
-    if (String(b).indexOf('Observed') >= 0 || b === 'Official' || b === '実測') return 'is-obs';
-    if (String(b).indexOf('Estimated') >= 0 || b === '推定') return 'is-est';
+    if (String(b).indexOf('Official') >= 0 || String(b).indexOf('Google実測') >= 0 || String(b).indexOf('Observed') >= 0 || String(b).indexOf('AirReach実測') >= 0 || b === '実測') return 'is-obs';
+    if (String(b).indexOf('Estimated') >= 0 || b === '推定' || String(b).indexOf('参考予測') >= 0) return 'is-est';
     if (String(b).indexOf('Inferred') >= 0 || String(b).indexOf('予測') >= 0) return 'is-inf';
     return 'is-user';
   }
@@ -1083,6 +1085,16 @@ document.addEventListener('DOMContentLoaded', function () {
           },
           source: prev.source || 'airreach_free'
         }));
+        var deal = $('ar-cta-sales-deal');
+        var present = $('ar-cta-sales-present');
+        if (deal && window.AirReachScanStore) {
+          deal.hidden = false;
+          deal.href = AirReachScanStore.dealPath(paramsScan);
+        }
+        if (present && window.AirReachScanStore) {
+          present.hidden = false;
+          present.href = AirReachScanStore.presentPath(paramsScan);
+        }
       }
     } catch (e) {}
 
@@ -1108,10 +1120,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     function evidenceTip(b) {
       var s = String(b || '');
-      if (s.indexOf('Official') >= 0 || s.indexOf('Observed') >= 0 || s.indexOf('実測') >= 0) {
-        return '公開ページや取込データから観測した値です。AI掲載率そのものではありません。';
+      if (s.indexOf('Official') >= 0 || s.indexOf('Google実測') >= 0) {
+        return 'Google側の実測値です（Search Console等）。AI掲載率そのものではありません。';
       }
-      if (s.indexOf('User') >= 0 || s.indexOf('入力') >= 0) return 'フォームに入れた値です。';
+      if (s.indexOf('Observed') >= 0 || s.indexOf('AirReach実測') >= 0 || s.indexOf('HackⅡ実測') >= 0 || s.indexOf('実測') >= 0) {
+        return 'AirReachが公開ページから観測した値です。AI掲載率そのものではありません。';
+      }
+      if (s.indexOf('User') >= 0 || s.indexOf('入力') >= 0 || s.indexOf('お客様') >= 0) return 'お客様が入力した値です。';
       if (s.indexOf('Estimated') >= 0 || s.indexOf('推定') >= 0) return 'お客さんの言葉などからの目安です。公式の検索回数そのものではありません。';
       return '仮定に基づく参考予測です。成果・順位・掲載を保証しません。';
     }

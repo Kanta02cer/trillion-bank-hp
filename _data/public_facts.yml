@@ -52,7 +52,7 @@ products:
       - "指定メディアの引用改善は参照候補化と継続計測を意味し、必ず引用されることを保証しない"
       - "Google OAuthライブ連携は接続環境の準備後に有効。未接続時はStudioのCSV取り込みを案内する"
       - "生成ファイルは下書きであり自動公開しない"
-      - "Sales Modeの提案書・ログイン・Present Modeは未完成（履歴一覧がP0）"
+      - "Sales Modeは端末内の履歴・営業トーク・提案書下書き・商談モードまで。ログインとサーバー顧客DBは未接続"
   hack2_studio:
     name: "HackⅡ Studio"
     aliases: ["ハックツ・スタジオ", "Hack2 Studio", "AirReach Studio"]

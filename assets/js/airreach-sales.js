@@ -914,13 +914,13 @@
 
   function badgeLabel(b) {
     var s = String(b || '');
-    if (s.indexOf('Official') >= 0) return '実測';
-    if (s.indexOf('Observed') >= 0 || s.indexOf('実測') >= 0) return '実測';
-    if (s.indexOf('User') >= 0 || s.indexOf('入力') >= 0) return 'ユーザー入力';
-    if (s.indexOf('Estimated') >= 0 || s.indexOf('推定') >= 0) return '推定';
-    if (s.indexOf('Inferred') >= 0 || s.indexOf('予測') >= 0 || s.indexOf('参考') >= 0) return '参考予測';
-    if (s.indexOf('診断') >= 0) return '診断';
-    return s || '参考';
+    if (s.indexOf('Official') >= 0 || s.indexOf('Google実測') >= 0) return 'Google実測';
+    if (s.indexOf('Observed') >= 0 || s.indexOf('AirReach実測') >= 0 || s.indexOf('HackⅡ実測') >= 0) return 'AirReach実測';
+    if (s.indexOf('実測') >= 0) return 'AirReach実測';
+    if (s.indexOf('User') >= 0 || s.indexOf('入力') >= 0 || s.indexOf('お客様') >= 0) return 'お客様入力';
+    if (s.indexOf('Estimated') >= 0 || s.indexOf('推定') >= 0 || s.indexOf('Inferred') >= 0 || s.indexOf('予測') >= 0 || s.indexOf('参考') >= 0) return '参考予測';
+    if (s.indexOf('診断') >= 0) return '参考予測';
+    return s || '参考予測';
   }
 
   window.AirReachSales = {

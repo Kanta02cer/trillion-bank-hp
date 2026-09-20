@@ -1,7 +1,6 @@
 /**
  * AirReach scan store — P0 bridge until Client DB.
  * Persists diagnosis snapshots by scanId in localStorage.
- * Evidence remains User Input / Observed / Inferred as labeled by callers.
  */
 (function () {
   'use strict';
@@ -31,12 +30,13 @@
     try { localStorage.setItem(INDEX_KEY, JSON.stringify(list.slice(0, 50))); } catch (e) {}
   }
 
-  function saveScan( partial ) {
+  function saveScan(partial) {
     var scan = partial || {};
     scan.id = scan.id || uid();
     scan.version = 1;
     scan.savedAt = nowIso();
     scan.evidenceClass = scan.evidenceClass || 'User Input';
+    if (!scan.status) scan.status = 'diagnosed';
     try { localStorage.setItem(PREFIX + scan.id, JSON.stringify(scan)); } catch (e) {}
     var idx = readIndex().filter(function (x) { return x && x.id !== scan.id; });
     idx.unshift({
@@ -46,7 +46,8 @@
       url: scan.url || '',
       industryId: scan.industryId || '',
       outcomeGoal: scan.outcomeGoal || '',
-      scoreOverall: scan.scoreOverall != null ? scan.scoreOverall : null
+      scoreOverall: scan.scoreOverall != null ? scan.scoreOverall : null,
+      status: scan.status || 'diagnosed'
     });
     writeIndex(idx);
     return scan;
@@ -60,12 +61,27 @@
 
   function listScans() {
     return readIndex().map(function (row) {
-      return Object.assign({}, row, { scan: loadScan(row.id) });
+      var full = loadScan(row.id);
+      return Object.assign({}, row, full || {}, { scan: full });
     });
+  }
+
+  function markStatus(id, status) {
+    var scan = loadScan(id);
+    if (!scan) return null;
+    scan.status = status || 'diagnosed';
+    scan.statusAt = nowIso();
+    return saveScan(scan);
   }
 
   function resultPath(scanId) {
     return '/airreach/result/?scan=' + encodeURIComponent(scanId);
+  }
+  function presentPath(scanId) {
+    return '/airreach/sales/present/?scan=' + encodeURIComponent(scanId);
+  }
+  function dealPath(scanId) {
+    return '/airreach/sales/deal/?scan=' + encodeURIComponent(scanId);
   }
 
   window.AirReachScanStore = {
@@ -73,7 +89,10 @@
     saveScan: saveScan,
     loadScan: loadScan,
     listScans: listScans,
+    markStatus: markStatus,
     resultPath: resultPath,
+    presentPath: presentPath,
+    dealPath: dealPath,
     uid: uid
   };
 })();

@@ -1,0 +1,76 @@
+---
+title: "AirReach｜商談モード - Trillion Bank"
+tbdesc: "タブレット商談用の大きな画面。余分なナビを消し、点数と次の一手だけを見せます。成果は保証しません。"
+keywords: "AirReach,Present,商談,Trillion Bank"
+ai_summary: "AirReach Present Mode。商談で顧客に見せる大画面。"
+layout: default
+permalink: /airreach/sales/present/
+---
+<style>
+body{background:#0b1220 !important}
+.site-header,.site-footer,header,footer,.tb-header,.corp-header{display:none !important}
+.arp{min-height:100vh;padding:28px 20px 48px;font-family:var(--sans,'Noto Sans JP',sans-serif);color:#f8fafc;max-width:900px;margin:0 auto}
+.arp .top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:28px}
+.arp .top a{color:#93c5fd;font-weight:700;text-decoration:none}
+.arp h1{font-size:clamp(1.6rem,4vw,2.4rem);margin:0 0 10px;line-height:1.25;letter-spacing:-.02em}
+.arp .sub{color:#94a3b8;font-size:1.05rem;margin:0 0 28px}
+.arp .score{font-size:clamp(3.5rem,12vw,6rem);font-weight:800;letter-spacing:-.04em;line-height:1;color:#60a5fa}
+.arp .score span{font-size:1.2rem;font-weight:700;color:#94a3b8;margin-left:8px}
+.arp .panel{margin-top:36px;padding:22px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(148,163,184,.25)}
+.arp .panel h2{margin:0 0 10px;font-size:1rem;color:#93c5fd}
+.arp .panel p{margin:0;font-size:clamp(1.15rem,2.8vw,1.45rem);font-weight:700;line-height:1.5}
+.arp .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.arp .btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:14px 20px;border-radius:10px;background:#2563eb;color:#fff;font-weight:800;text-decoration:none;border:0;font-size:1rem}
+.arp .btn-line{background:transparent;border:1px solid #475569;color:#e2e8f0}
+.arp .note{margin-top:28px;font-size:.8rem;color:#64748b}
+.arp .err{color:#fca5a5;font-weight:700}
+</style>
+<div class="arp">
+  <div class="top">
+    <a href="/airreach/sales/">← 営業トップ</a>
+    <a id="arp-deal" href="#">案件詳細</a>
+  </div>
+  <h1 id="arp-name">—</h1>
+  <p class="sub" id="arp-sub">AI・検索から、まだ取れる可能性のあるお客様がいます。</p>
+  <div class="score" id="arp-score">—<span>/ 100</span></div>
+  <div class="panel">
+    <h2>最大の問題（最初に直すこと）</h2>
+    <p id="arp-fix">—</p>
+  </div>
+  <div class="actions">
+    <a class="btn" id="arp-why" href="#">なぜ？</a>
+    <a class="btn btn-line" id="arp-how" href="#">どう直す？</a>
+    <a class="btn btn-line" id="arp-proposal" href="#">提案書</a>
+  </div>
+  <p class="note">参考表示です。検索順位・AI掲載・予約・問い合わせ・売上を保証しません。</p>
+</div>
+<script src="{{ '/assets/js/airreach-scan-store.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/airreach-sales-kit.js' | relative_url }}"></script>
+<script>
+(function () {
+  var id = new URLSearchParams(location.search).get('scan');
+  if (!id || !window.AirReachScanStore) {
+    document.getElementById('arp-name').innerHTML = '<span class="err">案件がありません</span>';
+    return;
+  }
+  var scan = AirReachScanStore.loadScan(id);
+  if (!scan) {
+    document.getElementById('arp-name').innerHTML = '<span class="err">この端末にデータがありません</span>';
+    return;
+  }
+  var kit = AirReachSalesKit;
+  var score = kit.scoreOf(scan);
+  document.getElementById('arp-name').textContent = scan.displayName || scan.siteTitle || scan.url || 'お客様';
+  var outcome = kit.OUTCOME[scan.outcomeGoal] || '集客';
+  document.getElementById('arp-sub').textContent = 'AI・検索から、まだ取れる可能性のある' + outcome + 'があります。';
+  document.getElementById('arp-score').innerHTML = (score != null ? score : '—') + '<span>/ 100</span>';
+  document.getElementById('arp-fix').textContent = kit.firstFix(scan);
+  document.getElementById('arp-deal').href = AirReachScanStore.dealPath(id);
+  document.getElementById('arp-why').href = AirReachScanStore.resultPath(id) + '#expert-view';
+  document.getElementById('arp-how').href = AirReachScanStore.resultPath(id) + '#actions';
+  document.getElementById('arp-proposal').addEventListener('click', function (e) {
+    e.preventDefault();
+    kit.openProposal(scan);
+  });
+})();
+</script>

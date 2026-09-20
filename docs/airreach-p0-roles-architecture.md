@@ -52,15 +52,17 @@ Audience: product + engineering
 
 ## Sales Mode（P0最小 → P1拡張）
 
-P0最小:
+P0（実装済み・端末内）:
 
-- 端末内の診断履歴一覧（scanId）
-- 「案件として保存」相当（Client / Project レコード草案）
-- 店舗と同じ結果を営業が開ける `/airreach/result/?scan=`
+- `/airreach/sales/` 診断履歴一覧
+- `/airreach/sales/deal/?scan=` 案件（営業トーク・提案書下書き・ステータス）
+- `/airreach/sales/present/?scan=` Present Mode（商談大画面）
+- `/airreach/result/?scan=` 店舗と同じ結果の共有
+- SQL草案: `ops/sql/airreach_p0_client_db.sql`（**未適用**）
 
 P1:
 
-- ログイン、顧客一覧、提案書、Present Mode、見積
+- ログイン、サーバー顧客DB、見積、継続計測連携
 
 ## URL マップ（目標）
 
@@ -69,7 +71,9 @@ P1:
 | `/airreach/` | 無料診断（URL-first） | 実装 |
 | `/airreach/{industry}/` | 業種結果（互換） | 維持 |
 | `/airreach/result/?scan=` | 共有可能な結果 | 実装 |
-| `/airreach/sales/` | 営業トップ（履歴） | スタブ |
+| `/airreach/sales/` | 営業トップ（履歴） | 実装 |
+| `/airreach/sales/deal/?scan=` | 案件・提案 | 実装 |
+| `/airreach/sales/present/?scan=` | 商談モード | 実装 |
 | `/app/...` `/sales/...` | 本格アプリ | 後続（別基盤） |
 
 ## データ永続化

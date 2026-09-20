@@ -1,0 +1,88 @@
+---
+title: "AirReach Sales｜案件 - Trillion Bank"
+tbdesc: "営業案件の詳細。営業トーク、提案書下書き、商談モード、案件ステータス。成果は保証しません。"
+keywords: "AirReach,Sales,案件,提案書,Trillion Bank"
+ai_summary: "AirReach案件画面。診断結果から営業トークと提案書下書きを出す。"
+layout: default
+permalink: /airreach/sales/deal/
+---
+<style>
+.ard{max-width:760px;margin:40px auto 80px;padding:0 20px;font-family:var(--sans,'Noto Sans JP',sans-serif);color:#0f172a}
+.ard h1{font-size:1.6rem;margin:0 0 6px}
+.ard .meta{color:#64748b;font-size:.95rem;margin:0 0 16px;line-height:1.5}
+.ard .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+@media(max-width:700px){.ard .grid{grid-template-columns:1fr}}
+.ard .kpi{border:1px solid #e2e8f0;border-radius:12px;padding:14px;background:#f8fafc}
+.ard .kpi .l{font-size:.8rem;font-weight:700;color:#64748b}
+.ard .kpi .v{font-size:1.6rem;font-weight:800;margin-top:4px}
+.ard .box{border:1px solid #bfdbfe;background:#eff6ff;border-radius:12px;padding:14px 16px;margin:16px 0}
+.ard .talk{white-space:pre-wrap;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;background:#fff;line-height:1.65;font-weight:600}
+.ard .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 18px;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;text-decoration:none;border:0;cursor:pointer;font:inherit}
+.ard .btn-line{background:#fff;color:#0f172a;border:1px solid #e2e8f0}
+.ard .row{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.ard .note{font-size:.85rem;color:#94a3b8;margin-top:20px;line-height:1.5}
+.ard .err{color:#991b1b;font-weight:700}
+</style>
+<div class="ard">
+  <p style="font-size:.8rem;font-weight:700;color:#1d4ed8;margin:0 0 8px"><a href="/airreach/sales/" style="color:inherit;text-decoration:none">← 営業トップ</a></p>
+  <h1 id="ard-name">案件</h1>
+  <p class="meta" id="ard-meta">読み込み中…</p>
+  <div class="grid" id="ard-kpis"></div>
+  <div class="box">
+    <div style="font-size:.8rem;font-weight:700;color:#1d4ed8;margin-bottom:6px">いちばん最初に直すこと</div>
+    <div id="ard-fix" style="font-weight:700;line-height:1.5">—</div>
+  </div>
+  <h2 style="font-size:1.1rem">営業トーク</h2>
+  <div class="talk" id="ard-talk">—</div>
+  <div class="row">
+    <button type="button" class="btn" id="ard-proposal">提案書を作る</button>
+    <a class="btn btn-line" id="ard-present" href="#">商談モードで見せる</a>
+    <button type="button" class="btn btn-line" id="ard-mark">案件として保存（提案中）</button>
+    <a class="btn btn-line" id="ard-result" href="#">結果の詳細</a>
+  </div>
+  <p class="note" id="ard-status">※ 数値は診断・参考予測です。成果を保証しません。P0は端末内保存です。</p>
+</div>
+<script src="{{ '/assets/js/airreach-scan-store.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/airreach-sales-kit.js' | relative_url }}"></script>
+<script>
+(function () {
+  var id = new URLSearchParams(location.search).get('scan');
+  var nameEl = document.getElementById('ard-name');
+  var metaEl = document.getElementById('ard-meta');
+  if (!id || !window.AirReachScanStore) {
+    metaEl.innerHTML = '<span class="err">案件IDがありません。</span>';
+    return;
+  }
+  var scan = AirReachScanStore.loadScan(id);
+  if (!scan) {
+    metaEl.innerHTML = '<span class="err">この端末に案件がありません。</span>';
+    return;
+  }
+  var kit = window.AirReachSalesKit;
+  var score = kit.scoreOf(scan);
+  nameEl.textContent = scan.displayName || scan.siteTitle || scan.url || '案件';
+  metaEl.textContent = (kit.IND[scan.industryId] || '') + (scan.outcomeGoal ? (' · ' + (kit.OUTCOME[scan.outcomeGoal] || scan.outcomeGoal)) : '') + ' · ' + (scan.url || '');
+  document.getElementById('ard-fix').textContent = kit.firstFix(scan);
+  document.getElementById('ard-talk').textContent = kit.buildTalk(scan);
+  document.getElementById('ard-present').href = AirReachScanStore.presentPath(id);
+  document.getElementById('ard-result').href = AirReachScanStore.resultPath(id);
+  var kpis = document.getElementById('ard-kpis');
+  var heads = (scan.reportLite && scan.reportLite.headline) || [];
+  if (heads.length) {
+    kpis.innerHTML = heads.slice(0, 3).map(function (h) {
+      return '<div class="kpi"><div class="l">' + (h.label || '') + '</div><div class="v">' + (h.value || '—') + '</div></div>';
+    }).join('');
+  } else {
+    kpis.innerHTML = '<div class="kpi"><div class="l">見つかりやすさ</div><div class="v">' + (score != null ? score : '—') + '</div></div>'
+      + '<div class="kpi"><div class="l">最初に直す</div><div class="v" style="font-size:1rem;line-height:1.35">' + kit.firstFix(scan).slice(0, 40) + '</div></div>'
+      + '<div class="kpi"><div class="l">状態</div><div class="v" style="font-size:1.1rem">' + (scan.status || 'diagnosed') + '</div></div>';
+  }
+  document.getElementById('ard-proposal').onclick = function () {
+    if (!kit.openProposal(scan)) alert('ポップアップを許可してください。');
+  };
+  document.getElementById('ard-mark').onclick = function () {
+    AirReachScanStore.markStatus(id, 'proposed');
+    document.getElementById('ard-status').textContent = '提案中として保存しました（この端末内）。';
+  };
+})();
+</script>

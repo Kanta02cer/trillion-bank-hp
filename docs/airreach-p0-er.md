@@ -93,3 +93,5 @@ erDiagram
 | `airreach_onboard_survey_v1` | 互換（既存） |
 
 サーバー投入時は diagnosis 行へそのままマップする。
+
+SQL草案（**未適用・要明示承認**）: `ops/sql/airreach_p0_client_db.sql`
