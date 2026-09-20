@@ -32,7 +32,9 @@
         mode: survey.mode,
         url: survey.url,
         keyword: survey.keyword,
-        goal: survey.goal
+        goal: survey.goal,
+        outcomeGoal: survey.outcomeGoal || '',
+        siteTitle: survey.siteTitle || ''
       });
       localStorage.setItem(HISTORY_KEY, JSON.stringify(hist.slice(0, 30)));
     } catch (e) {}
@@ -92,7 +94,8 @@
 
   function isComplete(survey) {
     if (!survey) return false;
-    return !!(survey.industryId && survey.url && survey.keyword && survey.goal);
+    // keyword may be auto-generated after URL diagnose
+    return !!(survey.industryId && survey.url && survey.goal);
   }
 
     function pathForIndustry(industryId) {
