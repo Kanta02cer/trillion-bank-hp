@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: false
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -35,31 +37,42 @@ jobs:
         run: bash scripts/jekyll_build.sh
 
       - name: Publish _site to vercel-deploy branch
+        env:
+          SHORT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           WORKDIR=$(mktemp -d)
+          export WORKDIR
           cp -a _site/. "$WORKDIR/"
-          # Keep Vercel serverless API (TypeSafe etc.) beside static output.
           mkdir -p "$WORKDIR/api"
           cp -a api/. "$WORKDIR/api/"
+          rm -rf "$WORKDIR/.git"
           printf '%s\n' '{' '  "name": "trillion-bank-hp",' '  "private": true' '}' > "$WORKDIR/package.json"
-          cd "$WORKDIR"
-          cat > vercel.json <<'EOF'
-          {
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, json
+          p = Path(os.environ["WORKDIR"]) / "vercel.json"
+          p.write_text(json.dumps({
             "$schema": "https://openapi.vercel.sh/vercel.json",
-            "framework": null,
-            "buildCommand": null,
-            "installCommand": null,
+            "framework": None,
+            "buildCommand": None,
+            "installCommand": None,
             "outputDirectory": ".",
-            "cleanUrls": true,
-            "trailingSlash": true
-          }
-          EOF
+            "cleanUrls": True,
+            "trailingSlash": True
+          }, indent=2) + "\n")
+          PY
+          cd "$WORKDIR"
           rm -f package-lock.json mise.toml Gemfile Gemfile.lock .ruby-version
+          test -f api/hack2-measure.js
+          test -f api/site-analyze.js
           git init -b vercel-deploy
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
           git add -A
-          git commit -m "Publish prebuilt Jekyll site for Vercel (${GITHUB_SHA::7})"
+          SHORT="${SHORT_SHA:0:7}"
+          git commit -m "Publish prebuilt Jekyll site for Vercel (${SHORT})"
+          echo "Pushing vercel-deploy (${SHORT})..."
           git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push -u origin vercel-deploy --force
+          git push --force origin HEAD:vercel-deploy
+          echo "Push complete."
