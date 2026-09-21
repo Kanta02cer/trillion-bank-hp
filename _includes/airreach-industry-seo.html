@@ -1,0 +1,61 @@
+{% comment %}
+  Crawlable unique copy for AirReach industry landings.
+  Keep noindex until docs/airreach-industry-index-gate.md passes.
+{% endcomment %}
+{% assign _ind_id = page.airreach_industry | default: '' %}
+{% if _ind_id != '' %}
+{% assign _ind = site.data.airreach_industries.industries[_ind_id] %}
+{% if _ind %}
+<section class="ar-ind-seo" id="industry-guide" aria-labelledby="ar-ind-seo-title">
+  <div class="ar-wrap">
+    <p class="ar-ind-seo-kicker">{{ _ind.label }}向けガイド</p>
+    <h2 id="ar-ind-seo-title">この業種で見るポイント</h2>
+    <p class="ar-ind-seo-lead">{{ _ind.lead }}</p>
+    <div class="ar-ind-seo-grid">
+      <div>
+        <h3>焦点</h3>
+        <ul>{% for item in _ind.focus %}<li>{{ item }}</li>{% endfor %}</ul>
+      </div>
+      <div>
+        <h3>よくある調べ方の例</h3>
+        <ul>{% for q in _ind.sample_questions %}<li>{{ q }}</li>{% endfor %}</ul>
+      </div>
+    </div>
+    <div class="ar-ind-seo-faq">
+      <h3>よくある質問</h3>
+      {% for item in _ind.faq %}
+      <details>
+        <summary>{{ item.q }}</summary>
+        <p>{{ item.a }}</p>
+      </details>
+      {% endfor %}
+    </div>
+    <p class="ar-ind-seo-note">診断は参考です。AI回答への掲載、予約、問い合わせ、売上を保証しません。本ページは固有化完了まで検索インデックス対象外（noindex）です。</p>
+  </div>
+</section>
+<style>
+.ar-ind-seo{padding:48px 0 64px;border-top:1px solid #e5e7eb;background:#f8fafc}
+.ar-ind-seo-kicker{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;color:#164BFF;margin-bottom:10px}
+.ar-ind-seo h2{font-size:clamp(1.25rem,2.5vw,1.6rem);margin-bottom:12px}
+.ar-ind-seo-lead{max-width:42em;color:#667085;line-height:1.8;margin-bottom:24px}
+.ar-ind-seo-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px}
+.ar-ind-seo-grid h3,.ar-ind-seo-faq h3{font-size:.95rem;margin-bottom:10px}
+.ar-ind-seo-grid ul{padding-left:1.15em;color:#667085;line-height:1.75;font-size:.9rem}
+.ar-ind-seo-faq details{border-top:1px solid #dde3ec;padding:12px 0}
+.ar-ind-seo-faq summary{cursor:pointer;font-weight:600;font-size:.92rem}
+.ar-ind-seo-faq p{margin-top:8px;color:#667085;line-height:1.75;font-size:.88rem}
+.ar-ind-seo-note{margin-top:20px;font-size:.78rem;color:#667085;max-width:46em;line-height:1.7}
+@media(max-width:720px){.ar-ind-seo-grid{grid-template-columns:1fr}}
+</style>
+{% if _ind.faq %}
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"FAQPage",
+  "@id":"{{ page.url | absolute_url }}#faq",
+  "mainEntity":[{% for item in _ind.faq %}{"@type":"Question","name":{{ item.q | jsonify }},"acceptedAnswer":{"@type":"Answer","text":{{ item.a | jsonify }}}}{% unless forloop.last %},{% endunless %}{% endfor %}]
+}
+</script>
+{% endif %}
+{% endif %}
+{% endif %}

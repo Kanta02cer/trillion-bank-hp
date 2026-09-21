@@ -1,0 +1,65 @@
+---
+title: 出演・掲載後48時間チェックリスト｜Trillion Bank
+tbdesc: 代表出演・外部掲載の公開後48時間以内に行う表記照合、Media・CEO同期、content_guardの運用チェックリストです。
+page_summary: "出演や外部記事の公開を知ってから48時間以内に、Press Kitとの表記照合、Media台帳とCEOページの同期、関連記事への文脈リンク1本、content_guardを完了します。未承認の顧客名・成果数字は公開しません。"
+permalink: /trillionbank/media/ops-48h/
+robots: noindex, follow
+---
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">{% include tb-head.html %}
+<style>
+.ops-list{max-width:46em}.ops-list details{border-top:1px solid var(--border);padding:16px 0}.ops-list summary{cursor:pointer;font-weight:700;font-size:1rem}.ops-list ul{margin:12px 0 0;padding-left:1.2em;color:var(--muted);line-height:1.85;font-size:.9rem}
+</style>
+</head>
+<body>{% include tb-header.html %}
+<main id="main">
+<section class="phero"><div class="wrap">
+  <div class="crumb"><a href="/">HOME</a> ／ <a href="/trillionbank/media/">Media</a> ／ 48h Ops</div>
+  <span class="ey">OPS</span>
+  <h1>出演・掲載後の48時間</h1>
+  <p>公開を知ってから48時間以内に完了する運用チェックです。</p>
+  {% include tb-page-summary.html %}
+</div></section>
+<section class="sec"><div class="wrap">
+<div class="ops-list">
+  <details open>
+    <summary>0. 入力</summary>
+    <ul>
+      <li>媒体名・番組名 / URL / 公開日</li>
+      <li>分類: 代表出演 / 会社掲載 / 代表者 過去掲載 / 掲載予定 / 確認中</li>
+      <li>サムネ・ロゴ・引用の許諾</li>
+    </ul>
+  </details>
+  <details open>
+    <summary>1. エンティティ照合（必須）</summary>
+    <ul>
+      <li>法人名と通称が Press Kit と一致している</li>
+      <li>旧社名 Regalis を現在の商号にしていない</li>
+      <li>銀行誤認、HackⅡとAdctorの混同、保証・未承認数字がない</li>
+      <li>誤りがあれば媒体へ事実のみで訂正依頼</li>
+    </ul>
+  </details>
+  <details open>
+    <summary>2. 自社サイト同期</summary>
+    <ul>
+      <li>Media台帳にカード追加</li>
+      <li>CEOページの出演リストを同期（該当時）</li>
+      <li>関連Insightsへ文脈リンクを1本だけ</li>
+      <li><code>python3 scripts/content_guard.py</code></li>
+    </ul>
+  </details>
+  <details>
+    <summary>3. 止める条件</summary>
+    <ul>
+      <li>顧客名・成果数字・投資家情報・未許諾映像の公開</li>
+      <li>迷ったら出さず承認を取る</li>
+    </ul>
+  </details>
+</div>
+<div style="margin-top:28px;display:flex;gap:14px;flex-wrap:wrap">
+  <a class="btn btn-primary" href="/trillionbank/media/press-kit/">ファクトシート →</a>
+  <a class="btn btn-line" href="/trillionbank/media/">Mediaへ →</a>
+  <a class="btn btn-line" href="/trillionbank/ceo/">CEO →</a>
+</div>
+</div></section>
+</main>{% include tb-footer.html %}</body></html>

@@ -1,0 +1,134 @@
+---
+title: 取材・掲載用ファクトシート｜株式会社Trillion Bank
+tbdesc: 取材・外部寄稿・出演向けの公式ファクトシート。法人名・代表・二事業の定義・ロゴURL・言わないこと・話すテーマを1ページにまとめています。
+page_summary: "媒体・編集者がTrillion Bankを正確に書くための公式ファクトシートです。法人事実は会社概要、人物は代表紹介、出演台帳はMediaを一次情報とします。掲載・順位・売上の保証や未承認の顧客事例は記載しません。"
+permalink: /trillionbank/media/press-kit/
+---
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">{% include tb-head.html %}
+{% assign f = site.data.public_facts %}
+<style>
+.pk-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,3vw,36px);max-width:52em}
+.pk-block h3{font-size:1rem;margin-bottom:10px}
+.pk-block p,.pk-block li{color:var(--muted);font-size:.9rem;line-height:1.8}
+.pk-block ul{padding-left:1.2em}
+.pk-mono{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;color:var(--blue-600);word-break:break-all}
+.pk-do{border-left:3px solid var(--blue-600);padding-left:14px;margin:16px 0}
+.pk-dont{border-left:3px solid #b42318;padding-left:14px;margin:16px 0}
+@media(max-width:720px){.pk-grid{grid-template-columns:1fr}}
+@media print{.tbh,.tbf,.btn{display:none!important}.phero{padding-top:24px!important}}
+</style>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebPage",
+  "@id":"https://trillion-bank.jp/trillionbank/media/press-kit/#webpage",
+  "url":"https://trillion-bank.jp/trillionbank/media/press-kit/",
+  "name":"取材・掲載用ファクトシート｜株式会社Trillion Bank",
+  "isPartOf":{"@id":"https://trillion-bank.jp/#website"},
+  "about":{"@id":"https://trillion-bank.jp/#organization"},
+  "inLanguage":"ja"
+}
+</script>
+</head>
+<body>{% include tb-header.html %}
+<main id="main">
+<section class="phero"><div class="wrap">
+  <div class="crumb"><a href="/">HOME</a> ／ <a href="/trillionbank/media/">Media</a> ／ Press Kit</div>
+  <span class="ey">PRESS KIT</span>
+  <h1>取材・掲載用ファクトシート</h1>
+  <p>編集・記者・番組制作向け。印刷してそのまま使えます。</p>
+  {% include tb-page-summary.html %}
+</div></section>
+
+<section class="sec"><div class="wrap">
+<div class="khead"><span class="no">01 — ENTITY</span><h2 class="rv">表記の固定</h2></div>
+<div class="pk-grid rv">
+  <div class="pk-block">
+    <h3>法人</h3>
+    <p><strong>{{ f.company.legal_name }}</strong><br>
+    通称：{{ f.company.japanese_alias }} / {{ f.company.display_name }} / TRILLION BANK<br>
+    設立：{{ f.company.founded }}<br>
+    代表：{{ f.company.representative }}（代表取締役）<br>
+    所在地：〒{{ f.company.address.postal_code }} {{ f.company.address.region }}{{ f.company.address.locality }}{{ f.company.address.street }}</p>
+    <p class="pk-mono">{{ f.company.website }}</p>
+  </div>
+  <div class="pk-block">
+    <h3>一次情報URL</h3>
+    <ul>
+      <li>会社概要 — <span class="pk-mono">/trillionbank/company/</span></li>
+      <li>代表 — <span class="pk-mono">/trillionbank/ceo/</span></li>
+      <li>Media台帳 — <span class="pk-mono">/trillionbank/media/</span></li>
+      <li>ロゴ（シンボル） — <span class="pk-mono">/images/hero/tb-logo-symbol.webp</span></li>
+      <li>ロゴ（ワードマーク） — <span class="pk-mono">/images/hero/tb-logo-hero.webp</span></li>
+      <li>顔写真 — <span class="pk-mono">/images/ceo-kanta.webp</span></li>
+    </ul>
+  </div>
+</div>
+<p class="rv" style="margin-top:16px;font-size:.84rem;color:var(--muted)">{{ f.company.bank_disclaimer }}</p>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap">
+<div class="khead"><span class="no">02 — BUSINESS</span><h2 class="rv">二事業（混同しない）</h2></div>
+<div class="pk-grid rv">
+  <div class="pk-block">
+    <h3>AI集客マーケティング</h3>
+    <p><strong>AirReach</strong> — {{ f.products.airreach.status }}<br>{{ f.products.airreach.public_definition | truncate: 160 }}</p>
+    <p style="margin-top:14px"><strong>HackⅡ</strong> — {{ f.products.hack2.status }}<br>{{ f.products.hack2.public_definition | truncate: 160 }}</p>
+  </div>
+  <div class="pk-block">
+    <h3>AI情報利用管理</h3>
+    <p><strong>Adctor</strong> — {{ f.products.adctor.status }}<br>{{ f.products.adctor.public_definition | truncate: 180 }}</p>
+    <p style="margin-top:14px;font-size:.84rem">完成済みの決済・自動徴収サービスではありません。</p>
+  </div>
+</div>
+<p class="rv" style="margin-top:18px;max-width:46em;color:var(--muted);font-size:.9rem;line-height:1.8">{{ f.positioning.long }}</p>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap">
+<div class="khead"><span class="no">03 — COPY</span><h2 class="rv">短い紹介文</h2></div>
+<div class="pk-block rv" style="max-width:46em">
+  <div class="pk-do">
+    <p style="font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;color:var(--blue-600);margin-bottom:6px">約50字</p>
+    <p>{{ f.positioning.short }}</p>
+  </div>
+  <div class="pk-do">
+    <p style="font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;color:var(--blue-600);margin-bottom:6px">約120字</p>
+    <p>{{ f.positioning.long }}</p>
+  </div>
+  <div class="pk-do">
+    <p style="font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;color:var(--blue-600);margin-bottom:6px">代表（約80字）</p>
+    <p>井上幹太。{{ f.company.legal_name }}代表取締役。AI検索の測定（HackⅡ）とAI情報利用の証跡（Adctor）に取り組む。出演・受賞の一次情報は代表紹介ページ。</p>
+  </div>
+</div>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap">
+<div class="khead"><span class="no">04 — TOPICS</span><h2 class="rv">話せるテーマ</h2></div>
+<ul class="rv" style="max-width:46em;color:var(--muted);font-size:.92rem;line-height:1.85;padding-left:1.2em">
+  <li>AI検索は「順位」ではなく、回答・引用・言及の測定で考える</li>
+  <li>SEO / AEO / GEO / AIO / LLMOの使い分け（用語の揺れを前提に）</li>
+  <li>内製か外部支援か — 最初の30日で測ることと依頼範囲の切り方</li>
+</ul>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap">
+<div class="khead"><span class="no">05 — DO NOT</span><h2 class="rv">書かない・言わないこと</h2></div>
+<div class="pk-dont rv" style="max-width:46em">
+  <ul style="color:var(--muted);font-size:.9rem;line-height:1.85;padding-left:1.2em">
+    <li>掲載・順位・問い合わせ・売上の保証</li>
+    <li>未承認の顧客名・ロゴ・成果数字</li>
+    <li>旧社名 Regalis を現在の商号として書くこと</li>
+    <li>銀行・金融機関としての誤認</li>
+    <li>Adctorを完成した決済・徴収サービスとして書くこと</li>
+    <li>「世界初」「必ず」「完全自動」などの誇張</li>
+  </ul>
+</div>
+<div style="margin-top:28px;display:flex;gap:14px;flex-wrap:wrap" class="rv">
+  <a class="btn btn-primary" href="{{ '/trillionbank/contact/' | relative_url }}#form" data-event="contact_page_open" data-inquiry="press" data-cta="press_kit">取材・掲載の問い合わせ <span class="a">→</span></a>
+  <a class="btn btn-line" href="/trillionbank/media/">Media一覧へ <span class="a">→</span></a>
+  <a class="btn btn-line" href="/trillionbank/ceo/">代表プロフィール <span class="a">→</span></a>
+  <a class="btn btn-line" href="/trillionbank/media/#after-air">出演後の同期手順 <span class="a">→</span></a>
+</div>
+</div></section>
+</main>{% include tb-footer.html %}</body></html>

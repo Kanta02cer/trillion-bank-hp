@@ -1,7 +1,6 @@
 .DS_Store
 images-webp/
 _site/
-Gemfile.lock
 __pycache__/
 *.pyc
 node_modules/
@@ -65,3 +64,4 @@ tools/dynamic-aio/data/
 ops/social-publisher/.env
 ops/social-publisher/**/*.secret
 ops/crawler-observability/package-lock.json
+vendor/

@@ -1,0 +1,31 @@
+# GSC確認後にのみ status: approved へ。Workerへ反映するまで status: pending。
+last_reviewed: "2026-09-20"
+gate: "Search Consoleで28日以上の重複クエリ確認後に301"
+candidates:
+  - id: terminology-llmo-geo-aeo
+    from: "/trillionbank/news/llmo-geo-aeo/"
+    to: "/trillionbank/news/seo-aeo-geo-aio-llmo-difference/"
+    reason: "用語整理の意図重複。代表は横断定義記事"
+    soft_done:
+      - "冒頭で代表記事へ誘導"
+      - "Insightsハブから代表を優先表示"
+      - "関連記事の用語リンクを代表へ寄せた"
+    status: pending
+    gsc_queries_hint:
+      - "LLMO GEO AEO 違い"
+      - "SEO AEO GEO LLMO 違い"
+  - id: tools-aeo-comparison
+    from: "/trillionbank/news/aeo-tools-comparison/"
+    to: "/trillionbank/news/ai-search-tools-vendors/"
+    reason: "製品一覧は支援。分類・選定観点の代表は vendors"
+    soft_done:
+      - "冒頭で代表・7軸記事へ誘導"
+      - "Insightsハブで代表を明示"
+    status: pending
+    note: "料金・機能の個別クエリが強い場合は301せず併存維持"
+    gsc_queries_hint:
+      - "AEO ツール 比較"
+      - "AI検索 ツール 比較"
+keep_separate:
+  - from: "/trillionbank/news/aeo-tools/"
+    reason: "計測7軸の深掘り。vendors と意図が異なる"

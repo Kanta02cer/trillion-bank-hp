@@ -2,14 +2,9 @@
 layout: null
 ---
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- コーポレート・柱のみ。記事は sitemap-insights.xml。noindex / リダイレクトスタブは載せない。 -->
 
-  <!-- ══════════════════════════════════════════════════════════ -->
-  <!-- ルートページ（コーポレート）                                  -->
-  <!-- ══════════════════════════════════════════════════════════ -->
   <url>
     <loc>{{ site.url }}/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
@@ -17,30 +12,18 @@ layout: null
     <priority>1.0</priority>
   </url>
 
-  <!-- /business/* は /trillionbank/business/* へのリダイレクトスタブのため除外 -->
-
-  <!-- ── HackⅡ（プロダクト） ───────────────────────────────── -->
-
-  <!-- /company/, /about/philosophy.html, /about/company.html は /trillionbank/ 配下へのリダイレクトスタブのため除外 -->
-
-  <!-- ── 実績・コンタクト・ニュース ──────────────────────────── -->
-  <!-- /results/, /works/, /download/ は noindex の案内スタブのため除外（2026-09-06） -->
-  <!-- /contact/ は /trillionbank/contact/ へのリダイレクトスタブのため除外 -->
-  <!-- /news/ は /trillionbank/media/ へのリダイレクトスタブのため除外（2026-08-13） -->
-  <!-- /trillionbank/media/archive/ は旧記事群の削除（404化）に伴い廃止（2026-09-06） -->
-
-  <!-- ── 法務ページ ─────────────────────────────────────────── -->
-  <!-- /privacy.html, /terms.html, /security.html は /trillionbank/ 配下へのリダイレクトスタブのため除外 -->
   <url>
-    <loc>{{ site.url }}/tokushoho.html</loc>
+    <loc>{{ site.url }}/airreach/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
   </url>
-
-  <!-- ══════════════════════════════════════════════════════════ -->
-  <!-- トリリオンバンク セクション                                   -->
-  <!-- ══════════════════════════════════════════════════════════ -->
+  <url>
+    <loc>{{ site.url }}/trillionbank/ai-search/</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
   <url>
     <loc>{{ site.url }}/trillionbank/business/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
@@ -59,8 +42,18 @@ layout: null
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-  <!-- 旧サービスページ（media-operation / dx-consulting / web-development /
-       sales-promotion / ai-coupon / student-ambassador）は noindex の案内スタブのため除外 -->
+  <url>
+    <loc>{{ site.url }}/trillionbank/business/pay-per-citation/</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>{{ site.url }}/trillionbank/case-studies/</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
   <url>
     <loc>{{ site.url }}/trillionbank/mission/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
@@ -71,7 +64,7 @@ layout: null
     <loc>{{ site.url }}/trillionbank/insights/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>{{ site.url }}/trillionbank/insights/editorial-policy/</loc>
@@ -83,19 +76,25 @@ layout: null
     <loc>{{ site.url }}/trillionbank/company/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>{{ site.url }}/trillionbank/ceo/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>{{ site.url }}/trillionbank/media/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>{{ site.url }}/trillionbank/media/press-kit/</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>{{ site.url }}/trillionbank/contact/</loc>
@@ -107,7 +106,7 @@ layout: null
     <loc>{{ site.url }}/trillionbank/meeting/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>{{ site.url }}/trillionbank/guide/inhouse-or-outsource/</loc>
@@ -121,73 +120,34 @@ layout: null
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
-  <!-- /trillionbank/news/ は /trillionbank/media/ へリダイレクトのため除外 -->
   <url>
     <loc>{{ site.url }}/lp/hack2/founding-monitor/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>{{ site.url }}/tokushoho.html</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
   <url>
     <loc>{{ site.url }}/trillionbank/privacy/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.3</priority>
   </url>
   <url>
     <loc>{{ site.url }}/trillionbank/terms/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.3</priority>
   </url>
   <url>
     <loc>{{ site.url }}/trillionbank/security/</loc>
     <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.3</priority>
   </url>
-
-  <!-- ══════════════════════════════════════════════════════════ -->
-  <!-- AI最適化ファイル                                             -->
-  <!-- ══════════════════════════════════════════════════════════ -->
-  <url>
-    <loc>{{ site.url }}/llms.txt</loc>
-    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-  </url>
-  <url>
-    <loc>{{ site.url }}/llms-full.txt</loc>
-    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
-  </url>
-  <url>
-    <loc>{{ site.url }}/knowledge.json</loc>
-    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
-  </url>
-  <url>
-    <loc>{{ site.url }}/site-structure.json</loc>
-    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
-  </url>
-
-  <!-- ══════════════════════════════════════════════════════════ -->
-  <!-- ニュース記事（自動生成）                                      -->
-  <!-- ══════════════════════════════════════════════════════════ -->
-
-  <!-- TB News（現在の正規記事） -->
-  {% assign sorted_tbnews = site.tbnews | sort: "date" | reverse %}
-  {% for item in sorted_tbnews %}
-  <url>
-    <loc>{{ site.url }}{{ item.url }}</loc>
-    <lastmod>{{ item.date | date_to_xmlschema }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  {% endfor %}
-
 </urlset>

@@ -88,6 +88,5 @@ Allow: /
 User-agent: Applebot-Extended
 Allow: /
 
+# 提出はインデックスのみ。子sitemapの重複登録を避ける。
 Sitemap: {{ site.url }}/sitemap-index.xml
-Sitemap: {{ site.url }}/sitemap.xml
-Sitemap: {{ site.url }}/sitemap-news.xml

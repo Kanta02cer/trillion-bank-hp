@@ -2,8 +2,8 @@
 layout: null
 ---
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 互換エイリアス。Google News用ではない。正本は sitemap-insights.xml -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  {% comment %} insight:true のみ。デフォルト noindex の記事は載せない。 {% endcomment %}
   {% assign reviewed_insights = site.tbnews | where: 'insight', true | sort: 'date' | reverse %}
   {% for post in reviewed_insights %}
   <url>

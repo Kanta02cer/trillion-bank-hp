@@ -1,0 +1,33 @@
+# 事例の実名公開は status: approved かつ approval_ref 必須。
+# SAMPLEのまま公開する枠は status: sample。
+last_reviewed: "2026-09-20"
+policy: "顧客名・ロゴ・成果数字は書面承認があるものだけ。迷ったら SAMPLE。"
+entries:
+  - slug: personal-gym
+    path: "/trillionbank/case-studies/personal-gym/"
+    status: sample
+    approval_ref: null
+    approved_fields: []
+  - slug: clinic
+    path: "/trillionbank/case-studies/clinic/"
+    status: sample
+    approval_ref: null
+    approved_fields: []
+  - slug: b2b
+    path: "/trillionbank/case-studies/b2b/"
+    status: sample
+    approval_ref: null
+    approved_fields: []
+  - slug: study-abroad
+    path: "/trillionbank/case-studies/study-abroad/"
+    status: sample
+    approval_ref: null
+    approved_fields: []
+# approved 例（使うときだけコメント解除）:
+# - slug: example
+#   path: "/trillionbank/case-studies/example/"
+#   status: approved
+#   approval_ref: "APPROVAL-YYYYMMDD-001"
+#   approved_fields: ["customer_name", "before_metrics", "after_metrics"]
+#   approved_on: "2026-09-20"
+#   expires_on: null
