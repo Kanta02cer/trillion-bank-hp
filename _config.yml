@@ -7,6 +7,15 @@ timezone: Asia/Tokyo
 future: false
 
 
+collections:
+  news:
+    output: true
+    permalink: /news/:slug/
+  tbnews:
+    output: true
+    permalink: /trillionbank/news/:slug/
+
+defaults:
   # AirReach tool / state URLs: do not compete with the product pillar /airreach/
   - scope:
       path: "airreach/result"
@@ -44,17 +53,6 @@ future: false
       path: "airreach/media"
     values:
       robots: "noindex, follow"
-
-
-collections:
-  news:
-    output: true
-    permalink: /news/:slug/
-  tbnews:
-    output: true
-    permalink: /trillionbank/news/:slug/
-
-defaults:
   - scope:
       path: ""
       type: "news"
