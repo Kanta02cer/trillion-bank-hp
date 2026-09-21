@@ -33,7 +33,7 @@ jobs:
 
     - name: Build Jekyll site
       run: |
-        bundle exec jekyll build 2>&1 | tee jekyll-build.log
+        bash scripts/jekyll_build.sh 2>&1 | tee jekyll-build.log
         if [ ${PIPESTATUS[0]} -ne 0 ]; then
           echo "Jekyll build failed!"
           cat jekyll-build.log

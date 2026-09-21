@@ -51,7 +51,7 @@ jobs:
           bundler-cache: true
 
       - name: Build Jekyll site
-        run: bundle exec jekyll build --trace
+        run: bash scripts/jekyll_build.sh --trace
 
       - name: Verify approved Insights indexing and sitemap
         run: |

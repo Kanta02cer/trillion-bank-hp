@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "bundle config set path 'vendor/bundle' && bundle install",
-  "buildCommand": "RUBYOPT='-r./_plugins/ruby32_compat' bundle exec jekyll build",
+  "buildCommand": "bash scripts/jekyll_build.sh",
   "outputDirectory": "_site",
   "cleanUrls": true,
   "trailingSlash": true
