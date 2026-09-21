@@ -39,6 +39,10 @@ jobs:
           set -euo pipefail
           WORKDIR=$(mktemp -d)
           cp -a _site/. "$WORKDIR/"
+          # Keep Vercel serverless API (TypeSafe etc.) beside static output.
+          mkdir -p "$WORKDIR/api"
+          cp -a api/. "$WORKDIR/api/"
+          printf '%s\n' '{' '  "name": "trillion-bank-hp",' '  "private": true' '}' > "$WORKDIR/package.json"
           cd "$WORKDIR"
           cat > vercel.json <<'EOF'
           {
@@ -51,8 +55,7 @@ jobs:
             "trailingSlash": true
           }
           EOF
-          rm -f package.json package-lock.json mise.toml Gemfile Gemfile.lock .ruby-version
-          rm -rf api
+          rm -f package-lock.json mise.toml Gemfile Gemfile.lock .ruby-version
           git init -b vercel-deploy
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
