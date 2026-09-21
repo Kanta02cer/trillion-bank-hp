@@ -1,0 +1,62 @@
+name: Deploy static site to Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-vercel-static
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      JEKYLL_ENV: production
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3.6"
+          bundler-cache: true
+
+      - name: Build Jekyll site
+        run: bash scripts/jekyll_build.sh
+
+      - name: Publish _site to vercel-deploy branch
+        run: |
+          set -euo pipefail
+          WORKDIR=$(mktemp -d)
+          cp -a _site/. "$WORKDIR/"
+          cd "$WORKDIR"
+          cat > vercel.json <<'EOF'
+          {
+            "$schema": "https://openapi.vercel.sh/vercel.json",
+            "framework": null,
+            "buildCommand": null,
+            "installCommand": null,
+            "outputDirectory": ".",
+            "cleanUrls": true,
+            "trailingSlash": true
+          }
+          EOF
+          rm -f package.json package-lock.json mise.toml Gemfile Gemfile.lock .ruby-version
+          rm -rf api
+          git init -b vercel-deploy
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add -A
+          git commit -m "Publish prebuilt Jekyll site for Vercel (${GITHUB_SHA::7})"
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push -u origin vercel-deploy --force

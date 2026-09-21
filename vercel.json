@@ -1,9 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "installCommand": "gem install bundler:4.0.10 --no-document && bundle _4.0.10_ config set path 'vendor/bundle' && bundle _4.0.10_ config set with 'jekyll_plugins' && bundle _4.0.10_ install --jobs=4 --retry=3",
-  "buildCommand": "bash scripts/jekyll_build.sh",
-  "outputDirectory": "_site",
+  "git": {
+    "deploymentEnabled": {
+      "main": false,
+      "vercel-deploy": true
+    }
+  },
   "cleanUrls": true,
   "trailingSlash": true
 }
