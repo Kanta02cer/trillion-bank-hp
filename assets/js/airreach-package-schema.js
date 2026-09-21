@@ -47,7 +47,12 @@
       var u = String(url || '').trim();
       if (!u) return '';
       if (u.indexOf('http') !== 0) u = 'https://' + u;
-      return new URL(u).hostname.replace(/^www\./, '').toLowerCase();
+      if (typeof URL !== 'undefined') {
+        return new URL(u).hostname.replace(/^www\./, '').toLowerCase();
+      }
+      var m = u.match(/^https?:\/\/([^\/?#]+)/i);
+      if (!m) return '';
+      return m[1].replace(/^www\./, '').toLowerCase();
     } catch (e) { return ''; }
   }
 
@@ -104,7 +109,7 @@
       errors.push('Entity Lock: 機械的キーワードは公開不可: ' + badKw.slice(0, 5).join(', '));
     }
 
-    // Cross-brand residue: other known demo brands mixed into text
+    // Cross-brand residue: soft-warn unless token matches locked brand or target host
     var blob = [
       String(map['content/faq.md'] || ''),
       String(map['public/llms.txt'] || ''),
@@ -113,17 +118,32 @@
       JSON.stringify(service)
     ].join('\n');
     var lockedBrand = orgName;
-    if (lockedBrand && /メディくる|CROSSONE|amasora|豊胸/i.test(blob)) {
-      var hits = [];
-      if (/メディくる/i.test(blob) && !/メディくる/i.test(lockedBrand)) hits.push('メディくる');
-      if (/CROSSONE/i.test(blob) && !/CROSSONE/i.test(lockedBrand)) hits.push('CROSSONE');
-      if (/amasora/i.test(blob) && !/amasora/i.test(lockedBrand)) hits.push('amasora');
-      if (hits.length) errors.push('Entity Lock: 別ブランド痕跡が混在: ' + hits.join(', ') + '。公開不可・要確認');
+    var brandTokens = [
+      { re: /メディくる/i, label: 'メディくる' },
+      { re: /CROSSONE/i, label: 'CROSSONE' },
+      { re: /amasora/i, label: 'amasora' },
+      { re: /豊胸/i, label: '豊胸' }
+    ];
+    var hits = [];
+    brandTokens.forEach(function (t) {
+      if (!t.re.test(blob)) return;
+      var allowed = false;
+      if (lockedBrand && t.re.test(lockedBrand)) allowed = true;
+      if (targetHost && targetHost.indexOf(t.label.toLowerCase()) !== -1) allowed = true;
+      if (!allowed) hits.push(t.label);
+    });
+    if (hits.length) {
+      warnings.push('Entity Lock: 別ブランド痕跡が混在: ' + hits.join(', ') + '。公開不可・要確認（ドラフトZIPは可）');
     }
+
+    var publishable = errors.length === 0 && warnings.filter(function (w) {
+      return /別ブランド痕跡|公開不可/.test(w);
+    }).length === 0;
 
     return {
       ok: errors.length === 0,
-      publishable: errors.length === 0,
+      publishable: publishable,
+      draftOk: errors.length === 0,
       errors: errors,
       warnings: warnings,
       targetHost: targetHost,
@@ -163,13 +183,16 @@
     });
     var lock = validateEntityLock(map, opts || {});
     lock.errors.forEach(function (e) { errors.push(e); });
+    var structureOk = errors.length === 0 && missing.length === 0;
     return {
-      ok: errors.length === 0 && missing.length === 0,
+      ok: structureOk,
       missing: missing,
       extra: extra,
       errors: errors,
+      warnings: (lock.warnings || []).slice(),
       entityLock: lock,
-      publishable: errors.length === 0 && missing.length === 0 && lock.publishable
+      publishable: structureOk && !!lock.publishable,
+      draftOk: structureOk && !!lock.draftOk
     };
   }
 

@@ -1,4 +1,29 @@
+function setCors(req, res) {
+  const origin = req.headers.origin || '';
+  let allow = 'https://trillion-bank.jp';
+  try {
+    const host = origin ? new URL(origin).hostname : '';
+    if (
+      host === 'trillion-bank.jp' ||
+      host === 'www.trillion-bank.jp' ||
+      host === 'trillion-bank-hp.vercel.app' ||
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      (host && (host.endsWith('.vercel.app') || host.endsWith('.github.io')))
+    ) {
+      allow = origin;
+    }
+  } catch (e) {}
+  res.setHeader('Access-Control-Allow-Origin', allow);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Vary', 'Origin');
+}
+
 export default async function handler(req, res) {
+  setCors(req, res);
+  if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
   if (!['GET','POST'].includes(req.method)) return res.status(405).json({ error: 'GET or POST required' });
   const input = req.method === 'GET' ? req.query : (req.body || {});
   const targetUrl = input.url;

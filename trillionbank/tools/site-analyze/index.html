@@ -25,6 +25,8 @@ permalink: /trillionbank/tools/site-analyze/
     <pre id="out" style="margin-top:24px;padding:16px;background:#f7f8fa;border-radius:10px;overflow:auto;font-size:13px;line-height:1.5;min-height:120px">結果がここに表示されます。</pre>
   </div>
 </section>
+<meta name="tb-api-base" content="https://trillion-bank-hp.vercel.app">
+<script src="/assets/js/airreach-api.js"></script>
 <script>
 (function () {
   var out = document.getElementById('out');
@@ -35,6 +37,13 @@ permalink: /trillionbank/tools/site-analyze/
   }
 
   async function analyze(payload) {
+    if (window.AirReachAPI && window.AirReachAPI.apiFetch) {
+      return window.AirReachAPI.apiFetch('/api/site-analyze/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
     var res = await fetch('/api/site-analyze/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -715,6 +715,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
   </section>
 </main>
 {% include tb-footer.html %}
+<script src="{{ '/assets/js/airreach-api.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-tip.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-handoff.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-diagnose.js' | relative_url }}" defer></script>
@@ -1525,9 +1526,10 @@ document.addEventListener('DOMContentLoaded', function () {
   if ($('ar-cta-actions')) $('ar-cta-actions').addEventListener('click', function () { setStep(3); });
 
   $('ar-google-connect').addEventListener('click', function () {
-    fetch('/api/google/auth').then(function (res) {
+    var __auth=(window.AirReachAPI&&window.AirReachAPI.apiUrl)?window.AirReachAPI.apiUrl('/api/google/auth'):'/api/google/auth/';
+    fetch(__auth).then(function (res) {
       if (res.redirected) { location.href = res.url; return; }
-      if (res.ok) { location.href = '/api/google/auth'; return; }
+      if (res.ok) { location.href = __auth; return; }
       throw new Error('no');
     }).catch(function () {
       var gn = $('ar-google-note');

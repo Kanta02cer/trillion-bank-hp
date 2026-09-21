@@ -12,7 +12,7 @@ var path = require('path');
 var vm = require('vm');
 
 var schemaPath = path.join(__dirname, '..', 'assets', 'js', 'airreach-package-schema.js');
-var sandbox = { module: { exports: {} }, globalThis: {} };
+var sandbox = { module: { exports: {} }, globalThis: {}, URL: URL, console: console };
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(schemaPath, 'utf8'), sandbox);
@@ -24,6 +24,7 @@ function smokeFiles() {
     if (f === 'MANIFEST.json') {
       files[f] = JSON.stringify({
         generated_at: new Date().toISOString(),
+        target_url: 'https://example.com/',
         url: 'https://example.com/',
         evidence: {
           market_demand: 'Estimated',
@@ -32,6 +33,26 @@ function smokeFiles() {
           hack2: 'Unavailable',
           deployment: 'ZIP only'
         }
+      }, null, 2);
+    } else if (f === 'schema/organization.jsonld') {
+      files[f] = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'Example Co',
+        url: 'https://example.com/'
+      }, null, 2);
+    } else if (f === 'schema/service.jsonld') {
+      files[f] = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Service',
+        name: 'Example Service',
+        provider: { '@type': 'Organization', name: 'Example Co', url: 'https://example.com/' }
+      }, null, 2);
+    } else if (f === 'schema/faq.jsonld') {
+      files[f] = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: []
       }, null, 2);
     } else if (f === 'strategy/keywords.csv') {
       files[f] = Schema.KEYWORD_CSV_COLUMNS.join(',') + '\nP0,example,100,Estimated,,,,,,Core,大,ページ改善,Generated\n';

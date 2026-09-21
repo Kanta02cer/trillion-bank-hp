@@ -287,6 +287,10 @@
     if (window.AirReachPackageSchema && window.AirReachPackageSchema.validatePackageFiles) {
       var chk = window.AirReachPackageSchema.validatePackageFiles(files);
       if (!chk.ok) throw new Error('パッケージ構造が設計図と不一致: ' + (chk.errors || chk.missing || []).join('; '));
+      if (!chk.publishable) {
+        var w = (chk.warnings || []).concat((chk.entityLock && chk.entityLock.warnings) || []);
+        throw new Error('Entity Lock未通過のためDraft PR不可（ZIPドラフトは可）: ' + (w.join('; ') || '要確認'));
+      }
     }
     var tree = [];
     var names = Object.keys(files);
@@ -560,7 +564,10 @@
           syncMsg.textContent = '/api/google/gsc に接続中…';
         }
         try {
-          var res = await fetch('/api/google/gsc', {
+          var gscUrl = (window.AirReachAPI && window.AirReachAPI.apiUrl)
+            ? window.AirReachAPI.apiUrl('/api/google/gsc')
+            : '/api/google/gsc/';
+          var res = await fetch(gscUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

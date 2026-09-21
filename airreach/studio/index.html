@@ -8,6 +8,7 @@ robots: "noindex, follow"
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+  <meta name="tb-api-base" content="https://trillion-bank-hp.vercel.app">
 <meta charset="UTF-8">
 {% include tb-head.html %}
 <link rel="stylesheet" href="/assets/css/airreach-studio.css">
@@ -109,7 +110,8 @@ robots: "noindex, follow"
       </div>
 
       <div class="ars-card">
-        <h3 data-tip="ユーザーが見る中心の表です。需要は推定、GSCがある行だけ実測を併記します。">対策キーワード</h3>
+        <h3 data-tip="このサイト向けに個別最適化した対策候補です。他社ブランド語は除外します。">このサイト向けキーワード</h3>
+        <p class="orch-kw-lead">優先度の高いものから、理由と次の一手だけを表示します。詳細数値はCSVで確認できます。</p>
         <p id="orch-gsc-note" class="orch-gsc-note" hidden></p>
         <div class="orch-kw-toolbar">
           <div class="orch-kw-filters" role="group" aria-label="優先度フィルタ">
@@ -129,13 +131,8 @@ robots: "noindex, follow"
             <thead>
               <tr>
                 <th>優先</th>
-                <th>キーワード</th>
-                <th>月間需要</th>
-                <th>GSC</th>
-                <th data-tip="HackⅡ実測の言及率 / 引用率。準備度スコアではありません。">AI言及/引用</th>
-                <th>今の状態</th>
-                <th>AI質問</th>
-                <th>競合との差</th>
+                <th>対策キーワード</th>
+                <th>なぜ今やるか</th>
                 <th>やること</th>
               </tr>
             </thead>
@@ -294,9 +291,10 @@ robots: "noindex, follow"
           </div>
 
           <div class="ars-panel" data-panel-view="keywords">
-            <div class="ars-title-row"><div><h2>キーワード</h2></div><div class="ars-row"><button id="seed-keywords" class="ars-btn ars-btn-soft" type="button">100件生成</button><button id="export-keywords" class="ars-btn ars-btn-secondary" type="button">CSV</button></div></div>
-            <div class="ars-card"><div class="ars-grid"><div class="ars-field ars-c4"><label for="kw-text">キーワード</label><input id="kw-text" class="ars-input"></div><div class="ars-field ars-c3"><label for="kw-intent">Intent</label><select id="kw-intent" class="ars-select"><option>Informational</option><option>Commercial</option><option>Transactional</option><option>Local</option><option>Comparison</option></select></div><div class="ars-field ars-c3"><label for="kw-cluster">Cluster</label><input id="kw-cluster" class="ars-input"></div><div class="ars-field ars-c2"><label for="kw-priority">優先度</label><select id="kw-priority" class="ars-select"><option>P0</option><option>P1</option><option>P2</option></select></div></div><div class="ars-row" style="margin-top:12px"><button id="add-keyword" class="ars-btn ars-btn-primary" type="button">登録</button><label class="ars-btn ars-btn-secondary" style="cursor:pointer">CSV取込<input id="keyword-csv" type="file" accept=".csv,text/csv" hidden></label></div></div>
-            <div class="ars-table-wrap" style="margin-top:16px"><table class="ars-table"><thead><tr><th>Priority</th><th>Keyword</th><th>Intent</th><th>Cluster</th><th>URL</th><th>状態</th><th></th></tr></thead><tbody id="keyword-body"></tbody></table></div>
+            <div class="ars-title-row"><div><h2>言葉</h2><p class="ars-sub">基本情報のブランド／サービス向けに絞った対策候補</p></div><div class="ars-row"><button id="seed-keywords" class="ars-btn ars-btn-soft" type="button">自社向けに生成</button><button id="export-keywords" class="ars-btn ars-btn-secondary" type="button">CSV</button></div></div>
+            <div id="kw-scope-note" class="ars-note">Overviewで分析するか、「自社向けに生成」で候補を作ります。</div>
+            <div class="ars-card ars-kw-add"><div class="ars-grid"><div class="ars-field ars-c6"><label for="kw-text">追加するキーワード</label><input id="kw-text" class="ars-input" placeholder="例: AI検索対策 費用"></div><div class="ars-field ars-c3"><label for="kw-priority">優先度</label><select id="kw-priority" class="ars-select"><option>P0</option><option selected>P1</option><option>P2</option></select></div><div class="ars-field ars-c3"><label for="kw-intent">意図</label><select id="kw-intent" class="ars-select"><option>Informational</option><option>Commercial</option><option>Comparison</option></select></div></div><div class="ars-row" style="margin-top:12px"><button id="add-keyword" class="ars-btn ars-btn-primary" type="button">追加</button><label class="ars-btn ars-btn-secondary" style="cursor:pointer">CSV取込<input id="keyword-csv" type="file" accept=".csv,text/csv" hidden></label><input id="kw-cluster" type="hidden" value="Core"></div></div>
+            <div id="keyword-body" class="ars-kw-cards" style="margin-top:16px"></div>
           </div>
 
           <div class="ars-panel" data-panel-view="timeseries">
@@ -310,9 +308,16 @@ robots: "noindex, follow"
           </div>
 
           <div class="ars-panel" data-panel-view="hack2">
-            <div class="ars-title-row"><div><h2>HackⅡ実測</h2></div></div>
+            <div class="ars-title-row"><div><h2>HackⅡ実測</h2></div><button id="run-hack2-measure" class="ars-btn ars-btn-primary" type="button">計測実行</button></div>
+            <div id="hack2-status" class="ars-note">未測定 — JSON取込または計測実行</div>
+            <div class="ars-row" style="margin:12px 0;flex-wrap:wrap;gap:10px">
+              <label><input type="checkbox" data-hack2-engine value="jev" checked> Jev</label>
+              <label><input type="checkbox" data-hack2-engine value="chatgpt"> ChatGPT</label>
+              <label><input type="checkbox" data-hack2-engine value="claude"> Claude</label>
+              <label><input type="checkbox" data-hack2-engine value="perplexity"> Perplexity</label>
+            </div>
             <div class="ars-model-grid" id="hack2-models"></div>
-            <div class="ars-grid" style="margin-top:16px"><div class="ars-card ars-c6"><h3>JSON取込</h3><textarea id="hack2-json" class="ars-code" style="min-height:200px"></textarea><button id="import-hack2" class="ars-btn ars-btn-primary" type="button" style="margin-top:10px">取込</button></div><div class="ars-card ars-c6"><h3>ルール</h3><ul class="ars-list"><li><strong>準備度 ≠ 引用率</strong></li><li><strong>0% ≠ 失敗</strong></li><li><strong>同一条件で再計測</strong></li></ul></div></div>
+            <div class="ars-grid" style="margin-top:16px"><div class="ars-card ars-c6"><h3>JSON取込</h3><textarea id="hack2-json" class="ars-code" style="min-height:200px"></textarea><button id="import-hack2" class="ars-btn ars-btn-primary" type="button" style="margin-top:10px">取込</button></div><div class="ars-card ars-c6"><h3>ルール</h3><ul class="ars-list"><li><strong>準備度 ≠ 引用率</strong></li><li><strong>0% ≠ 失敗</strong></li><li><strong>同一条件で再計測</strong></li><li>Jevはページ本文からの推定。ChatGPT/Claude/PerplexityはVercelのAPIキーが必要</li><li>GitHub Pages上でも計測APIはVercelへ接続します</li></ul></div></div>
           </div>
         </section>
       </div>
@@ -320,6 +325,7 @@ robots: "noindex, follow"
   </div>
 </main>
 {% include tb-footer.html %}
+<script src="/assets/js/airreach-api.js" defer></script>
 <script src="/assets/js/airreach-tip.js" defer></script>
 <script src="/assets/js/airreach-diagnose.js" defer></script>
 <script src="/assets/js/airreach-studio.js" defer></script>

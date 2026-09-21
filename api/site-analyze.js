@@ -16,11 +16,19 @@ const ALLOWED_HOSTS = new Set([
   '127.0.0.1'
 ]);
 
+function isCorsHost(host) {
+  if (!host) return false;
+  if (ALLOWED_HOSTS.has(host)) return true;
+  if (host.endsWith('.vercel.app') || host.endsWith('.github.io')) return true;
+  return false;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin(req));
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Vary', 'Origin');
 
   if (req.method === 'OPTIONS') {
     res.statusCode = 204;
@@ -237,7 +245,7 @@ function allowedOrigin(req) {
   if (!origin) return '*';
   try {
     const host = new URL(origin).hostname;
-    if (ALLOWED_HOSTS.has(host) || host.endsWith('.vercel.app')) return origin;
+    if (isCorsHost(host)) return origin;
   } catch (e) {}
   return 'https://trillion-bank.jp';
 }
