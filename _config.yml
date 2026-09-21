@@ -393,6 +393,13 @@ include:
 exclude:
   - node_modules
   - vendor
+  - vercel.json
+  - package.json
+  - package-lock.json
+  - mise.toml
+  - .ruby-version
+  - api
+  - _plugins
   - .bundle
   - Gemfile
   - Gemfile.lock

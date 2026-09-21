@@ -38,6 +38,67 @@
       return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
     });
   }
+
+  var FOREIGN_BRAND_RE = /メディくる|CROSSONE|amasora|豊胸|レガリス|Regalis/i;
+
+  function entityTokens(brand, service, url) {
+    var out = [];
+    function push(v) {
+      v = String(v || '').trim();
+      if (!v) return;
+      out.push(v);
+      v.split(/[\s　/|·・]+/).forEach(function (p) {
+        p = p.trim();
+        if (p.length >= 2) out.push(p);
+      });
+    }
+    push(brand);
+    push(service);
+    try {
+      var h = hostOf(url || '');
+      if (h) {
+        push(h.split('.')[0]);
+      }
+    } catch (e) {}
+    var seen = {};
+    return out.filter(function (x) {
+      var k = normKw(x);
+      if (!k || k.length < 2 || seen[k]) return false;
+      seen[k] = 1;
+      return true;
+    });
+  }
+
+  function isForeignBrandKeyword(text, brand, service) {
+    var raw = String(text || '');
+    if (!FOREIGN_BRAND_RE.test(raw)) return false;
+    var locked = String(brand || '') + ' ' + String(service || '');
+    // allow if locked entity itself matches the foreign token
+    if (FOREIGN_BRAND_RE.test(locked)) return false;
+    return true;
+  }
+
+  function belongsToEntity(text, brand, service, url) {
+    if (isForeignBrandKeyword(text, brand, service)) return false;
+    var tokens = entityTokens(brand, service, url);
+    if (!tokens.length) return true;
+    var t = normKw(text);
+    return tokens.some(function (tok) {
+      var k = normKw(tok);
+      return k && (t.indexOf(k) !== -1 || k.indexOf(t) !== -1);
+    });
+  }
+
+  function whyForKeyword(k) {
+    if (k.seed_source === 'GSC' && k.gsc_impressions) {
+      return '自社GSCで表示あり（' + Number(k.gsc_impressions).toLocaleString('ja-JP') + '）';
+    }
+    if (k.seed_source === 'KeywordPlanner') return 'Keyword Plannerの公式需要';
+    if (k.priority === 'P0') return '購買・比較意図が強く、先に対策すべき';
+    if (k.priority === 'P1') return 'サービス名に沿い、伸ばしやすい候補';
+    return '関連候補（優先度は低め）';
+  }
+
   function csvCell(v) {
     v = String(v == null ? '' : v);
     return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
@@ -195,24 +256,29 @@
     };
   }
 
-  function buildKeywords(service, region, limit, gscMap) {
+  function buildKeywords(service, region, limit, gscMap, opts) {
+    opts = opts || {};
     var s = service || 'サービス';
+    var brand = opts.brand || '';
+    var url = opts.url || '';
     var loc = region && region !== '全国' && region !== '指定' ? region : '';
     var seeds = [
       s, s + ' おすすめ', s + ' 比較', s + ' 費用', s + ' 料金', s + ' 口コミ', s + ' 評判',
-      s + ' 失敗', s + ' 症例', s + ' 安全性', s + ' 予約', s + ' クリニック', s + ' 病院',
-      s + ' ダウンタイム', s + ' メリット', s + ' デメリット', s + ' 選び方', s + ' 流れ',
-      s + ' とは', s + ' 効果'
+      s + ' メリット', s + ' デメリット', s + ' 選び方', s + ' 流れ', s + ' とは', s + ' 効果',
+      s + ' 導入', s + ' 事例', s + ' 料金プラン', s + ' 相談', s + ' FAQ'
     ];
+    if (brand && normKw(brand) !== normKw(s)) {
+      seeds = seeds.concat([brand, brand + ' ' + s, s + ' ' + brand]);
+    }
     if (loc) {
       seeds = seeds.concat([s + ' ' + loc, loc + ' ' + s, s + ' ' + loc + ' おすすめ', s + ' ' + loc + ' 費用']);
     }
 
-    // Real GSC queries become first-class keyword seeds (Official impressions).
+    // Real GSC queries — only keep those that belong to this entity (avoid other-client CSV mix)
     var gscSeeds = Object.keys(gscMap || {}).map(function (k) {
       return gscMap[k];
     }).filter(function (g) {
-      return g && g.impressions > 0 && g.keyword;
+      return g && g.impressions > 0 && g.keyword && belongsToEntity(g.keyword, brand, s, url);
     }).sort(function (a, b) {
       return b.impressions - a.impressions;
     }).slice(0, Math.min(40, Math.ceil(limit * 0.45)));
@@ -223,15 +289,18 @@
 
     var out = [];
     var seen = {};
+    var skippedForeign = 0;
     seeds.forEach(function (text) {
       if (out.length >= limit) return;
       text = String(text || '').trim();
       var nk = normKw(text);
       if (!nk || seen[nk]) return;
+      if (isForeignBrandKeyword(text, brand, s)) { skippedForeign++; return; }
+      if (!belongsToEntity(text, brand, s, url)) return;
       seen[nk] = 1;
       var gsc = lookupGsc(gscMap, text);
       var vol = estimateVolume(text, region);
-      var intent = /比較|おすすめ|選び方|費用|料金|予約/.test(text) ? 'Commercial' : 'Informational';
+      var intent = /比較|おすすめ|選び方|費用|料金|予約|相談|導入/.test(text) ? 'Commercial' : 'Informational';
       var fromGsc = !!(gsc && gsc.impressions > 0);
       var priority = fromGsc && gsc.impressions >= 200 ? 'P0' : (fromGsc ? 'P1' : 'P2');
       if (/比較|おすすめ|費用|料金/.test(text) && priority === 'P2') priority = 'P1';
@@ -240,8 +309,8 @@
       }
       var strength = fromGsc && gsc.impressions > 50 ? '普通' : (priority === 'P0' ? '弱い' : '普通');
       var gap = priority === 'P0' ? '大' : priority === 'P1' ? '中' : '小';
-      var action = /費用|料金/.test(text) ? '料金FAQ' : /比較|おすすめ/.test(text) ? '比較LP改善' : /症例/.test(text) ? '症例構造化' : /安全|失敗|評判/.test(text) ? '根拠・監修情報' : 'ページ改善';
-      out.push({
+      var action = /費用|料金/.test(text) ? '料金・条件を公式に明記' : /比較|おすすめ|選び方/.test(text) ? '比較・向いている人を整理' : /事例|導入/.test(text) ? '事例・導入の流れを追加' : /口コミ|評判|失敗/.test(text) ? '根拠・監修・一次情報を追加' : /FAQ|相談/.test(text) ? 'FAQと相談導線を追加' : '対象ページの説明を厚くする';
+      var row = {
         id: uid(),
         keyword: text,
         volume: vol,
@@ -257,22 +326,32 @@
         cluster: /費用|料金/.test(text) ? 'Price' : /比較|おすすめ/.test(text) ? 'Comparison' : 'Core',
         seed_source: fromGsc ? 'GSC' : 'Generated',
         prompts: []
-      });
+      };
+      row.why = whyForKeyword(row);
+      out.push(row);
     });
 
-    var n = 1;
-    while (out.length < limit) {
-      var t = s + ' ' + (loc || '関連') + ' ' + n;
-      n++;
-      var nk2 = normKw(t);
-      if (seen[nk2]) continue;
+    // Meaningful variants only — never pad with 「関連 N」
+    var modifiers = ['始め方', 'やり方', '自社', '外注', 'ツール', '会社', '代理店', 'ポイント', '注意点', 'チェックリスト'];
+    var mi = 0;
+    while (out.length < limit && mi < modifiers.length * 3) {
+      var mod = modifiers[mi % modifiers.length];
+      mi++;
+      var text2 = s + ' ' + mod + (loc && mi > modifiers.length ? ' ' + loc : '');
+      text2 = String(text2).trim();
+      var nk2 = normKw(text2);
+      if (!nk2 || seen[nk2]) continue;
+      if (isForeignBrandKeyword(text2, brand, s)) continue;
       seen[nk2] = 1;
-      out.push({
-        id: uid(), keyword: t, volume: estimateVolume(t, region), volume_source: 'Estimated',
+      var row2 = {
+        id: uid(), keyword: text2, volume: estimateVolume(text2, region), volume_source: 'Estimated',
         gsc_impressions: null, gsc_clicks: null, gsc_position: null,
-        intent: 'Informational', priority: 'P2', strength: '普通', gap: '小',
-        action: 'ページ改善', cluster: 'Core', seed_source: 'Generated', prompts: []
-      });
+        intent: /外注|会社|ツール|代理店/.test(text2) ? 'Commercial' : 'Informational',
+        priority: 'P2', strength: '普通', gap: '小',
+        action: '対象ページの説明を厚くする', cluster: 'Core', seed_source: 'Generated', prompts: []
+      };
+      row2.why = whyForKeyword(row2);
+      out.push(row2);
     }
 
     out.sort(function (a, b) {
@@ -282,6 +361,7 @@
       if (gi) return gi;
       return (b.volume || 0) - (a.volume || 0);
     });
+    out._skippedForeign = skippedForeign;
     return out.slice(0, limit);
   }
 
@@ -641,6 +721,15 @@
         alert('パッケージ構造が設計図と一致しません: ' + (v.errors || v.missing || []).join('; '));
         return;
       }
+      if (!v.publishable) {
+        var warn = (v.warnings || []).concat((v.entityLock && v.entityLock.warnings) || []);
+        var msg = '公開不可の警告があります（ドラフトZIPとして保存できます）:\n' +
+          (warn.length ? warn.join('\n') : 'Entity Lock / 要確認') +
+          '\n\nドラフトZIPをダウンロードしますか？';
+        if (!confirm(msg)) return;
+        filename = (filename || (window.AirReachPackageSchema && window.AirReachPackageSchema.ZIP_FILENAME) || 'airreach-implementation.zip')
+          .replace(/\.zip$/i, '-DRAFT.zip');
+      }
     }
     filename = filename || (window.AirReachPackageSchema && window.AirReachPackageSchema.ZIP_FILENAME) || 'airreach-implementation.zip';
     var data = buildZip(clean);
@@ -662,7 +751,9 @@
         return {
           id: k.id, text: k.keyword, intent: k.intent, cluster: k.cluster,
           priority: k.priority, targetUrl: '', status: '未対策', volume: k.volume,
-          gsc_impressions: k.gsc_impressions
+          gsc_impressions: k.gsc_impressions, why: k.why || '', action: k.action || '',
+          brandScope: (job.profile && job.profile.brand) || '',
+          serviceScope: (job.profile && job.profile.service) || ''
         };
       });
       st.competitors = job.competitors;
@@ -855,7 +946,13 @@
     await sleep(200);
 
     setStep(3, 'running', 20);
-    var keywords = buildKeywords(job.profile.service, job.region, job.keyword_limit, gscMap);
+    var keywords = buildKeywords(job.profile.service, job.region, job.keyword_limit, gscMap, {
+      brand: job.profile.brand,
+      url: job.url || job.profile.url
+    });
+    if (keywords._skippedForeign) {
+      job.keyword_skip_note = '他社ブランド語を ' + keywords._skippedForeign + ' 件除外しました';
+    }
     for (var ki = 0; ki < keywords.length; ki++) {
       if (ki % 10 === 0) {
         setStep(3, 'running', Math.round((ki / keywords.length) * 100));
@@ -924,34 +1021,19 @@
     var list = filteredKeywords(job);
     var shown = list.slice(0, uiState.shown);
     body.innerHTML = shown.map(function (k) {
-      var official = k.volume_source === 'Official';
-      var volTip = official
-        ? 'Keyword Planner等の公式ボリュームです。GSC表示回数ではありません。'
-        : '市場需要の推定です。GSCの表示回数ではありません。';
-      var volBadge = official
-        ? ' <span class="orch-badge-off" data-tip="公式ボリューム">公式</span>'
-        : ' <span class="orch-badge-est" data-tip="推定ボリューム">推定</span>';
-      var gscCell = k.gsc_impressions != null
-        ? '<span class="orch-badge-off" data-tip="Search ConsoleのImpressions（実測）">' + Number(k.gsc_impressions).toLocaleString('ja-JP') + '</span>'
-        : '—';
-      var seed = '';
-      if (k.seed_source === 'GSC') seed = ' <span class="orch-seed" data-tip="GSCクエリから採用">GSC</span>';
-      if (k.seed_source === 'KeywordPlanner') seed = ' <span class="orch-seed" data-tip="Keyword Plannerから採用">KP</span>';
-      var aiCell = (k.ai_mention_rate != null || k.ai_citation_rate != null)
-        ? ('<span data-tip="HackⅡ実測の言及率 / 引用率">' +
-           (k.ai_mention_rate != null ? k.ai_mention_rate + '%' : '—') + ' / ' +
-           (k.ai_citation_rate != null ? k.ai_citation_rate + '%' : '—') + '</span>')
-        : '—';
-      return '<tr>' +
+      var why = k.why || whyForKeyword(k);
+      var meta = [];
+      if (k.seed_source === 'GSC') meta.push('GSC');
+      if (k.seed_source === 'KeywordPlanner') meta.push('公式需要');
+      if (k.volume_source === 'Official') meta.push('公式');
+      else if (k.volume) meta.push('需要目安 ' + Number(k.volume).toLocaleString('ja-JP'));
+      if (k.ai_mention_rate != null) meta.push('AI言及 ' + k.ai_mention_rate + '%');
+      var metaHtml = meta.length ? ('<div class="orch-kw-meta">' + meta.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div>') : '';
+      return '<tr class="orch-kw-row">' +
         '<td><span class="orch-prio">' + esc(k.priority || 'P2') + '</span></td>' +
-        '<td>' + esc(k.keyword) + seed + '</td>' +
-        '<td><span data-tip="' + esc(volTip) + '">' + Number(k.volume).toLocaleString('ja-JP') + '</span>' + volBadge + '</td>' +
-        '<td>' + gscCell + '</td>' +
-        '<td>' + aiCell + '</td>' +
-        '<td>' + esc(k.strength) + '</td>' +
-        '<td>' + (k.prompt_count || (k.prompts && k.prompts.length) || 0) + '</td>' +
-        '<td>' + esc(k.gap) + '</td>' +
-        '<td>' + esc(k.action) + '</td>' +
+        '<td><div class="orch-kw-main"><strong>' + esc(k.keyword) + '</strong>' + metaHtml + '</div></td>' +
+        '<td class="orch-kw-why">' + esc(why) + '</td>' +
+        '<td class="orch-kw-act">' + esc(k.action || 'ページ改善') + '</td>' +
         '</tr>';
     }).join('');
 
@@ -963,7 +1045,8 @@
     var count = q('orch-kw-count');
     if (count) {
       count.hidden = false;
-      count.textContent = '表示 ' + shown.length + ' / 該当 ' + list.length + '（全 ' + ((job.keywords || []).length) + '）';
+      var skip = job.keyword_skip_note ? ' · ' + job.keyword_skip_note : '';
+      count.textContent = '表示 ' + shown.length + ' / 該当 ' + list.length + '（全 ' + ((job.keywords || []).length) + '）' + skip;
     }
     if (window.AirReachTip) window.AirReachTip.enhance(body.parentElement || body);
   }

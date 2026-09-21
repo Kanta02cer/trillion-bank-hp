@@ -37,4 +37,4 @@ Status: ACTIVE
 ## Studio Entity Lock
 
 `assets/js/airreach-package-schema.js` の `validateEntityLock`。
-ドメインと organization.url 不一致、機械的「関連 N」キーワード、別ブランド混在は **公開不可・要確認**。
+ドメインと organization.url 不一致、機械的「関連 N」キーワードは公開ブロック。別ブランド痕跡（例: amasora）は **警告＋公開不可**（ドラフトZIPは可。Draft PRは不可）。

@@ -1,0 +1,82 @@
+---
+layout: corp
+title: サイト分析（TypeSafe Jev）
+tbdesc: 公開ページの明瞭性・主張リスク・エンティティ整合を TypeSafe Jev で判定する社内ツール。
+robots: noindex, nofollow
+permalink: /trillionbank/tools/site-analyze/
+---
+<section class="sec">
+  <div class="wrap" style="max-width:820px">
+    <p class="eyebrow">Internal · TypeSafe Jev</p>
+    <h1>サイト分析</h1>
+    <p class="lead" style="margin-top:12px">主要ページのテキストを Jev に渡し、明瞭性・主張安全性・エンティティ整合・ページ役割を構造化判定します。APIキーはサーバ側のみで保持します。</p>
+
+    <div style="margin-top:28px;display:grid;gap:12px">
+      <label for="path">パス（同一オリジン）</label>
+      <input id="path" type="text" value="/" placeholder="/" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:8px">
+      <label for="url">または完全URL</label>
+      <input id="url" type="url" placeholder="https://trillion-bank-hp.vercel.app/" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:8px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+        <button id="runOne" type="button" class="btn">このページを分析</button>
+        <button id="runBatch" type="button" class="btn btn-ghost">主要ページを一括分析</button>
+      </div>
+    </div>
+
+    <pre id="out" style="margin-top:24px;padding:16px;background:#f7f8fa;border-radius:10px;overflow:auto;font-size:13px;line-height:1.5;min-height:120px">結果がここに表示されます。</pre>
+  </div>
+</section>
+<meta name="tb-api-base" content="https://trillion-bank-hp.vercel.app">
+<script src="/assets/js/airreach-api.js"></script>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var defaults = ['/', '/trillionbank/company/', '/trillionbank/business/hack2/', '/airreach/', '/trillionbank/insights/', '/trillionbank/contact/'];
+
+  function show(obj) {
+    out.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+  }
+
+  async function analyze(payload) {
+    if (window.AirReachAPI && window.AirReachAPI.apiFetch) {
+      return window.AirReachAPI.apiFetch('/api/site-analyze/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+    var res = await fetch('/api/site-analyze/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    return data;
+  }
+
+  document.getElementById('runOne').addEventListener('click', async function () {
+    show('分析中…');
+    try {
+      var path = document.getElementById('path').value.trim();
+      var url = document.getElementById('url').value.trim();
+      var payload = url ? { url: url } : { path: path || '/' };
+      show(await analyze(payload));
+    } catch (e) {
+      show(String(e && e.message ? e.message : e));
+    }
+  });
+
+  document.getElementById('runBatch').addEventListener('click', async function () {
+    show('一括分析中…');
+    var results = [];
+    for (var i = 0; i < defaults.length; i++) {
+      try {
+        results.push(await analyze({ path: defaults[i] }));
+      } catch (e) {
+        results.push({ path: defaults[i], error: String(e && e.message ? e.message : e) });
+      }
+    }
+    show({ batch: results });
+  });
+})();
+</script>

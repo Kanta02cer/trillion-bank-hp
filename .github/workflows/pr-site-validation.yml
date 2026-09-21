@@ -58,7 +58,7 @@ jobs:
           node-version: '22'
 
       - name: Build Jekyll site
-        run: bundle exec jekyll build --trace
+        run: bash scripts/jekyll_build.sh --trace
 
       - name: Verify required output and public contact configuration
         run: |

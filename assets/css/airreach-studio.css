@@ -165,3 +165,24 @@
 .orch-checklist label{display:flex;gap:10px;align-items:flex-start;font-weight:700;color:#0f172a;font-size:1.02rem}
 .ars-muted{font-weight:600;color:#64748b;font-size:.95em}
 @media (max-width:720px){.orch-phase2-grid{grid-template-columns:1fr}}
+
+
+/* Simplified keyword proposals */
+.orch-kw-lead{margin:0 0 12px;color:var(--ars-muted,#64748b);font-size:14px;line-height:1.5}
+.orch-kw-table th:nth-child(1),.orch-kw-table td:nth-child(1){width:64px}
+.orch-kw-table th:nth-child(3),.orch-kw-table td:nth-child(3){min-width:180px}
+.orch-kw-table th:nth-child(4),.orch-kw-table td:nth-child(4){min-width:160px}
+.orch-kw-main strong{display:block;font-size:15px;line-height:1.35;color:#0f172a}
+.orch-kw-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.orch-kw-meta span{font-size:11px;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#475569}
+.orch-kw-why,.orch-kw-act{font-size:13px;line-height:1.45;color:#334155}
+.ars-sub{margin:4px 0 0;font-size:13px;font-weight:400;color:#64748b}
+.ars-kw-cards{display:grid;gap:10px}
+.ars-kw-card{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:start;padding:14px 16px;border:1px solid #e2e8f0;border-radius:12px;background:#fff}
+.ars-kw-card .prio{font-weight:700;font-size:13px;color:#1d4ed8}
+.ars-kw-card h4{margin:0;font-size:15px;line-height:1.35}
+.ars-kw-card p{margin:4px 0 0;font-size:13px;color:#475569;line-height:1.45}
+.ars-kw-card .meta{margin-top:6px;font-size:12px;color:#94a3b8}
+@media (max-width:720px){
+  .ars-kw-card{grid-template-columns:1fr;gap:8px}
+}
