@@ -35,7 +35,7 @@ permalink: /trillionbank/tools/site-analyze/
   }
 
   async function analyze(payload) {
-    var res = await fetch('/api/site-analyze', {
+    var res = await fetch('/api/site-analyze/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
