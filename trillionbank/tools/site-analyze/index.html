@@ -27,6 +27,7 @@ permalink: /trillionbank/tools/site-analyze/
 </section>
 <meta name="tb-api-base" content="https://trillion-bank-hp.vercel.app">
 <script src="/assets/js/airreach-api.js"></script>
+<script src="/assets/js/airreach-think.js"></script>
 <script>
 (function () {
   var out = document.getElementById('out');
@@ -41,7 +42,19 @@ permalink: /trillionbank/tools/site-analyze/
       return window.AirReachAPI.apiFetch('/api/site-analyze/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        think: {
+          title: 'サイト分析（Jev）',
+          model: 'jev-latest',
+          judgments: [
+            { id: 'clarity', label: '明瞭性', thinking: '何をする会社か伝わるか' },
+            { id: 'claim_safety', label: '主張安全性', thinking: '誇大表現リスク' },
+            { id: 'entity_consistency', label: 'エンティティ', thinking: 'ブランド整合' },
+            { id: 'primary_job', label: 'ページ役割', thinking: '主目的の分類' },
+            { id: 'needs_edit', label: '編集要否', thinking: '直すべきか' }
+          ],
+          doneTitle: '分析完了'
+        }
       });
     }
     var res = await fetch('/api/site-analyze/', {

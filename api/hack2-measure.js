@@ -112,12 +112,38 @@ export default async function handler(req, res) {
     }
   }
 
+  const judgments = [];
+  engines.forEach((engine) => {
+    if (engine === 'jev') {
+      judgments.push({
+        id: 'jev',
+        label: 'Jev (Estimated)',
+        thinking: 'ページ本文とプロンプトから言及・引用の可能性を判定しています'
+      });
+      prompts.forEach((p, i) => {
+        judgments.push({
+          id: 'jev-prompt-' + i,
+          label: 'Jev · ' + truncate(p.prompt, 40),
+          thinking: '言及・引用の有無を推定しています'
+        });
+      });
+    } else {
+      judgments.push({
+        id: engine,
+        label: engineLabel(engine),
+        thinking: 'API接続して回答を取得・解析しています'
+      });
+    }
+  });
+
   return json(res, 200, {
     ok: rows.length > 0,
     brand,
     url: pageUrl,
     engines,
     engineStatus,
+    judgments,
+    model: engines.indexOf('jev') >= 0 ? 'jev-latest' : (engines[0] || null),
     rows,
     note:
       'Jev results are Estimated proxy judgments from page text + prompt, not live AI-search captures. Provider engines require their API keys on Vercel.',
