@@ -1,0 +1,138 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": [
+        "Trillion Bank",
+        "トリリオンバンク",
+        "株式会社トリリオンバンク",
+        "TRILLION BANK"
+      ],
+      "url": "https://trillion-bank.jp/",
+      "logo": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp",
+      "foundingDate": "2025-12-23",
+      "description": "AI検索とAIエージェント時代の情報流通を、測定・証跡・運用へ変えるテクノロジー企業。",
+      "founder": {
+        "@id": "https://trillion-bank.jp/#kanta-inoue"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {
+        "@type": "Country",
+        "name": "JP"
+      },
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP",
+        "AI検索対策会社の選び方",
+        "AI検索の競合分析",
+        "AI検索SOV"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "subjectOf": [
+        {
+          "@type": "VideoObject",
+          "name": "令和の虎 CHANNEL（人財版）出演回",
+          "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"
+        },
+        {
+          "@type": "VideoObject",
+          "name": "令和の虎 CHANNEL（受験生版）出演回",
+          "url": "https://youtu.be/tvK855skBTM"
+        },
+        {
+          "@type": "VideoObject",
+          "name": "Nontitle Season 6 出演回",
+          "url": "https://youtu.be/AcJNa6jw1IY"
+        },
+        {
+          "@type": "VideoObject",
+          "name": "SBI証券ビジネスドライブ出演回",
+          "url": "https://youtu.be/F2hO--D6Hd0"
+        }
+      ],
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "contactType": "sales",
+          "url": "https://trillion-bank.jp/trillionbank/contact/",
+          "availableLanguage": [
+            "ja"
+          ]
+        }
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": [
+        "Kanta Inoue",
+        "かんちゃん"
+      ],
+      "jobTitle": "代表取締役",
+      "url": "https://trillion-bank.jp/trillionbank/ceo/",
+      "worksFor": {
+        "@id": "https://trillion-bank.jp/#organization"
+      },
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO",
+        "GEO",
+        "LLMO",
+        "AI情報流通インフラ"
+      ]
+    },
+    {
+      "@type": "Service",
+      "@id": "https://trillion-bank.jp/trillionbank/business/hack2/#service",
+      "name": "HackⅡ",
+      "alternateName": [
+        "ハックツ",
+        "Hack2",
+        "HackII"
+      ],
+      "url": "https://trillion-bank.jp/trillionbank/business/hack2/",
+      "provider": {
+        "@id": "https://trillion-bank.jp/#organization"
+      },
+      "serviceType": "AI検索測定・意思決定支援サービス",
+      "description": "選定した質問について、AI回答本文、引用URL、自社・競合の言及、測定日時・条件を保存し、AI検索上の現在地と改善判断を支援するサービス。"
+    },
+    {
+      "@type": "ResearchProject",
+      "@id": "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/#adctor",
+      "name": "Adctor",
+      "alternateName": [
+        "Pay per Crawl",
+        "AI Access Gateway"
+      ],
+      "url": "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/",
+      "description": "AI・RAG・MCP・Agentによるコンテンツ利用を、契約・認証・利用証跡・将来の請求へ接続する研究開発・PoCプログラム。",
+      "member": {
+        "@id": "https://trillion-bank.jp/#organization"
+      }
+    }
+  ]
+}

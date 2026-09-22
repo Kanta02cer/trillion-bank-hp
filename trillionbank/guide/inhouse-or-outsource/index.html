@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0XHQPCC4CF');
+</script>
+
+
+
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+<title>AI検索・AI広告時代の「内製／外注」判断ガイド | 株式会社トリリオンバンク</title>
+<meta name="description" content="AI検索・AI広告への対応を内製するか、外部の継続測定に任せるかを社内で判断するための公開ガイド。今日から自社で確認できる手順、継続測定が必要になる条件と7つの比較観点、部署別の役割、よくある失敗、導入前チェックリスト10項目を整理しました。">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<meta property="og:title" content="AI検索・AI広告時代の「内製／外注」判断ガイド | 株式会社トリリオンバンク">
+<meta property="og:description" content="AI検索・AI広告への対応を内製するか、外部の継続測定に任せるかを社内で判断するための公開ガイド。今日から自社で確認できる手順、継続測定が必要になる条件と7つの比較観点、部署別の役割、よくある失敗、導入前チェックリスト10項目を整理しました。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://trillion-bank.jp/trillionbank/guide/inhouse-or-outsource/">
+<meta property="og:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="株式会社Trillion Bank">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AI検索・AI広告時代の「内製／外注」判断ガイド | 株式会社トリリオンバンク">
+<meta name="twitter:description" content="AI検索・AI広告への対応を内製するか、外部の継続測定に任せるかを社内で判断するための公開ガイド。今日から自社で確認できる手順、継続測定が必要になる条件と7つの比較観点、部署別の役割、よくある失敗、導入前チェックリスト10項目を整理しました。">
+<meta name="twitter:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+
+<link rel="canonical" href="https://trillion-bank.jp/trillionbank/guide/inhouse-or-outsource/">
+<link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/trillionbank/guide/inhouse-or-outsource/">
+<link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/trillionbank/guide/inhouse-or-outsource/">
+<link rel="sitemap" type="application/xml" href="https://trillion-bank.jp/sitemap-index.xml">
+
+<!-- AI / LLM discovery -->
+<meta name="ai-summary" content="AI検索・AI広告への対応を内製するか、外部の継続測定に任せるかを社内で判断するための公開ガイド。今日から自社で確認できる手順、継続測定が必要になる条件と7つの比較観点、部署別の役割、よくある失敗、導入前チェックリスト10項目を整理しました。">
+<link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="https://trillion-bank.jp/feed.xml">
+<link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+<link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+<link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["Trillion Bank", "トリリオンバンク", "株式会社トリリオンバンク", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {"@type": "ImageObject", "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp"},
+      "description": "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。",
+      "foundingDate": "2025-12-23",
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": [
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+        {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+        {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI情報流通インフラ"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "HOME", "item": "https://trillion-bank.jp/" },
+      { "@type": "ListItem", "position": 2, "name": "HackⅡ", "item": "https://trillion-bank.jp/trillionbank/business/hack2/" },
+      { "@type": "ListItem", "position": 3, "name": "AI検索・AI広告時代の「内製／外注」判断ガイド", "item": "https://trillion-bank.jp/trillionbank/guide/inhouse-or-outsource/" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "AI検索・AI広告時代の「内製／外注」判断ガイド",
+    "description": "AI検索・AI広告への対応を内製するか、外部の継続測定に任せるかを社内で判断するための公開ガイド。今日から自社で確認できる手順、継続測定が必要になる条件、部署別の役割、よくある失敗、導入前チェックリスト10項目を整理。",
+    "author": { "@type": "Organization", "name": "株式会社Trillion Bank" },
+    "publisher": { "@type": "Organization", "name": "株式会社Trillion Bank" },
+    "datePublished": "2026-08-09",
+    "mainEntityOfPage": "https://trillion-bank.jp/trillionbank/guide/inhouse-or-outsource/",
+    "inLanguage": "ja"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "自社でChatGPTに聞けば、確認できるのでは？",
+        "acceptedAnswer": { "@type": "Answer", "text": "はい、単発の確認は自社で可能ですし、まず本ガイドの手順を試すことをおすすめします。難しいのは、購買・比較に近い質問を漏れなく設計し、複数のAIへ同条件で継続的に質問し、回答の揺れを考慮して自社と競合を同じ基準で判定し、証拠を保存して施策前後を比較することです。HackⅡはこの部分を担います。" }
+      },
+      {
+        "@type": "Question",
+        "name": "既存のSEO会社や販売代理店に頼めば良いのでは？",
+        "acceptedAnswer": { "@type": "Answer", "text": "既存のお取引先との連携は可能です。HackⅡはAI検索の測定・分析に特化しており、測定結果にもとづくコンテンツ制作やPRの実行は、既存のSEO会社・販売代理店が担う分業を想定しています。既存の契約を解約していただく必要はありません。" }
+      },
+      {
+        "@type": "Question",
+        "name": "料金はいくらですか？",
+        "acceptedAnswer": { "@type": "Answer", "text": "対象ブランド数・質問数・対応AI・分析/運用範囲によって異なるため、30分のオンライン面談で御社の状況を確認したうえで個別にご案内しています。" }
+      }
+    ]
+  }
+]
+</script>
+<style>
+  /* guide — narrow reading column, typography only */
+  .guide{max-width:760px}
+  .guide .khead{margin-bottom:clamp(18px,2.6vw,30px)}
+  .guide p{margin:1.15em 0;line-height:2.05;font-size:.97rem}
+  .guide p.note{color:var(--muted);font-size:.86rem;line-height:1.9}
+  .gsec{padding:0 0 clamp(52px,7vw,88px)}
+  /* dash list — prose items */
+  .dash{list-style:none;margin:1.3em 0}
+  .dash li{position:relative;padding-left:1.5em;margin:.85em 0;line-height:2;font-size:.95rem}
+  .dash li::before{content:"—";position:absolute;left:0;color:var(--blue-600);font-family:var(--mono)}
+  /* numbered typographic list (todo / checklist / failures) */
+  .tlist{counter-reset:t;list-style:none;margin:1.5em 0}
+  .tlist li{counter-increment:t;position:relative;padding:18px 0 18px 54px;border-top:1px solid var(--border);line-height:1.95;font-size:.95rem}
+  .tlist li:last-child{border-bottom:1px solid var(--border)}
+  .tlist li::before{content:counter(t,decimal-leading-zero);position:absolute;left:0;top:21px;font-family:var(--mono);font-size:.76rem;letter-spacing:.1em;color:var(--blue-600)}
+  .tlist li b{display:block;margin-bottom:3px}
+  .tlist li .d{color:var(--muted);font-size:.9rem}
+  /* roles — label + description rows */
+  .role{display:grid;grid-template-columns:170px 1fr;gap:18px;padding:20px 0;border-top:1px solid var(--border)}
+  .role:last-of-type{border-bottom:1px solid var(--border)}
+  .role h3{font-size:.98rem;font-weight:700;line-height:1.7}
+  .role p{margin:0;color:var(--muted);font-size:.92rem;line-height:1.95}
+  @media(max-width:640px){.role{grid-template-columns:1fr;gap:4px}}
+  /* measurements — mono label rows */
+  .meas{list-style:none;margin:1.5em 0}
+  .meas li{padding:20px 0;border-top:1px solid var(--border);line-height:1.95}
+  .meas li:last-child{border-bottom:1px solid var(--border)}
+  .meas .mono-t{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;color:var(--blue-600);display:block;margin-bottom:5px}
+  .meas b{display:block;margin-bottom:3px;font-size:.98rem}
+  .meas p{margin:0;color:var(--muted);font-size:.9rem}
+  /* meeting agenda */
+  .agenda{list-style:none;display:flex;flex-direction:column;gap:12px;margin:1.3em 0}
+  .agenda li{display:flex;gap:12px;font-size:.95rem;line-height:1.9;align-items:baseline}
+  .agenda li::before{content:"→";color:var(--blue-600);font-family:var(--mono);flex:none}
+  /* accent quote — 2px accent line */
+  .gq{border-left:2px solid var(--blue-600);padding:6px 0 6px 22px;margin:1.8em 0;font-weight:700;font-size:clamp(1.05rem,1.8vw,1.25rem);line-height:1.9;text-wrap:balance}
+</style>
+</head>
+<body><a class="skip" href="#main">本文へスキップ</a>
+<header class="tbh" id="tbh">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+      <img src="/images/hero/tb-logo-symbol.webp" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
+    </a>
+    <nav class="links" aria-label="グローバル">
+      <div class="mega">
+        <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
+        <div class="mega-panel" id="mega-biz">
+          <a href="/airreach/"><span class="mt">AirReach <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はHackⅡへ</span></a>
+          <a href="/trillionbank/business/hack2/"><span class="mt">HackⅡ <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+        </div>
+      </div>
+      <a href="/trillionbank/mission/">MISSION</a>
+      <a href="/trillionbank/insights/">INSIGHTS</a>
+      <a href="/trillionbank/company/">COMPANY</a>
+      <a href="/trillionbank/media/">MEDIA / NEWS</a>
+      <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="header" data-cta="header_contact_form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
+    </nav>
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+<section class="phero"><div class="wrap"><div class="guide"><div class="crumb"><a href="/">HOME</a> ／ <a href="/trillionbank/business/hack2/">HackⅡ</a> ／ 内製／外注 判断ガイド</div><span class="ey">GUIDE — FOR COMPANIES</span><h1>AI検索・AI広告時代の<br>「内製／外注」判断ガイド</h1><p>このガイドは営業資料ではありません。AI検索への対応方針を社内で決めるための判断材料として、自社で今日から確認できる範囲と、外部の継続測定が必要になる条件を整理した無料公開ガイドです。経営者・マーケティング責任者・Web／SEO／広報のご担当者を想定しています。</p><p style="margin-top:16px;font-size:.74rem;color:var(--muted)" class="mono">PUBLISHED — 2026.08.09 ／ 株式会社トリリオンバンク</p></div></div></section>
+
+<section class="gsec"><div class="wrap"><div class="guide">
+<div class="khead"><span class="no">01 — WHAT IS CHANGING</span><h2 class="rv">AI検索・AI広告で何が変わっているか</h2></div>
+<p class="rv">ChatGPTをはじめとするAIとの対話の中で比較検討を済ませてから、問い合わせ・商談に進む——そうした行動が、法人・個人を問わず広がっています。従来の検索では、結果ページに並んだ候補を人が見比べていました。AI検索では、AIが情報源を読み、候補を絞り込み、理由を添えて提示します。比較検討の一部が、御社から見えない場所で先に行われるようになったことが本質的な変化です。</p>
+<p class="rv">並行して、AI検索プラットフォーム上ではAI広告の実験・導入も始まりました。ただし、広告の配信と回答の生成は、現時点では別の仕組みで運用されています。広告に出稿したからといって、AI回答の中で推薦されるようになるわけではありません。「広告で買える枠」と「広告では買えない推薦・引用」を分けて考えることが、以降のすべての判断の前提になります。</p>
+</div></div></section>
+
+<section class="gsec"><div class="wrap"><div class="guide">
+<div class="khead"><span class="no">02 — THREE DIFFERENT PHENOMENA</span><h2 class="rv">広告表示・オーガニック推薦・引用の違い</h2></div>
+<p class="rv">「AIに自社が出る」と一口に言っても、性質の異なる3つの現象があります。</p>
+<ul class="dash rv">
+  <li><b>広告表示</b> — プラットフォームの広告枠に出稿した結果として表示されるものです。出稿の有無と入札で決まり、出稿をやめれば表示されなくなります。</li>
+  <li><b>オーガニック推薦</b> — 広告なしのAI回答の中で、比較候補として自然に名前が挙がり、推薦されることです。AIが参照する情報の質と流通量に左右され、広告費で直接買うことはできません。</li>
+  <li><b>引用</b> — AIが回答を組み立てる際に参照・提示した情報源（URL）です。自社サイトとは限らず、比較メディア・レビュー・ニュース記事であることも多くあります。</li>
+</ul>
+<p class="rv">この3つは仕組みも打ち手も異なります。「どの現象の話をしているのか」を社内で揃えることが、対応方針を決める出発点です。</p>
+</div></div></section>
+
+<section class="gsec"><div class="wrap"><div class="guide">
+<div class="khead"><span class="no">03 — CHECK IT YOURSELF, TODAY</span><h2 class="rv">自社で今日から確認できる範囲</h2></div>
+<p class="rv">次の確認は、費用をかけず今日から自社だけで実施できます。手元のChatGPT等のAIで、順番に試してみてください。</p>
+<ol class="tlist rv">
+  <li><b>自社名・ブランド名をそのまま聞く</b><span class="d">「◯◯はどんな会社ですか」「◯◯の評判を教えてください」と質問し、事実誤認や古い情報が含まれていないかを確認します。</span></li>
+  <li><b>競合名でも同じ質問をする</b><span class="d">自社と競合とで、回答の情報量・具体性・トーンにどのような差があるかを見比べます。</span></li>
+  <li><b>顧客が実際に使いそうな質問を試す</b><span class="d">社名を含まない質問——「◯◯業界でおすすめの△△は」「□□と◇◇を比較して」など——で、自社が候補に挙がるか、代わりにどの競合が挙がるかを確認します。</span></li>
+  <li><b>引用元を開いて確認する</b><span class="d">回答に参照リンクが表示される場合は、AIがどのサイトを根拠にしているのかを実際に開いて確かめます。</span></li>
+  <li><b>スクリーンショットと条件を残す</b><span class="d">質問文・日時・使用したAIを併せて記録します。同じ質問でも回答は揺れるため、条件の記録がないと後から比較できません。</span></li>
+  <li><b>明らかな誤情報を洗い出す</b><span class="d">所在地・事業内容・すでに終了したサービスやキャンペーンの古い記載などの誤りが見つかったら、まず自社サイト側の記載を最新の状態に整えます。</span></li>
+</ol>
+<p class="rv">ここまでは自社だけで完結します。外部に依頼する前に一度実施し、次章の条件に照らして継続の要否を判断してください。</p>
+</div></div></section>
+
+<section class="gsec"><div class="wrap"><div class="guide">
+<div class="khead"><span class="no">04 — WHEN YOU NEED CONTINUOUS MEASUREMENT</span><h2 class="rv">継続測定が必要になる条件</h2></div>
+<p class="rv">単発の確認と、意思決定に使える測定との間には、次の作業の差があります。購買・比較・予約・問い合わせに近い質問群を漏れなく設計すること。複数のAIに同じ質問を同条件で継続的に投げること。回答が揺れる前提で複数回の測定から判定すること。回答本文・引用URL・日時・条件を後から検証できる形で保存すること。施策前に基準線を取り、施策後に同条件で再計測して比較すること。その結果を稟議や経営会議で説明できる形に整えること。これらを毎月手作業で続けるのは、担当者の負荷として小さくありません。</p>
+<p class="rv">内製か外注かは優劣の問題ではなく、御社の現在地がどちら側にあるかの問題です。次の7つの観点で確認してみてください。第一に<b>対象</b>。確認したいのが1ブランド・数問だけなら内製で十分ですが、複数のブランド・商品・地域を横断するなら手作業での継続は難しくなります。第二に<b>目的</b>。興味本位の現状把握なら内製で足りますが、広告・SEO・PRの予算配分や経営判断に使うなら、条件の統一と再現性が必要です。第三に<b>頻度</b>。一度だけの確認か、月次・施策前後の定点比較か。第四に<b>競合</b>。1社を簡易に見るのか、複数競合を同条件で比較するのか。第五に<b>証拠</b>。スクリーンショットで足りるのか、回答本文・引用URL・日時・条件まで保存するのか。第六に<b>社内利用</b>。担当者個人の参考にとどまるのか、稟議・経営会議・顧客への報告に使うのか。第七に<b>改善</b>。担当者の推測で施策を選ぶのか、質問単位の勝敗データから優先順位を付けるのか。後者に該当する観点が多いほど、外部の継続測定を検討する価値が高くなります。</p>
+</div></div></section>
+
+<section class="gsec"><div class="wrap"><div class="guide">
+<div class="khead"><span class="no">05 — WHO OWNS WHAT</span><h2 class="rv">社内の担当部署と役割</h2></div>
+<p class="rv">AI検索への対応は単独の部署で完結しません。方針を決める前に、各部署の関わり方を整理しておきます。</p>
+<div class="rv">
+  <div class="role"><h3>経営</h3><p>AI検索への対応を誰の責任範囲とするかを決め、投資判断の基準を持ちます。AI経由の比較検討は商談の入口に直結し得るため、担当者任せにせず経営アジェンダとして扱うことをおすすめします。</p></div>
+  <div class="role"><h3>マーケティング</h3><p>重要質問と競合の設計を主導し、測定結果を広告・SEO・コンテンツの予算配分に反映します。施策前後の比較を通じて、投資対効果の説明責任を担う中心です。</p></div>
+  <div class="role"><h3>Web・広報</h3><p>AIに引用されやすい情報——FAQ・料金・事例・会社情報——の整備と、引用元になりやすい外部メディア・PRへの働きかけを担います。自社サイトの改善と外部の情報流通の両輪です。</p></div>
+  <div class="role"><h3>営業</h3><p>商談の場で「AIで調べてきた」という顧客の声を集めます。誤情報や不利な比較のされ方に最初に気づくのは、多くの場合現場の営業です。</p></div>
+</div>
+</div></div></section>
+
+<section class="gsec"><div class="wrap"><div class="guide">
+<div class="khead"><span class="no">06 — COMMON FAILURES</span><h2 class="rv">AI検索対策のよくある失敗</h2></div>
+<ol class="tlist rv">
+  <li><b>単発の確認で判断する</b><span class="d">AIの回答は同じ質問でも揺れます。1回の結果だけで「出ている／出ていない」を断定して方針を決めると、翌月には前提が変わっていることがあります。</span></li>
+  <li><b>施策前の基準線がない</b><span class="d">施策を打ってから測り始めると、効果があったのかどうかを誰にも説明できなくなります。測定は施策の前に始めるものです。</span></li>
+  <li><b>技術施策だけで解決すると考える</b><span class="d">llms.txtや構造化データの整備は有効な前提づくりですが、それだけでAIが推薦してくれるわけではありません。推薦と引用の多くは、コンテンツの中身と外部の情報流通に左右されます。</span></li>
+  <li><b>外部メディア・PRの影響を見ない</b><span class="d">AIが引用する情報源は自社サイトとは限りません。比較メディア・レビュー・ニュースを見ずに自社サイトだけを改善しても、届かない領域が残ります。</span></li>
+  <li><b>成果保証を求めて業者選定を誤る</b><span class="d">AIの回答は外部の事業者が制御できるものではなく、表示や売上を保証することは本来できません。「保証します」という説明を選定基準にすると、かえってリスクが高まります。測定方法・証拠・再現条件を開示できるかどうかで判断してください。</span></li>
+</ol>
+</div></div></section>
+
+<section class="gsec"><div class="wrap"><div class="guide">
+<div class="khead"><span class="no">07 — 10 QUESTIONS BEFORE YOU START</span><h2 class="rv">導入前に確認する10項目</h2></div>
+<p class="rv">内製・外注のどちらを選ぶ場合でも、始める前に次の10項目を社内で確認しておくことをおすすめします。</p>
+<ol class="tlist rv">
+  <li>対象とするブランド・商品・地域の数は明確か</li>
+  <li>顧客の購買・比較に近い「重要質問」を定義できるか</li>
+  <li>競合を特定できているか（AI回答に実際に登場する競合を含めて）</li>
+  <li>測定対象とするAI（ChatGPT・Perplexity・Gemini等を想定）を決められるか</li>
+  <li>回答本文・引用URL・日時・条件の保存方法は決まっているか</li>
+  <li>測定結果をコンテンツ・PR施策へ変換する体制はあるか</li>
+  <li>施策後に同条件で再計測する計画はあるか</li>
+  <li>社内の説明先（稟議・経営会議）と報告の形式は決まっているか</li>
+  <li>既存のSEO会社・販売代理店との役割分担は整理できているか（既存のお取引先と連携する形での導入が可能です）</li>
+  <li>「成果は保証されない」前提で投資判断ができるか</li>
+</ol>
+</div></div></section>
+
+<section class="gsec"><div class="wrap"><div class="guide">
+<div class="khead"><span class="no">08 — WHAT HACK2 COVERS</span><h2 class="rv">HackⅡが支援する範囲</h2></div>
+<p class="rv">HackⅡは、当社のAI Recommendation Intelligenceです（限定商用検証・導入相談受付中）。AI回答内での候補入り・競合との勝敗・引用された情報源を証拠付きで測定し、次に投資すべきコンテンツ・PR・外部メディア施策を特定します。提供するのは、次の4つの測定です。</p>
+<ul class="meas rv">
+  <li><span class="mono-t">AI DECISION SHARE</span><b>意思決定シェアの測定</b><p>購買・比較・予約・問い合わせに近い重要質問群において、自社が比較候補に入っている割合を測定します。</p></li>
+  <li><span class="mono-t">RECOMMENDATION WIN / LOSS</span><b>質問単位の勝敗分析</b><p>質問ごとに自社と競合のどちらが選ばれたかを分類し、どこで勝ち、どこで負けているかを特定します。</p></li>
+  <li><span class="mono-t">CITATION CHANNEL MAP</span><b>引用チャネルの発見</b><p>AIが参照した情報源を自社サイト・比較メディア・レビュー・ニュースPRなどに分類し、どのチャネルに投資すべきかを判断できるようにします。</p></li>
+  <li><span class="mono-t">MEASURE → ACT → REMEASURE</span><b>証拠保存と再計測</b><p>回答本文・引用URL・測定日時・条件を証拠として保存し、施策化と施策後の再計測までを一つのサイクルとして回します。</p></li>
+</ul>
+<p class="gq rv">AI検索の「見えない比較検討」を、<br>広告・SEO・PRの投資判断に変える。</p>
+<p class="rv">なお、HackⅡは広告配信そのものを測定するものではなく、AI広告へ投資する前後に必要となるオーガニックな推薦・候補入り・引用元の「基準線」をつくります。</p>
+</div></div></section>
+
+<section class="gsec"><div class="wrap"><div class="guide">
+<div class="khead"><span class="no">09 — WHAT WE DO NOT PROMISE</span><h2 class="rv">HackⅡが保証しないこと</h2></div>
+<p class="rv">誠実な判断材料としてお読みいただくために、HackⅡが約束しないことを明記します。</p>
+<ul class="dash rv">
+  <li>AI検索での表示・推薦・引用、およびそれに伴う問い合わせや売上を<b>保証しません</b>。AIの回答は、当社を含む外部の事業者が制御できるものではないためです。</li>
+  <li>対応するAIはChatGPT・Perplexity・Gemini等を想定していますが、対応範囲は開発状況にもとづき<b>契約時点で確定します</b>。すべてのAI検索面の完全な再現は行いません。</li>
+  <li>HackⅡは<b>限定商用検証</b>の段階にあるサービスであり、現在は導入相談を受け付けています。</li>
+</ul>
+</div></div></section>
+
+<section class="gsec"><div class="wrap"><div class="guide">
+<div class="khead"><span class="no">10 — 30 MIN MEETING</span><h2 class="rv">30分の面談で確認できること</h2></div>
+<ul class="agenda rv">
+  <li>実際の測定画面と、証拠付き分析レポートのサンプル</li>
+  <li>御社の業界における重要質問・競合設定の考え方</li>
+  <li>本ガイドの7つの観点に沿った、内製で対応できる範囲と外部測定が必要な範囲の切り分け</li>
+  <li>導入までの流れ・必要な社内体制・料金（御社の状況を確認したうえで個別にご案内）</li>
+</ul>
+<p class="rv">確認の結果、「現時点では内製で十分」という結論になる場合は、その根拠と自社での確認手順をお伝えします。</p>
+</div></div></section>
+
+<section class="gsec"><div class="wrap"><div class="guide">
+<div class="khead"><span class="no">FAQ</span><h2 class="rv">よくある質問</h2></div>
+<div class="faq rv">
+  <details><summary>自社でChatGPTに聞けば、確認できるのでは？</summary><div class="a">はい、単発の確認は自社で可能ですし、まず本ガイド「03 自社で今日から確認できる範囲」の手順を試すことをおすすめします。難しいのは、購買・比較に近い質問を漏れなく設計し、複数のAIへ同条件で継続的に質問し、回答の揺れを考慮して自社と競合を同じ基準で判定し、証拠を保存して施策前後を比較することです。HackⅡはこの部分を担います。</div></details>
+  <details><summary>既存のSEO会社や販売代理店に頼めば良いのでは？</summary><div class="a">既存のお取引先との連携は可能です。HackⅡはAI検索の測定・分析に特化しており、測定結果にもとづくコンテンツ制作やPRの実行は、既存のSEO会社・販売代理店が担う分業を想定しています。既存の契約を解約していただく必要はありません。</div></details>
+  <details><summary>料金はいくらですか？</summary><div class="a">対象ブランド数・質問数・対応AI・分析/運用範囲によって異なるため、30分のオンライン面談で御社の状況を確認したうえで個別にご案内しています。</div></details>
+</div>
+<div class="rv" style="margin-top:52px;padding-top:36px;border-top:1px solid var(--border)">
+  <p style="margin:0 0 22px;font-weight:700;font-size:clamp(1.1rem,1.9vw,1.35rem);line-height:1.8">社内で方針を検討したうえで、<br>外部測定の要否を確かめたい方へ。</p>
+  <a class="btn btn-primary" href="/trillionbank/meeting/?type=company" data-event="meeting_form_open" data-service="hack2_company" data-cta="guide_footer">事業会社向け｜HackⅡの詳細説明を予約する <span class="a">→</span></a>
+  <p class="note" style="margin-top:18px">※ HackⅡは限定商用検証・導入相談受付です。対応AIは契約時点で確定します。AI検索での表示・問い合わせ・売上を保証するものではありません。</p>
+</div>
+</div></div></section>
+</main><div class="glow-rails" id="glowRails" aria-hidden="true">
+  <div class="glow-line l"></div>
+  <div class="glow-line r"></div>
+</div>
+<footer class="tbf">
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+          <img src="/images/hero/tb-logo-color.webp" alt="TRILLION BANK" width="160" height="40" style="height:32px;width:auto;filter:brightness(10)">
+        </a>
+        <p class="addr">株式会社Trillion Bank（トリリオンバンク）<br>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ<br><span style="opacity:.7">※ 当社は銀行業を営む会社ではありません。</span></p>
+      </div>
+      <div class="fcol">
+        <h5>BUSINESS</h5>
+        <a href="/trillionbank/business/">事業概要</a>
+        <a href="/trillionbank/business/hack2/">HackⅡ</a>
+        <a href="/trillionbank/business/pay-per-crawl/">Pay per Crawl</a>
+      </div>
+      <div class="fcol">
+        <h5>COMPANY</h5>
+        <a href="/trillionbank/mission/">Mission</a>
+        <a href="/trillionbank/company/">会社概要</a>
+        <a href="/trillionbank/media/">Media / News</a>
+        <a href="/trillionbank/insights/">Insights</a>
+      </div>
+      <div class="fcol">
+        <h5>CONTACT</h5>
+        <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a>
+        <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="footer" data-cta="footer_contact_form">お問い合わせフォーム</a>
+        <a href="/trillionbank/contact/">お問い合わせ窓口</a>
+      </div>
+    </div>
+    <div class="bottom">
+      <span>© 2026 Trillion Bank</span>
+      <span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a> ／ <a href="/trillionbank/insights/editorial-policy/">編集方針</a></span>
+    </div>
+  </div>
+</footer>
+<script>
+(function(){
+  var h=document.getElementById('tbh'),last=0;
+  var rails=document.getElementById('glowRails');
+  var railGate=Math.min(innerHeight*.3,280);
+  addEventListener('scroll',function(){var y=scrollY;h.classList.toggle('solid',y>8);if(y>last&&y>140){h.classList.add('hide')}else{h.classList.remove('hide')}last=y;
+    if(rails)rails.classList.toggle('active',y>railGate);},{passive:true});
+  var b=document.getElementById('tbBurger');
+  if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+  document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});
+  // mega menu keyboard toggle
+  document.querySelectorAll('.mega-t').forEach(function(btn){
+    var panel=document.getElementById(btn.getAttribute('aria-controls'));
+    if(!panel)return;
+    btn.addEventListener('click',function(){var open=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',!open)});
+    btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();btn.click();if(btn.getAttribute('aria-expanded')==='true'){var first=panel.querySelector('a');if(first)first.focus()}}
+      if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+    panel.addEventListener('keydown',function(e){if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+  });
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(i%3)*70+'ms';io.observe(el)});
+  // GA4 tracking for CTAs
+  document.querySelectorAll('[data-event]').forEach(function(el){
+    el.addEventListener('click', function(){
+      if(typeof gtag==='function'){
+        gtag('event', el.dataset.event, {
+          source_page: location.pathname,
+          service: el.dataset.service || '',
+          inquiry_type: el.dataset.inquiry || '',
+          cta_label: el.textContent.trim()
+        });
+      }
+    });
+  });
+  // AI referral attribution for HackⅡ reports.
+  (function(){
+    var definitions=[
+      {source:'ChatGPT',hosts:['chatgpt.com','openai.com'],tokens:['chatgpt','openai']},
+      {source:'Perplexity',hosts:['perplexity.ai'],tokens:['perplexity']},
+      {source:'Claude',hosts:['claude.ai','anthropic.com'],tokens:['claude','anthropic']},
+      {source:'Gemini',hosts:['gemini.google.com'],tokens:['gemini','bard']},
+      {source:'Google AI',hosts:['google.com','google.co.jp'],tokens:['ai_overview','ai-mode','aimode','google_ai']},
+      {source:'Microsoft Copilot',hosts:['copilot.microsoft.com','bing.com'],tokens:['copilot','bing_ai']},
+      {source:'You.com',hosts:['you.com'],tokens:['you.com','youchat']},
+      {source:'Poe',hosts:['poe.com'],tokens:['poe']},
+      {source:'Phind',hosts:['phind.com'],tokens:['phind']}
+    ];
+    function normalizedHost(value){
+      try{return new URL(value).hostname.replace(/^www\./,'').toLowerCase()}catch(e){return ''}
+    }
+    function tokenMatch(text,tokens){
+      text=(text||'').toLowerCase();
+      return tokens.some(function(token){return text.indexOf(token)!==-1});
+    }
+    function findSource(referrer,paramsText){
+      var host=normalizedHost(referrer);
+      for(var i=0;i<definitions.length;i++){
+        var def=definitions[i];
+        var matchedHost=def.hosts.some(function(item){return host===item||host.endsWith('.'+item)});
+        if(matchedHost&&host.indexOf('google.')===-1&&host!=='bing.com')return {name:def.source,type:'referrer',host:host};
+        if((matchedHost||!host)&&tokenMatch(paramsText,def.tokens))return {name:def.source,type:matchedHost?'referrer_param':'utm',host:host};
+      }
+      return null;
+    }
+    function sendEvent(name,payload){
+      if(typeof gtag==='function')gtag('event',name,payload);
+    }
+    var params=new URLSearchParams(location.search);
+    var paramsText=[
+      params.get('utm_source'),
+      params.get('utm_medium'),
+      params.get('utm_campaign'),
+      params.get('ref'),
+      params.get('source'),
+      params.get('ai_source')
+    ].filter(Boolean).join(' ');
+    var detected=findSource(document.referrer,paramsText);
+    var stored=null;
+    if(detected){
+      stored={
+        ai_source:detected.name,
+        ai_referrer_host:detected.host||'direct_param',
+        ai_source_type:detected.type,
+        ai_landing_path:location.pathname,
+        traffic_channel:'ai_search'
+      };
+      try{sessionStorage.setItem('tb_ai_referral',JSON.stringify(stored))}catch(e){}
+      sendEvent('ai_referral_visit',stored);
+    }else{
+      try{stored=JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){stored=null}
+    }
+    document.querySelectorAll('a[href*="/trillionbank/contact/"],a[href*="/trillionbank/meeting/"]').forEach(function(link){
+      link.addEventListener('click',function(){
+        var attribution=stored;
+        try{attribution=attribution||JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){}
+        if(!attribution)return;
+        sendEvent('ai_assisted_cta_click',{
+          ai_source:attribution.ai_source,
+          ai_referrer_host:attribution.ai_referrer_host,
+          ai_landing_path:attribution.ai_landing_path,
+          cta_label:(link.dataset.cta||link.textContent||'').trim(),
+          destination:link.href,
+          source_page:location.pathname
+        });
+      });
+    });
+  })();
+  // tabs (WAI-ARIA Tabs pattern: arrow key navigation + roving tabindex)
+  document.querySelectorAll('[data-tabs]').forEach(function(g){
+    var tabs=g.querySelectorAll('[role="tab"]'),panels=g.querySelectorAll('[role="tabpanel"]');
+    function activate(idx){
+      tabs.forEach(function(x){x.setAttribute('aria-selected','false');x.setAttribute('tabindex','-1')});
+      tabs[idx].setAttribute('aria-selected','true');tabs[idx].setAttribute('tabindex','0');tabs[idx].focus();
+      panels.forEach(function(p){p.classList.remove('on')});if(panels[idx])panels[idx].classList.add('on');
+    }
+    tabs.forEach(function(t,i){
+      t.addEventListener('click',function(){activate(i)});
+      t.addEventListener('keydown',function(e){
+        var k=e.key,n=tabs.length;
+        if(k==='ArrowRight'){e.preventDefault();activate((i+1)%n)}
+        else if(k==='ArrowLeft'){e.preventDefault();activate((i-1+n)%n)}
+        else if(k==='Home'){e.preventDefault();activate(0)}
+        else if(k==='End'){e.preventDefault();activate(n-1)}
+      });
+    });
+  });
+  /* page transition — fade out on navigate, fade in on load */
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a');
+    var raw=a?a.getAttribute('href')||'':'';
+    if(!a||!a.href||a.target==='_blank'||raw.startsWith('#')||a.href.startsWith('mailto:')||a.href.startsWith('tel:'))return;
+    if(a.hostname!==location.hostname)return;
+    if(a.pathname===location.pathname&&a.hash)return;
+    e.preventDefault();
+    document.body.classList.add('page-leaving');
+    setTimeout(function(){location.href=a.href},300);
+  });
+  window.addEventListener('pageshow',function(e){
+    document.body.classList.remove('page-leaving');
+  });
+})();
+</script>
+</body></html>

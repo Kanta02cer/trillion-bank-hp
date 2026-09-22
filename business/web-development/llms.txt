@@ -1,0 +1,88 @@
+# Web・システム開発 — トリリオンバンク
+
+> 株式会社トリリオンバンクが提供するWeb・システム開発サービスの詳細ページです。「設計思想を持つ制作が、成果を生む。」
+> ページURL：https://trillion-bank.jp/business/web-development/
+> 最終更新：2026-05-17
+
+---
+
+## Web・システム開発サービスとは
+
+**トリリオンバンクのWeb・システム開発とは、コーポレートサイト・LP・採用サイト・ECから社内システムまで、戦略設計→デザイン→開発→SEO→AIO→解析まで一気通貫で対応するB2B Web制作・システム開発サービスです。**すべての制作物にAIO（AI検索最適化）を標準実装します。
+
+---
+
+## 対応範囲
+
+- コーポレートサイト・ブランドサイト
+- ランディングページ（LP）制作・改善
+- 採用サイト・採用LP
+- ECサイト・決済システム
+- 社内業務システム・管理画面
+- AI組み込みWebアプリ・診断ツール
+- AIO/SEO対応サイト設計（llms.txt・構造化データ標準実装）
+
+---
+
+## AIO対応を標準装備
+
+制作するすべてのWebサイトに以下をデフォルト実装：
+
+- **llms.txt / llms-full.txt**：AIクローラー向けサイト説明ファイル
+- **JSON-LD構造化データ**：schema.org準拠（FAQPage・Organization・HowTo等）
+- **robots.txt AIクローラー許可設定**：GPTBot・ClaudeBot・PerplexityBot等を明示許可
+- **AIO設計のコンテンツ構造**：定義型H2・FAQ形式・E-E-A-T強化コンテンツ
+
+---
+
+## 制作の特徴
+
+### HackⅡ連携
+
+AI引用最適化インフラHackⅡと連動し、制作後の運用も一体支援。制作→AI引用計測→改善のPDCAサイクルを提供します。
+
+### 設計思想を持つ制作
+
+「なぜ作るか」から設計し、成果につながるWebを構築。コンバージョン設計・情報設計・ユーザー体験設計を制作前に定義します。
+
+### 自社サイトが実績
+
+トリリオンバンク自社サイト（https://trillion-bank.jp）自体が、AIO/SEO対応・構造化データ・llms.txt実装済みの実践事例です。
+
+---
+
+## 料金
+
+- **料金**：個別見積もり（規模・要件・ページ数・機能による）
+- **初期費用**：HackⅡ（AI検索インフラ）の6ヶ月運用契約を前提に、Webサイト開発費は**無料**
+- **詳細**：https://trillion-bank.jp/business/web-development/
+
+---
+
+## よくある質問（Web開発）
+
+**Q: Web制作の費用はいくらですか？**
+A: 規模・要件によって異なるため個別見積もりです。HackⅡの6ヶ月運用契約を前提とする場合、初期Webサイト開発費は無料です。
+
+**Q: AIO対応とはどういう意味ですか？**
+A: ChatGPT・Perplexity・Google AI OverviewなどのAI検索エンジンが御社サイトを認識・引用しやすい設計を指します。llms.txt設置・JSON-LD構造化データ実装・定義型コンテンツ設計を標準で行います。
+
+**Q: 既存サイトのAIO対応改修も依頼できますか？**
+A: 対応可能です。既存サイトへのllms.txt追加・構造化データ実装・コンテンツリライトなど部分的な改修も受け付けています。
+
+---
+
+## 関連キーワード
+
+Web制作, ホームページ制作, コーポレートサイト制作, LP制作, 採用サイト制作, AIO対応 Web制作, AI検索対応 Web制作, llms.txt 実装, JSON-LD 実装, Web開発 AIO, システム開発, 社内システム 開発, トリリオンバンク Web制作, トリリオンバンク ホームページ
+
+---
+
+## 関連ページ
+
+- [Web・システム開発ページ](https://trillion-bank.jp/business/web-development/)
+- [AI・DX戦略コンサルティング](https://trillion-bank.jp/business/dx-consulting/)
+- [SEO・AIOメディア運営代行](https://trillion-bank.jp/business/media-operation/)
+- [HackⅡ事業ページ](https://trillion-bank.jp/trillionbank/business/hack2/)
+- [商談予約](https://trillion-bank.jp/trillionbank/meeting/)
+- [お問い合わせフォーム](https://trillion-bank.jp/trillionbank/contact/#form)

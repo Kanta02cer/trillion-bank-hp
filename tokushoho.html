@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta name="tb-api-base" content="https://trillion-bank-hp.vercel.app">
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1344710796174131"
+     crossorigin="anonymous"></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-0XHQPCC4CF');
+  </script>
+
+  <!-- ╔══════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  トリリオンバンク AI流入トラッキング v1.0                              ║ -->
+  <!-- ║  AI検索エンジン（ChatGPT/Perplexity/Claude等）からの           ║ -->
+  <!-- ║  流入を検出・GA4カスタムイベントとして計測する                   ║ -->
+  <!-- ╚══════════════════════════════════════════════════════════════╝ -->
+  <script>
+  (function() {
+    'use strict';
+
+    // ── AI検索エンジン リファラー定義 ──────────────────────────────
+    var AI_REFERRERS = [
+      { domain: 'chatgpt.com',           source: 'ChatGPT',        channel: 'ChatGPT Search' },
+      { domain: 'chat.openai.com',        source: 'ChatGPT',        channel: 'ChatGPT Search' },
+      { domain: 'openai.com',             source: 'ChatGPT',        channel: 'OpenAI' },
+      { domain: 'perplexity.ai',          source: 'Perplexity',     channel: 'Perplexity AI' },
+      { domain: 'claude.ai',              source: 'Claude',         channel: 'Anthropic Claude' },
+      { domain: 'gemini.google.com',      source: 'Gemini',         channel: 'Google Gemini' },
+      { domain: 'bard.google.com',        source: 'Gemini',         channel: 'Google Bard' },
+      { domain: 'ai.google.com',          source: 'Google AI Mode', channel: 'Google AI Mode' },
+      { domain: 'copilot.microsoft.com',  source: 'Copilot',        channel: 'Microsoft Copilot' },
+      { domain: 'bing.com',               source: 'Bing Copilot',   channel: 'Bing AI' },
+      { domain: 'you.com',                source: 'You.com',        channel: 'You.com AI' },
+      { domain: 'phind.com',              source: 'Phind',          channel: 'Phind AI' },
+      { domain: 'kagi.com',               source: 'Kagi',           channel: 'Kagi Search' },
+      { domain: 'poe.com',                source: 'Poe',            channel: 'Poe AI' },
+      { domain: 'character.ai',           source: 'Character.AI',   channel: 'Character.AI' },
+      { domain: 'meta.ai',                source: 'Meta AI',        channel: 'Meta AI' },
+      { domain: 'grok.x.ai',             source: 'Grok',           channel: 'xAI Grok' },
+      { domain: 'x.com',                  source: 'Grok',           channel: 'xAI Grok', path: '/i/grok' },
+      { domain: 'mistral.ai',             source: 'Mistral',        channel: 'Mistral AI' },
+      { domain: 'huggingface.co',         source: 'HuggingFace',    channel: 'HuggingFace' }
+    ];
+
+    // ── UTMパラメーター AI検索ソース定義 ─────────────────────────────
+    var AI_UTM_SOURCES = {
+      'chatgpt': 'ChatGPT', 'openai': 'ChatGPT', 'perplexity': 'Perplexity',
+      'claude': 'Claude', 'anthropic': 'Claude', 'gemini': 'Gemini',
+      'bard': 'Gemini', 'copilot': 'Copilot', 'bing-ai': 'Bing Copilot',
+      'you': 'You.com', 'phind': 'Phind', 'kagi': 'Kagi',
+      'grok': 'Grok', 'mistral': 'Mistral', 'meta-ai': 'Meta AI',
+      'poe': 'Poe', 'ai-overview': 'Google AI Overview',
+      'ai-mode': 'Google AI Mode'
+    };
+
+    // ── リファラー検出 ────────────────────────────────────────────
+    function detectAIReferrer() {
+      var ref = document.referrer || '';
+      if (!ref) return null;
+      try {
+        var refHost = new URL(ref).hostname.replace(/^www\./, '');
+        var refPath = new URL(ref).pathname;
+        for (var i = 0; i < AI_REFERRERS.length; i++) {
+          var r = AI_REFERRERS[i];
+          if (refHost === r.domain || refHost.endsWith('.' + r.domain)) {
+            if (!r.path || refPath.startsWith(r.path)) {
+              return { source: r.source, channel: r.channel, referrer_url: ref };
+            }
+          }
+        }
+      } catch(e) {}
+      return null;
+    }
+
+    // ── UTMパラメーター検出 ──────────────────────────────────────
+    function detectAIUTM() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var utmSource = (params.get('utm_source') || '').toLowerCase();
+        var utmMedium = (params.get('utm_medium') || '').toLowerCase();
+        var utmCampaign = params.get('utm_campaign') || '';
+        var utmContent = params.get('utm_content') || '';
+        // Check if utm_source matches AI source
+        for (var key in AI_UTM_SOURCES) {
+          if (utmSource.includes(key)) {
+            return {
+              source: AI_UTM_SOURCES[key],
+              channel: utmMedium || 'AI Search',
+              utm_campaign: utmCampaign,
+              utm_content: utmContent,
+              via: 'utm'
+            };
+          }
+        }
+        // Check utm_medium for ai indicators
+        if (utmMedium.includes('ai') || utmMedium.includes('llm') || utmMedium.includes('chatgpt')) {
+          return { source: utmSource || 'Unknown AI', channel: utmMedium, via: 'utm' };
+        }
+      } catch(e) {}
+      return null;
+    }
+
+    // ── クエリパラメーター検出（?from=chatgpt 等） ──────────────────
+    function detectAIFromParam() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var from = (params.get('from') || params.get('ref') || params.get('via') || '').toLowerCase();
+        for (var key in AI_UTM_SOURCES) {
+          if (from.includes(key)) {
+            return { source: AI_UTM_SOURCES[key], channel: 'AI Direct', via: 'param' };
+          }
+        }
+      } catch(e) {}
+      return null;
+    }
+
+    // ── セッション Attribution（localStorage）────────────────────
+    var STORAGE_KEY = 'regalis_ai_attr';
+    function saveAttribution(data) {
+      try {
+        var attr = {
+          source: data.source,
+          channel: data.channel,
+          landing_page: window.location.pathname,
+          timestamp: new Date().toISOString(),
+          referrer_url: data.referrer_url || '',
+          utm_campaign: data.utm_campaign || '',
+          session_id: Math.random().toString(36).substr(2, 9)
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(attr));
+        return attr;
+      } catch(e) { return null; }
+    }
+
+    function getStoredAttribution() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        var attr = JSON.parse(raw);
+        // セッション有効期限：30分
+        var ts = new Date(attr.timestamp).getTime();
+        if (Date.now() - ts > 30 * 60 * 1000) {
+          localStorage.removeItem(STORAGE_KEY);
+          return null;
+        }
+        return attr;
+      } catch(e) { return null; }
+    }
+
+    // ── GA4イベント送信（GA4正式仕様）────────────────────────────
+    function fireGA4(attr) {
+      if (typeof gtag !== 'function') return;
+      // ai_referral_visit: 新規AI流入（カスタムイベント）
+      gtag('event', 'ai_referral_visit', {
+        ai_source:    attr.source,
+        ai_channel:   attr.channel,
+        ai_landing:   attr.landing_page || window.location.pathname,
+        ai_campaign:  attr.utm_campaign || '',
+        ai_referrer:  attr.referrer_url || ''
+      });
+      // デバッグ確認（?debug_ai=1 で有効）
+      if (window.location.search.indexOf('debug_ai=1') !== -1) {
+        console.log('[RegalisAI] ai_referral_visit fired:', attr);
+      }
+    }
+
+    // ── ページビューごとにAI流入継続計測 ──────────────────────────
+    function fireGA4PageView(attr) {
+      if (typeof gtag !== 'function') return;
+      gtag('event', 'ai_page_view', {
+        ai_source:  attr.source,
+        ai_channel: attr.channel,
+        ai_landing: attr.landing_page || '',
+        page_path:  window.location.pathname
+      });
+    }
+
+    // ── メイン実行（gtag非同期ロード待ち対応）──────────────────────
+    function init() {
+      // 1. 新規AIリファラー検出
+      var detected = detectAIReferrer() || detectAIUTM() || detectAIFromParam();
+      if (detected) {
+        var attr = saveAttribution(detected);
+        if (attr) fireGA4(attr);
+        return;
+      }
+      // 2. 既存セッションのAI流入継続計測
+      var stored = getStoredAttribution();
+      if (stored) fireGA4PageView(stored);
+    }
+
+    // gtagのasync読み込み完了を待ってから実行（最大3秒リトライ）
+    function waitForGtagAndInit(retries) {
+      if (typeof gtag === 'function') {
+        init();
+      } else if (retries > 0) {
+        setTimeout(function() { waitForGtagAndInit(retries - 1); }, 100);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() { waitForGtagAndInit(30); });
+    } else {
+      waitForGtagAndInit(30);
+    }
+
+    // ── グローバルAPI（HackⅡ計測連携用） ──────────────────────
+    window.RegalisAI = {
+      getAttribution: getStoredAttribution,
+      detect: function() {
+        return detectAIReferrer() || detectAIUTM() || detectAIFromParam();
+      },
+      // フォーム送信時にAI流入データを付加する
+      enrichFormData: function(formData) {
+        var attr = getStoredAttribution();
+        if (!attr) return formData;
+        if (formData instanceof FormData) {
+          formData.append('ai_source', attr.source || '');
+          formData.append('ai_channel', attr.channel || '');
+          formData.append('ai_landing', attr.landing_page || '');
+          formData.append('ai_session', attr.session_id || '');
+        }
+        return formData;
+      }
+    };
+  })();
+  </script>
+  <!-- ── / AI流入トラッキング ────────────────────────────────────── -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>特定商取引法に基づく表記 | 株式会社Trillion Bank</title><meta name="description" content="株式会社Trillion Bank（トリリオンバンク）の特定商取引法に基づく表記。HackⅡ・Web開発・DXコンサルティングの販売条件・契約期間・解約条件等を掲載します。">
+
+  <!-- OGP -->
+  <meta property="og:title" content="特定商取引法に基づく表記 | 株式会社Trillion Bank">
+  <meta property="og:description" content="株式会社Trillion Bank（トリリオンバンク）の特定商取引法に基づく表記。HackⅡ・Web開発・DXコンサルティングの販売条件・契約期間・解約条件等を掲載します。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://trillion-bank.jp/tokushoho.html">
+  <meta property="og:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+  <meta property="og:image:width" content="1366">
+  <meta property="og:image:height" content="768">
+  <meta property="og:image:alt" content="トリリオンバンク — AI検索最適化インフラ HackⅡ">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:site_name" content="株式会社Trillion Bank">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="特定商取引法に基づく表記 | 株式会社Trillion Bank">
+  <meta name="twitter:description" content="株式会社Trillion Bank（トリリオンバンク）の特定商取引法に基づく表記。HackⅡ・Web開発・DXコンサルティングの販売条件・契約期間・解約条件等を掲載します。">
+  <meta name="twitter:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+
+  <!-- Google Search Console Verification -->
+  <meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+
+  <!-- Canonical + hreflang -->
+  <link rel="canonical" href="https://trillion-bank.jp/tokushoho.html">
+  <link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/tokushoho.html">
+  <link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/tokushoho.html">
+
+  <!-- AI / LLM Optimization — トリリオンバンクAIパッチ v2.0 -->
+  <link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+  <link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+  <link rel="ai-patch" type="application/json" href="https://trillion-bank.jp/ai-patch.json">
+  <link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+  <meta name="ai-summary" content="株式会社Trillion Bank（トリリオンバンク）の特定商取引法に基づく表記。HackⅡ・Web開発・DXコンサルティングの販売条件・契約期間・解約条件等を掲載します。">
+  <meta name="ai-entity" content="株式会社Trillion Bank（通称：トリリオンバンク）— AI検索計測・AEO/GEO/SEO実装支援を行うITカンパニー。銀行・金融機関ではなく、同名作品・類似ブランドとは無関係。">
+  <meta name="keywords" content="特定商取引法,特商法,トリリオンバンク,販売条件,契約期間,解約条件">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="revisit-after" content="3 days">
+  <meta name="rating" content="general">
+
+  <!-- Fonts (async to avoid render-blocking) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet"></noscript>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/css/corp.css?v=5">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon-144.png">
+
+  
+  <!-- JSON-LD: WebSite -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://trillion-bank.jp/#website",
+    "name": "株式会社Trillion Bank",
+    "url": "https://trillion-bank.jp",
+    "description": "AI検索時代の情報流通を測る・守る・正規化する東京・千代田区のITカンパニー。HackⅡではAI回答内での候補入り・競合との勝敗・引用元を証拠付きで測定し、AEO/GEO/SEOの実装まで支援します。",
+    "inLanguage": "ja",
+    "publisher": {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization"
+    }
+  }
+  </script>
+
+  <!-- JSON-LD: Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://trillion-bank.jp/#organization",
+    "name": "株式会社Trillion Bank",
+    "legalName": "株式会社Trillion Bank",
+    "alternateName": ["株式会社トリリオンバンク", "トリリオンバンク", "Trillion Bank Co., Ltd."],
+    "brand": {"@type": "Brand", "name": "トリリオンバンク"},
+    "disambiguatingDescription": "AI検索最適化・DXを専門とするITカンパニー。釣具ブランドや「LEGALISS（legaliss.ai）」等の同名他社とは事業・資本ともに無関係。",
+    "foundingDate": "2025-12-23",
+    "foundingLocation": {"@type": "Place", "name": "東京都千代田区麹町"},
+    "isicV4": "6201",
+    "url": "https://trillion-bank.jp",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp",
+      "width": 414,
+      "height": 318
+    },
+    "slogan": "AI検索時代の情報流通を、測る・守る・正規化する",
+    "description": "AI検索計測・AEO/GEO/SEO実装支援サービス「HackⅡ（ハックツ）」を開発・提供する東京都千代田区のITカンパニー。AI回答内での候補入り、競合との勝敗、引用元、AI流入を証拠付きで測定し、改善実装と再計測まで支援。",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+      "addressLocality": "千代田区",
+      "addressRegion": "東京都",
+      "postalCode": "102-0083",
+      "addressCountry": "JP"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "url": "https://trillion-bank.jp/trillionbank/contact/",
+      "availableLanguage": "Japanese"
+    },
+    "areaServed": [
+      {"@type": "Place", "name": "麹町"},
+      {"@type": "AdministrativeArea", "name": "千代田区"},
+      {"@type": "AdministrativeArea", "name": "東京都"},
+      {"@type": "Country", "name": "JP"}
+    ],
+    "sameAs": [
+      "https://www.instagram.com/trillionbank_jp/"
+    ],
+    "knowsAbout": ["LLMO", "AIO", "AEO", "GEO", "AI検索最適化", "SEO", "DXコンサルティング", "オウンドメディア運営代行", "llms.txt", "構造化データ", "FAQPage", "HowToスキーマ", "AI引用最適化", "Web開発"],
+    "subjectOf": [
+      {"@type": "Article", "name": "HackⅡ完全解説", "url": "https://trillion-bank.jp/trillionbank/business/hack2/"},
+      {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+      {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+      {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+      {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+    ],
+    "founder": {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上幹太",
+      "alternateName": ["Kanta Inoue", "井上かんた", "かんちゃん", "かんちゃん トリリオンバンク"],
+      "jobTitle": "代表取締役CEO",
+      "description": "不登校からの起業家（12年間の不登校経験を経て2025年に起業）。ソフトバンクアカデミア17期修了、J-StarX（経済産業省 起業家育成プログラム）第1期参加、令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL獲得。ZEN大学1期特別奨学生。JCI JAPAN TOYP2026ファイナリスト（青年版国民栄誉賞）。株式会社TiesBrick所属。",
+      "worksFor": {"@type": "Organization", "@id": "https://trillion-bank.jp/#organization"},
+      "award": ["令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL", "JCI JAPAN TOYP2026ファイナリスト（青年版国民栄誉賞）", "ソフトバンクアカデミア17期", "J-StarX第1期", "ZEN大学1期特別奨学生"],
+      "knowsAbout": ["LLMO", "AIO", "AEO", "GEO", "AI検索最適化", "DX戦略", "SEO", "Web開発", "llms.txt", "構造化データ"],
+      "sameAs": ["https://www.instagram.com/trillionbank_jp/"]
+    }
+  }
+  </script>
+
+  <script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","name":"特定商取引法に基づく表記 | 株式会社トリリオンバンク","url":"https://trillion-bank.jp/tokushoho.html","description":"HackⅡ・Web開発・DXコンサルの販売条件・契約期間・解約条件。"}
+</script>
+
+
+  <!-- JSON-LD: WebPage + Speakable -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": "https://trillion-bank.jp/tokushoho.html#webpage",
+    "url": "https://trillion-bank.jp/tokushoho.html",
+    "name": "特定商取引法に基づく表記 | 株式会社Trillion Bank",
+    "description": "株式会社Trillion Bank（トリリオンバンク）の特定商取引法に基づく表記。HackⅡ・Web開発・DXコンサルティングの販売条件・契約期間・解約条件等を掲載します。",
+    "inLanguage": "ja",
+    "isPartOf": { "@type": "WebSite", "@id": "https://trillion-bank.jp/#website" },
+    "about": { "@type": "Organization", "@id": "https://trillion-bank.jp/#organization" },
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": ["h1", "h2", ".corp-lead", ".corp-page-hero__desc", "[data-speakable]"]
+    },
+    "dateModified": "2026-09-22T13:24:08+09:00"
+  }
+  </script>
+
+  <!-- JSON-LD: LocalBusiness（地域検索・AI Overview 地域クエリ対応） -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": "https://trillion-bank.jp/#localbusiness",
+    "name": "株式会社Trillion Bank",
+    "alternateName": ["株式会社トリリオンバンク", "トリリオンバンク", "Trillion Bank"],
+    "description": "AI検索計測・AEO/GEO/SEO実装支援サービス「HackⅡ」を提供するITカンパニー。AI回答内での候補入り、競合差、引用元、AI流入を測定し、改善実装と再計測まで支援。東京都千代田区麹町拠点。",
+    "url": "https://trillion-bank.jp/",
+    "parentOrganization": {"@id": "https://trillion-bank.jp/#organization"},
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+      "addressLocality": "千代田区",
+      "addressRegion": "東京都",
+      "postalCode": "102-0083",
+      "addressCountry": "JP"
+    },
+    "areaServed": [
+      {"@type": "Place", "name": "麹町"},
+      {"@type": "AdministrativeArea", "name": "千代田区"},
+      {"@type": "AdministrativeArea", "name": "東京都"},
+      {"@type": "Country", "name": "JP"}
+    ],
+    "knowsAbout": [
+      "LLMO（Large Language Model Optimization）",
+      "AIO（AI Overview最適化）",
+      "AEO（Answer Engine Optimization）",
+      "GEO（Generative Engine Optimization）",
+      "llms.txt設計・実装",
+      "JSON-LD構造化データ",
+      "AI検索インフラ設計",
+      "HackⅡ（AI検索計測・AEO/GEO/SEO実装支援サービス）"
+    ],
+    "makesOffer": {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "HackⅡ AI検索計測・分析支援",
+        "url": "https://trillion-bank.jp/trillionbank/business/hack2/",
+        "description": "選定した質問について、AI回答本文、引用URL、自社・競合の言及、測定日時・条件を保存し、AI検索上の現在地と改善判断を支援するサービス。価格は対象範囲に応じた個別見積もり。"
+      }
+    },
+    "sameAs": [
+      "https://trillion-bank.jp/trillionbank/company/",
+      "https://www.instagram.com/trillionbank_jp/"
+    ],
+    "founder": {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上幹太"
+    }
+  }
+  </script>
+
+  <!-- JSON-LD: BreadcrumbList（AIサイト階層理解支援） -->
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "トップ", "item": "https://trillion-bank.jp/"},
+      {"@type": "ListItem", "position": 2, "name": "特定商取引法に基づく表記", "item": "https://trillion-bank.jp/tokushoho.html"}
+    ]
+  }
+  </script>
+  
+
+  <!-- JSON-LD: SiteNavigationElement（AIナビゲーション理解） -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SiteNavigationElement",
+    "name": "トリリオンバンク サイトナビゲーション",
+    "url": "https://trillion-bank.jp",
+    "hasPart": [
+      {"@type": "SiteNavigationElement", "name": "トップ", "url": "https://trillion-bank.jp/"},
+      {"@type": "SiteNavigationElement", "name": "HackⅡ — AI検索計測", "url": "https://trillion-bank.jp/trillionbank/business/hack2/"},
+      {"@type": "SiteNavigationElement", "name": "Adctor / Pay per Crawl", "url": "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/"},
+      {"@type": "SiteNavigationElement", "name": "Insights", "url": "https://trillion-bank.jp/trillionbank/insights/"},
+      {"@type": "SiteNavigationElement", "name": "会社概要", "url": "https://trillion-bank.jp/trillionbank/company/"},
+      {"@type": "SiteNavigationElement", "name": "お知らせ", "url": "https://trillion-bank.jp/trillionbank/media/"},
+      {"@type": "SiteNavigationElement", "name": "お問い合わせ", "url": "https://trillion-bank.jp/trillionbank/contact/"}
+    ]
+  }
+  </script>
+
+  
+  <!-- Page Transition CSS -->
+  <style>
+  #corp-pt {
+    position: fixed; inset: 0;
+    z-index: 9800;
+    pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  #corp-pt-bg {
+    position: absolute; inset: 0;
+    background: #012f6d;
+    transform: scaleX(0);
+    transform-origin: left;
+    will-change: transform;
+    box-shadow: 4px 0 40px rgba(0,0,0,0.4);
+  }
+  #corp-pt-bar {
+    position: absolute; bottom: 0; left: 0;
+    height: 2px; width: 0; opacity: 0;
+    background: linear-gradient(90deg, #2563EB 0%, #06B6D4 100%);
+    z-index: 1;
+  }
+  #corp-pt-inner {
+    position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    will-change: opacity;
+    width: 100%;
+    padding: 0 40px;
+    box-sizing: border-box;
+  }
+  #corp-pt-logo {
+    width: min(640px, 72vw); height: auto;
+    display: block;
+    filter: invert(1) grayscale(1) brightness(3) drop-shadow(0 2px 16px rgba(0,0,0,0.18));
+  }
+  </style>
+
+  <!-- Custom Cursor CSS -->
+  <style>
+  .corp-cursor-dot,
+  .corp-cursor-ring {
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+    transition: opacity 0.3s;
+  }
+  .corp-cursor-dot {
+    width: 7px; height: 7px;
+    background: #2563EB;
+  }
+  .corp-cursor-ring {
+    width: 38px; height: 38px;
+    border: 1.5px solid rgba(37,99,235,0.4);
+    background: rgba(37,99,235,0.05);
+    transition: width 0.18s var(--ease-out), height 0.18s var(--ease-out),
+                border-color 0.18s, opacity 0.3s;
+  }
+  .corp-cursor-ring.is-link {
+    width: 56px; height: 56px;
+    border-color: #2563EB;
+    background: rgba(37,99,235,0.08);
+  }
+  .corp-cursor-dot.is-hidden,
+  .corp-cursor-ring.is-hidden { opacity: 0; }
+  @media (hover: none), (pointer: coarse) {
+    .corp-cursor-dot, .corp-cursor-ring { display: none; }
+  }
+  </style>
+</head>
+<body class="corp-page">
+
+  <!-- Page Transition Overlay -->
+  <div id="corp-pt" aria-hidden="true">
+    <div id="corp-pt-bg"></div>
+    <div id="corp-pt-bar"></div>
+    <div id="corp-pt-inner">
+      <img id="corp-pt-logo" src="/images/hero/tb-logo-hero.webp" alt="" aria-hidden="true">
+    </div>
+  </div>
+
+  <!-- Custom cursor -->
+  <div class="corp-cursor-dot" id="corpCursorDot" aria-hidden="true"></div>
+  <div class="corp-cursor-ring" id="corpCursorRing" aria-hidden="true"></div>
+
+  <header class="corp-header" id="corp-header">
+  <div class="corp-header__inner" style="display: flex; align-items: center; justify-content: space-between; height: 100%;">
+    <!-- Logo -->
+    <a href="/" class="corp-header__logo" aria-label="トリリオンバンク ホームへ" style="flex-shrink: 0; margin-right: 32px;">
+      <img class="corp-header__mark" src="/images/hero/tb-logo-symbol.webp" alt="" width="414" height="318">
+      <img class="corp-header__wordmark-img" src="/images/hero/tb-logo-hero.webp" alt="TRILLION BANK" width="2048" height="201">
+    </a>
+
+    <!-- Desktop Nav -->
+    <nav aria-label="Corporate Navigation" class="corp-nav-wrapper">
+      <ul class="corp-nav">
+        <li class="corp-nav__item-mega">
+          <a href="#business" class="corp-nav__link">事業概要</a>
+          <!-- Mega Menu Panel -->
+          <div class="corp-mega-panel">
+            <div class="corp-mega-panel__inner">
+              <div class="corp-mega-panel__col">
+                <p class="corp-mega-panel__label">【AI検索最適化インフラ】</p>
+                <div class="corp-mega-panel__main-product">
+                  <a href="/trillionbank/business/hack2/" class="corp-mega-panel__main-link">
+                    <span class="corp-mega-title">■ Hack Ⅱ（ハックツ）</span>
+                    <span class="corp-mega-desc">AI Recommendation Intelligence — 候補入り・競合勝敗・引用元を証拠付きで測定</span>
+                  </a>
+                </div>
+              </div>
+              <div class="corp-mega-panel__col">
+                <p class="corp-mega-panel__label" style="color:#C5A059;">【AIインフラ・次世代Web戦略】</p>
+                <div class="corp-mega-panel__main-product">
+                  <a href="/trillionbank/business/pay-per-crawl/" class="corp-mega-panel__main-link" style="display:flex; align-items:flex-start; gap:0;">
+                    <span style="flex:1;">
+                      <span class="corp-mega-title" style="color:#1a1a2e;">■ Adctor（アドクター）</span>
+                      <span class="corp-mega-desc">AIクローリング最適化 &amp; Pay-per-Crawl</span>
+                    </span>
+                    <span style="font-size:9px; font-weight:700; color:#fff; background:#C5A059; padding:2px 6px; border-radius:2px; white-space:nowrap; flex-shrink:0; margin-left:8px; height:fit-content; margin-top:4px;">NEW</span>
+                  </a>
+                  <ul class="corp-mega-sub" style="margin-top:14px;">
+                    <li><a href="/trillionbank/business/pay-per-crawl/"><span class="c-title">├ 守りパッケージ</span><span class="c-desc">悪質ボット遮断 × AI検索最適化</span></a></li>
+                    <li><a href="/trillionbank/business/pay-per-crawl/"><span class="c-title">└ 収益化パッケージ</span><span class="c-desc">Pay-per-Crawl 自動課金インフラ</span></a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li><a href="/results/" class="corp-nav__link">導入実績・トラスト</a></li>
+        <li class="corp-nav__item-hover">
+          <a href="/trillionbank/company/" class="corp-nav__link">会社概要</a>
+          <div class="corp-dropdown">
+            <a href="/trillionbank/company/">会社概要</a>
+            <a href="/trillionbank/media/">お知らせ</a>
+          </div>
+        </li>
+      </ul>
+    </nav>
+    
+    <div class="corp-header__cta" style="display: flex; gap: 12px; align-items: center; margin-left: auto;">
+      <a href="/download/" class="corp-nav__cta corp-nav__cta--download" aria-label="サービス資料ダウンロード">サービス資料ダウンロード</a>
+      <a href="/trillionbank/meeting/" class="corp-nav__cta corp-nav__cta--diagnosis" aria-label="商談を予約する（30分）" data-event="meeting_form_open" data-service="general" data-cta="corp_header">商談を予約する（30分）</a>
+    </div>
+
+    <!-- Hamburger (mobile) -->
+    <button class="corp-hamburger" id="corp-hamburger" aria-label="メニューを開く" aria-expanded="false" aria-controls="corp-mobile-nav">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile Nav Overlay -->
+<nav id="corp-mobile-nav" class="corp-mobile-nav" aria-label="モバイルナビゲーション">
+  <a href="/">トップ</a>
+  <a href="/trillionbank/business/hack2/">HackⅡ / AI Recommendation Intelligence</a>
+  <a href="/trillionbank/business/">関連事業 / Web・デジタル支援</a>
+  <a href="/trillionbank/business/pay-per-crawl/">Adctor / AIクローリング最適化・Pay-per-Crawl</a>
+  <a href="/results/">導入実績・トラスト</a>
+  <a href="/trillionbank/company/">会社概要</a>
+  <a href="/download/" style="color:#2563EB; font-weight:600; border:1px solid #2563EB; padding:12px 20px; border-radius:4px; text-align:center;">資料ダウンロード</a>
+  <a href="/trillionbank/meeting/" style="background:linear-gradient(135deg,#2563EB 0%,#06B6D4 100%); color:#fff; font-weight:700; padding:12px 20px; border-radius:4px; text-align:center;" data-event="meeting_form_open" data-service="general" data-cta="corp_mobile_nav">商談を予約する（30分）</a>
+</nav>
+
+<style>
+/* Header Flex Layout */
+.corp-header__inner { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; }
+@media (max-width: 1080px) {
+  .corp-nav-wrapper, .corp-header__cta { display: none !important; }
+}
+
+/* Nav Links */
+.corp-nav { display: flex; gap: 24px; margin: 0; padding: 0; list-style: none; align-items: center; height: 100%; }
+.corp-nav > li { position: relative; height: 100%; display: flex; align-items: center; }
+.corp-nav__link {
+  font-family: 'Noto Sans JP', sans-serif; font-size: 14px; font-weight: 700; color: var(--s-text, #333);
+  text-decoration: none; padding: 24px 8px; transition: color 0.2s; cursor: pointer;
+}
+.corp-nav__link:hover { color: #2563EB; }
+
+/* Mega Menu Dropdown */
+.corp-mega-panel {
+  position: absolute; top: 100%; left: -120px; width: 860px;
+  background: #ffffff; border: 1px solid rgba(0,0,0,0.05); border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.08);
+  opacity: 0; visibility: hidden; transform: translateY(10px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 40px; z-index: 1000;
+  pointer-events: none;
+}
+.corp-nav__item-mega:hover .corp-mega-panel {
+  opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto;
+}
+.corp-mega-panel__inner { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; }
+.corp-mega-panel__label { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; color: #2563EB; margin-bottom: 20px; letter-spacing: 0.1em; }
+.corp-mega-panel a { text-decoration: none; display: block; padding: 8px 0; transition: transform 0.2s; }
+.corp-mega-panel a:hover { transform: translateX(4px); }
+
+.corp-mega-title, .c-title { display: block; font-size: 16px; font-weight: 700; color: #333; margin-bottom: 4px; }
+.corp-mega-desc, .c-desc { display: block; font-size: 13px; color: #666; line-height: 1.5; }
+.corp-mega-sub { list-style: none; padding-left: 20px; margin: 16px 0 0 0; }
+.corp-mega-sub li { margin-bottom: 12px; }
+.corp-mega-list { list-style: none; padding: 0; margin: 0; }
+.corp-mega-list li { margin-bottom: 16px; }
+
+/* Standard Dropdown for Company Info */
+.corp-dropdown {
+  position: absolute; top: 100%; left: 0; width: 260px;
+  background: #ffffff; border: 1px solid rgba(0,0,0,0.05); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  opacity: 0; visibility: hidden; transform: translateY(10px);
+  transition: all 0.2s; padding: 16px; z-index: 1000; pointer-events: none;
+}
+.corp-nav__item-hover:hover .corp-dropdown {
+  opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto;
+}
+.corp-dropdown a {
+  display: block; font-size: 14px; font-weight: 700; color: #333;
+  padding: 12px; text-decoration: none; border-radius: 4px;
+}
+.corp-dropdown a:hover { background: rgba(37,99,235,0.05); color: #2563EB; }
+
+/* CTA buttons */
+.corp-nav__cta { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; padding: 10px 20px; border-radius: 4px; text-decoration: none; transition: all 0.2s; white-space: nowrap; }
+.corp-nav__cta--download { background: #ffffff; color: #333; border: 1px solid #ddd; }
+.corp-nav__cta--download:hover { background: #f9fafb; border-color: #bbb; }
+.corp-nav__cta--diagnosis { background: #2563EB; color: #ffffff; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+.corp-nav__cta--diagnosis:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37,99,235,0.3); }
+
+/* Remove old overlay CTA styles to prevent conflict */
+.corp-nav__cta--download::after, .corp-nav__cta--diagnosis::after { display: none; }
+</style>
+
+<script>
+(function(){
+  var btn = document.getElementById('corp-hamburger');
+  var nav = document.getElementById('corp-mobile-nav');
+  var header = document.getElementById('corp-header');
+  if (!btn || !nav) return;
+  btn.addEventListener('click', function(){
+    var open = nav.classList.toggle('is-open');
+    btn.setAttribute('aria-expanded', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+  nav.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){
+      nav.classList.remove('is-open');
+      btn.setAttribute('aria-expanded', false);
+      document.body.style.overflow = '';
+    });
+  });
+  window.addEventListener('scroll', function(){
+    if (window.scrollY > 40) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+})();
+</script>
+
+
+  <main>
+    <style>
+/* ── 特商法ページ専用スタイル ──────────────────── */
+.tl-wrap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+}
+.tl-header {
+  margin-bottom: 48px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--corp-line);
+}
+.tl-header__kicker {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--corp-deep-gold);
+  margin-bottom: 12px;
+}
+.tl-header h1 {
+  font-family: 'Noto Serif JP', serif;
+  font-size: clamp(22px, 3vw, 32px);
+  color: var(--corp-text);
+  margin-bottom: 8px;
+}
+.tl-header__date {
+  font-size: 12px;
+  color: var(--corp-sub);
+}
+
+/* 目次 */
+.tl-toc {
+  background: var(--corp-bg-2);
+  border: 1px solid var(--corp-line);
+  border-radius: 4px;
+  padding: 24px 28px;
+  margin-bottom: 56px;
+}
+.tl-toc__title {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--corp-deep-gold);
+  margin-bottom: 12px;
+}
+.tl-toc ol {
+  counter-reset: toc;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.tl-toc li {
+  counter-increment: toc;
+  font-size: 13px;
+  color: var(--corp-sub);
+  padding: 5px 0;
+  border-bottom: 1px solid var(--corp-line);
+}
+.tl-toc li:last-child { border-bottom: none; }
+.tl-toc li a {
+  color: var(--corp-sub);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 0.2s;
+}
+.tl-toc li a:hover { color: var(--corp-deep-gold); }
+.tl-toc li a::before {
+  content: counter(toc, decimal-leading-zero);
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  color: var(--corp-deep-gold);
+  opacity: 0.7;
+  min-width: 20px;
+}
+
+/* セクション */
+.tl-section {
+  margin-bottom: 56px;
+  scroll-margin-top: 80px;
+}
+.tl-section--highlight {
+  border: 1px solid rgba(197,160,89,0.3);
+  border-radius: 4px;
+  padding: 28px 32px 32px;
+  background: rgba(197,160,89,0.03);
+}
+.tl-section__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--corp-deep-gold);
+  margin-bottom: 10px;
+}
+.tl-section h2 {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 18px;
+  color: var(--corp-text);
+  border-left: 3px solid rgba(197,160,89,0.5);
+  padding-left: 14px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* テーブル */
+.tl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  margin-bottom: 0;
+}
+.tl-table th,
+.tl-table td {
+  padding: 12px 16px;
+  border: 1px solid var(--corp-line);
+  vertical-align: top;
+  line-height: 1.8;
+}
+.tl-table th {
+  width: 30%;
+  min-width: 120px;
+  color: rgba(197,160,89,0.75);
+  font-weight: 500;
+  background: rgba(255,255,255,0.02);
+  white-space: nowrap;
+}
+.tl-table td {
+  color: var(--corp-sub);
+}
+.tl-table tr.tl-row--important th {
+  color: rgba(251,191,36,0.9);
+  background: rgba(251,191,36,0.04);
+}
+.tl-table tr.tl-row--important td {
+  background: rgba(251,191,36,0.03);
+}
+
+/* 注意ボックス */
+.tl-notice {
+  margin-top: 16px;
+  padding: 14px 18px;
+  background: rgba(251,191,36,0.05);
+  border: 1px solid rgba(251,191,36,0.2);
+  border-radius: 3px;
+  font-size: 12px;
+  color: rgba(251,191,36,0.8);
+  line-height: 1.8;
+}
+.tl-notice::before {
+  content: "★ ";
+}
+
+/* 共通注意事項リスト */
+.tl-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.tl-list li {
+  font-size: 13.5px;
+  color: var(--corp-sub);
+  padding: 10px 0 10px 1.4em;
+  border-bottom: 1px solid var(--corp-line);
+  position: relative;
+  line-height: 1.8;
+}
+.tl-list li:last-child { border-bottom: none; }
+.tl-list li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: rgba(197,160,89,0.5);
+}
+
+/* フッターリンク */
+.tl-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding-top: 32px;
+  margin-top: 40px;
+  border-top: 1px solid var(--corp-line);
+  font-size: 12px;
+}
+.tl-footer-links a {
+  color: var(--corp-sub);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.tl-footer-links a:hover { color: var(--corp-deep-gold); }
+.tl-footer-links a.tl-link--gold { color: var(--corp-deep-gold); }
+
+/* モバイル対応 */
+@media (max-width: 600px) {
+  .tl-wrap { padding: 40px 16px 72px; }
+  .tl-section--highlight { padding: 20px 16px 24px; }
+  .tl-table th { white-space: normal; width: 36%; }
+  .tl-table th,
+  .tl-table td { padding: 10px 12px; font-size: 12.5px; }
+}
+@media (max-width: 480px) {
+  .tl-table,
+  .tl-table tbody,
+  .tl-table tr,
+  .tl-table th,
+  .tl-table td {
+    display: block;
+    width: 100% !important;
+  }
+  .tl-table tr { border-bottom: 1px solid var(--corp-line); }
+  .tl-table th {
+    border-bottom: none;
+    padding-bottom: 4px;
+    white-space: normal;
+    color: rgba(197,160,89,0.65);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+  .tl-table td { padding-top: 4px; border-top: none; }
+  .tl-table tr.tl-row--important th,
+  .tl-table tr.tl-row--important td { background: rgba(251,191,36,0.03); }
+}
+</style>
+
+<!-- Breadcrumb -->
+<nav class="corp-breadcrumb" aria-label="パンくずリスト">
+  <a href="/">Top</a>
+  <span class="corp-breadcrumb__sep">/</span>
+  <span>特定商取引法に基づく表記</span>
+</nav>
+
+<div class="tl-wrap">
+
+  <!-- ヘッダー -->
+  <div class="tl-header">
+    <p class="tl-header__kicker">Legal Notice</p>
+    <h1>特定商取引法に基づく表記</h1>
+    <p class="tl-header__date">最終更新日：2026年9月6日</p>
+  </div>
+
+  <!-- 目次 -->
+  <nav class="tl-toc" aria-label="目次">
+    <p class="tl-toc__title">Contents</p>
+    <ol>
+      <li><a href="#company">事業者情報（共通）</a></li>
+      <li><a href="#svc-hackii">AI検索計測・運用支援（HackⅡ）</a></li>
+      <li><a href="#svc-web">Web・システム開発</a></li>
+      <li><a href="#svc-dx">AI・DX戦略コンサルティング</a></li>
+      <li><a href="#common">共通注意事項</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1. 事業者情報 -->
+  <section id="company" class="tl-section">
+    <div class="tl-section__badge">01 — 事業者情報</div>
+    <h2>事業者情報（共通）</h2>
+    <table class="tl-table">
+      <tbody>
+        <tr>
+          <th>事業者名</th>
+          <td>株式会社Trillion Bank（トリリオンバンク）</td>
+        </tr>
+        <tr>
+          <th>代表者名</th>
+          <td>井上幹太（Kanta Inoue）</td>
+        </tr>
+        <tr>
+          <th>所在地</th>
+          <td>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ</td>
+        </tr>
+        <tr>
+          <th>電話番号</th>
+          <td>本サイト内お問い合わせフォームよりご請求ください。請求に応じて遅滞なく開示します。</td>
+        </tr>
+        <tr>
+          <th>メールアドレス</th>
+          <td>本サイト内お問い合わせフォームよりご連絡ください。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 2. AI検索計測・運用支援（HackⅡ） -->
+  <section id="svc-hackii" class="tl-section tl-section--highlight">
+    <div class="tl-section__badge">02 — ★ 重要：契約条件あり</div>
+    <h2>AI検索計測・運用支援サービス（HackⅡ）</h2>
+    <table class="tl-table">
+      <tbody>
+        <tr>
+          <th>サービス内容</th>
+          <td>AI検索計測サービス「HackⅡ（ハックツ）」による測定・分析・改善優先度の整理と、関連する運用支援。対象範囲は契約時に個別に定めます。</td>
+        </tr>
+        <tr>
+          <th>販売価格</th>
+          <td>
+            対象ブランド数・質問数・対応AI・分析/運用範囲に応じた個別見積もりにより決定し、契約前に書面でご提示します（税別）。
+          </td>
+        </tr>
+        <tr>
+          <th>初期費用</th>
+          <td>契約内容に応じて個別見積もりによりご提示します。</td>
+        </tr>
+        <tr>
+          <th>支払方法</th>
+          <td>銀行振込（請求書払い）</td>
+        </tr>
+        <tr>
+          <th>支払時期</th>
+          <td>毎月月初に翌月分を請求。請求書発行後14日以内にお支払いください。</td>
+        </tr>
+        <tr>
+          <th>役務提供時期</th>
+          <td>契約成立後、合意した測定設計に基づき初回測定を開始し、以後は契約に定める頻度で測定・分析・レポートを提供します。</td>
+        </tr>
+        <tr class="tl-row--important">
+          <th>初期契約期間</th>
+          <td><strong>6ヶ月</strong>（契約開始日から起算）</td>
+        </tr>
+        <tr class="tl-row--important">
+          <th>中途解約について</th>
+          <td>
+            <strong>初期契約期間（6ヶ月）中の中途解約の場合も、残月数分の利用料金をお支払いいただきます。</strong><br>
+            <small style="color:rgba(208,208,208,0.5);">初期契約期間を前提とした条件設定のため、中途解約の場合は残期間分の料金を精算します。詳細は個別契約書に定めます。</small>
+          </td>
+        </tr>
+        <tr>
+          <th>6ヶ月経過後の解約</th>
+          <td>初期契約期間（6ヶ月）経過後は、1ヶ月前の書面（メール可）による通知をもって解約できます。</td>
+        </tr>
+        <tr>
+          <th>返金・キャンセル</th>
+          <td>提供済み期間分のサービスに対する返金はいたしません。サービス開始前のキャンセルについては個別にご相談ください。</td>
+        </tr>
+        <tr>
+          <th>動作環境</th>
+          <td>インターネット接続環境が必要です。</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="tl-notice">
+      契約締結前に、上記の契約期間・中途解約条件についてご説明・ご確認いただきます。申込フォームでの明示的な同意確認が必須となります。
+    </div>
+  </section>
+
+  <!-- 3. Web・システム開発 -->
+  <section id="svc-web" class="tl-section">
+    <div class="tl-section__badge">03</div>
+    <h2>Web・システム開発サービス</h2>
+    <table class="tl-table">
+      <tbody>
+        <tr>
+          <th>サービス内容</th>
+          <td>Webサイト・LP・採用サイト・社内システム・診断ツールなどの設計・開発・納品。</td>
+        </tr>
+        <tr>
+          <th>販売価格</th>
+          <td>規模・要件により異なります。個別見積もりにより決定（無料見積もり対応）。</td>
+        </tr>
+        <tr>
+          <th>支払方法</th>
+          <td>銀行振込（請求書払い）</td>
+        </tr>
+        <tr>
+          <th>支払時期</th>
+          <td>着手金（契約時50%）・残金（納品時50%）。詳細は契約書に記載。</td>
+        </tr>
+        <tr>
+          <th>役務提供時期</th>
+          <td>契約後、個別に定めるスケジュールに従い納品。</td>
+        </tr>
+        <tr>
+          <th>キャンセル・返金</th>
+          <td>作業開始前のキャンセルは着手金を返金します。作業開始後のキャンセルは、完了工程に応じた費用をご請求します。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 4. AI・DX戦略コンサルティング -->
+  <section id="svc-dx" class="tl-section">
+    <div class="tl-section__badge">04</div>
+    <h2>AI・DX戦略コンサルティングサービス</h2>
+    <table class="tl-table">
+      <tbody>
+        <tr>
+          <th>サービス内容</th>
+          <td>現場ボトルネック分析・AI実装支援・業務設計・DX戦略策定。専任チームが一気通貫で対応。</td>
+        </tr>
+        <tr>
+          <th>販売価格</th>
+          <td>要件・規模により異なります。初回無料相談（30分）後に個別見積もりを提示。</td>
+        </tr>
+        <tr>
+          <th>支払方法</th>
+          <td>銀行振込（請求書払い）</td>
+        </tr>
+        <tr>
+          <th>支払時期</th>
+          <td>月次・マイルストーン払い。詳細は契約書に記載。</td>
+        </tr>
+        <tr>
+          <th>役務提供時期</th>
+          <td>契約後、合意したスケジュールに従い提供開始。</td>
+        </tr>
+        <tr>
+          <th>キャンセル・返金</th>
+          <td>提供済みセッション・成果物に対する返金はいたしません。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 5. 共通注意事項 -->
+  <section id="common" class="tl-section">
+    <div class="tl-section__badge">05</div>
+    <h2>共通注意事項</h2>
+    <ul class="tl-list">
+      <li>価格はすべて税別表示です（消費税10%が別途かかります）。</li>
+      <li>サービスの詳細条件は、別途締結する個別契約書が優先されます。</li>
+      <li>サービス内容・料金は予告なく変更される場合があります。変更時はサイト上にて告知します。</li>
+      <li>本表記に関するお問い合わせは、本サイト内のお問い合わせフォームよりご連絡ください。</li>
+    </ul>
+  </section>
+
+  <!-- フッターリンク -->
+  <div class="tl-footer-links">
+    <a href="/privacy.html" class="tl-link--gold">プライバシーポリシー</a>
+    <a href="/terms.html" class="tl-link--gold">利用規約</a>
+    <a href="/contact/">お問い合わせ</a>
+    <a href="/">トリリオンバンク コーポレートサイト</a>
+  </div>
+
+</div>
+
+  </main>
+
+  <footer class="corp-footer">
+
+  <!-- ── Footer CTA ───────────────────────────────────────────── -->
+  <div class="corp-footer-cta">
+    <div class="corp-footer-cta__inner">
+      <p class="corp-footer-cta__label">AI検索時代の情報流通を、測る・守る・正規化する。</p>
+      <h2 class="corp-footer-cta__heading">AI検索で「出たか」ではなく、<br>なぜ選ばれ、なぜ外れたかまで。</h2>
+      <div class="corp-footer-cta__btns">
+        <a href="/trillionbank/meeting/" class="corp-footer-cta__btn corp-footer-cta__btn--dl" aria-label="商談を予約する（30分・オンライン）" data-event="meeting_form_open" data-service="general" data-cta="corp_footer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          商談を予約する
+          <span class="corp-footer-cta__btn-sub">30分・オンライン</span>
+        </a>
+        <a href="/download/" class="corp-footer-cta__btn corp-footer-cta__btn--contact" aria-label="資料ダウンロード">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          資料ダウンロード
+          <span class="corp-footer-cta__btn-sub">サービス資料</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="corp-footer__inner">
+
+    <!-- Col 1: Brand — ロゴ + 所在地 -->
+    <div class="corp-footer__brand">
+      <a href="/" class="corp-footer__logo-link" aria-label="トリリオンバンク ホームへ" style="display:inline-block; margin-bottom:20px;">
+        <img src="/images/hero/tb-logo-hero.webp" alt="TRILLION BANK" width="2048" height="201" style="display:block; width:min(270px,70vw); height:auto; filter:invert(1) grayscale(1) brightness(3); opacity:1;">
+      </a>
+      <p>
+        株式会社Trillion Bank（トリリオンバンク）<br>
+        〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ
+      </p>
+      <p style="margin-top:12px; font-size:11px; opacity:0.45; letter-spacing:0.03em; line-height:1.7;">
+        AI検索を、お金にかえる。<br>AI時代の情報資産は最高の金融マーケットになる。
+      </p>
+    </div>
+
+    <!-- Col 2: 会社情報 -->
+    <div class="corp-footer__col">
+      <h4>会社情報</h4>
+      <nav aria-label="会社情報ナビゲーション">
+        <ul>
+          <li><a href="/trillionbank/company/">会社概要</a></li>
+          <li><a href="/tokushoho.html">特定商取引法に基づく表記</a></li>
+          <li><a href="/privacy.html">プライバシーポリシー</a></li>
+          <li><a href="/terms.html">利用規約</a></li>
+          <li><a href="/security.html">情報セキュリティ基本方針</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Col 3: お問い合わせ -->
+    <div class="corp-footer__col">
+      <h4>お問い合わせ</h4>
+      <nav aria-label="お問い合わせナビゲーション">
+        <ul>
+          <li><a href="/trillionbank/meeting/">商談を予約する（30分）</a></li>
+          <li><a href="/trillionbank/meeting/?type=company">事業会社向け｜HackⅡのご相談</a></li>
+          <li><a href="/trillionbank/meeting/?type=agency">販売代理店向け｜共同提案のご相談</a></li>
+          <li><a href="/trillionbank/contact/">取材・講演依頼</a></li>
+          <li><a href="/trillionbank/contact/" style="color:#ffffff;">その他お問い合わせ</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Col 4: お知らせ -->
+    <div class="corp-footer__col">
+      <h4>お知らせ</h4>
+      <nav aria-label="お知らせナビゲーション">
+        <ul>
+          <li><a href="/trillionbank/media/">ニュース一覧</a></li>
+          <li><a href="/download/">資料ダウンロード</a></li>
+        </ul>
+      </nav>
+    </div>
+
+  </div>
+
+  <div class="corp-footer__bottom">
+    <span>&copy; 2026 Trillion Bank Co., Ltd. All Rights Reserved.</span>
+  </div>
+</footer>
+
+
+  <!-- Page Transition JS -->
+  <script>
+  (function() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var KEY = 'tb-pt';
+    var ss = {
+      get: function(k) { try { return sessionStorage.getItem(k); } catch(e) { return null; } },
+      set: function(k,v){ try { sessionStorage.setItem(k,v); } catch(e) {} },
+      del: function(k)  { try { sessionStorage.removeItem(k); } catch(e) {} }
+    };
+
+    var COVER_MS  = 500;
+    var NAV_MS    = 1400;
+    var REVEAL_MS = 600;
+
+    var THEMES = {
+      default: { bg: '#012f6d', logo: '/images/hero/tb-logo-hero.webp' },
+      hackii:  { bg: '#0126b0', logo: '/images/logo-hackii.png' }
+    };
+    var KEY_THEME = 'tb-pt-theme';
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var pt   = document.getElementById('corp-pt');
+      var bg   = document.getElementById('corp-pt-bg');
+      var bar  = document.getElementById('corp-pt-bar');
+      var logo = document.getElementById('corp-pt-inner');
+      if (!pt || !bg || !logo) return;
+
+      var navigating = false;
+
+      function applyTheme(theme) {
+        var t = THEMES[theme] || THEMES.default;
+        bg.style.background = t.bg;
+        logo.querySelector('img').src = t.logo;
+      }
+
+      function reset() {
+        bg.style.cssText   = '';
+        logo.style.cssText = '';
+        bar.style.cssText  = '';
+        pt.style.pointerEvents = 'none';
+        applyTheme('default');
+      }
+
+      function cover(onNav, theme) {
+        theme = theme || 'default';
+        applyTheme(theme);
+        ss.set(KEY_THEME, theme);
+
+        pt.style.pointerEvents = 'auto';
+        bg.style.transition    = 'none';
+        bg.style.transformOrigin = 'left';
+        bg.style.transform     = 'scaleX(0)';
+        logo.style.transition  = 'none';
+        logo.style.opacity     = '0';
+        bar.style.width = '0'; bar.style.opacity = '1';
+
+        requestAnimationFrame(function() {
+          bg.style.transition = 'transform ' + COVER_MS + 'ms cubic-bezier(0.77,0,0.18,1)';
+          bg.style.transform  = 'scaleX(1)';
+
+          bar.style.transition = 'width ' + NAV_MS + 'ms cubic-bezier(0.4,0,0.6,1)';
+          bar.style.width = '100%';
+
+          setTimeout(function() {
+            logo.style.transition = 'opacity 0.4s ease';
+            logo.style.opacity    = '1';
+          }, Math.round(COVER_MS * 0.52));
+
+          if (onNav) setTimeout(onNav, NAV_MS);
+        });
+      }
+
+      function reveal(onDone) {
+        bg.style.transition      = 'none';
+        bg.style.transformOrigin = 'right';
+        bg.style.transform       = 'scaleX(1)';
+        logo.style.transition    = 'none';
+        logo.style.opacity       = '1';
+        bar.style.width = '100%'; bar.style.opacity = '1';
+        pt.style.pointerEvents   = 'none';
+
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            logo.style.transition = 'opacity 0.3s ease';
+            logo.style.opacity    = '0';
+            bar.style.transition  = 'opacity 0.15s ease';
+            bar.style.opacity     = '0';
+
+            setTimeout(function() {
+              bg.style.transition = 'transform ' + REVEAL_MS + 'ms cubic-bezier(0.77,0,0.18,1)';
+              bg.style.transform  = 'scaleX(0)';
+            }, 80);
+
+            if (onDone) setTimeout(onDone, 80 + REVEAL_MS + 40);
+          });
+        });
+      }
+
+      var pending = ss.get(KEY) === '1';
+      if (pending) {
+        var savedTheme = ss.get(KEY_THEME) || 'default';
+        ss.del(KEY); ss.del(KEY_THEME);
+        applyTheme(savedTheme);
+        reveal(reset);
+      } else { reset(); }
+
+      document.querySelectorAll('a[href]').forEach(function(link) {
+        try {
+          var href = link.getAttribute('href') || '';
+          if (!href || href.charAt(0) === '#') return;
+          if (/^(mailto:|tel:)/.test(href)) return;
+          if (link.target === '_blank') return;
+          var url = new URL(link.href, location.origin);
+          if (url.origin !== location.origin) return;
+        } catch(e) { return; }
+
+        link.addEventListener('click', function(e) {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          if (navigating) return;
+          navigating = true;
+          ss.set(KEY, '1');
+          var dest = link.href;
+          var url = new URL(dest, location.origin);
+          var theme = /^\/hackii(\/|$)/.test(url.pathname) ? 'hackii' : 'default';
+          cover(function() { location.href = dest; }, theme);
+        });
+      });
+
+      window.addEventListener('pageshow', function(e) {
+        if (e.persisted) { navigating = false; ss.del(KEY); reset(); }
+      });
+      window.addEventListener('pagehide', function() { navigating = false; });
+    });
+  })();
+  </script>
+
+  <!-- Custom Cursor JS -->
+  <script>
+  (function(){
+    var dot  = document.getElementById('corpCursorDot');
+    var ring = document.getElementById('corpCursorRing');
+    if (!dot || !ring) return;
+    // Touch detection — hide on touch devices
+    if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+    var mx = 0, my = 0, rx = 0, ry = 0;
+    var ease = 0.14;
+    var raf;
+    function render() {
+      rx += (mx - rx) * ease;
+      ry += (my - ry) * ease;
+      dot.style.transform  = 'translate3d(' + mx + 'px,' + my + 'px,0) translate(-50%,-50%)';
+      ring.style.transform = 'translate3d(' + rx + 'px,' + ry + 'px,0) translate(-50%,-50%)';
+      raf = requestAnimationFrame(render);
+    }
+    render();
+    document.addEventListener('mousemove', function(e){
+      mx = e.clientX; my = e.clientY;
+      dot.classList.remove('is-hidden');
+      ring.classList.remove('is-hidden');
+    });
+    document.addEventListener('mouseleave', function(){
+      dot.classList.add('is-hidden');
+      ring.classList.add('is-hidden');
+    });
+    document.querySelectorAll('a, button').forEach(function(el){
+      el.addEventListener('mouseenter', function(){ ring.classList.add('is-link'); });
+      el.addEventListener('mouseleave', function(){ ring.classList.remove('is-link'); });
+    });
+  })();
+  </script>
+
+</body>
+</html>

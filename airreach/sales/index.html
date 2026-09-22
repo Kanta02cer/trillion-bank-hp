@@ -1,0 +1,66 @@
+<style>
+.ars{max-width:760px;margin:40px auto 80px;padding:0 20px;font-family:var(--sans,'Noto Sans JP',sans-serif);color:#0f172a}
+.ars h1{font-size:1.75rem;margin:0 0 8px}
+.ars .lead{color:#64748b;margin:0 0 20px;line-height:1.6}
+.ars .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 18px;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;text-decoration:none;border:0;cursor:pointer;font:inherit}
+.ars .btn-line{background:#fff;color:#0f172a;border:1px solid #e2e8f0}
+.ars .row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+.ars .list{list-style:none;padding:0;margin:24px 0;display:grid;gap:10px}
+.ars .item{border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;background:#fff;display:grid;gap:8px}
+.ars .item .title{font-weight:800;font-size:1.05rem}
+.ars .meta{font-size:.85rem;color:#64748b}
+.ars .badge{display:inline-block;font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:6px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.ars .badge.is-proposed{background:#ecfdf5;border-color:#bbf7d0;color:#047857}
+.ars .empty{padding:24px;border:1px dashed #cbd5e1;border-radius:12px;color:#64748b}
+.ars .note{font-size:.85rem;color:#94a3b8;margin-top:24px;line-height:1.5}
+.ars .actions a,.ars .actions button{font-size:.85rem;min-height:40px;padding:8px 12px}
+</style>
+<div class="ars">
+  <p style="font-size:.8rem;font-weight:700;color:#1d4ed8;margin:0 0 8px">AirReach SALES</p>
+  <h1>営業用トップ</h1>
+  <p class="lead">URLを入れて診断 → 画面を見せる → 提案書を作る。分析はシステムがやります。成果・掲載は保証しません。</p>
+  <div class="row">
+    <a class="btn" href="/airreach/?fresh=1">＋ 新しいお客様を診断</a>
+    <a class="btn btn-line" href="/airreach/">店舗向け診断</a>
+  </div>
+  <h2 style="font-size:1.1rem;margin:28px 0 8px">最近の案件</h2>
+  <ul class="list" id="ars-list"></ul>
+  <p class="note">※ P0はブラウザ内保存です。端末が変わると見えません。サーバー顧客DBは準備中（未接続）。</p>
+</div>
+<script src="/assets/js/airreach-scan-store.js"></script>
+<script src="/assets/js/airreach-sales-kit.js"></script>
+<script>
+(function () {
+  var list = document.getElementById('ars-list');
+  var STATUS = { diagnosed: '診断済み', proposed: '提案中', won: '商談化', active: '対応中' };
+  function render() {
+    if (!window.AirReachScanStore) {
+      list.innerHTML = '<li class="empty">履歴ストアを読み込めませんでした。</li>';
+      return;
+    }
+    var rows = AirReachScanStore.listScans();
+    if (!rows.length) {
+      list.innerHTML = '<li class="empty">まだ案件がありません。「新しいお客様を診断」から始めてください。</li>';
+      return;
+    }
+    var ind = window.AirReachSalesKit ? AirReachSalesKit.IND : {};
+    list.innerHTML = rows.map(function (r) {
+      var st = r.status || 'diagnosed';
+      var badgeClass = st === 'proposed' || st === 'won' ? 'badge is-proposed' : 'badge';
+      var when = (r.savedAt || '').slice(0, 16).replace('T', ' ');
+      var score = r.scoreOverall != null ? ('参考 ' + r.scoreOverall + '点') : '診断済み';
+      return '<li class="item" data-id="' + r.id + '">'
+        + '<div><span class="' + badgeClass + '">' + (STATUS[st] || st) + '</span></div>'
+        + '<div class="title">' + (r.displayName || r.url || r.id) + '</div>'
+        + '<div class="meta">' + (ind[r.industryId] || r.industryId || '') + ' · ' + score + ' · ' + when + '</div>'
+        + '<div class="meta">' + (r.url || '') + '</div>'
+        + '<div class="row actions">'
+        + '<a class="btn" href="' + AirReachScanStore.dealPath(r.id) + '">案件を開く</a>'
+        + '<a class="btn btn-line" href="' + AirReachScanStore.presentPath(r.id) + '">商談モード</a>'
+        + '<a class="btn btn-line" href="' + AirReachScanStore.resultPath(r.id) + '">結果</a>'
+        + '</div></li>';
+    }).join('');
+  }
+  render();
+})();
+</script>

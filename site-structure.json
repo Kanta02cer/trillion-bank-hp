@@ -1,0 +1,77 @@
+{
+  "site": "https://trillion-bank.jp/",
+  "lastReviewed": "2026-09-16",
+  "language": "ja",
+  "canonicalSections": [
+    {
+      "name": "Home",
+      "url": "https://trillion-bank.jp/",
+      "purpose": "会社とプロダクトの全体像"
+    },
+    {
+      "name": "Company",
+      "url": "https://trillion-bank.jp/trillionbank/company/",
+      "purpose": "会社の正式情報"
+    },
+    {
+      "name": "Mission",
+      "url": "https://trillion-bank.jp/trillionbank/mission/",
+      "purpose": "企業理念"
+    },
+    {
+      "name": "CEO",
+      "url": "https://trillion-bank.jp/trillionbank/ceo/",
+      "purpose": "代表取締役 井上幹太のプロフィール"
+    },
+    {
+      "name": "Business",
+      "url": "https://trillion-bank.jp/trillionbank/business/",
+      "purpose": "事業概要"
+    },
+    {
+      "name": "HackⅡ",
+      "url": "https://trillion-bank.jp/trillionbank/business/hack2/",
+      "purpose": "AI回答・競合・引用元の測定と分析支援"
+    },
+    {
+      "name": "AirReach",
+      "url": "https://trillion-bank.jp/airreach/",
+      "purpose": "公開ページのAI検索準備度を無料診断し、HackⅡの詳細測定・伴走へ接続する"
+    },
+    {
+      "name": "Adctor",
+      "url": "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/",
+      "purpose": "AIデータ利用の契約・利用証跡に関する研究開発・PoC"
+    },
+    {
+      "name": "Insights",
+      "url": "https://trillion-bank.jp/trillionbank/insights/",
+      "purpose": "AI検索・情報利用の一次情報と実務解説"
+    },
+    {
+      "name": "Guide: 内製／外注判断",
+      "url": "https://trillion-bank.jp/trillionbank/guide/inhouse-or-outsource/",
+      "purpose": "事業会社向けのAI検索対策 内製／外注判断ガイド"
+    },
+    {
+      "name": "Guide: 共同提案設計",
+      "url": "https://trillion-bank.jp/trillionbank/guide/agency-co-proposal/",
+      "purpose": "販売代理店・制作会社向けの共同提案ガイド"
+    },
+    {
+      "name": "News",
+      "url": "https://trillion-bank.jp/trillionbank/media/",
+      "purpose": "会社のお知らせ"
+    },
+    {
+      "name": "Contact",
+      "url": "https://trillion-bank.jp/trillionbank/contact/",
+      "purpose": "法人相談・問い合わせ"
+    },
+    {
+      "name": "Meeting",
+      "url": "https://trillion-bank.jp/trillionbank/meeting/",
+      "purpose": "商談予約"
+    }
+  ]
+}

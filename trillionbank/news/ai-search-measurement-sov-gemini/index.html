@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0XHQPCC4CF');
+</script>
+
+
+
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+<title>AI検索の効果測定はGemini時代にどう変わるか｜引用率・言及率・SOVを高める企業サイト設計</title>
+<meta name="description" content="Google Search Consoleの生成AI検索レポート、Googleの生成AI検索最適化ガイド、国内GEO支援の動向をもとに、Geminiを含むAI検索で引用率・言及率・SOVを高めるための測定設計、記事設計、公式情報整備、HackⅡでの再計測プロセスを解説します。">
+<meta name="robots" content="noindex, follow">
+
+<meta property="og:title" content="AI検索の効果測定はGemini時代にどう変わるか｜引用率・言及率・SOVを高める企業サイト設計">
+<meta property="og:description" content="Google Search Consoleの生成AI検索レポート、Googleの生成AI検索最適化ガイド、国内GEO支援の動向をもとに、Geminiを含むAI検索で引用率・言及率・SOVを高めるための測定設計、記事設計、公式情報整備、HackⅡでの再計測プロセスを解説します。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/">
+<meta property="og:image" content="https://trillion-bank.jp/images/news/ai-search-measurement-sov-2026.png">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="株式会社Trillion Bank">
+
+<meta property="article:published_time" content="2026-08-30T12:00:00+09:00">
+<meta property="article:modified_time" content="2026-08-30T00:00:00+09:00">
+<meta property="article:author" content="井上 幹太">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AI検索の効果測定はGemini時代にどう変わるか｜引用率・言及率・SOVを高める企業サイト設計">
+<meta name="twitter:description" content="Google Search Consoleの生成AI検索レポート、Googleの生成AI検索最適化ガイド、国内GEO支援の動向をもとに、Geminiを含むAI検索で引用率・言及率・SOVを高めるための測定設計、記事設計、公式情報整備、HackⅡでの再計測プロセスを解説します。">
+<meta name="twitter:image" content="https://trillion-bank.jp/images/news/ai-search-measurement-sov-2026.png">
+
+<link rel="canonical" href="https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/">
+<link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/">
+<link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/">
+<link rel="sitemap" type="application/xml" href="https://trillion-bank.jp/sitemap-index.xml">
+
+<!-- AI / LLM discovery -->
+<meta name="ai-summary" content="AI検索の成果は、検索順位ではなく、固定質問セットに対する言及率・公式引用率・競合SOV・AI流入・問い合わせ前行動で見る必要がある。Google Search Consoleの生成AI検索レポートはGoogle検索内の可視性を把握する入口になる一方、Gemini、ChatGPT、Perplexity等を横断した回答本文・引用URL・競合比較・誤情報・施策後変化は別途測定が必要。HackⅡはこの領域をService-led SaaSとして支援する。">
+<link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="https://trillion-bank.jp/feed.xml">
+<link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+<link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+<link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["Trillion Bank", "トリリオンバンク", "株式会社トリリオンバンク", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {"@type": "ImageObject", "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp"},
+      "description": "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。",
+      "foundingDate": "2025-12-23",
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": [
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+        {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+        {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI情報流通インフラ"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["株式会社トリリオンバンク", "トリリオンバンク", "Trillion Bank", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp",
+        "width": 414,
+        "height": 318
+      },
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "sameAs": ["https://www.instagram.com/trillionbank_jp/"]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役CEO",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"}
+    },
+    {
+      "@type": "LocalBusiness",
+      "@id": "https://trillion-bank.jp/#localbusiness",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "parentOrganization": {"@id": "https://trillion-bank.jp/#organization"},
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressLocality": "千代田区",
+        "addressRegion": "東京都",
+        "postalCode": "102-0083",
+        "addressCountry": "JP"
+      },
+      "areaServed": [
+        {"@type": "Place", "name": "麹町"},
+        {"@type": "AdministrativeArea", "name": "千代田区"},
+        {"@type": "AdministrativeArea", "name": "東京都"},
+        {"@type": "Country", "name": "JP"}
+      ]
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/#webpage",
+      "url": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/",
+      "name": "AI検索の効果測定はGemini時代にどう変わるか｜引用率・言及率・SOVを高める企業サイト設計",
+      "description": "Google Search Consoleの生成AI検索レポート、Googleの生成AI検索最適化ガイド、国内GEO支援の動向をもとに、Geminiを含むAI検索で引用率・言及率・SOVを高めるための測定設計、記事設計、公式情報整備、HackⅡでの再計測プロセスを解説します。",
+      "inLanguage": "ja",
+      "about": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntity": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/#article"},
+      "breadcrumb": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/#breadcrumb"}
+    },
+    {
+      "@type": "Article",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/#article",
+      "headline": "AI検索の効果測定はGemini時代にどう変わるか｜引用率・言及率・SOVを高める企業サイト設計",
+      "description": "Google Search Consoleの生成AI検索レポート、Googleの生成AI検索最適化ガイド、国内GEO支援の動向をもとに、Geminiを含むAI検索で引用率・言及率・SOVを高めるための測定設計、記事設計、公式情報整備、HackⅡでの再計測プロセスを解説します。",
+      "image": "https://trillion-bank.jp/images/news/ai-search-measurement-sov-2026.png",
+      "datePublished": "2026-08-30T12:00:00+09:00",
+      "dateModified": "2026-08-30T00:00:00+09:00",
+      "author": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntityOfPage": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/#webpage"},
+      "inLanguage": "ja",
+      "articleSection": "AI検索対策",
+      "keywords": "AI検索 効果測定,Gemini 引用率,Gemini 言及率,AI検索 SOV,生成AI検索レポート,Google Search Console AI,AI検索競合分析,GEOコンサルティング 会社,AEO支援会社,AIブランド可視性,AI検索マーケティング支援,HackⅡ,トリリオンバンク"
+    },
+
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/#breadcrumb",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "HOME", "item": "https://trillion-bank.jp/"},
+        {"@type": "ListItem", "position": 2, "name": "お知らせ", "item": "https://trillion-bank.jp/trillionbank/media/"},
+        {"@type": "ListItem", "position": 3, "name": "AI検索の効果測定はGemini時代にどう変わるか｜引用率・言及率・SOVを高める企業サイト設計", "item": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-sov-gemini/"}
+      ]
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Geminiでの引用率・言及率・SOVを高めるには何を測るべきですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "固定した質問セットに対して、回答本文で自社名やサービス名が出た割合、公式サイトや信頼できる外部ページが引用された割合、競合と比べた回答内の占有率、誤情報の有無、AI起点の流入と問い合わせ前行動を分けて測定します。1回の目視確認ではなく、同じ条件で反復測定し、施策前後を比較することが重要です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Google Search Consoleの生成AI検索レポートだけでAI検索対策は十分ですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "十分ではありません。Search Consoleの生成AI検索レポートはGoogle検索やDiscoverの生成AI機能における可視性を確認する入口になりますが、Geminiアプリ、ChatGPT、Perplexity、Claudeなどを横断した回答本文、引用URL、競合SOV、推薦理由、誤情報、施策後の変化は別途測定する必要があります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "非指名検索からAI検索流入を増やすには何をすべきですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "会社名ではなく、課題・比較・導入判断に関するキーワードを記事化します。たとえばAI検索 効果測定、AI検索 競合分析、生成AI引用分析、GEOコンサルティング 会社、AEO支援会社などの検索意図に対して、定義、判断基準、測定方法、FAQ、一次情報、問い合わせ導線を同じページ内にそろえます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "HackⅡでは何を支援しますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "HackⅡは、AI回答内での候補入り、言及、推薦、引用URL、競合SOV、質問単位のWin/Loss、AI流入、問い合わせ前行動を測定し、次に改善すべき記事、FAQ、構造化データ、外部掲載、PR、問い合わせ導線を整理します。SaaS計測と運用支援を組み合わせたService-led SaaSとして提供します。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "AI検索での表示や問い合わせは保証できますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "保証できません。AI検索の回答はAIサービス、モデル、質問、日時、ユーザー環境によって変動します。支援できるのは、公式情報をAIに読み取りやすく整備し、競合と比較した可視性を測定し、施策後に同条件で再計測することです。"
+      }
+    }
+  ]
+}
+</script>
+
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+<header class="tbh" id="tbh">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+      <img src="/images/hero/tb-logo-symbol.webp" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
+    </a>
+    <nav class="links" aria-label="グローバル">
+      <div class="mega">
+        <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
+        <div class="mega-panel" id="mega-biz">
+          <a href="/airreach/"><span class="mt">AirReach <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はHackⅡへ</span></a>
+          <a href="/trillionbank/business/hack2/"><span class="mt">HackⅡ <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+        </div>
+      </div>
+      <a href="/trillionbank/mission/">MISSION</a>
+      <a href="/trillionbank/insights/">INSIGHTS</a>
+      <a href="/trillionbank/company/">COMPANY</a>
+      <a href="/trillionbank/media/">MEDIA / NEWS</a>
+      <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="header" data-cta="header_contact_form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
+    </nav>
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<section class="phero">
+  <div class="wrap">
+    <nav class="crumb" aria-label="パンくずリスト"><a href="/">HOME</a> ／ <a href="/trillionbank/media/">お知らせ</a> ／ AI検索対策</nav>
+    <span class="en" style="font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:var(--gold)">2026.08.30　AI検索対策</span>
+    <h1 style="font-size:clamp(1.7rem,4vw,2.9rem);margin-top:14px">AI検索の効果測定はGemini時代にどう変わるか｜引用率・言及率・SOVを高める企業サイト設計</h1>
+  </div>
+</section>
+<section class="sec">
+  <div class="wrap">
+    <article class="article">
+      <div class="byline" style="display:flex;gap:16px;align-items:center;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--hair,#e5e7eb);font-size:.86rem;color:var(--muted,#6b7280);">
+        <span>執筆：井上 幹太</span>
+        <span>公開：2026年08月30日</span>
+        <span>更新：2026-08-30</span>
+      </div>
+
+      
+
+
+
+      
+
+      <p><img src="/images/news/ai-search-measurement-sov-2026.png" alt="AI検索の効果測定、引用率、言及率、SOV、GEO/AEO/SEOを可視化するダッシュボード概念図" /></p>
+
+<p><strong>AI検索の成果は、検索順位だけでは判断できません。Geminiを含む生成AI回答で、自社がどの質問で言及され、どのURLが引用され、競合と比べてどの程度のSOVを取れているかを、同じ条件で測定し続ける必要があります。</strong></p>
+
+<p>Googleは2026年6月、Search Consoleに生成AI検索向けのパフォーマンスレポートを導入すると発表しました。これにより、Google検索やDiscoverの生成AI機能における自社サイトの表示状況を確認しやすくなります。一方で、マーケティング実務で見たいのは「表示されたか」だけではありません。Gemini、ChatGPT、Perplexityなどで、回答本文の中に自社が入ったのか、公式情報が引用されたのか、競合より優先されたのか、問い合わせにつながる動線があったのかまで分けて見る必要があります。</p>
+
+<p>この記事では、直近の公開ニュースをもとに、株式会社Trillion Bankが今後強化するAI検索対策、HackⅡに組み込む測定・改善メニュー、非指名検索からのオーガニック流入を増やす記事設計を整理します。</p>
+
+<hr />
+
+<h2 id="結論ai検索は感覚から測定競合比較再計測へ移る">結論：AI検索は「感覚」から「測定・競合比較・再計測」へ移る</h2>
+
+<p>今後の企業サイト運用では、以下の5つをセットで管理する必要があります。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>指標</th>
+      <th>見る内容</th>
+      <th>意思決定に使う場面</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>言及率</td>
+      <td>固定質問セットのうち、回答本文に自社名・サービス名が出た割合</td>
+      <td>認知・候補入りの弱さを見る</td>
+    </tr>
+    <tr>
+      <td>公式引用率</td>
+      <td>回答内で公式サイト、記事、FAQ、会社情報が引用された割合</td>
+      <td>どの情報源を強化すべきか判断する</td>
+    </tr>
+    <tr>
+      <td>AI SOV</td>
+      <td>自社と競合が、回答内でどの程度の占有率を持つか</td>
+      <td>競合比較、広報・SEO予算の優先順位を決める</td>
+    </tr>
+    <tr>
+      <td>情報整合性</td>
+      <td>料金、提供範囲、所在地、実績、注意書きが正しく扱われているか</td>
+      <td>誤情報、古い情報、過剰表現を修正する</td>
+    </tr>
+    <tr>
+      <td>AI流入・CTA</td>
+      <td>AI起点の来訪、フォーム、商談予約、資料請求への遷移</td>
+      <td>露出が商談前行動に近づいているかを見る</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>特に重要なのは、<strong>質問セットを固定すること</strong>です。「今日1回Geminiに聞いたら出た／出なかった」では、施策の効果は判断できません。質問、対象AI、競合、実行日、回答本文、引用URLを保存し、改善後に同じ条件で再計測して初めて、マーケティング施策として評価できます。</p>
+
+<hr />
+
+<h2 id="直近ニュースから見える市場変化">直近ニュースから見える市場変化</h2>
+
+<h3 id="google生成ai検索の表示状況がsearch-consoleで見える方向へ">Google：生成AI検索の表示状況がSearch Consoleで見える方向へ</h3>
+
+<p>Google Search Centralは2026年6月3日、Search Consoleに生成AI検索向けのパフォーマンスレポートを導入すると発表しました。レポートでは、生成AI機能内でのインプレッション、表示されたページ、国、デバイス、日付粒度などを確認できると説明されています。</p>
+
+<p>これは企業にとって大きな変化です。これまでAI検索の可視性は、画面を手動で確認するか、独自に質問セットを作って測る必要がありました。Search ConsoleでGoogle内の生成AI露出が見えるようになると、SEO担当者やマーケターがAI検索を予算判断に組み込みやすくなります。</p>
+
+<p>ただし、注意点もあります。このレポートはGoogle検索やDiscoverの生成AI機能に関するものです。Geminiアプリ、ChatGPT、Perplexity、Claudeなどを横断した回答本文、引用URL、競合SOV、推薦理由までをすべてカバーするものではありません。</p>
+
+<h3 id="google生成ai検索でもseoの基礎と独自情報が中心">Google：生成AI検索でもSEOの基礎と独自情報が中心</h3>
+
+<p>Googleは2026年5月、生成AI機能向けの最適化ガイドも公開しました。公式発表では、独自性のある価値あるコンテンツ、ローカル・商品・画像・動画情報、AEO/GEOに関する誤解の整理、AIエージェントへの初期ガイダンス、そしてSEOベストプラクティスの重要性が示されています。</p>
+
+<p>この流れから分かるのは、Google向けのAI検索対策は「AI専用の裏技」ではないということです。クロール可能なHTML、正確な構造化データ、ユーザーに役立つ一次情報、更新日の明示、自然な内部リンク、良いページ体験が土台になります。</p>
+
+<h3 id="国内大手もgeo支援と次世代オウンドメディアへ動いている">国内大手もGEO支援と次世代オウンドメディアへ動いている</h3>
+
+<p>国内では、電通デジタルが2026年7月に「Adobe LLM Optimizer」を活用したGEO支援を発表しました。ブランド可視性、引用、プロンプトトレンド、競合差分、施策実行、継続的なPDCAまでを扱う内容で、AI検索対策が一過性のSEO施策ではなく、マーケティング運用領域に入ってきたことを示しています。</p>
+
+<p>同社は同月、「次世代オウンドメディア戦略・構築支援」も発表しています。生成AIやAI要約の普及により、企業サイトは人が読むページであるだけでなく、AIが参照するデータソースであり、問い合わせや購入に向けてユーザーを伴走する接点になる、という整理です。</p>
+
+<p>この市場変化は、トリリオンバンクの方向性とも一致しています。HackⅡは、AI検索での可視性を「測る」だけではなく、公式情報、FAQ、構造化データ、記事、外部引用、問い合わせ導線までつなげるService-led SaaSとして設計しています。</p>
+
+<h3 id="aiクローラーとコンテンツ権利の管理も進んでいる">AIクローラーとコンテンツ権利の管理も進んでいる</h3>
+
+<p>CloudflareのPay Per Crawl、AWS WAFのAI traffic monetization、Microsoft AdvertisingのPublisher Content Marketplaceなど、AIクローラーやAIプロダクトによるコンテンツ利用を制御・計測・ライセンス化する動きも進んでいます。</p>
+
+<p>これは、AI検索対策が「露出を増やす」だけの話ではなくなることを意味します。企業は今後、AIに読ませたい情報、読ませるが条件を管理したい情報、読ませたくない情報を分け、robots.txt、構造化データ、サイトマップ、将来的なAIアクセス制御まで考える必要があります。</p>
+
+<hr />
+
+<h2 id="非指名検索で取りにいくべきキーワード">非指名検索で取りにいくべきキーワード</h2>
+
+<p>指名検索だけでは、AI検索対策の市場を広げられません。これから狙うべきは、会社名を知らない見込み顧客が使う課題起点・比較起点の検索語です。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>検索意図</th>
+      <th>優先キーワード</th>
+      <th>作るべき記事・ページ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>効果測定を知りたい</td>
+      <td>AI検索 効果測定 / 生成AI引用分析 / AI検索インプレッション</td>
+      <td>測定指標、質問セット、GSC/GA4、再計測方法を解説する記事</td>
+    </tr>
+    <tr>
+      <td>競合比較をしたい</td>
+      <td>AI検索競合分析 / AIブランド可視性 ツール / AI検索 SOV</td>
+      <td>競合SOV、Win/Loss、引用チャネルを解説する記事</td>
+    </tr>
+    <tr>
+      <td>Google対応を知りたい</td>
+      <td>Google Search Console AI / Google AI検索対策 / 生成AI検索レポート</td>
+      <td>Search Consoleで見える範囲と、見えない範囲を整理する記事</td>
+    </tr>
+    <tr>
+      <td>支援会社を探したい</td>
+      <td>GEOコンサルティング 会社 / AEO支援会社 / AI検索マーケティング支援</td>
+      <td>会社選定の基準、支援範囲、成果保証できない理由を明記する記事</td>
+    </tr>
+    <tr>
+      <td>実装を進めたい</td>
+      <td>AIエージェント対応サイト / llms.txt 企業サイト / JSON-LD FAQ</td>
+      <td>実装チェックリスト、対象ファイル、納品基準をまとめる記事</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>この領域では、単語を詰め込むよりも、<strong>1ページの中で「定義」「判断基準」「手順」「FAQ」「問い合わせ導線」まで完結させること</strong>が重要です。AIは短い断片だけでなく、ページ全体の整合性を見て回答を組み立てます。</p>
+
+<hr />
+
+<h2 id="geminiでの引用率言及率sovを上げるための実装方針">Geminiでの引用率・言及率・SOVを上げるための実装方針</h2>
+
+<h3 id="1-会社サービス技術を混ぜない">1. 会社・サービス・技術を混ぜない</h3>
+
+<p>AIが混乱しやすいのは、会社名、サービス名、技術名、資料名が同じページで曖昧に使われている状態です。トリリオンバンクでは、以下のように分けて発信します。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>対象</th>
+      <th>AIに覚えさせたい役割</th>
+      <th>代表的な説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>株式会社Trillion Bank</td>
+      <td>AI時代の情報流通インフラ企業</td>
+      <td>AI検索時代の情報の見え方と使われ方を整える会社</td>
+    </tr>
+    <tr>
+      <td>HackⅡ</td>
+      <td>AI検索計測・競合分析・再計測基盤</td>
+      <td>AIが自社と競合をどう比較しているかを測るService-led SaaS</td>
+    </tr>
+    <tr>
+      <td>Adctor / Pay per Crawl</td>
+      <td>AIデータ権利・利用証跡領域の研究開発</td>
+      <td>AIが何を、誰の許可で使ったかを証明する仕組み</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>この整理を続けることで、AI回答内で「トリリオンバンク = 銀行」「HackⅡ = 単なるSEOツール」のように誤って扱われるリスクを下げられます。</p>
+
+<h3 id="2-公式情報の引用先を増やす">2. 公式情報の引用先を増やす</h3>
+
+<p>Geminiを含むAI検索で引用されたい場合、まず自社サイト内に引用できる公式ページを用意する必要があります。最低限整備すべきページは以下です。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ページ</th>
+      <th>役割</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>HackⅡ製品ページ</td>
+      <td>料金、提供範囲、対応AI、注意書き、FAQの正本</td>
+    </tr>
+    <tr>
+      <td>測定方法の記事</td>
+      <td>言及率、引用率、SOV、Win/Loss、再計測の定義</td>
+    </tr>
+    <tr>
+      <td>Google Search Console AIの記事</td>
+      <td>Googleで見える指標と、他AIでは別測定が必要な理由</td>
+    </tr>
+    <tr>
+      <td>GEO/AEO支援会社の記事</td>
+      <td>支援範囲、選定基準、成果保証できない理由</td>
+    </tr>
+    <tr>
+      <td>社内運用チェックリスト</td>
+      <td>実装対象ファイル、納品基準、チェックリスト</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>今回の記事は、その中でも「Googleの公式計測が始まる一方で、AI横断のSOV測定が必要になる」という論点を担います。</p>
+
+<h3 id="3-faqpageとarticleの構造化データを本文と一致させる">3. FAQPageとArticleの構造化データを本文と一致させる</h3>
+
+<p>構造化データは、本文と矛盾していると逆効果です。FAQPageにだけ強い表現を入れるのではなく、本文にも同じ回答を置き、AIと検索エンジンが同じ情報を読める状態にします。</p>
+
+<p>本記事では、Geminiでの引用率・言及率・SOV、Search Consoleで見える範囲、非指名検索からの流入、HackⅡの支援範囲、成果保証の有無をFAQとして明示しています。</p>
+
+<h3 id="4-ai流入と問い合わせ前行動を分けて見る">4. AI流入と問い合わせ前行動を分けて見る</h3>
+
+<p>AI検索からの流入は、通常の検索流入よりも数が少なく見えることがあります。ただし、検討度が高いユーザーが来る場合、問い合わせ前行動に近い可能性があります。そのため、単純なセッション数だけでなく、以下を分けて見ます。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>イベント</th>
+      <th>見る内容</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">ai_referral_visit</code></td>
+      <td>ChatGPT、Perplexity、Gemini、Claude、Copilot等の参照元やUTM付き来訪</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">ai_assisted_cta_click</code></td>
+      <td>AI起点セッションでの問い合わせ、商談予約、資料請求クリック</td>
+    </tr>
+    <tr>
+      <td>form.run送信</td>
+      <td>実際のお問い合わせフォーム送信</td>
+    </tr>
+    <tr>
+      <td>meeting遷移</td>
+      <td>商談予約フォームへの遷移</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>「AIで見つかったが問い合わせしなかった」状態も、記事、FAQ、CTA、料金表、導入条件の改善材料になります。</p>
+
+<hr />
+
+<h2 id="hackⅱに組み込むservice-led-saasの提供範囲">HackⅡに組み込むService-led SaaSの提供範囲</h2>
+
+<p>HackⅡは、画面で数値を見るだけのツールではなく、測定から施策化までを含めたService-led SaaSとして提供します。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>モジュール</th>
+      <th>内容</th>
+      <th>顧客が得るもの</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>質問セット設計</td>
+      <td>業界、商材、競合、購買段階ごとに質問を固定</td>
+      <td>何を測るべきかが明確になる</td>
+    </tr>
+    <tr>
+      <td>AI回答監査</td>
+      <td>Gemini、ChatGPT、Perplexity等で回答本文・引用URL・競合を保存</td>
+      <td>現状の候補入り、言及、引用、SOVが分かる</td>
+    </tr>
+    <tr>
+      <td>競合SOV分析</td>
+      <td>自社・競合の回答内占有、推薦理由、弱い質問を整理</td>
+      <td>競合に負けている理由が見える</td>
+    </tr>
+    <tr>
+      <td>公式情報整備</td>
+      <td>記事、FAQ、JSON-LD、llms.txt、knowledge.jsonを調整</td>
+      <td>AIが参照しやすい正規情報が増える</td>
+    </tr>
+    <tr>
+      <td>AI流入計測</td>
+      <td>GA4イベント、form.run、商談予約導線を接続</td>
+      <td>露出から問い合わせ前行動まで見える</td>
+    </tr>
+    <tr>
+      <td>改善バックログ</td>
+      <td>記事追加、リライト、外部掲載、PR、サイト修正をToDo化</td>
+      <td>マーケターが次に動く施策へ落とせる</td>
+    </tr>
+    <tr>
+      <td>再計測レポート</td>
+      <td>同じ質問セットで施策前後を比較</td>
+      <td>施策の効果を継続判断できる</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>この提供範囲により、HackⅡは「AIに出ているかを確認するサービス」ではなく、<strong>AI検索の測定、改善、再計測、社内報告までを一体で扱う運用基盤</strong>になります。</p>
+
+<hr />
+
+<h2 id="90日で実施する改善ロードマップ">90日で実施する改善ロードマップ</h2>
+
+<h3 id="0-2週基準値を取る">0-2週：基準値を取る</h3>
+
+<p>最初に行うのは、Gemini、ChatGPT、Perplexity等に対する固定質問セットの作成です。質問は「課題認知」「比較検討」「導入相談」「価格」「競合比較」「地域・業種別」に分けます。回答本文、引用URL、推薦された競合、誤情報、スクリーンショットを保存し、初回の基準値を確定します。</p>
+
+<h3 id="3-6週公式情報と記事を整える">3-6週：公式情報と記事を整える</h3>
+
+<p>次に、候補入りしていない質問、競合だけが推薦される質問、公式サイトが引用されていない質問を優先して、記事とFAQを追加します。Google検索向けにはSearch Consoleの生成AIレポート、一般検索流入、ページ単位の表示状況を見ます。AI横断では、HackⅡ側で回答本文と引用URLを見ます。</p>
+
+<h3 id="7-10週外部引用と第三者情報を増やす">7-10週：外部引用と第三者情報を増やす</h3>
+
+<p>AIは公式サイトだけでなく、ニュース、比較記事、業界メディア、導入事例、プロフィール、SNS、動画、登壇情報なども参照します。自社でコントロールできる一次情報を整えた後は、自然な外部掲載とPRを増やし、Citation Channel Mapを広げます。</p>
+
+<h3 id="11-12週再計測してパッケージ化する">11-12週：再計測してパッケージ化する</h3>
+
+<p>最後に、同じ質問セットで再計測します。伸びた指標、変わらなかった指標、悪化した指標を分け、次の月に実施する施策へ落とします。営業資料、販売代理店向け提案、社内運用チェックリストにも反映し、HackⅡの標準パッケージとして再利用できる状態にします。</p>
+
+<hr />
+
+<h2 id="まとめ">まとめ</h2>
+
+<p>AI検索の時代に、企業サイトは「人が読むページ」であると同時に、AIが参照する公式データソースになります。Google Search Consoleの生成AI検索レポートは大きな前進ですが、それだけではGemini、ChatGPT、Perplexity等を横断した引用率、言及率、競合SOV、誤情報、問い合わせ前行動までは見えません。</p>
+
+<p>トリリオンバンクは、HackⅡを通じて、AI検索の現状把握、競合比較、公式情報整備、AEO/GEO/SEO実装、AI流入計測、再計測レポートまでを一体で支援します。非指名検索からのオーガニック流入を広げるためにも、今後は「AI検索 効果測定」「生成AI引用分析」「AI検索 SOV」「GEOコンサルティング 会社」「AEO支援会社」など、課題起点のキーワードに対して、一次情報を積み上げていきます。</p>
+
+<p>HackⅡの提供範囲と料金は<a href="/trillionbank/business/hack2/">HackⅡ製品ページ</a>に掲載しています。導入相談は<a href="/trillionbank/contact/">お問い合わせフォーム</a>または<a href="/trillionbank/meeting/">30分のオンライン面談</a>から受け付けています。</p>
+
+
+      
+
+      
+      <div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);">
+        <h3 style="font-size:.92rem;font-weight:700;margin-bottom:12px;">参考文献・一次情報</h3>
+        <ul style="font-size:.82rem;color:var(--muted,#6b7280);list-style:decimal;padding-left:20px;">
+          
+          <li style="margin-bottom:6px;"><a href="https://developers.google.com/search/blog/2026/06/gen-ai-performance-reports" target="_blank" rel="noopener">Google Search Central — Introducing Search Generative AI performance reports in Search Console</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="https://developers.google.com/search/blog/2026/05/a-new-resource-for-optimizing" target="_blank" rel="noopener">Google Search Central — A new resource for optimizing for generative AI in Google Search</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="https://developers.google.com/search/docs/fundamentals/ai-optimization-guide" target="_blank" rel="noopener">Google Search Central — Google's Guide to Optimizing for Generative AI Features on Google Search</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="https://dentsudigitaljp.com/news/release/services/2026-0727-000337" target="_blank" rel="noopener">電通デジタル — Adobe LLM Optimizerを活用したGEO支援を開始</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="https://dentsudigitaljp.com/news/release/services/2026-0721-000336" target="_blank" rel="noopener">電通デジタル — 次世代オウンドメディア戦略・構築支援</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="https://aws.amazon.com/about-aws/whats-new/2026/06/aws-waf-ai-traffic-monetization/" target="_blank" rel="noopener">AWS — AWS WAF announces AI traffic monetization</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="https://developers.cloudflare.com/ai-crawl-control/features/pay-per-crawl/what-is-pay-per-crawl/" target="_blank" rel="noopener">Cloudflare Docs — What is Pay Per Crawl?</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="https://about.ads.microsoft.com/en/blog/post/february-2026/building-toward-a-sustainable-content-economy-for-the-agentic-web" target="_blank" rel="noopener">Microsoft Advertising — Building Toward a Sustainable Content Economy for the Agentic Web</a></li>
+          
+        </ul>
+      </div>
+      
+
+      <div style="margin-top:48px;padding:20px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);font-size:.78rem;color:var(--muted,#6b7280);">
+        <p style="margin:0;">本記事は株式会社Trillion Bankが独自に作成したものです。記事内容は公開時点の情報に基づいており、最新の状況と異なる場合があります。記載内容は情報提供を目的としたものであり、特定のサービスの利用を推奨するものではありません。</p>
+      </div>
+
+      
+
+
+<aside class="author-box" aria-label="この記事の著者">
+  
+  <img src="/images/ceo-kanta.webp" alt="井上 幹太" width="72" height="72" loading="lazy">
+  <div class="ab-body">
+    <span class="ab-label">AUTHOR ── この記事の著者</span>
+    <p class="ab-name">井上 幹太<span class="ab-role">株式会社Trillion Bank 代表取締役</span></p>
+    <p class="ab-bio">AI検索計測「HackⅡ」とAIコンテンツ利用管理「Adctor / Pay per Crawl」の研究開発・事業化に取り組む。令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL。ソフトバンクアカデミア17期／J-StarX第1期／ZEN大学1期特別奨学生。</p>
+    <a class="ab-link" href="/trillionbank/ceo/">プロフィールと実績を見る <span aria-hidden="true">→</span></a>
+  </div>
+  
+</aside>
+
+
+      <div class="article-cta" style="margin-top:60px;padding-top:40px;border-top:2px solid var(--blue-600)">
+        <h2 style="font-size:clamp(1.2rem,2.4vw,1.55rem);font-weight:700;line-height:1.5;margin-bottom:12px">この記事のテーマを、自社・競合で実際に確認する</h2>
+        <p style="font-size:.92rem;color:var(--muted);max-width:44em;margin-bottom:24px">HackⅡは、AI回答内での候補入り・競合との勝敗・引用された情報源を証拠付きで測定し、次に改善すべき情報を特定するAI Recommendation Intelligenceです。詳細資料・実際の画面は30分のオンライン面談でご説明します。</p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+          <a class="btn btn-primary" href="/trillionbank/meeting/?type=company" data-event="meeting_form_open" data-service="hack2_company" data-cta="article_footer">事業会社向け｜HackⅡの詳細説明を予約する <span class="a">→</span></a>
+          <a class="btn btn-line" href="/trillionbank/meeting/?type=agency" data-event="meeting_form_open" data-service="hack2_agency" data-cta="article_footer">販売代理店向け｜共同提案を相談する <span class="a">→</span></a>
+        </div>
+        <p style="margin-top:16px;font-size:.78rem;color:var(--muted)"><a href="/trillionbank/business/hack2/" style="color:var(--blue-600);border-bottom:1px solid var(--blue-600)">HackⅡの測定の考え方を見る</a>　※ 成果（AIでの表示・問い合わせ・売上）を保証するものではありません。</p>
+      </div>
+
+      
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<div style="margin-top:56px;padding-top:34px;border-top:1px solid var(--border,#DDE3EC)">
+  <h2 style="font-family:var(--mono);font-size:.78rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-bottom:18px">関連記事</h2>
+  <div class="nlist">
+    
+    <a class="nitem" href="/trillionbank/news/ai-overviews-optimization/"><span class="date">2026.09.06</span><span class="ncat">AI検索対策</span><span class="nt">Google AI Overviews対策とは？従来SEOとの関係と実務チェックリスト</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-crawler-list-control/"><span class="date">2026.09.06</span><span class="ncat">AI検索対策</span><span class="nt">AIクローラー一覧と制御方法｜robots.txtでの許可・拒否の考え方</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-monitoring-rfp-checklist/"><span class="date">2026.09.05</span><span class="ncat">AI検索対策</span><span class="nt">AI検索モニタリングツール選定チェックリスト｜RFPで確認する15項目</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/llmo-company-selection/"><span class="date">2026.09.16</span><span class="ncat">解説</span><span class="nt">LLMO対策会社の選び方｜生成AI検索最適化の依頼範囲を決める</span><span class="go">→</span></a>
+    
+  </div>
+</div>
+
+
+
+      <div style="margin-top:48px;padding-top:30px;border-top:1px solid var(--border,#DDE3EC)">
+        <a class="btn btn-line" href="/trillionbank/media/">← お知らせ一覧へ</a>
+      </div>
+    </article>
+  </div>
+</section>
+<div class="glow-rails" id="glowRails" aria-hidden="true">
+  <div class="glow-line l"></div>
+  <div class="glow-line r"></div>
+</div>
+<footer class="tbf">
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+          <img src="/images/hero/tb-logo-color.webp" alt="TRILLION BANK" width="160" height="40" style="height:32px;width:auto;filter:brightness(10)">
+        </a>
+        <p class="addr">株式会社Trillion Bank（トリリオンバンク）<br>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ<br><span style="opacity:.7">※ 当社は銀行業を営む会社ではありません。</span></p>
+      </div>
+      <div class="fcol">
+        <h5>BUSINESS</h5>
+        <a href="/trillionbank/business/">事業概要</a>
+        <a href="/trillionbank/business/hack2/">HackⅡ</a>
+        <a href="/trillionbank/business/pay-per-crawl/">Pay per Crawl</a>
+      </div>
+      <div class="fcol">
+        <h5>COMPANY</h5>
+        <a href="/trillionbank/mission/">Mission</a>
+        <a href="/trillionbank/company/">会社概要</a>
+        <a href="/trillionbank/media/">Media / News</a>
+        <a href="/trillionbank/insights/">Insights</a>
+      </div>
+      <div class="fcol">
+        <h5>CONTACT</h5>
+        <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a>
+        <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="footer" data-cta="footer_contact_form">お問い合わせフォーム</a>
+        <a href="/trillionbank/contact/">お問い合わせ窓口</a>
+      </div>
+    </div>
+    <div class="bottom">
+      <span>© 2026 Trillion Bank</span>
+      <span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a> ／ <a href="/trillionbank/insights/editorial-policy/">編集方針</a></span>
+    </div>
+  </div>
+</footer>
+<script>
+(function(){
+  var h=document.getElementById('tbh'),last=0;
+  var rails=document.getElementById('glowRails');
+  var railGate=Math.min(innerHeight*.3,280);
+  addEventListener('scroll',function(){var y=scrollY;h.classList.toggle('solid',y>8);if(y>last&&y>140){h.classList.add('hide')}else{h.classList.remove('hide')}last=y;
+    if(rails)rails.classList.toggle('active',y>railGate);},{passive:true});
+  var b=document.getElementById('tbBurger');
+  if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+  document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});
+  // mega menu keyboard toggle
+  document.querySelectorAll('.mega-t').forEach(function(btn){
+    var panel=document.getElementById(btn.getAttribute('aria-controls'));
+    if(!panel)return;
+    btn.addEventListener('click',function(){var open=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',!open)});
+    btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();btn.click();if(btn.getAttribute('aria-expanded')==='true'){var first=panel.querySelector('a');if(first)first.focus()}}
+      if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+    panel.addEventListener('keydown',function(e){if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+  });
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(i%3)*70+'ms';io.observe(el)});
+  // GA4 tracking for CTAs
+  document.querySelectorAll('[data-event]').forEach(function(el){
+    el.addEventListener('click', function(){
+      if(typeof gtag==='function'){
+        gtag('event', el.dataset.event, {
+          source_page: location.pathname,
+          service: el.dataset.service || '',
+          inquiry_type: el.dataset.inquiry || '',
+          cta_label: el.textContent.trim()
+        });
+      }
+    });
+  });
+  // AI referral attribution for HackⅡ reports.
+  (function(){
+    var definitions=[
+      {source:'ChatGPT',hosts:['chatgpt.com','openai.com'],tokens:['chatgpt','openai']},
+      {source:'Perplexity',hosts:['perplexity.ai'],tokens:['perplexity']},
+      {source:'Claude',hosts:['claude.ai','anthropic.com'],tokens:['claude','anthropic']},
+      {source:'Gemini',hosts:['gemini.google.com'],tokens:['gemini','bard']},
+      {source:'Google AI',hosts:['google.com','google.co.jp'],tokens:['ai_overview','ai-mode','aimode','google_ai']},
+      {source:'Microsoft Copilot',hosts:['copilot.microsoft.com','bing.com'],tokens:['copilot','bing_ai']},
+      {source:'You.com',hosts:['you.com'],tokens:['you.com','youchat']},
+      {source:'Poe',hosts:['poe.com'],tokens:['poe']},
+      {source:'Phind',hosts:['phind.com'],tokens:['phind']}
+    ];
+    function normalizedHost(value){
+      try{return new URL(value).hostname.replace(/^www\./,'').toLowerCase()}catch(e){return ''}
+    }
+    function tokenMatch(text,tokens){
+      text=(text||'').toLowerCase();
+      return tokens.some(function(token){return text.indexOf(token)!==-1});
+    }
+    function findSource(referrer,paramsText){
+      var host=normalizedHost(referrer);
+      for(var i=0;i<definitions.length;i++){
+        var def=definitions[i];
+        var matchedHost=def.hosts.some(function(item){return host===item||host.endsWith('.'+item)});
+        if(matchedHost&&host.indexOf('google.')===-1&&host!=='bing.com')return {name:def.source,type:'referrer',host:host};
+        if((matchedHost||!host)&&tokenMatch(paramsText,def.tokens))return {name:def.source,type:matchedHost?'referrer_param':'utm',host:host};
+      }
+      return null;
+    }
+    function sendEvent(name,payload){
+      if(typeof gtag==='function')gtag('event',name,payload);
+    }
+    var params=new URLSearchParams(location.search);
+    var paramsText=[
+      params.get('utm_source'),
+      params.get('utm_medium'),
+      params.get('utm_campaign'),
+      params.get('ref'),
+      params.get('source'),
+      params.get('ai_source')
+    ].filter(Boolean).join(' ');
+    var detected=findSource(document.referrer,paramsText);
+    var stored=null;
+    if(detected){
+      stored={
+        ai_source:detected.name,
+        ai_referrer_host:detected.host||'direct_param',
+        ai_source_type:detected.type,
+        ai_landing_path:location.pathname,
+        traffic_channel:'ai_search'
+      };
+      try{sessionStorage.setItem('tb_ai_referral',JSON.stringify(stored))}catch(e){}
+      sendEvent('ai_referral_visit',stored);
+    }else{
+      try{stored=JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){stored=null}
+    }
+    document.querySelectorAll('a[href*="/trillionbank/contact/"],a[href*="/trillionbank/meeting/"]').forEach(function(link){
+      link.addEventListener('click',function(){
+        var attribution=stored;
+        try{attribution=attribution||JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){}
+        if(!attribution)return;
+        sendEvent('ai_assisted_cta_click',{
+          ai_source:attribution.ai_source,
+          ai_referrer_host:attribution.ai_referrer_host,
+          ai_landing_path:attribution.ai_landing_path,
+          cta_label:(link.dataset.cta||link.textContent||'').trim(),
+          destination:link.href,
+          source_page:location.pathname
+        });
+      });
+    });
+  })();
+  // tabs (WAI-ARIA Tabs pattern: arrow key navigation + roving tabindex)
+  document.querySelectorAll('[data-tabs]').forEach(function(g){
+    var tabs=g.querySelectorAll('[role="tab"]'),panels=g.querySelectorAll('[role="tabpanel"]');
+    function activate(idx){
+      tabs.forEach(function(x){x.setAttribute('aria-selected','false');x.setAttribute('tabindex','-1')});
+      tabs[idx].setAttribute('aria-selected','true');tabs[idx].setAttribute('tabindex','0');tabs[idx].focus();
+      panels.forEach(function(p){p.classList.remove('on')});if(panels[idx])panels[idx].classList.add('on');
+    }
+    tabs.forEach(function(t,i){
+      t.addEventListener('click',function(){activate(i)});
+      t.addEventListener('keydown',function(e){
+        var k=e.key,n=tabs.length;
+        if(k==='ArrowRight'){e.preventDefault();activate((i+1)%n)}
+        else if(k==='ArrowLeft'){e.preventDefault();activate((i-1+n)%n)}
+        else if(k==='Home'){e.preventDefault();activate(0)}
+        else if(k==='End'){e.preventDefault();activate(n-1)}
+      });
+    });
+  });
+  /* page transition — fade out on navigate, fade in on load */
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a');
+    var raw=a?a.getAttribute('href')||'':'';
+    if(!a||!a.href||a.target==='_blank'||raw.startsWith('#')||a.href.startsWith('mailto:')||a.href.startsWith('tel:'))return;
+    if(a.hostname!==location.hostname)return;
+    if(a.pathname===location.pathname&&a.hash)return;
+    e.preventDefault();
+    document.body.classList.add('page-leaving');
+    setTimeout(function(){location.href=a.href},300);
+  });
+  window.addEventListener('pageshow',function(e){
+    document.body.classList.remove('page-leaving');
+  });
+})();
+</script>
+
+</body>
+</html>

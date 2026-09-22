@@ -1,0 +1,77 @@
+/* Hack II Founding Monitor LP — fixed smartphone-width canvas on every viewport */
+html:root{--lp-max:100%}
+html body{background:#e9eef5!important;padding-bottom:76px!important;overflow-x:hidden}
+body>.lp-nav,
+body>.lp-main,
+body>.lp-mobile-cta{width:100%;max-width:430px;margin-left:auto;margin-right:auto}
+body>.lp-main{min-height:100vh;background:#fff;box-shadow:0 0 0 1px rgba(148,163,184,.22),0 28px 80px rgba(15,23,42,.16)}
+body>.lp-nav{padding:11px 14px!important;box-shadow:0 10px 28px rgba(15,23,42,.08)}
+body .lp-nav img{height:24px!important;width:auto}
+body .lp-nav-cta{padding:8px 12px!important;font-size:.74rem!important;border-radius:8px!important}
+body .lp-wrap{max-width:100%!important;padding-left:18px!important;padding-right:18px!important}
+body .lp-sec{padding:52px 0!important}
+body .lp-hero{padding:62px 0 48px!important;text-align:center!important;background:linear-gradient(180deg,#eff6ff 0%,#fff 100%)!important}
+body .lp-hero h1{font-size:clamp(1.72rem,8vw,2.18rem)!important;line-height:1.3!important}
+body .lp-hero .lp-lead{font-size:.9rem!important;line-height:1.75!important;margin-bottom:24px!important}
+body .lp-url-box{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;max-width:100%!important;padding:7px!important;border-radius:14px!important}
+body .lp-url-box input{width:100%!important;padding:13px 12px!important;text-align:left}
+body .lp-url-btn{width:100%!important;padding:14px 12px!important;border-radius:10px!important}
+body .lp-hero-note{text-align:center!important}
+/* Crisp CSS-rendered portrait visual; avoids publishing rough or mismatched image assets. */
+body .lp-hero .lp-wrap::after{content:"HackⅡ  FOUNDING MONITOR\A\A AI検索で“選ばれるサイト”へ\A AIがどう見ているか、90日間で可視化。\A\A URL入力  →  情報入力  →  商談予約";white-space:pre-line;display:flex;align-items:center;justify-content:center;width:min(100%,360px);aspect-ratio:9/16;margin:30px auto 0;padding:40px 30px;border-radius:26px;background:radial-gradient(circle at 70% 20%,rgba(13,110,253,.32),transparent 35%),linear-gradient(160deg,#020d1f,#063e83 62%,#0d6efd);color:#fff;font-size:1.12rem;font-weight:800;line-height:1.7;letter-spacing:.02em;text-align:center;box-shadow:0 28px 64px rgba(15,23,42,.24);outline:1px solid rgba(148,163,184,.28);outline-offset:7px}
+body .lp-h2{font-size:1.52rem!important;line-height:1.4!important}
+body .lp-sub{font-size:.88rem!important;line-height:1.75!important;margin-bottom:28px!important}
+body .lp-problems,
+body .lp-features,
+body .lp-cases{display:grid!important;grid-template-columns:1fr!important;gap:14px!important}
+body .lp-prob,
+body .lp-feat,
+body .lp-case{padding:20px!important;border-radius:14px!important;text-align:left!important}
+body .lp-prob{gap:12px!important}
+body .lp-prob-icon{width:36px!important;height:36px!important;border-radius:9px!important}
+body .lp-feat h3,
+body .lp-prob h3,
+body .lp-case h3{font-size:.96rem!important}
+body .lp-feat p,
+body .lp-prob p,
+body .lp-case p{font-size:.82rem!important;line-height:1.68!important}
+body .lp-cta-box{padding:28px 18px!important;border-radius:16px!important}
+body .lp-cta-box h2{font-size:1.35rem!important}
+body .lp-cta-btn{display:block!important;width:100%!important;padding:14px 12px!important}
+/* Hide the provisional low-resolution mockup until an approved product screenshot is supplied. */
+body .lp-screen{display:flex!important;align-items:center;justify-content:center;min-height:250px;max-width:100%!important;padding:30px 22px;border-radius:14px!important;background:linear-gradient(150deg,#f8fbff,#eaf3ff);box-shadow:0 16px 38px rgba(15,23,42,.1)!important}
+body .lp-screen img{display:none!important}
+body .lp-screen::before{content:"HackⅡ DASHBOARD\A\A 回答本文・引用URL・競合SOV・週次推移\A\A 公開許可済みの実画面へ差し替え予定";white-space:pre-line;color:#0f2850;font-size:.9rem;font-weight:700;line-height:1.65;text-align:center}
+/* Crisp plan card rendered in HTML/CSS rather than a compressed poster image. */
+body #program .lp-wrap::after{content:"FOUNDING MONITOR / 90 DAYS\A\A 質問設計　最大10問\A 競合設定　最大2社\A AIエンジン　1\A 計測回数　3回\A 面談　2回\A\A 設定・計測・分析を伴走";white-space:pre-line;display:flex;align-items:center;justify-content:center;width:min(100%,350px);aspect-ratio:3/4;margin:30px auto 0;padding:34px 28px;border-radius:22px;background:linear-gradient(155deg,#fff,#edf5ff);border:1px solid #cbdcf0;color:#0f2850;font-size:1rem;font-weight:750;line-height:1.75;text-align:left;box-shadow:0 24px 56px rgba(15,23,42,.14);outline:1px solid rgba(148,163,184,.2);outline-offset:6px}
+body .lp-spec{border-radius:14px!important}
+body .lp-spec-head{padding:17px 18px!important;font-size:1rem!important}
+body .lp-spec td{padding:11px 12px!important;font-size:.8rem!important;line-height:1.55!important}
+body .lp-spec td:first-child{width:33%!important;white-space:normal!important}
+body .lp-flow{max-width:100%!important}
+body .lp-flow-step{padding-bottom:24px!important}
+body .lp-flow-body h3{font-size:.94rem!important}
+body .lp-flow-body p{font-size:.8rem!important}
+body .lp-faq details{padding:17px 0!important}
+body .lp-faq summary{font-size:.9rem!important;line-height:1.55!important}
+body .lp-faq .lp-faq-a{font-size:.82rem!important}
+body .lp-form{max-width:100%!important}
+body .lp-field-row{grid-template-columns:1fr!important;gap:0!important}
+body .lp-field input,
+body .lp-field select,
+body .lp-field textarea{font-size:16px!important}
+body .lp-mobile-cta{display:block!important;left:0!important;right:0!important;max-width:430px!important;margin:0 auto!important;padding:10px 12px!important;box-shadow:0 -10px 28px rgba(15,23,42,.1)}
+body .lp-mobile-cta a{padding:13px!important;font-size:.9rem!important}
+body .lp-trust{gap:12px 18px!important}
+body .lp-trust span{font-size:.7rem!important}
+@media(min-width:431px){
+  html body{padding-top:18px!important}
+  body>.lp-nav{border-radius:18px 18px 0 0}
+  body>.lp-main{border-radius:0 0 18px 18px;overflow:hidden}
+  body>.lp-mobile-cta{bottom:18px!important;border-radius:14px;left:0!important;right:0!important}
+}
+@media(max-width:430px){
+  html body{background:#fff!important}
+  body>.lp-main{box-shadow:none}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}}

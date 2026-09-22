@@ -1,0 +1,52 @@
+<style>
+.ar-share{max-width:640px;margin:48px auto;padding:0 20px;font-family:var(--sans,'Noto Sans JP',sans-serif);color:#0f172a}
+.ar-share h1{font-size:1.5rem;margin:0 0 12px}
+.ar-share p{color:#64748b;line-height:1.6}
+.ar-share .card{border:1px solid #e2e8f0;border-radius:12px;padding:16px;background:#fff;margin:16px 0}
+.ar-share .btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 18px;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;text-decoration:none;border:0}
+.ar-share .btn-line{background:#fff;color:#0f172a;border:1px solid #e2e8f0;margin-left:8px}
+</style>
+<div class="ar-share">
+  <p style="font-size:.8rem;font-weight:700;color:#1d4ed8;margin:0 0 8px">AirReach</p>
+  <h1>診断結果を開いています</h1>
+  <p id="ar-share-msg">保存された診断を読み込んでいます…</p>
+  <div class="card" id="ar-share-card" hidden>
+    <p style="margin:0 0 4px;font-weight:800" id="ar-share-name">—</p>
+    <p style="margin:0;font-size:.9rem;color:#64748b" id="ar-share-meta">—</p>
+  </div>
+  <p>
+    <a class="btn" id="ar-share-open" href="/airreach/">診断トップへ</a>
+    <a class="btn btn-line" href="/airreach/sales/">営業の履歴へ</a>
+  </p>
+</div>
+<script src="/assets/js/airreach-scan-store.js"></script>
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  var id = params.get('scan');
+  var msg = document.getElementById('ar-share-msg');
+  var card = document.getElementById('ar-share-card');
+  var open = document.getElementById('ar-share-open');
+  if (!id || !window.AirReachScanStore) {
+    msg.textContent = '共有IDがありません。新しく診断を始めてください。';
+    return;
+  }
+  var scan = AirReachScanStore.loadScan(id);
+  if (!scan) {
+    msg.textContent = 'この端末に診断データがありません。同じブラウザで診断した端末で開くか、新しく診断してください。（P0は端末保存です）';
+    return;
+  }
+  var industry = scan.industryId || 'other';
+  var allowed = { restaurant:1, clinic:1, b2b:1, media:1, other:1 };
+  if (!allowed[industry]) industry = 'other';
+  var mode = scan.goal === 'visibility' || industry === 'media' ? 'branded_search' : 'generic_search';
+  var target = '/airreach/' + industry + '/?scan=' + encodeURIComponent(id) + '&mode=' + encodeURIComponent(mode) + '&onboard=1#result';
+  msg.textContent = '診断が見つかりました。結果画面へ移動します。';
+  card.hidden = false;
+  document.getElementById('ar-share-name').textContent = scan.displayName || scan.siteTitle || scan.url || '診断';
+  document.getElementById('ar-share-meta').textContent = (scan.url || '') + (scan.scoreOverall != null ? (' · 参考スコア ' + scan.scoreOverall) : '');
+  open.href = target;
+  open.textContent = '結果を見る';
+  setTimeout(function () { location.replace(target); }, 600);
+})();
+</script>

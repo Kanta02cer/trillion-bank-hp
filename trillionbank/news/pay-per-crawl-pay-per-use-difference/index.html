@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0XHQPCC4CF');
+</script>
+
+
+
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+<title>Pay per CrawlとPay per Useの違い｜AIによる情報利用をどう契約・記録するか</title>
+<meta name="description" content="Pay per Crawlは取得時の課金、Pay per UseはAPI・RAG・MCP・回答利用などを含む広い考え方です。アクセス制御、契約、利用証跡、請求の役割を整理します。">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<meta property="og:title" content="Pay per CrawlとPay per Useの違い｜AIによる情報利用をどう契約・記録するか">
+<meta property="og:description" content="Pay per Crawlは取得時の課金、Pay per UseはAPI・RAG・MCP・回答利用などを含む広い考え方です。アクセス制御、契約、利用証跡、請求の役割を整理します。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/">
+<meta property="og:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="株式会社Trillion Bank">
+
+<meta property="article:published_time" content="2026-09-05T00:00:00+09:00">
+<meta property="article:modified_time" content="2026-09-06T00:00:00+09:00">
+<meta property="article:author" content="井上 幹太">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pay per CrawlとPay per Useの違い｜AIによる情報利用をどう契約・記録するか">
+<meta name="twitter:description" content="Pay per Crawlは取得時の課金、Pay per UseはAPI・RAG・MCP・回答利用などを含む広い考え方です。アクセス制御、契約、利用証跡、請求の役割を整理します。">
+<meta name="twitter:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+
+<link rel="canonical" href="https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/">
+<link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/">
+<link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/">
+<link rel="sitemap" type="application/xml" href="https://trillion-bank.jp/sitemap-index.xml">
+
+<!-- AI / LLM discovery -->
+<meta name="ai-summary" content="Pay per Crawlは取得時の課金、Pay per UseはAPI・RAG・MCP・回答利用などを含む広い考え方です。アクセス制御、契約、利用証跡、請求の役割を整理します。">
+<link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="https://trillion-bank.jp/feed.xml">
+<link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+<link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+<link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["Trillion Bank", "トリリオンバンク", "株式会社トリリオンバンク", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {"@type": "ImageObject", "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp"},
+      "description": "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。",
+      "foundingDate": "2025-12-23",
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": [
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+        {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+        {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI情報流通インフラ"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/#webpage",
+      "url": "https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/",
+      "name": "Pay per CrawlとPay per Useの違い｜AIによる情報利用をどう契約・記録するか",
+      "description": "Pay per Crawlは取得時の課金、Pay per UseはAPI・RAG・MCP・回答利用などを含む広い考え方です。アクセス制御、契約、利用証跡、請求の役割を整理します。",
+      "inLanguage": "ja",
+      "isPartOf": {"@id": "https://trillion-bank.jp/#website"},
+      "about": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntity": {"@id": "https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/#article"},
+      "breadcrumb": {"@id": "https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/#breadcrumb"}
+    },
+    {
+      "@type": "TechArticle",
+      "@id": "https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/#article",
+      "headline": "Pay per CrawlとPay per Useの違い｜AIによる情報利用をどう契約・記録するか",
+      "description": "Pay per Crawlは取得時の課金、Pay per UseはAPI・RAG・MCP・回答利用などを含む広い考え方です。アクセス制御、契約、利用証跡、請求の役割を整理します。",
+      "image": "https://trillion-bank.jp/images/hero/tb-logo-color.webp",
+      "datePublished": "2026-09-05T00:00:00+09:00",
+      "dateModified": "2026-09-06T00:00:00+09:00",
+      "author": {"@type": "Person", "name": "井上 幹太", "@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "editor": {"@type": "Organization", "name": "株式会社Trillion Bank 編集部"},
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntityOfPage": {"@id": "https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/#webpage"},
+      "inLanguage": "ja",
+      "articleSection": "AIデータ権利"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/#breadcrumb",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "HOME", "item": "https://trillion-bank.jp/"},
+        {"@type": "ListItem", "position": 2, "name": "Insights", "item": "https://trillion-bank.jp/trillionbank/insights/"},
+        {"@type": "ListItem", "position": 3, "name": "Pay per CrawlとPay per Useの違い｜AIによる情報利用をどう契約・記録するか", "item": "https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/"}
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/#faq",
+      "mainEntity": [{"@type":"Question","name":"Pay per Crawlとは何ですか？","acceptedAnswer":{"@type":"Answer","text":"AIクローラーがWebコンテンツを取得する際に、サイト側が価格や支払い条件を提示し、支払い確認後に取得を許可する考え方です。"}},{"@type":"Question","name":"Pay per Useとの違いは何ですか？","acceptedAnswer":{"@type":"Answer","text":"Pay per Useは取得だけでなく、API呼び出し、RAG検索、MCPツール、表示、引用など、契約で定めた利用単位を対象にする広い考え方です。"}},{"@type":"Question","name":"すべてのAI企業から自動的に料金を取れますか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。相手の参加、認証、契約、支払い手段、利用証跡が必要で、未知のボットや外部AIの全利用を把握できるわけではありません。"}}]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+<header class="tbh" id="tbh">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+      <img src="/images/hero/tb-logo-symbol.webp" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
+    </a>
+    <nav class="links" aria-label="グローバル">
+      <div class="mega">
+        <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
+        <div class="mega-panel" id="mega-biz">
+          <a href="/airreach/"><span class="mt">AirReach <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はHackⅡへ</span></a>
+          <a href="/trillionbank/business/hack2/"><span class="mt">HackⅡ <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+        </div>
+      </div>
+      <a href="/trillionbank/mission/">MISSION</a>
+      <a href="/trillionbank/insights/">INSIGHTS</a>
+      <a href="/trillionbank/company/">COMPANY</a>
+      <a href="/trillionbank/media/">MEDIA / NEWS</a>
+      <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="header" data-cta="header_contact_form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
+    </nav>
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+<section class="phero"><div class="wrap"><nav class="crumb" aria-label="パンくずリスト"><a href="/">HOME</a> ／ <a href="/trillionbank/insights/">Insights</a> ／ AIデータ権利</nav><span class="en" style="font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:var(--gold)">2026.09.05　AIデータ権利</span><h1 style="font-size:clamp(1.7rem,4vw,2.9rem);margin-top:14px">Pay per CrawlとPay per Useの違い｜AIによる情報利用をどう契約・記録するか</h1></div></section>
+<section class="sec"><div class="wrap"><article class="article">
+<div class="byline" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--hair,#e5e7eb);font-size:.86rem;color:var(--muted,#6b7280);"><span>執筆：井上 幹太</span><span>確認：株式会社Trillion Bank 編集部</span><span>公開：2026年09月05日</span><span>最終確認：2026-09-06</span></div>
+
+
+
+
+
+
+
+
+
+<nav class="tb-toc" aria-label="目次">
+  <span class="toc-label">CONTENTS ── 目次</span>
+  <ol><li class="lv2"><a href="#結論">結論</a></li><li class="lv2"><a href="#役割の違い">役割の違い</a></li><li class="lv2"><a href="#cloudflareのpay-per-crawl">CloudflareのPay per Crawl</a></li><li class="lv2"><a href="#機械可読な利用条件">機械可読な利用条件</a></li><li class="lv2"><a href="#成立に必要な7要素">成立に必要な7要素</a></li><li class="lv2"><a href="#最初から行わない方がよいこと">最初から行わない方がよいこと</a></li><li class="lv2"><a href="#adctorの現在地">Adctorの現在地</a></li></ol>
+</nav>
+
+
+<h2 id="結論">結論</h2>
+
+<p>Pay per Crawlは、AIクローラーがWebコンテンツを取得するときに価格や支払い条件を提示するモデルです。Pay per Useは、取得だけでなくAPI、RAG、MCPツール、表示、引用など、<strong>契約で定めた利用イベントを記録・請求する広い考え方</strong>です。</p>
+
+<p>両者とも、料金表示だけでは成立しません。誰が利用したか、どのデータか、何の用途か、どの契約版が適用されたか、重複していないかを確認できる必要があります。</p>
+
+<h2 id="役割の違い">役割の違い</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>項目</th>
+      <th>Pay per Crawl</th>
+      <th>Pay per Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>主な単位</td>
+      <td>Webページ等の取得</td>
+      <td>crawl、API、RAG、MCP、表示、引用等</td>
+    </tr>
+    <tr>
+      <td>制御地点</td>
+      <td>CDN、WAF、エッジ、サイト入口</td>
+      <td>API、アプリ、RAG、MCP、配信基盤等</td>
+    </tr>
+    <tr>
+      <td>必要な証拠</td>
+      <td>認証、支払い、正常提供</td>
+      <td>利用者、Resource、用途、契約、イベント、請求</td>
+    </tr>
+    <tr>
+      <td>強み</td>
+      <td>入口で分かりやすく制御できる</td>
+      <td>実際の価値・用途に近い契約を設計できる</td>
+    </tr>
+    <tr>
+      <td>難しさ</td>
+      <td>非協調ボット、価格、参加者不足</td>
+      <td>利用報告、標準化、監査、複数システムの照合</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="cloudflareのpay-per-crawl">CloudflareのPay per Crawl</h2>
+
+<p>Cloudflareの公開ドキュメントでは、サイト所有者がAIクローラーに対し、無料、ブロック、有料という方針を設定し、支払いに応じてコンテンツを提供する仕組みを説明しています。これはエッジでのアクセスと決済を扱う重要な基盤です。</p>
+
+<p>一方、企業間の個別契約、用途制限、データ版、削除義務、RAGやMCPでの再利用、監査資料までを一つの仕組みで管理するには、別の業務設計が必要です。</p>
+
+<h2 id="機械可読な利用条件">機械可読な利用条件</h2>
+
+<p>RSLは、コンテンツの利用条件を機械が読める形で示すための標準です。条件を表現する標準と、実際の契約、認証、利用イベント、請求を運用するシステムは役割が異なります。</p>
+
+<h2 id="成立に必要な7要素">成立に必要な7要素</h2>
+
+<ol>
+  <li><strong>Resource</strong> - 対象となる記事、データ、API、MCPツール等。</li>
+  <li><strong>Rights holder</strong> - 誰が許諾できるか。</li>
+  <li><strong>Buyer identity</strong> - 誰が利用するか。</li>
+  <li><strong>License</strong> - 用途、期間、地域、再利用、削除等の条件。</li>
+  <li><strong>Credential</strong> - APIキー、署名、OAuth等の認証。</li>
+  <li><strong>Usage event</strong> - いつ、何を、何の目的で使ったか。</li>
+  <li><strong>Billing evidence</strong> - 請求対象、重複排除、調整、支払いの記録。</li>
+</ol>
+
+<h2 id="最初から行わない方がよいこと">最初から行わない方がよいこと</h2>
+
+<ul>
+  <li>未知のボットをすべて識別できる前提にする</li>
+  <li>外部AIのすべての引用を自動請求する</li>
+  <li>1アクセスの小額決済だけで採算を作る</li>
+  <li>権利者と利用者がいない状態で総合市場を作る</li>
+  <li>決済手段だけを競争優位とする</li>
+</ul>
+
+<p>まずは、権利者、利用者、対象データ、契約条件が明確な1件で、認証、利用記録、月次請求の成立性を検証します。</p>
+
+<h2 id="adctorの現在地">Adctorの現在地</h2>
+
+<p>Adctorは、AI・RAG・MCP・Agentによるコンテンツ利用を、契約、認証、利用証跡、将来の請求へ接続するための研究開発・PoCプログラムです。完成済みの決済・徴収・分配ネットワークではありません。技術・契約・運用が成立する限定範囲から検証します。</p>
+
+<section aria-labelledby="article-faq" style="margin-top:48px"><h2 id="article-faq">よくある質問</h2><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">Pay per Crawlとは何ですか？</h3><p>AIクローラーがWebコンテンツを取得する際に、サイト側が価格や支払い条件を提示し、支払い確認後に取得を許可する考え方です。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">Pay per Useとの違いは何ですか？</h3><p>Pay per Useは取得だけでなく、API呼び出し、RAG検索、MCPツール、表示、引用など、契約で定めた利用単位を対象にする広い考え方です。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">すべてのAI企業から自動的に料金を取れますか？</h3><p>いいえ。相手の参加、認証、契約、支払い手段、利用証跡が必要で、未知のボットや外部AIの全利用を把握できるわけではありません。</p></div></section>
+<div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);"><h2 style="font-size:1rem;margin-bottom:12px">参考文献・一次情報</h2><ol style="font-size:.86rem;color:var(--muted,#6b7280);padding-left:20px"><li style="margin-bottom:8px"><a href="https://developers.cloudflare.com/ai-crawl-control/features/pay-per-crawl/what-is-pay-per-crawl/" target="_blank" rel="noopener noreferrer">Cloudflare - What is Pay Per Crawl?</a>（確認日：2026-09-05）</li><li style="margin-bottom:8px"><a href="https://rslstandard.org/" target="_blank" rel="noopener noreferrer">Really Simple Licensing - RSL Standard</a>（確認日：2026-09-05）</li></ol></div>
+<div style="margin-top:40px;padding:20px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);font-size:.8rem;color:var(--muted,#6b7280)"><p style="margin:0">本記事は公開時点の一次情報と当社の分析に基づきます。用語や各サービスの仕様は変わる可能性があります。誤りを確認した場合は、お問い合わせ窓口からお知らせください。</p></div>
+
+
+
+<aside class="author-box" aria-label="この記事の著者">
+  
+  <img src="/images/ceo-kanta.webp" alt="井上 幹太" width="72" height="72" loading="lazy">
+  <div class="ab-body">
+    <span class="ab-label">AUTHOR ── この記事の著者</span>
+    <p class="ab-name">井上 幹太<span class="ab-role">株式会社Trillion Bank 代表取締役</span></p>
+    <p class="ab-bio">AI検索計測「HackⅡ」とAIコンテンツ利用管理「Adctor / Pay per Crawl」の研究開発・事業化に取り組む。令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL。ソフトバンクアカデミア17期／J-StarX第1期／ZEN大学1期特別奨学生。</p>
+    <a class="ab-link" href="/trillionbank/ceo/">プロフィールと実績を見る <span aria-hidden="true">→</span></a>
+  </div>
+  
+</aside>
+
+<div class="article-cta" style="margin-top:56px;padding-top:36px;border-top:2px solid var(--blue-600)"><h2 style="font-size:clamp(1.2rem,2.4vw,1.55rem)">AIデータの権利・利用証跡について相談する</h2><p>Adctorは研究開発・PoC相談の段階です。契約、認証、利用証跡の成立性を限定範囲で検討します。</p><a class="btn btn-primary" href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="adctor" data-cta="article_footer">PoC・技術連携を相談する <span class="a">→</span></a><p style="margin-top:14px;font-size:.78rem;color:var(--muted)">AI回答への掲載、順位、問い合わせ、売上を保証するサービスではありません。</p></div>
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<div style="margin-top:56px;padding-top:34px;border-top:1px solid var(--border,#DDE3EC)">
+  <h2 style="font-family:var(--mono);font-size:.78rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-bottom:18px">関連記事</h2>
+  <div class="nlist">
+    
+    <a class="nitem" href="/trillionbank/news/llmo-company-selection/"><span class="date">2026.09.16</span><span class="ncat">解説</span><span class="nt">LLMO対策会社の選び方｜生成AI検索最適化の依頼範囲を決める</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/geo-consulting-company/"><span class="date">2026.09.16</span><span class="ncat">解説</span><span class="nt">GEOコンサルティング会社の選び方｜定義の揺れを踏まえた確認項目</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/generative-ai-citation-analysis/"><span class="date">2026.09.16</span><span class="ncat">解説</span><span class="nt">生成AI引用分析とは？見るべき項目と実務手順</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-sov/"><span class="date">2026.09.16</span><span class="ncat">解説</span><span class="nt">AI検索SOVとは？計算の考え方と誤用しやすい点</span><span class="go">→</span></a>
+    
+  </div>
+</div>
+
+
+<div style="margin-top:44px"><a class="btn btn-line" href="/trillionbank/insights/">← Insights一覧へ</a></div>
+</article></div></section>
+</main>
+
+<footer class="tbf">
+  <div class="wrap">
+    <div class="top">
+      <div><a class="brand" href="/" aria-label="Trillion Bank ホーム"><img src="/images/hero/tb-logo-color.webp" alt="TRILLION BANK" width="160" height="40" style="height:32px;width:auto;filter:brightness(10)"></a><p class="addr">株式会社Trillion Bank<br>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ<br>株式会社Trillion Bankは銀行業を営む会社ではありません。</p></div>
+      <div class="fcol"><h5>BUSINESS</h5><a href="/trillionbank/business/hack2/">HackⅡ</a><a href="/trillionbank/business/pay-per-crawl/">Adctor</a></div>
+      <div class="fcol"><h5>INSIGHTS</h5><a href="/trillionbank/insights/">実務解説</a><a href="/trillionbank/company/">会社概要</a><a href="/trillionbank/media/">お知らせ</a></div>
+      <div class="fcol"><h5>CONTACT</h5><a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a><a href="/trillionbank/contact/#form">お問い合わせ</a></div>
+    </div>
+    <div class="bottom"><span>© 2026 Trillion Bank Co., Ltd.</span><span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a></span></div>
+  </div>
+</footer>
+<script>
+(function(){var h=document.getElementById('tbh'),b=document.getElementById('tbBurger');if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});document.querySelectorAll('.mega-t').forEach(function(btn){btn.addEventListener('click',function(){btn.setAttribute('aria-expanded',String(btn.getAttribute('aria-expanded')!=='true'))})});})();
+</script>
+
+</body>
+</html>

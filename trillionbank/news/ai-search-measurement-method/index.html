@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0XHQPCC4CF');
+</script>
+
+
+
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+<title>AI検索の効果はどう測る？回答・競合・引用元を記録する実務方法</title>
+<meta name="description" content="AI検索は回答が変動するため、単発のスクリーンショットだけでは比較できません。質問、対象AI、日時、回答本文、引用URL、競合、取得状態を残す測定方法を解説します。">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<meta property="og:title" content="AI検索の効果はどう測る？回答・競合・引用元を記録する実務方法">
+<meta property="og:description" content="AI検索は回答が変動するため、単発のスクリーンショットだけでは比較できません。質問、対象AI、日時、回答本文、引用URL、競合、取得状態を残す測定方法を解説します。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/">
+<meta property="og:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="株式会社Trillion Bank">
+
+<meta property="article:published_time" content="2026-09-05T00:00:00+09:00">
+<meta property="article:modified_time" content="2026-09-06T00:00:00+09:00">
+<meta property="article:author" content="井上 幹太">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AI検索の効果はどう測る？回答・競合・引用元を記録する実務方法">
+<meta name="twitter:description" content="AI検索は回答が変動するため、単発のスクリーンショットだけでは比較できません。質問、対象AI、日時、回答本文、引用URL、競合、取得状態を残す測定方法を解説します。">
+<meta name="twitter:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+
+<link rel="canonical" href="https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/">
+<link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/">
+<link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/">
+<link rel="sitemap" type="application/xml" href="https://trillion-bank.jp/sitemap-index.xml">
+
+<!-- AI / LLM discovery -->
+<meta name="ai-summary" content="AI検索は回答が変動するため、単発のスクリーンショットだけでは比較できません。質問、対象AI、日時、回答本文、引用URL、競合、取得状態を残す測定方法を解説します。">
+<link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="https://trillion-bank.jp/feed.xml">
+<link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+<link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+<link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["Trillion Bank", "トリリオンバンク", "株式会社トリリオンバンク", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {"@type": "ImageObject", "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp"},
+      "description": "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。",
+      "foundingDate": "2025-12-23",
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": [
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+        {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+        {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI情報流通インフラ"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/#webpage",
+      "url": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/",
+      "name": "AI検索の効果はどう測る？回答・競合・引用元を記録する実務方法",
+      "description": "AI検索は回答が変動するため、単発のスクリーンショットだけでは比較できません。質問、対象AI、日時、回答本文、引用URL、競合、取得状態を残す測定方法を解説します。",
+      "inLanguage": "ja",
+      "isPartOf": {"@id": "https://trillion-bank.jp/#website"},
+      "about": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntity": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/#article"},
+      "breadcrumb": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/#breadcrumb"}
+    },
+    {
+      "@type": "TechArticle",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/#article",
+      "headline": "AI検索の効果はどう測る？回答・競合・引用元を記録する実務方法",
+      "description": "AI検索は回答が変動するため、単発のスクリーンショットだけでは比較できません。質問、対象AI、日時、回答本文、引用URL、競合、取得状態を残す測定方法を解説します。",
+      "image": "https://trillion-bank.jp/images/hero/tb-logo-color.webp",
+      "datePublished": "2026-09-05T00:00:00+09:00",
+      "dateModified": "2026-09-06T00:00:00+09:00",
+      "author": {"@type": "Person", "name": "井上 幹太", "@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "editor": {"@type": "Organization", "name": "株式会社Trillion Bank 編集部"},
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntityOfPage": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/#webpage"},
+      "inLanguage": "ja",
+      "articleSection": "測定・分析"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/#breadcrumb",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "HOME", "item": "https://trillion-bank.jp/"},
+        {"@type": "ListItem", "position": 2, "name": "Insights", "item": "https://trillion-bank.jp/trillionbank/insights/"},
+        {"@type": "ListItem", "position": 3, "name": "AI検索の効果はどう測る？回答・競合・引用元を記録する実務方法", "item": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/"}
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/#faq",
+      "mainEntity": [{"@type":"Question","name":"AIへ一度質問するだけでは不十分ですか？","acceptedAnswer":{"@type":"Answer","text":"現状確認には使えますが、改善効果を比較するには質問、対象AI、日時、競合、取得状態を記録し、同じ考え方で複数回測定する必要があります。"}},{"@type":"Question","name":"AI検索の順位を測るのですか？","acceptedAnswer":{"@type":"Answer","text":"通常検索の固定順位と同じ扱いはできません。候補入り、言及、回答文脈、引用URLなどを質問単位で記録します。"}},{"@type":"Question","name":"施策後に回答が変われば効果があったと言えますか？","acceptedAnswer":{"@type":"Answer","text":"変化は確認できますが、モデル更新や外部情報などの影響もあるため、単独施策の因果関係は慎重に判断します。"}}]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+<header class="tbh" id="tbh">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+      <img src="/images/hero/tb-logo-symbol.webp" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
+    </a>
+    <nav class="links" aria-label="グローバル">
+      <div class="mega">
+        <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
+        <div class="mega-panel" id="mega-biz">
+          <a href="/airreach/"><span class="mt">AirReach <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はHackⅡへ</span></a>
+          <a href="/trillionbank/business/hack2/"><span class="mt">HackⅡ <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+        </div>
+      </div>
+      <a href="/trillionbank/mission/">MISSION</a>
+      <a href="/trillionbank/insights/">INSIGHTS</a>
+      <a href="/trillionbank/company/">COMPANY</a>
+      <a href="/trillionbank/media/">MEDIA / NEWS</a>
+      <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="header" data-cta="header_contact_form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
+    </nav>
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+<section class="phero"><div class="wrap"><nav class="crumb" aria-label="パンくずリスト"><a href="/">HOME</a> ／ <a href="/trillionbank/insights/">Insights</a> ／ 測定・分析</nav><span class="en" style="font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:var(--gold)">2026.09.05　測定・分析</span><h1 style="font-size:clamp(1.7rem,4vw,2.9rem);margin-top:14px">AI検索の効果はどう測る？回答・競合・引用元を記録する実務方法</h1></div></section>
+<section class="sec"><div class="wrap"><article class="article">
+<div class="byline" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--hair,#e5e7eb);font-size:.86rem;color:var(--muted,#6b7280);"><span>執筆：井上 幹太</span><span>確認：株式会社Trillion Bank 編集部</span><span>公開：2026年09月05日</span><span>最終確認：2026-09-06</span></div>
+
+
+
+
+
+
+
+
+
+<nav class="tb-toc" aria-label="目次">
+  <span class="toc-label">CONTENTS ── 目次</span>
+  <ol><li class="lv2"><a href="#結論">結論</a></li><li class="lv2"><a href="#1-目的と質問を先に決める">1. 目的と質問を先に決める</a></li><li class="lv2"><a href="#2-1回の測定で残す項目">2. 1回の測定で残す項目</a></li><li class="lv2"><a href="#3-winlossを人が確認する">3. Win/Lossを人が確認する</a></li><li class="lv2"><a href="#4-引用元を分類する">4. 引用元を分類する</a></li><li class="lv2"><a href="#5-fact-integrityを確認する">5. Fact Integrityを確認する</a></li><li class="lv2"><a href="#6-施策と再測定を記録する">6. 施策と再測定を記録する</a></li><li class="lv2"><a href="#測定レポートの最低条件">測定レポートの最低条件</a></li><li class="lv2"><a href="#hackⅱの役割">HackⅡの役割</a></li></ol>
+</nav>
+
+
+<h2 id="結論">結論</h2>
+
+<p>AI検索の測定では、単発の回答を「順位」として扱うのではなく、<strong>質問・対象AI・日時・回答本文・引用URL・競合・取得状態</strong>を一組の証拠として残します。改善後は同じ設計で再測定し、変化と限界を一緒に報告します。</p>
+
+<p>GoogleのAI OverviewsやAI Modeも、利用するモデルや手法により回答やリンクが変わると説明されています。表示条件が変わる前提で、測定可能な範囲を明示することが重要です。</p>
+
+<h2 id="1-目的と質問を先に決める">1. 目的と質問を先に決める</h2>
+
+<p>「会社名が出るか」だけでは、経営判断へつながりません。次のような非指名の意思決定質問を設計します。</p>
+
+<ul>
+  <li>条件に合うサービスを比較したい</li>
+  <li>料金・導入条件を知りたい</li>
+  <li>業界のおすすめ企業を知りたい</li>
+  <li>地域・用途に合う施設を選びたい</li>
+  <li>自社と競合の違いを確認したい</li>
+</ul>
+
+<p>質問は、顧客像、購買段階、地域、用途を記録します。</p>
+
+<h2 id="2-1回の測定で残す項目">2. 1回の測定で残す項目</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>項目</th>
+      <th>理由</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>質問文</td>
+      <td>同じ意図を再現するため</td>
+    </tr>
+    <tr>
+      <td>対象AI・画面</td>
+      <td>サービスごとの違いを区別するため</td>
+    </tr>
+    <tr>
+      <td>測定日時</td>
+      <td>モデル・情報更新の影響を確認するため</td>
+    </tr>
+    <tr>
+      <td>回答本文</td>
+      <td>自社がどの文脈で説明されたかを見るため</td>
+    </tr>
+    <tr>
+      <td>引用URL</td>
+      <td>AIが示した根拠を確認するため</td>
+    </tr>
+    <tr>
+      <td>自社・競合の言及</td>
+      <td>質問単位の候補状況を見るため</td>
+    </tr>
+    <tr>
+      <td>取得成功・失敗</td>
+      <td>「出なかった」と取得不能を分けるため</td>
+    </tr>
+    <tr>
+      <td>設定・条件</td>
+      <td>言語、地域、ログイン状態等の差を説明するため</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="3-winlossを人が確認する">3. Win/Lossを人が確認する</h2>
+
+<p>質問ごとに、自社のみ、自社と競合、競合のみ、どちらも候補ではない、自社は出るが説明が不正確、自社は出るが公式情報が引用されていない、といった状態へ整理します。</p>
+
+<p>自動判定だけに依存せず、表記揺れ、同名企業、否定文、古いブランド名を人が確認します。</p>
+
+<h2 id="4-引用元を分類する">4. 引用元を分類する</h2>
+
+<p>引用URLを、公式サイト、業界団体、ニュース、比較メディア、レビュー、予約・ECプラットフォーム、競合サイト等へ分類します。これにより「自社サイトを直すのか」「第三者情報を整えるのか」を分けられます。</p>
+
+<h2 id="5-fact-integrityを確認する">5. Fact Integrityを確認する</h2>
+
+<p>顧客が承認した正しい情報とAI回答を比べます。料金、営業時間、設備、対応地域、契約条件、商品仕様など、誤りが事業判断に影響する項目を優先します。</p>
+
+<h2 id="6-施策と再測定を記録する">6. 施策と再測定を記録する</h2>
+
+<p>施策名、対象URL、担当者、公開日、再測定日を残します。同じ質問設計で再測定し、回答、候補、引用URLの変化を比較します。</p>
+
+<p>ただし、変化があっても施策だけが原因とは限りません。モデル更新、競合の変更、第三者サイト、新しいニュース等を確認し、因果関係と観測結果を分けて説明します。</p>
+
+<h2 id="測定レポートの最低条件">測定レポートの最低条件</h2>
+
+<ul>
+  <li>測定対象と対象外が書かれている</li>
+  <li>取得失敗とゼロ結果が分かれている</li>
+  <li>原文と引用URLへ戻れる</li>
+  <li>事実、推定、提案が区別されている</li>
+  <li>前回と同じ条件・異なる条件が分かる</li>
+  <li>次の担当者、期限、確認方法が決まっている</li>
+</ul>
+
+<h2 id="hackⅱの役割">HackⅡの役割</h2>
+
+<p>HackⅡは、選定した質問についてAI回答と引用URLを保存し、自社・競合の言及、測定条件、時系列を確認するための基盤です。Trillion Bankの担当者が質問設計、品質確認、分析、改善優先度の整理を支援します。対応範囲は契約時点で確定します。</p>
+
+<section aria-labelledby="article-faq" style="margin-top:48px"><h2 id="article-faq">よくある質問</h2><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">AIへ一度質問するだけでは不十分ですか？</h3><p>現状確認には使えますが、改善効果を比較するには質問、対象AI、日時、競合、取得状態を記録し、同じ考え方で複数回測定する必要があります。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">AI検索の順位を測るのですか？</h3><p>通常検索の固定順位と同じ扱いはできません。候補入り、言及、回答文脈、引用URLなどを質問単位で記録します。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">施策後に回答が変われば効果があったと言えますか？</h3><p>変化は確認できますが、モデル更新や外部情報などの影響もあるため、単独施策の因果関係は慎重に判断します。</p></div></section>
+<div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);"><h2 style="font-size:1rem;margin-bottom:12px">参考文献・一次情報</h2><ol style="font-size:.86rem;color:var(--muted,#6b7280);padding-left:20px"><li style="margin-bottom:8px"><a href="https://developers.google.com/search/docs/appearance/ai-features" target="_blank" rel="noopener noreferrer">Google Search Central - AI features and your website</a>（確認日：2026-09-05）</li></ol></div>
+<div style="margin-top:40px;padding:20px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);font-size:.8rem;color:var(--muted,#6b7280)"><p style="margin:0">本記事は公開時点の一次情報と当社の分析に基づきます。用語や各サービスの仕様は変わる可能性があります。誤りを確認した場合は、お問い合わせ窓口からお知らせください。</p></div>
+
+
+
+<aside class="author-box" aria-label="この記事の著者">
+  
+  <img src="/images/ceo-kanta.webp" alt="井上 幹太" width="72" height="72" loading="lazy">
+  <div class="ab-body">
+    <span class="ab-label">AUTHOR ── この記事の著者</span>
+    <p class="ab-name">井上 幹太<span class="ab-role">株式会社Trillion Bank 代表取締役</span></p>
+    <p class="ab-bio">AI検索計測「HackⅡ」とAIコンテンツ利用管理「Adctor / Pay per Crawl」の研究開発・事業化に取り組む。令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL。ソフトバンクアカデミア17期／J-StarX第1期／ZEN大学1期特別奨学生。</p>
+    <a class="ab-link" href="/trillionbank/ceo/">プロフィールと実績を見る <span aria-hidden="true">→</span></a>
+  </div>
+  
+</aside>
+
+<div class="article-cta" style="margin-top:56px;padding-top:36px;border-top:2px solid var(--blue-600)"><h2 style="font-size:clamp(1.2rem,2.4vw,1.55rem)">この記事のテーマを、自社・競合で確認する</h2><p>HackⅡは、選定した質問についてAI回答、引用URL、自社・競合の言及と測定条件を保存し、改善判断を支援します。</p><div style="display:flex;gap:14px;flex-wrap:wrap"><a class="btn btn-primary" href="/trillionbank/meeting/?type=company" data-event="meeting_form_open" data-service="hack2_company" data-cta="article_footer">AI検索の現在地を相談する <span class="a">→</span></a><a class="btn btn-line" href="/trillionbank/meeting/?type=agency" data-event="meeting_form_open" data-service="hack2_agency" data-cta="article_footer">共同提案を相談する <span class="a">→</span></a></div><p style="margin-top:14px;font-size:.78rem;color:var(--muted)">AI回答への掲載、順位、問い合わせ、売上を保証するサービスではありません。</p></div>
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<div style="margin-top:56px;padding-top:34px;border-top:1px solid var(--border,#DDE3EC)">
+  <h2 style="font-family:var(--mono);font-size:.78rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-bottom:18px">関連記事</h2>
+  <div class="nlist">
+    
+    <a class="nitem" href="/trillionbank/news/llmo-company-selection/"><span class="date">2026.09.16</span><span class="ncat">解説</span><span class="nt">LLMO対策会社の選び方｜生成AI検索最適化の依頼範囲を決める</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/geo-consulting-company/"><span class="date">2026.09.16</span><span class="ncat">解説</span><span class="nt">GEOコンサルティング会社の選び方｜定義の揺れを踏まえた確認項目</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/generative-ai-citation-analysis/"><span class="date">2026.09.16</span><span class="ncat">解説</span><span class="nt">生成AI引用分析とは？見るべき項目と実務手順</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-sov/"><span class="date">2026.09.16</span><span class="ncat">解説</span><span class="nt">AI検索SOVとは？計算の考え方と誤用しやすい点</span><span class="go">→</span></a>
+    
+  </div>
+</div>
+
+
+<div style="margin-top:44px"><a class="btn btn-line" href="/trillionbank/insights/">← Insights一覧へ</a></div>
+</article></div></section>
+</main>
+
+<footer class="tbf">
+  <div class="wrap">
+    <div class="top">
+      <div><a class="brand" href="/" aria-label="Trillion Bank ホーム"><img src="/images/hero/tb-logo-color.webp" alt="TRILLION BANK" width="160" height="40" style="height:32px;width:auto;filter:brightness(10)"></a><p class="addr">株式会社Trillion Bank<br>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ<br>株式会社Trillion Bankは銀行業を営む会社ではありません。</p></div>
+      <div class="fcol"><h5>BUSINESS</h5><a href="/trillionbank/business/hack2/">HackⅡ</a><a href="/trillionbank/business/pay-per-crawl/">Adctor</a></div>
+      <div class="fcol"><h5>INSIGHTS</h5><a href="/trillionbank/insights/">実務解説</a><a href="/trillionbank/company/">会社概要</a><a href="/trillionbank/media/">お知らせ</a></div>
+      <div class="fcol"><h5>CONTACT</h5><a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a><a href="/trillionbank/contact/#form">お問い合わせ</a></div>
+    </div>
+    <div class="bottom"><span>© 2026 Trillion Bank Co., Ltd.</span><span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a></span></div>
+  </div>
+</footer>
+<script>
+(function(){var h=document.getElementById('tbh'),b=document.getElementById('tbBurger');if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});document.querySelectorAll('.mega-t').forEach(function(btn){btn.addEventListener('click',function(){btn.setAttribute('aria-expanded',String(btn.getAttribute('aria-expanded')!=='true'))})});})();
+</script>
+
+</body>
+</html>

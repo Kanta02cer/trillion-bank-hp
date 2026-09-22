@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0XHQPCC4CF');
+</script>
+
+
+
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+<title>販売代理店向け AI検索支援・共同提案設計ガイド | 株式会社トリリオンバンク</title>
+<meta name="description" content="クライアントからAI検索について聞かれて困っていませんか。販売代理店が専門部署を新設せずに既存顧客へAI検索支援を追加提案するための設計ガイド。対象顧客の見極め、役割分担、納品物、月次運用の流れ、そのまま使える顧客向け説明文例までを公開しています。">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<meta property="og:title" content="販売代理店向け AI検索支援・共同提案設計ガイド | 株式会社トリリオンバンク">
+<meta property="og:description" content="クライアントからAI検索について聞かれて困っていませんか。販売代理店が専門部署を新設せずに既存顧客へAI検索支援を追加提案するための設計ガイド。対象顧客の見極め、役割分担、納品物、月次運用の流れ、そのまま使える顧客向け説明文例までを公開しています。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://trillion-bank.jp/trillionbank/guide/agency-co-proposal/">
+<meta property="og:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="株式会社Trillion Bank">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="販売代理店向け AI検索支援・共同提案設計ガイド | 株式会社トリリオンバンク">
+<meta name="twitter:description" content="クライアントからAI検索について聞かれて困っていませんか。販売代理店が専門部署を新設せずに既存顧客へAI検索支援を追加提案するための設計ガイド。対象顧客の見極め、役割分担、納品物、月次運用の流れ、そのまま使える顧客向け説明文例までを公開しています。">
+<meta name="twitter:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+
+<link rel="canonical" href="https://trillion-bank.jp/trillionbank/guide/agency-co-proposal/">
+<link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/trillionbank/guide/agency-co-proposal/">
+<link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/trillionbank/guide/agency-co-proposal/">
+<link rel="sitemap" type="application/xml" href="https://trillion-bank.jp/sitemap-index.xml">
+
+<!-- AI / LLM discovery -->
+<meta name="ai-summary" content="クライアントからAI検索について聞かれて困っていませんか。販売代理店が専門部署を新設せずに既存顧客へAI検索支援を追加提案するための設計ガイド。対象顧客の見極め、役割分担、納品物、月次運用の流れ、そのまま使える顧客向け説明文例までを公開しています。">
+<link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="https://trillion-bank.jp/feed.xml">
+<link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+<link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+<link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["Trillion Bank", "トリリオンバンク", "株式会社トリリオンバンク", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {"@type": "ImageObject", "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp"},
+      "description": "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。",
+      "foundingDate": "2025-12-23",
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": [
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+        {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+        {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI情報流通インフラ"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "HOME", "item": "https://trillion-bank.jp/" },
+      { "@type": "ListItem", "position": 2, "name": "HackⅡ", "item": "https://trillion-bank.jp/trillionbank/business/hack2/" },
+      { "@type": "ListItem", "position": 3, "name": "販売代理店向け AI検索支援・共同提案設計ガイド", "item": "https://trillion-bank.jp/trillionbank/guide/agency-co-proposal/" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "販売代理店向け AI検索支援・共同提案設計ガイド",
+    "description": "販売代理店が専門部署を新設せずに、既存顧客へAI検索支援を追加提案するための設計ガイド。対象顧客の見極め、役割分担、納品物、月次運用の流れ、顧客向け説明文例、成果保証を求められたときの回答例までを公開。",
+    "inLanguage": "ja",
+    "datePublished": "2026-08-09",
+    "author": { "@type": "Organization", "name": "株式会社Trillion Bank" },
+    "publisher": { "@type": "Organization", "name": "株式会社Trillion Bank", "url": "https://trillion-bank.jp/" },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://trillion-bank.jp/trillionbank/guide/agency-co-proposal/" }
+  }
+]
+</script>
+<style>
+  /* client question list — quote-like, typography only */
+  .qs{list-style:none;display:flex;flex-direction:column;max-width:46em}
+  .qs li{display:flex;gap:14px;align-items:baseline;padding:16px 4px;border-bottom:1px solid var(--border);font-size:.98rem;line-height:1.8;font-weight:600}
+  .qs li::before{content:"Q.";font-family:var(--mono);color:var(--blue-600);font-size:.78rem;letter-spacing:.1em;flex:none}
+  /* two-column role split — line separated, no boxes */
+  .roles{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,4vw,56px)}
+  .role{padding-top:clamp(20px,2.6vw,28px);border-top:2px solid var(--blue-600)}
+  .role .tag{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;color:var(--blue-600);margin-bottom:12px}
+  .role h3{font-weight:700;font-size:clamp(1.1rem,1.6vw,1.3rem);margin-bottom:14px}
+  .role ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+  .role li{display:flex;gap:12px;align-items:baseline;font-size:.92rem;line-height:1.75;color:var(--muted)}
+  .role li::before{content:"→";color:var(--blue-600);font-family:var(--mono);flex:none}
+  @media(max-width:820px){.roles{grid-template-columns:1fr}}
+  /* deliverables — definition rows with 1px separators */
+  .dlv{max-width:52em}
+  .dlv-item{display:grid;grid-template-columns:minmax(180px,240px) 1fr;gap:16px clamp(20px,3vw,40px);padding:clamp(18px,2.4vw,24px) 4px;border-top:1px solid var(--border)}
+  .dlv-item:last-child{border-bottom:1px solid var(--border)}
+  .dlv-item h3{font-weight:700;font-size:.98rem;line-height:1.6}
+  .dlv-item h3 .en{display:block;font-family:var(--mono);font-weight:500;font-size:.6rem;letter-spacing:.14em;color:var(--blue-600);margin-bottom:6px}
+  .dlv-item p{color:var(--muted);font-size:.9rem;line-height:1.85}
+  @media(max-width:640px){.dlv-item{grid-template-columns:1fr}}
+  /* client-ready copy blockquotes — 2px accent line only */
+  .gq{border-left:2px solid var(--blue-600);padding:6px 0 6px clamp(18px,2.6vw,30px);margin:0 0 clamp(24px,3vw,36px);max-width:46em}
+  .gq .tag{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;color:var(--blue-600);display:block;margin-bottom:10px}
+  .gq p{font-size:.96rem;line-height:2}
+  /* meeting agenda list */
+  .agenda{list-style:none;display:flex;flex-direction:column;gap:12px;max-width:44em}
+  .agenda li{display:flex;gap:12px;font-size:.94rem;line-height:1.7;align-items:baseline}
+  .agenda li::before{content:"→";color:var(--blue-600);font-family:var(--mono);flex:none}
+  /* pull quote */
+  .pull{font-weight:700;font-size:clamp(1.2rem,2.2vw,1.6rem);line-height:1.7;max-width:30em;text-wrap:balance;margin:clamp(20px,3vw,28px) 0}
+  /* 5-column steps — responsive */
+  .steps.five{grid-template-columns:repeat(5,1fr)}
+  @media(max-width:820px){.steps.five{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.steps.five{grid-template-columns:1fr}}
+</style>
+</head>
+<body><a class="skip" href="#main">本文へスキップ</a>
+<header class="tbh" id="tbh">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+      <img src="/images/hero/tb-logo-symbol.webp" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
+    </a>
+    <nav class="links" aria-label="グローバル">
+      <div class="mega">
+        <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
+        <div class="mega-panel" id="mega-biz">
+          <a href="/airreach/"><span class="mt">AirReach <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はHackⅡへ</span></a>
+          <a href="/trillionbank/business/hack2/"><span class="mt">HackⅡ <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+        </div>
+      </div>
+      <a href="/trillionbank/mission/">MISSION</a>
+      <a href="/trillionbank/insights/">INSIGHTS</a>
+      <a href="/trillionbank/company/">COMPANY</a>
+      <a href="/trillionbank/media/">MEDIA / NEWS</a>
+      <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="header" data-cta="header_contact_form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
+    </nav>
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+<section class="phero"><div class="wrap"><div class="crumb"><a href="/">HOME</a> ／ <a href="/trillionbank/business/hack2/">HackⅡ</a> ／ 販売代理店向け AI検索支援・共同提案設計ガイド</div><span class="ey">GUIDE — FOR SALES PARTNERS</span><h1>販売代理店向け<br>AI検索支援・共同提案設計ガイド</h1><p>「クライアントからAI検索について聞かれたとき、自社で答えられず、専門会社に関係ごと持っていかれたくない。かといって、専門部署を新設する余裕はない。」——そうした販売代理店の方に向けて、既存顧客へのAI検索支援を追加提案として設計するための考え方を、無料公開ガイドとしてまとめました。測定基盤にはHackⅡ（AI Recommendation Intelligence／限定商用検証・導入相談受付）を使用します。Trillion Bankサービスの販売代理店検討は歓迎しますが、他社商材の代理販売を当社へ依頼する相談はお受けしていません。</p><div style="margin-top:28px"><a class="btn btn-primary" href="/trillionbank/meeting/?type=agency" data-event="meeting_form_open" data-service="hack2_agency" data-cta="hero">販売代理店向け｜共同提案を相談する <span class="a">→</span></a></div></div></section>
+
+<section class="sec"><div class="wrap"><div class="khead"><span class="no">01 — CLIENT QUESTIONS</span><h2 class="rv">クライアントから増えている質問</h2><p class="rv">販売代理店に寄せられるAI検索関連の質問は増えています。代表的なのは、次のようなものです。</p></div>
+<ul class="qs rv">
+  <li>「AEO（AIO・LLMO）対策は、うちもやるべきですか？」</li>
+  <li>「ChatGPTやPerplexityで、自社はどう見えていますか？」</li>
+  <li>「AIに聞くと競合ばかり出てくるのですが、なぜですか？」</li>
+  <li>「AI広告が始まると聞きました。出稿すべきですか？」</li>
+  <li>「SEOの予算を、AI検索対策に振り替えるべきですか？」</li>
+</ul>
+<p class="lead rv" style="margin-top:28px">これらの質問に代理店として答えられないと、顧客は専門会社へ直接相談に行きます。その先で既存のSEO・広告・PRの予算まで見直されるのが、いちばん避けたい展開のはずです。逆に、この質問へ根拠を持って答えられれば、既存顧客への追加提案の機会に変わります。本ガイドは、そのための設計図です。</p>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">02 — POSITIONING</span><h2 class="rv">SEO・広告・PRとの関係</h2></div>
+<p class="lead rv" style="max-width:48em">AI検索の測定は、SEO・広告・PRを置き換えるものではありません。「どの施策に、どの順番で投資すべきか」を決めるための判断レイヤーです。AI回答で競合が選ばれている理由が比較メディアの引用にあるならPRや外部メディアへ、自社サイトのFAQ不足にあるならコンテンツへ、投資の優先順位を根拠付きで示せます。</p>
+<p class="lead rv" style="max-width:48em;margin-top:18px">つまり、貴社がすでに受託しているSEO運用・広告運用・PRの契約を傷つけず、その上に載せる追加提案として設計できます。既存施策の成果がAI検索面でどう反映されているかを確認する材料にもなるため、既存契約の継続理由を強くする方向に働きます。</p>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">03 — TARGET CLIENTS</span><h2 class="rv">提案対象となる顧客、ならない顧客</h2><p class="rv">すべての顧客に提案すべきサービスではありません。正直に線を引くことが、提案の通過率と契約後の満足度を上げます。</p></div>
+<div class="roles">
+  <div class="role rv">
+    <div class="tag">GOOD FIT ── 提案対象となる顧客</div>
+    <h3>継続測定が投資判断につながる顧客</h3>
+    <ul>
+      <li>比較検討型の商材を扱っている（BtoBサービス、高額商材、地域サービスなど、顧客が「おすすめは？」とAIに相談しうる領域）</li>
+      <li>複数の競合が存在し、AI回答内で実際に比較が起きている</li>
+      <li>月次の継続予算を確保できる</li>
+      <li>測定結果を受けてコンテンツ・PR・サイト改修などの施策を実行できる体制がある</li>
+    </ul>
+  </div>
+  <div class="role rv">
+    <div class="tag">NOT A FIT ── 提案対象とならない顧客</div>
+    <h3>単発の確認で十分な顧客</h3>
+    <ul>
+      <li>「AIに聞いたら自社がどう出るか」を一度確認すれば足りる顧客。この場合はご自身でChatGPT等に質問すれば済み、継続測定を売るべきではありません</li>
+      <li>競合がほぼ存在せず、AI回答内で比較が起きない商材</li>
+      <li>測定しても施策を実行する予算・体制がない顧客。測定だけを続けても投資対効果を説明できません</li>
+    </ul>
+  </div>
+</div>
+<p class="lead rv" style="margin-top:32px">対象外の顧客へ無理に販売しないこと自体が、貴社の信頼になります。面談では、この見極め基準を貴社の顧客リストに当てはめる形でご相談いただけます。</p>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">04 — DIVISION OF ROLES</span><h2 class="rv">役割分担</h2><p class="rv">顧客との関係は貴社が持ち続け、測定と分析の専門部分をトリリオンバンクが担う分業です。貴社の社内にAI検索の専門部署を新設する必要はありません。</p></div>
+<div class="roles">
+  <div class="role rv">
+    <div class="tag">SALES PARTNER ── 販売代理店</div>
+    <h3>顧客に向き合う仕事</h3>
+    <ul>
+      <li>対象顧客の選定（03の基準を使用）</li>
+      <li>提案・クロージング</li>
+      <li>顧客窓口・レポートの説明</li>
+      <li>改善施策の実装 —— コンテンツ制作、PR・外部メディア施策、広告運用、サイト改修</li>
+    </ul>
+  </div>
+  <div class="role rv">
+    <div class="tag">TRILLION BANK ── トリリオンバンク</div>
+    <h3>測定と分析の専門の仕事</h3>
+    <ul>
+      <li>購買・比較に近い質問群と競合の設計</li>
+      <li>計測条件の固定（同一条件での継続測定を可能にする）</li>
+      <li>複数AIでの測定と証拠保存（回答本文・引用URL・日時・条件）</li>
+      <li>分析・改善バックログ化・再計測</li>
+    </ul>
+  </div>
+</div>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">05 — DELIVERABLES</span><h2 class="rv">納品物</h2><p class="rv">毎月の測定サイクルごとに、次の4点をお渡しします。いずれも貴社経由で顧客へ報告できる形式です。実物のサンプルは面談で提示します。</p></div>
+<div class="dlv rv">
+  <div class="dlv-item"><h3><span class="en">WIN / LOSS REPORT</span>質問別Win/Lossレポート</h3><p>質問ごとに「自社が選ばれた／競合だけが選ばれた／自社・競合の両方が候補になった／どちらも出なかった」を分類したレポート。どの質問で勝ち、どの質問で負けているかが一覧できます。</p></div>
+  <div class="dlv-item"><h3><span class="en">CITATION CHANNEL MAP</span>引用チャネル分類</h3><p>AIが回答の根拠として参照した情報源を、自社サイト・比較メディア・業界メディア・レビュー・ニュースPR・競合サイトなどへ分類。どの外部チャネルへの施策が効くかの判断材料になります。</p></div>
+  <div class="dlv-item"><h3><span class="en">IMPROVEMENT BACKLOG</span>改善バックログ</h3><p>測定結果をFAQ・料金説明・比較コンテンツ・事例・PRなどの具体的な改善タスクへ変換した優先順位付きリスト。貴社の施策実装のインプットになります。</p></div>
+  <div class="dlv-item"><h3><span class="en">REMEASURE COMPARISON</span>再計測比較</h3><p>施策実施後に同一条件で再計測し、前回との差分を証拠付きで比較。施策の投資判断と、翌月の顧客報告の核になります。</p></div>
+</div>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">06 — MONTHLY CYCLE</span><h2 class="rv">月次運用の流れ</h2><p class="rv">運用は次のサイクルを毎月まわします。貴社の実働が集中するのは「施策決定」への同席と「実装」の2箇所です。</p></div>
+<div class="steps five rv">
+  <div class="step"><div class="sn">01</div><h4>測定</h4><p>固定した条件で複数AIを定点測定（トリリオンバンク）</p></div>
+  <div class="step"><div class="sn">02</div><h4>分析共有</h4><p>Win/Loss・引用チャネルを貴社へ共有（トリリオンバンク）</p></div>
+  <div class="step"><div class="sn">03</div><h4>施策決定</h4><p>改善バックログから今月の実施項目を決定（両社）</p></div>
+  <div class="step"><div class="sn">04</div><h4>実装</h4><p>コンテンツ・PR・広告・サイト改修を実行（販売代理店）</p></div>
+  <div class="step"><div class="sn">05</div><h4>再計測</h4><p>同一条件で再測定し、差分を顧客報告へ（トリリオンバンク）</p></div>
+</div>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">07 — CLIENT-READY COPY</span><h2 class="rv">顧客向け説明文（そのまま使える文例）</h2><p class="rv">クライアントへの説明にそのまま転送・貼り付けできる文例です。貴社のトーンに合わせて調整してお使いください。</p></div>
+<blockquote class="gq rv"><span class="tag">PATTERN A ── 標準</span><p>「貴社の見込み客がChatGPTなどのAIに『おすすめの◯◯は？』と相談したとき、貴社が候補に入っているか、競合が選ばれている理由は何か、AIがどの記事やサイトを根拠にしているかを、回答本文と引用元の証拠付きで毎月測定するサービスです。測定結果は、次にどのコンテンツ・PR・広告へ投資すべきかの判断材料として、毎月ご報告します。」</p></blockquote>
+<blockquote class="gq rv"><span class="tag">PATTERN B ── 短縮版</span><p>「AI検索の中で起きている『見えない比較検討』を毎月可視化し、貴社が選ばれるために次に何へ投資すべきかを判断できるようにするサービスです。」</p></blockquote>
+<blockquote class="gq rv"><span class="tag">PATTERN C ── AI広告の相談を受けたとき</span><p>「AI広告への出稿を検討する前に、広告なしのAI回答で貴社がどう扱われているかの基準線をつくるサービスです。広告表示と、AI回答内での自然な推薦・引用は別の現象なので、出稿の要否の判断にも、出稿後の前後比較にも使えます。」</p></blockquote>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">08 — ON GUARANTEES</span><h2 class="rv">成果保証を求められたときの回答</h2><p class="rv">提案の場では、ほぼ必ず「それで、AIに出るようになるのは保証されるのか」と聞かれます。ここで曖昧に濁すと、契約後に信頼を失います。私たちは次のように答えることを推奨しており、共同提案の場でも同じ立場を取ります。</p></div>
+<blockquote class="gq rv"><span class="tag">RECOMMENDED ANSWER ── 回答例</span><p>「AI回答での表示・問い合わせ・売上は保証できません。AIの回答は日々変動するため、表示を保証できる事業者は本来存在しないはずです。もし保証をうたう会社があれば、その測定条件と根拠を確認することをおすすめします。私たちがお約束するのは、同一条件での継続測定、回答本文・引用元・日時を含む証拠の保存、そして改善の判断に使える材料の提供です。」</p></blockquote>
+<p class="lead rv" style="max-width:48em">保証できないことを最初に明言するのは、短期的には遠回りに見えます。しかし「証拠と判断材料を約束する」という立場は、測定条件を検証できない成果保証よりも、長期の契約継続と顧客の信頼につながると考えています。</p>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">09 — HOW TO START</span><h2 class="rv">共同提案までの進め方</h2><p class="rv">いきなり全顧客への展開は行いません。少数の顧客で試験測定から始め、実データを持って提案する流れを推奨しています。</p></div>
+<div class="steps rv">
+  <div class="step"><div class="sn">01</div><h4>面談</h4><p>共同提案の枠組み・レポートサンプル・役割分担を30分で確認</p></div>
+  <div class="step"><div class="sn">02</div><h4>対象顧客の選定</h4><p>03の基準で、貴社の顧客から候補を1〜2社選定</p></div>
+  <div class="step"><div class="sn">03</div><h4>試験測定の設計</h4><p>質問群・競合・計測条件を設計し、試験測定を実施</p></div>
+  <div class="step"><div class="sn">04</div><h4>共同提案</h4><p>試験測定の実データを材料に、顧客へ共同で提案</p></div>
+</div>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">10 — 30 MIN MEETING</span><h2 class="rv">30分の面談で確認できること</h2></div>
+<ul class="agenda rv">
+  <li>共同提案の進め方と、貴社の顧客リストへの当てはめ方</li>
+  <li>レポートサンプル（質問別Win/Loss・引用チャネル分類・再計測比較の実物）</li>
+  <li>役割分担と、貴社側の月次の運用負荷</li>
+  <li>提供条件（対象ブランド数・質問数・対応AI・分析/運用範囲を確認したうえで個別にご案内）</li>
+</ul>
+</div></section>
+
+<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">11 — FAQ</span><h2 class="rv">よくある質問</h2></div>
+<div class="faq rv">
+  <details><summary>自社ブランドで提供できますか？</summary><div class="a">OEM・再販の形態は個別にご相談ください。貴社ブランドでの提供、共同ブランドでの提供、トリリオンバンク名義での提供など、貴社の顧客との関係に合わせて設計できます。表示方法・レポートの名義・責任分界を面談で確認します。</div></details>
+  <details><summary>運用負荷はどの程度ですか？</summary><div class="a">測定・分析・レポート作成・再計測はトリリオンバンク側が担います。貴社側の月次の実働は、分析共有と施策決定の打ち合わせへの参加、顧客への報告、そして決定した改善施策（コンテンツ・PR・広告・サイト改修）の実装です。具体的な工数感は、貴社の体制を確認したうえで面談でお伝えします。</div></details>
+  <details><summary>顧客への説明資料はもらえますか？</summary><div class="a">面談でご提供します。本ページの説明文例（07）はそのまま転用いただけます。加えて、提案時に使える資料一式とレポートサンプルを、共同提案の設計に合わせてお渡しします。</div></details>
+</div>
+<div style="margin-top:44px"><p class="pull rv" style="margin-top:0">顧客との関係は、貴社が持ち続ける。<br>測定と証拠は、私たちが担う。</p>
+<a class="btn btn-primary rv" href="/trillionbank/meeting/?type=agency" data-event="meeting_form_open" data-service="hack2_agency" data-cta="final">販売代理店向け｜共同提案を相談する <span class="a">→</span></a>
+<p style="margin-top:24px;font-size:.8rem;color:var(--muted)">※ HackⅡは限定商用検証・導入相談受付です。対応AIはChatGPT・Perplexity・Gemini等を想定し、契約時点で確定します。AI検索での表示・問い合わせ・売上を保証するものではありません。料金・提供条件は面談で個別にご案内します。</p></div>
+</div></section>
+</main><div class="glow-rails" id="glowRails" aria-hidden="true">
+  <div class="glow-line l"></div>
+  <div class="glow-line r"></div>
+</div>
+<footer class="tbf">
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+          <img src="/images/hero/tb-logo-color.webp" alt="TRILLION BANK" width="160" height="40" style="height:32px;width:auto;filter:brightness(10)">
+        </a>
+        <p class="addr">株式会社Trillion Bank（トリリオンバンク）<br>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ<br><span style="opacity:.7">※ 当社は銀行業を営む会社ではありません。</span></p>
+      </div>
+      <div class="fcol">
+        <h5>BUSINESS</h5>
+        <a href="/trillionbank/business/">事業概要</a>
+        <a href="/trillionbank/business/hack2/">HackⅡ</a>
+        <a href="/trillionbank/business/pay-per-crawl/">Pay per Crawl</a>
+      </div>
+      <div class="fcol">
+        <h5>COMPANY</h5>
+        <a href="/trillionbank/mission/">Mission</a>
+        <a href="/trillionbank/company/">会社概要</a>
+        <a href="/trillionbank/media/">Media / News</a>
+        <a href="/trillionbank/insights/">Insights</a>
+      </div>
+      <div class="fcol">
+        <h5>CONTACT</h5>
+        <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a>
+        <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="footer" data-cta="footer_contact_form">お問い合わせフォーム</a>
+        <a href="/trillionbank/contact/">お問い合わせ窓口</a>
+      </div>
+    </div>
+    <div class="bottom">
+      <span>© 2026 Trillion Bank</span>
+      <span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a> ／ <a href="/trillionbank/insights/editorial-policy/">編集方針</a></span>
+    </div>
+  </div>
+</footer>
+<script>
+(function(){
+  var h=document.getElementById('tbh'),last=0;
+  var rails=document.getElementById('glowRails');
+  var railGate=Math.min(innerHeight*.3,280);
+  addEventListener('scroll',function(){var y=scrollY;h.classList.toggle('solid',y>8);if(y>last&&y>140){h.classList.add('hide')}else{h.classList.remove('hide')}last=y;
+    if(rails)rails.classList.toggle('active',y>railGate);},{passive:true});
+  var b=document.getElementById('tbBurger');
+  if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+  document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});
+  // mega menu keyboard toggle
+  document.querySelectorAll('.mega-t').forEach(function(btn){
+    var panel=document.getElementById(btn.getAttribute('aria-controls'));
+    if(!panel)return;
+    btn.addEventListener('click',function(){var open=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',!open)});
+    btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();btn.click();if(btn.getAttribute('aria-expanded')==='true'){var first=panel.querySelector('a');if(first)first.focus()}}
+      if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+    panel.addEventListener('keydown',function(e){if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+  });
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(i%3)*70+'ms';io.observe(el)});
+  // GA4 tracking for CTAs
+  document.querySelectorAll('[data-event]').forEach(function(el){
+    el.addEventListener('click', function(){
+      if(typeof gtag==='function'){
+        gtag('event', el.dataset.event, {
+          source_page: location.pathname,
+          service: el.dataset.service || '',
+          inquiry_type: el.dataset.inquiry || '',
+          cta_label: el.textContent.trim()
+        });
+      }
+    });
+  });
+  // AI referral attribution for HackⅡ reports.
+  (function(){
+    var definitions=[
+      {source:'ChatGPT',hosts:['chatgpt.com','openai.com'],tokens:['chatgpt','openai']},
+      {source:'Perplexity',hosts:['perplexity.ai'],tokens:['perplexity']},
+      {source:'Claude',hosts:['claude.ai','anthropic.com'],tokens:['claude','anthropic']},
+      {source:'Gemini',hosts:['gemini.google.com'],tokens:['gemini','bard']},
+      {source:'Google AI',hosts:['google.com','google.co.jp'],tokens:['ai_overview','ai-mode','aimode','google_ai']},
+      {source:'Microsoft Copilot',hosts:['copilot.microsoft.com','bing.com'],tokens:['copilot','bing_ai']},
+      {source:'You.com',hosts:['you.com'],tokens:['you.com','youchat']},
+      {source:'Poe',hosts:['poe.com'],tokens:['poe']},
+      {source:'Phind',hosts:['phind.com'],tokens:['phind']}
+    ];
+    function normalizedHost(value){
+      try{return new URL(value).hostname.replace(/^www\./,'').toLowerCase()}catch(e){return ''}
+    }
+    function tokenMatch(text,tokens){
+      text=(text||'').toLowerCase();
+      return tokens.some(function(token){return text.indexOf(token)!==-1});
+    }
+    function findSource(referrer,paramsText){
+      var host=normalizedHost(referrer);
+      for(var i=0;i<definitions.length;i++){
+        var def=definitions[i];
+        var matchedHost=def.hosts.some(function(item){return host===item||host.endsWith('.'+item)});
+        if(matchedHost&&host.indexOf('google.')===-1&&host!=='bing.com')return {name:def.source,type:'referrer',host:host};
+        if((matchedHost||!host)&&tokenMatch(paramsText,def.tokens))return {name:def.source,type:matchedHost?'referrer_param':'utm',host:host};
+      }
+      return null;
+    }
+    function sendEvent(name,payload){
+      if(typeof gtag==='function')gtag('event',name,payload);
+    }
+    var params=new URLSearchParams(location.search);
+    var paramsText=[
+      params.get('utm_source'),
+      params.get('utm_medium'),
+      params.get('utm_campaign'),
+      params.get('ref'),
+      params.get('source'),
+      params.get('ai_source')
+    ].filter(Boolean).join(' ');
+    var detected=findSource(document.referrer,paramsText);
+    var stored=null;
+    if(detected){
+      stored={
+        ai_source:detected.name,
+        ai_referrer_host:detected.host||'direct_param',
+        ai_source_type:detected.type,
+        ai_landing_path:location.pathname,
+        traffic_channel:'ai_search'
+      };
+      try{sessionStorage.setItem('tb_ai_referral',JSON.stringify(stored))}catch(e){}
+      sendEvent('ai_referral_visit',stored);
+    }else{
+      try{stored=JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){stored=null}
+    }
+    document.querySelectorAll('a[href*="/trillionbank/contact/"],a[href*="/trillionbank/meeting/"]').forEach(function(link){
+      link.addEventListener('click',function(){
+        var attribution=stored;
+        try{attribution=attribution||JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){}
+        if(!attribution)return;
+        sendEvent('ai_assisted_cta_click',{
+          ai_source:attribution.ai_source,
+          ai_referrer_host:attribution.ai_referrer_host,
+          ai_landing_path:attribution.ai_landing_path,
+          cta_label:(link.dataset.cta||link.textContent||'').trim(),
+          destination:link.href,
+          source_page:location.pathname
+        });
+      });
+    });
+  })();
+  // tabs (WAI-ARIA Tabs pattern: arrow key navigation + roving tabindex)
+  document.querySelectorAll('[data-tabs]').forEach(function(g){
+    var tabs=g.querySelectorAll('[role="tab"]'),panels=g.querySelectorAll('[role="tabpanel"]');
+    function activate(idx){
+      tabs.forEach(function(x){x.setAttribute('aria-selected','false');x.setAttribute('tabindex','-1')});
+      tabs[idx].setAttribute('aria-selected','true');tabs[idx].setAttribute('tabindex','0');tabs[idx].focus();
+      panels.forEach(function(p){p.classList.remove('on')});if(panels[idx])panels[idx].classList.add('on');
+    }
+    tabs.forEach(function(t,i){
+      t.addEventListener('click',function(){activate(i)});
+      t.addEventListener('keydown',function(e){
+        var k=e.key,n=tabs.length;
+        if(k==='ArrowRight'){e.preventDefault();activate((i+1)%n)}
+        else if(k==='ArrowLeft'){e.preventDefault();activate((i-1+n)%n)}
+        else if(k==='Home'){e.preventDefault();activate(0)}
+        else if(k==='End'){e.preventDefault();activate(n-1)}
+      });
+    });
+  });
+  /* page transition — fade out on navigate, fade in on load */
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a');
+    var raw=a?a.getAttribute('href')||'':'';
+    if(!a||!a.href||a.target==='_blank'||raw.startsWith('#')||a.href.startsWith('mailto:')||a.href.startsWith('tel:'))return;
+    if(a.hostname!==location.hostname)return;
+    if(a.pathname===location.pathname&&a.hash)return;
+    e.preventDefault();
+    document.body.classList.add('page-leaving');
+    setTimeout(function(){location.href=a.href},300);
+  });
+  window.addEventListener('pageshow',function(e){
+    document.body.classList.remove('page-leaving');
+  });
+})();
+</script>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"自社ブランドで提供できますか？","acceptedAnswer":{"@type":"Answer","text":"OEM・再販の形態は個別にご相談ください。貴社ブランドでの提供、共同ブランドでの提供、トリリオンバンク名義での提供など、顧客との関係に合わせて設計できます。表示方法・レポートの名義・責任分界を面談で確認します。"}},
+{"@type":"Question","name":"運用負荷はどの程度ですか？","acceptedAnswer":{"@type":"Answer","text":"測定・分析・レポート作成・再計測はトリリオンバンク側が担います。代理店側の月次の実働は、分析共有と施策決定の打ち合わせへの参加、顧客への報告、決定した改善施策（コンテンツ・PR・広告・サイト改修）の実装です。具体的な工数感は面談でお伝えします。"}},
+{"@type":"Question","name":"顧客への説明資料はもらえますか？","acceptedAnswer":{"@type":"Answer","text":"面談でご提供します。本ガイドの顧客向け説明文例はそのまま転用いただけます。加えて、提案時に使える資料一式とレポートサンプルを、共同提案の設計に合わせてお渡しします。"}}
+]}
+</script>
+</body></html>

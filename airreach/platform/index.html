@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0XHQPCC4CF');
+</script>
+
+
+
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+<title>HackⅡ Platform｜詳細分析 - Trillion Bank</title>
+<meta name="description" content="HackⅡ Platform（ハックツ・プラットフォーム）は、GSC/GA4等の実数と診断結果をつなぎ、訪問・問い合わせなどの改善余地をより詳細に分析・試算する画面です。">
+<meta name="robots" content="noindex, follow">
+
+<meta property="og:title" content="HackⅡ Platform｜詳細分析 - Trillion Bank">
+<meta property="og:description" content="HackⅡ Platform（ハックツ・プラットフォーム）は、GSC/GA4等の実数と診断結果をつなぎ、訪問・問い合わせなどの改善余地をより詳細に分析・試算する画面です。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://trillion-bank.jp/airreach/platform/">
+<meta property="og:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="株式会社Trillion Bank">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="HackⅡ Platform｜詳細分析 - Trillion Bank">
+<meta name="twitter:description" content="HackⅡ Platform（ハックツ・プラットフォーム）は、GSC/GA4等の実数と診断結果をつなぎ、訪問・問い合わせなどの改善余地をより詳細に分析・試算する画面です。">
+<meta name="twitter:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+
+<link rel="canonical" href="https://trillion-bank.jp/airreach/platform/">
+<link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/airreach/platform/">
+<link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/airreach/platform/">
+<link rel="sitemap" type="application/xml" href="https://trillion-bank.jp/sitemap-index.xml">
+
+<!-- AI / LLM discovery -->
+<meta name="ai-summary" content="HackⅡ Platformは詳細分析・試算の画面。対策ファイル生成はHackⅡ Studio、伴走コンサルはHackⅡ Teams。">
+<link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="https://trillion-bank.jp/feed.xml">
+<link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+<link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+<link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["Trillion Bank", "トリリオンバンク", "株式会社トリリオンバンク", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {"@type": "ImageObject", "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp"},
+      "description": "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。",
+      "foundingDate": "2025-12-23",
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": [
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+        {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+        {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI情報流通インフラ"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>
+
+<link rel="stylesheet" href="/assets/css/airreach-platform.css">
+<link rel="stylesheet" href="/assets/css/airreach-system.css">
+<link rel="stylesheet" href="/assets/css/airreach-tip.css">
+</head>
+<body class="arp-page">
+<a class="skip" href="#main">本文へスキップ</a>
+<header class="tbh" id="tbh">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+      <img src="/images/hero/tb-logo-symbol.webp" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
+    </a>
+    <nav class="links" aria-label="グローバル">
+      <div class="mega">
+        <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
+        <div class="mega-panel" id="mega-biz">
+          <a href="/airreach/"><span class="mt">AirReach <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はHackⅡへ</span></a>
+          <a href="/trillionbank/business/hack2/"><span class="mt">HackⅡ <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+        </div>
+      </div>
+      <a href="/trillionbank/mission/">MISSION</a>
+      <a href="/trillionbank/insights/">INSIGHTS</a>
+      <a href="/trillionbank/company/">COMPANY</a>
+      <a href="/trillionbank/media/">MEDIA / NEWS</a>
+      <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="header" data-cta="header_contact_form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
+    </nav>
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+<section class="arp-hero">
+  <div class="arp-wrap">
+    <div class="arp-eyebrow" data-tip="ハックツ・プラットフォーム。詳細な分析・試算の画面です。">HackⅡ Platform</div>
+    <div class="arp-hero-grid">
+      <div>
+        <h1>詳細分析で、<br><em>集客の変化</em>まで。</h1>
+        <p class="arp-lead"><span data-tip="AI検索・Google検索・サイト課題・GA4をつなぎ、改善余地を詳細に分析・試算します。成果は保証しません。">詳細分析</span>の画面です。対策生成は<span data-tip="AI特化の学習データ・構造化データをディレクトリごと生成します。">HackⅡ Studio</span>、伴走は<span data-tip="コンサルティングです。">HackⅡ Teams</span>。</p>
+        <div class="arp-cta-row"><a href="#simulator" class="arp-btn arp-primary">試算する</a><a href="/airreach/studio/" class="arp-btn arp-secondary">Studioで作る</a></div>
+      </div>
+      <div class="arp-hero-card">
+        <div class="arp-mini-label" data-tip="測る対象をつなげて見ます。">つなぐもの</div>
+        <div class="arp-flow">
+          <span data-tip="AIでの言及・引用の見え方">AI見え方</span><b>→</b><span data-tip="Google検索の表示・クリック">Google検索</span><b>→</b><span data-tip="サイト上の案内・導線">サイト</span><b>→</b><span data-tip="問い合わせなどの成果">成果</span><b>→</b><span data-tip="売上機会の参考">売上</span>
+        </div>
+        <div class="arp-hero-metrics"><div><strong data-tip="言及・引用・シェア・オブ・ボイスなどの見え方指標">測る</strong></div><div><strong data-tip="FAQ・構造化データ・コンテンツの改善">直す</strong></div><div><strong data-tip="クリック率・成果率・問い合わせで確認">確かめる</strong></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="arp-section" id="simulator">
+  <div class="arp-wrap">
+    <div class="arp-section-head"><div><div class="arp-eyebrow" data-tip="費用に対して、問い合わせが増える目安を試算します。">試算</div><h2>費用と成果の目安</h2><p><span data-tip="Search Console / GA4 から取り込んだ実数です。">実数</span>があれば自動入力。<span data-tip="仮定に基づく参考予測です。成果は保証しません。">改善率は仮定</span>。</p></div><button id="arp-demo" class="arp-btn arp-secondary" type="button">サンプル</button></div>
+
+    <div class="arp-card arp-handoff-banner" id="arp-handoff-banner" hidden>
+      <div class="arp-import-head">
+        <div>
+          <h3 id="arp-handoff-title">無料診断から引き継ぎました</h3>
+          <p class="arp-help" id="arp-handoff-body"></p>
+        </div>
+        <span class="arp-chip" id="arp-auto-chip">Auto</span>
+      </div>
+    </div>
+
+    <div class="arp-card arp-import-card">
+      <div class="arp-import-head">
+        <div>
+          <h3><span data-tip="Search Console / GA4 のCSVを取り込むと自動入力します。ブラウザ内のみで処理します。">実数ベースライン</span></h3>
+          <p class="arp-help">Search Console / GA4のCSVを取り込むと、キーワード別の表示・クリック・CTR・順位と、月次換算の訪問基準を自動入力します。ブラウザ内のみで処理します。</p>
+        </div>
+        <span class="arp-chip arp-chip-official">実数優先</span>
+      </div>
+      <div class="arp-form-grid arp-import-grid">
+        <label>CSVの期間（日）<input id="arp-period-days" type="number" min="1" max="366" value="28"></label>
+        <label>GSC Performance CSV<input id="arp-gsc-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values"></label>
+        <label>GA4 CSV（任意）<input id="arp-ga4-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values"></label>
+        <label>&nbsp;<button id="arp-load-studio" class="arp-btn arp-secondary" type="button" style="width:100%">HackⅡ Studio計測を読み込む</button></label>
+      </div>
+      <p class="arp-import-status" id="arp-import-status">未取込。手入力でも試算できます（その場合は User Input）。</p>
+      <p class="arp-help" id="arp-baseline-badge">基準値: User Input（手入力）</p>
+    </div>
+
+    <div class="arp-sim-grid">
+      <div class="arp-card arp-input-card">
+        <h3>現在の数値</h3>
+        <div class="arp-form-grid">
+          <label>月間HP訪問者数<input id="arp-visitors" type="number" min="0" value="5000"></label>
+          <label>月間問い合わせ数<input id="arp-inquiries" type="number" min="0" value="50"></label>
+          <label>月間LINE登録数<input id="arp-line" type="number" min="0" value="20"></label>
+          <label>月額サービス費（任意）<input id="arp-fee" type="number" min="0" value="200000"></label>
+          <label>問い合わせ→受注率（任意）<div class="arp-input-unit"><input id="arp-close-rate" type="number" min="0" max="100" step="0.1" value="20"><span>%</span></div></label>
+          <label>平均受注額（任意）<input id="arp-order-value" type="number" min="0" value="500000"></label>
+          <label>粗利率（任意）<div class="arp-input-unit"><input id="arp-margin" type="number" min="0" max="100" step="0.1" value="50"><span>%</span></div></label>
+        </div>
+        <div class="arp-sep"></div>
+        <h3>改善仮定</h3>
+        <p class="arp-help">AirReachのスコアから自動的に成果を断定せず、営業時に顧客と合意した仮定で試算します。</p>
+        <div class="arp-form-grid">
+          <label>訪問者数の改善率（基準）<div class="arp-input-unit"><input id="arp-traffic-uplift" type="number" min="0" max="300" step="1" value="15"><span>%</span></div></label>
+          <label>CVRの改善率（相対・基準）<div class="arp-input-unit"><input id="arp-cvr-uplift" type="number" min="0" max="300" step="1" value="10"><span>%</span></div></label>
+        </div>
+        <div class="arp-assumption">低位 = 基準の60% / 高位 = 基準の140%。この倍率も将来は業界別・施策別の実績データから更新します。</div>
+      </div>
+
+      <div class="arp-card arp-result-card">
+        <div class="arp-result-top"><div><div class="arp-mini-label">BASE CASE</div><h3>改善後の推定インパクト</h3></div><span class="arp-chip" id="arp-result-chip">条件付き試算 · Inferred</span></div>
+        <div class="arp-big-kpis">
+          <div><small>追加訪問者 / 月</small><strong id="arp-extra-visitors">+0</strong></div>
+          <div><small>追加問い合わせ / 月</small><strong id="arp-extra-inquiries">+0</strong></div>
+          <div><small>追加LINE登録 / 月</small><strong id="arp-extra-line">+0</strong></div>
+          <div><small>追加粗利 / 月*</small><strong id="arp-extra-profit">-</strong></div>
+        </div>
+        <div class="arp-scenario-table-wrap"><table class="arp-scenario-table"><thead><tr><th>Scenario</th><th>訪問</th><th>問い合わせ</th><th>問い合わせ増</th><th>推定追加粗利*</th></tr></thead><tbody id="arp-scenario-body"></tbody></table></div>
+        <div class="arp-roi" id="arp-roi-box"><span>投資対効果の参考</span><strong id="arp-roi">-</strong><small id="arp-roi-note">受注率・平均受注額・粗利率を入力すると表示します。</small></div>
+        <p class="arp-disclaimer" hidden>* 売上・粗利は受注率、平均受注額、粗利率が入力されている場合のみ参考表示します。因果効果ではなくシナリオ計算です。</p>
+      </div>
+    </div>
+
+    <div class="arp-card arp-kw-card" id="arp-kw-section" hidden style="margin-top:18px">
+      <div class="arp-import-head">
+        <div>
+          <h3>キーワード別 Official 実数</h3>
+          <p class="arp-help" id="arp-kw-meta"></p>
+        </div>
+      </div>
+      <div class="arp-scenario-table-wrap">
+        <table class="arp-scenario-table">
+          <thead>
+            <tr>
+              <th>Keyword / Page</th>
+              <th>Impr.</th>
+              <th>Clicks</th>
+              <th>CTR</th>
+              <th>Pos.</th>
+              <th>推定+Click</th>
+              <th>推定+Inquiry</th>
+              <th>種別</th>
+            </tr>
+          </thead>
+          <tbody id="arp-kw-body"></tbody>
+        </table>
+      </div>
+      <p class="arp-disclaimer" hidden>推定+Click / +Inquiry は CTRギャップ（到達CTR6%仮定）× 入力CVRに基づく Inferred です。Officialの表示・クリック・順位そのものではありません。</p>
+    </div>
+  </div>
+</section>
+
+<section class="arp-section arp-alt" id="data">
+  <div class="arp-wrap">
+    <div class="arp-section-head"><div><div class="arp-eyebrow" data-tip="公式・観測・推定を分けて表示します。">データ一覧</div><h2>何が測れるか</h2></div></div>
+    <div class="arp-data-grid">
+      <article class="arp-data-card"><div class="arp-source official">OFFICIAL</div><h3>Google Search Console</h3><p>Clicks / Impressions / CTR / Position / Query / Page / Date / Country / Device</p><small>OAuth接続。通常検索データは公式API。</small></article>
+      <article class="arp-data-card"><div class="arp-source official">OFFICIAL UI</div><h3>Google生成AIレポート</h3><p>AI検索機能のImpressions / Page / Country / Device / Time series</p><small>専用API仕様が公開されるまでは公式UI/エクスポート取込を分離。</small></article>
+      <article class="arp-data-card"><div class="arp-source official">OFFICIAL</div><h3>GA4</h3><p>Sessions / Active Users / Landing Page / Key Events / Revenue</p><small>問い合わせ・LINE等をKey Eventとして結合。</small></article>
+      <article class="arp-data-card"><div class="arp-source official">OFFICIAL</div><h3>URL Inspection</h3><p>Index status / canonical / crawl / rich result information</p><small>Search Console OAuthで対象プロパティのみ。</small></article>
+      <article class="arp-data-card"><div class="arp-source public">PUBLIC</div><h3>PageSpeed / CrUX</h3><p>Performance / Lighthouse / LCP / INP / CLS / field UX</p><small>PageSpeedはキーなし利用可。CrUXは無料APIキー。</small></article>
+      <article class="arp-data-card"><div class="arp-source observed">OBSERVED</div><h3>HackⅡ AI Measurement</h3><p>Mention / Citation / SOV / Rank / Response / Cited URL / Engine</p><small>実測したPrompt・モデル・日時・Localeを保存。</small></article>
+      <article class="arp-data-card"><div class="arp-source inferred">INFERRED</div><h3>Opportunity</h3><p>追加訪問 / 追加問い合わせ / 機会損失 / ROI scenario</p><small>入力値・実測値・仮定を明示したシミュレーション。</small></article>
+      <article class="arp-data-card"><div class="arp-source action">ACTION</div><h3>AI Search Patch</h3><p>FAQ / JSON-LD / Meta / Internal link / llms / implementation guide</p><small>診断から修正ファイルとPR生成へ接続。</small></article>
+    </div>
+  </div>
+</section>
+
+<section class="arp-section" id="modules">
+  <div class="arp-wrap">
+    <div class="arp-section-head"><div><div class="arp-eyebrow">機能</div><h2 data-tip="計測だけで終わらず、改善まで回すための機能です。">改善まで回す</h2></div></div>
+    <div class="arp-module-grid">
+      <article><span>01</span><h3>AI Visibility</h3><p>ChatGPT / Gemini / Claude / Perplexity / Google系の言及・引用・SOVをPrompt単位で時系列化。</p></article>
+      <article><span>02</span><h3>Search Intelligence</h3><p>GSCとGA4を統合し、Keyword → Click → Session → Inquiryまで一本化。</p></article>
+      <article><span>03</span><h3>Technical AIO</h3><p>index、canonical、robots、Schema、FAQ、内部リンク、Core Web Vitalsの不足を検出。</p></article>
+      <article><span>04</span><h3>Competitor Gap</h3><p>競合が引用されるPrompt・ページ・根拠・構造との差を特定し、優先順位を付ける。</p></article>
+      <article><span>05</span><h3>Growth Impact</h3><p>現在のアクセス・問い合わせを入力し、改善時の追加訪問・問い合わせを条件付き試算。</p></article>
+      <article><span>06</span><h3>AI Search Patch</h3><p>修正案だけでなく、FAQ・Schema・文章・設定ファイルを生成してGitHub PRへ接続。</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="arp-section arp-alt">
+  <div class="arp-wrap">
+    <div class="arp-section-head"><div><div class="arp-eyebrow">違い</div><h2 data-tip="測定項目の多さより、問題解決までの距離を短くします。">問題解決までの距離</h2></div></div>
+    <div class="arp-compare">
+      <div class="arp-compare-row head"><div>顧客の問い</div><div>一般的なAIO計測</div><div>AirReach + HackⅡ</div></div>
+      <div class="arp-compare-row"><div>AIに出ている？</div><div>計測・可視化</div><div>計測・可視化</div></div>
+      <div class="arp-compare-row"><div>なぜ出ない？</div><div>Gap / 改善提案</div><div><strong>ページ・FAQ・根拠・技術原因まで特定</strong></div></div>
+      <div class="arp-compare-row"><div>何を直す？</div><div>提案・生成</div><div><strong>修正ファイル・実装手順を生成</strong></div></div>
+      <div class="arp-compare-row"><div>誰が直す？</div><div>顧客・代理店側</div><div><strong>PR / Deploy / HackⅡ伴走まで</strong></div></div>
+      <div class="arp-compare-row"><div>意味があった？</div><div>引用・言及の変化</div><div><strong>訪問・問い合わせ・CVまでBefore/After</strong></div></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="arp-section" id="capability">
+  <div class="arp-wrap">
+    <div class="arp-section-head"><div><div class="arp-eyebrow">いま</div><h2>できること / まだできないこと</h2></div></div>
+    <div class="arp-module-grid">
+      <article><span>NOW</span><h3>実数ベース試算</h3><p>GSC/GA4 CSVのOfficial数値を基準に、訪問・問い合わせ増のInferredシナリオを表示。キーワード別の実数テーブル付き。</p></article>
+      <article><span>NOW</span><h3>Studio CSV時系列</h3><p>StudioでGSC/GA4/HackⅡ手計測を端末内保存し、Platformへ読み込み可能。</p></article>
+      <article><span>NEXT</span><h3>OAuthライブ同期</h3><p>APIコードは追加済み。Vercel接続とClient Secret設定後に有効化。</p></article>
+    </div>
+  </div>
+</section>
+<section class="arp-section arp-final">
+  <div class="arp-wrap arp-final-inner"><div><div class="arp-eyebrow">次へ</div><h2 data-tip="無料診断 → 試算 → 対策 → 再計測、の流れです。">自社なら何件増えそうか。</h2></div><div class="arp-cta-row"><a href="/airreach/" class="arp-btn arp-primary">無料診断</a><a href="/trillionbank/meeting/" class="arp-btn arp-secondary">相談する</a></div></div>
+</section>
+</main>
+<div class="glow-rails" id="glowRails" aria-hidden="true">
+  <div class="glow-line l"></div>
+  <div class="glow-line r"></div>
+</div>
+<footer class="tbf">
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+          <img src="/images/hero/tb-logo-color.webp" alt="TRILLION BANK" width="160" height="40" style="height:32px;width:auto;filter:brightness(10)">
+        </a>
+        <p class="addr">株式会社Trillion Bank（トリリオンバンク）<br>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ<br><span style="opacity:.7">※ 当社は銀行業を営む会社ではありません。</span></p>
+      </div>
+      <div class="fcol">
+        <h5>BUSINESS</h5>
+        <a href="/trillionbank/business/">事業概要</a>
+        <a href="/trillionbank/business/hack2/">HackⅡ</a>
+        <a href="/trillionbank/business/pay-per-crawl/">Pay per Crawl</a>
+      </div>
+      <div class="fcol">
+        <h5>COMPANY</h5>
+        <a href="/trillionbank/mission/">Mission</a>
+        <a href="/trillionbank/company/">会社概要</a>
+        <a href="/trillionbank/media/">Media / News</a>
+        <a href="/trillionbank/insights/">Insights</a>
+      </div>
+      <div class="fcol">
+        <h5>CONTACT</h5>
+        <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a>
+        <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="footer" data-cta="footer_contact_form">お問い合わせフォーム</a>
+        <a href="/trillionbank/contact/">お問い合わせ窓口</a>
+      </div>
+    </div>
+    <div class="bottom">
+      <span>© 2026 Trillion Bank</span>
+      <span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a> ／ <a href="/trillionbank/insights/editorial-policy/">編集方針</a></span>
+    </div>
+  </div>
+</footer>
+<script>
+(function(){
+  var h=document.getElementById('tbh'),last=0;
+  var rails=document.getElementById('glowRails');
+  var railGate=Math.min(innerHeight*.3,280);
+  addEventListener('scroll',function(){var y=scrollY;h.classList.toggle('solid',y>8);if(y>last&&y>140){h.classList.add('hide')}else{h.classList.remove('hide')}last=y;
+    if(rails)rails.classList.toggle('active',y>railGate);},{passive:true});
+  var b=document.getElementById('tbBurger');
+  if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+  document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});
+  // mega menu keyboard toggle
+  document.querySelectorAll('.mega-t').forEach(function(btn){
+    var panel=document.getElementById(btn.getAttribute('aria-controls'));
+    if(!panel)return;
+    btn.addEventListener('click',function(){var open=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',!open)});
+    btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();btn.click();if(btn.getAttribute('aria-expanded')==='true'){var first=panel.querySelector('a');if(first)first.focus()}}
+      if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+    panel.addEventListener('keydown',function(e){if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+  });
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(i%3)*70+'ms';io.observe(el)});
+  // GA4 tracking for CTAs
+  document.querySelectorAll('[data-event]').forEach(function(el){
+    el.addEventListener('click', function(){
+      if(typeof gtag==='function'){
+        gtag('event', el.dataset.event, {
+          source_page: location.pathname,
+          service: el.dataset.service || '',
+          inquiry_type: el.dataset.inquiry || '',
+          cta_label: el.textContent.trim()
+        });
+      }
+    });
+  });
+  // AI referral attribution for HackⅡ reports.
+  (function(){
+    var definitions=[
+      {source:'ChatGPT',hosts:['chatgpt.com','openai.com'],tokens:['chatgpt','openai']},
+      {source:'Perplexity',hosts:['perplexity.ai'],tokens:['perplexity']},
+      {source:'Claude',hosts:['claude.ai','anthropic.com'],tokens:['claude','anthropic']},
+      {source:'Gemini',hosts:['gemini.google.com'],tokens:['gemini','bard']},
+      {source:'Google AI',hosts:['google.com','google.co.jp'],tokens:['ai_overview','ai-mode','aimode','google_ai']},
+      {source:'Microsoft Copilot',hosts:['copilot.microsoft.com','bing.com'],tokens:['copilot','bing_ai']},
+      {source:'You.com',hosts:['you.com'],tokens:['you.com','youchat']},
+      {source:'Poe',hosts:['poe.com'],tokens:['poe']},
+      {source:'Phind',hosts:['phind.com'],tokens:['phind']}
+    ];
+    function normalizedHost(value){
+      try{return new URL(value).hostname.replace(/^www\./,'').toLowerCase()}catch(e){return ''}
+    }
+    function tokenMatch(text,tokens){
+      text=(text||'').toLowerCase();
+      return tokens.some(function(token){return text.indexOf(token)!==-1});
+    }
+    function findSource(referrer,paramsText){
+      var host=normalizedHost(referrer);
+      for(var i=0;i<definitions.length;i++){
+        var def=definitions[i];
+        var matchedHost=def.hosts.some(function(item){return host===item||host.endsWith('.'+item)});
+        if(matchedHost&&host.indexOf('google.')===-1&&host!=='bing.com')return {name:def.source,type:'referrer',host:host};
+        if((matchedHost||!host)&&tokenMatch(paramsText,def.tokens))return {name:def.source,type:matchedHost?'referrer_param':'utm',host:host};
+      }
+      return null;
+    }
+    function sendEvent(name,payload){
+      if(typeof gtag==='function')gtag('event',name,payload);
+    }
+    var params=new URLSearchParams(location.search);
+    var paramsText=[
+      params.get('utm_source'),
+      params.get('utm_medium'),
+      params.get('utm_campaign'),
+      params.get('ref'),
+      params.get('source'),
+      params.get('ai_source')
+    ].filter(Boolean).join(' ');
+    var detected=findSource(document.referrer,paramsText);
+    var stored=null;
+    if(detected){
+      stored={
+        ai_source:detected.name,
+        ai_referrer_host:detected.host||'direct_param',
+        ai_source_type:detected.type,
+        ai_landing_path:location.pathname,
+        traffic_channel:'ai_search'
+      };
+      try{sessionStorage.setItem('tb_ai_referral',JSON.stringify(stored))}catch(e){}
+      sendEvent('ai_referral_visit',stored);
+    }else{
+      try{stored=JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){stored=null}
+    }
+    document.querySelectorAll('a[href*="/trillionbank/contact/"],a[href*="/trillionbank/meeting/"]').forEach(function(link){
+      link.addEventListener('click',function(){
+        var attribution=stored;
+        try{attribution=attribution||JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){}
+        if(!attribution)return;
+        sendEvent('ai_assisted_cta_click',{
+          ai_source:attribution.ai_source,
+          ai_referrer_host:attribution.ai_referrer_host,
+          ai_landing_path:attribution.ai_landing_path,
+          cta_label:(link.dataset.cta||link.textContent||'').trim(),
+          destination:link.href,
+          source_page:location.pathname
+        });
+      });
+    });
+  })();
+  // tabs (WAI-ARIA Tabs pattern: arrow key navigation + roving tabindex)
+  document.querySelectorAll('[data-tabs]').forEach(function(g){
+    var tabs=g.querySelectorAll('[role="tab"]'),panels=g.querySelectorAll('[role="tabpanel"]');
+    function activate(idx){
+      tabs.forEach(function(x){x.setAttribute('aria-selected','false');x.setAttribute('tabindex','-1')});
+      tabs[idx].setAttribute('aria-selected','true');tabs[idx].setAttribute('tabindex','0');tabs[idx].focus();
+      panels.forEach(function(p){p.classList.remove('on')});if(panels[idx])panels[idx].classList.add('on');
+    }
+    tabs.forEach(function(t,i){
+      t.addEventListener('click',function(){activate(i)});
+      t.addEventListener('keydown',function(e){
+        var k=e.key,n=tabs.length;
+        if(k==='ArrowRight'){e.preventDefault();activate((i+1)%n)}
+        else if(k==='ArrowLeft'){e.preventDefault();activate((i-1+n)%n)}
+        else if(k==='Home'){e.preventDefault();activate(0)}
+        else if(k==='End'){e.preventDefault();activate(n-1)}
+      });
+    });
+  });
+  /* page transition — fade out on navigate, fade in on load */
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a');
+    var raw=a?a.getAttribute('href')||'':'';
+    if(!a||!a.href||a.target==='_blank'||raw.startsWith('#')||a.href.startsWith('mailto:')||a.href.startsWith('tel:'))return;
+    if(a.hostname!==location.hostname)return;
+    if(a.pathname===location.pathname&&a.hash)return;
+    e.preventDefault();
+    document.body.classList.add('page-leaving');
+    setTimeout(function(){location.href=a.href},300);
+  });
+  window.addEventListener('pageshow',function(e){
+    document.body.classList.remove('page-leaving');
+  });
+})();
+</script>
+
+<script src="/assets/js/airreach-tip.js" defer></script>
+<script src="/assets/js/airreach-handoff.js" defer></script>
+<script src="/assets/js/airreach-platform.js" defer></script>
+</body>
+</html>

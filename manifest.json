@@ -1,0 +1,36 @@
+{
+  "name": "トリリオンバンク — AI検索最適化インフラ HackⅡ",
+  "short_name": "トリリオンバンク",
+  "description": "AI検索時代の情報流通を、測る・守る・正規化するITカンパニー。HackⅡでAI回答内の候補入り・競合差・引用元・AI流入を測定し、AEO/GEO/SEO実装まで支援します。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563EB",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

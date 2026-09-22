@@ -1,0 +1,1144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja">
+
+  <title>株式会社Trillion Bank — AI検索・情報利用のInsights</title>
+  <subtitle>AI検索最適化（AEO/GEO/LLMO/AIO）、AI検索の効果測定、AIによるコンテンツ利用の契約・利用証跡に関する解説と調査。株式会社Trillion Bank（トリリオンバンク）が公開しています。</subtitle>
+  <link href="https://trillion-bank.jp/feed.xml" rel="self" type="application/atom+xml"/>
+  <link href="https://trillion-bank.jp/" rel="alternate" type="text/html"/>
+  <id>https://trillion-bank.jp/</id>
+  <updated>2026-09-22T13:24:08+09:00</updated>
+  <author>
+    <name>株式会社Trillion Bank</name>
+    <uri>https://trillion-bank.jp</uri>
+  </author>
+  <rights>Copyright © 2025–2026 株式会社Trillion Bank. All rights reserved.</rights>
+  <icon>https://trillion-bank.jp/images/hero/tb-logo-symbol.webp</icon>
+  <logo>https://trillion-bank.jp/images/hero/tb-logo-color.webp</logo>
+
+  <!-- AI/LLM discovery hints -->
+  <category term="AI検索最適化" label="AEO・GEO・LLMO・AIO"/>
+  <category term="AI検索の効果測定" label="引用率・言及率・SOV"/>
+  <category term="AIデータ利用" label="Pay per Crawl・利用証跡"/>
+
+  
+  
+  <entry>
+    <title><![CDATA[LLMO対策会社の選び方｜生成AI検索最適化の依頼範囲を決める]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/llmo-company-selection/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/llmo-company-selection/</id>
+    <published>2026-09-16T00:00:00+09:00</published>
+    <updated>2026-09-16T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[LLMOで依頼しがちな過剰範囲
+
+]]></summary>
+    
+    <content type="html"><![CDATA[LLMOで依頼しがちな過剰範囲
+
+学習制御、全ボット遮断、一発での推薦獲得などをまとめて約束する提案は、現実の制約と合いません。GoogleはAI機能向けの特別マークアップ必須を否定しています。
+
+依頼範囲の切り方
+
+
+  現状測定（必須）
+  定義・FAQ・エンティティ整備（高優先）
+  第三者情報の点検（必要に応じ）
+  継続モニタリング（運用フェーズ）
+
+
+関連: LLMOとは
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦、流入、問い合わせ、売上を保証しません
+  「会社比較ランキング」や未検証の優劣断定は行いません
+  すべてのAIサービスを完全測定できるわけではありません
+  AEO / GEO / AIO / LLMO の用語定義は業界で統一されていません
+
+
+次の一歩
+
+選定前に自社の現在地を確認したい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: 内製／外注判断ガイド / 測定方法 / ツール比較の考え方
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[GEOコンサルティング会社の選び方｜定義の揺れを踏まえた確認項目]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/geo-consulting-company/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/geo-consulting-company/</id>
+    <published>2026-09-16T00:00:00+09:00</published>
+    <updated>2026-09-16T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[GEOの定義は統一されていない
+
+]]></summary>
+    
+    <content type="html"><![CDATA[GEOの定義は統一されていない
+
+GEO（Generative Engine Optimization）は研究・実務で使われますが、事業者ごとに対象エンジンや施策範囲が異なります。LLMO・GEO・AEOの違いも参照してください。
+
+確認すべき契約前チェック
+
+
+  対象とする生成エンジン／AI検索面
+  測定の有無と頻度
+  「対策」の中身（コンテンツ、PR、構造化データ等）
+  成果指標（候補入り率など）と非保証事項
+  顧客側が更新すべき一次情報の範囲
+
+
+測定から入る理由
+
+GEO施策は効果の見え方が変動します。依頼前に基準線がないと、改善の是非を判断できません。
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦、流入、問い合わせ、売上を保証しません
+  「会社比較ランキング」や未検証の優劣断定は行いません
+  すべてのAIサービスを完全測定できるわけではありません
+  AEO / GEO / AIO / LLMO の用語定義は業界で統一されていません
+
+
+次の一歩
+
+選定前に自社の現在地を確認したい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: 内製／外注判断ガイド / 測定方法 / ツール比較の考え方
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[生成AI引用分析とは？見るべき項目と実務手順]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/generative-ai-citation-analysis/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/generative-ai-citation-analysis/</id>
+    <published>2026-09-16T00:00:00+09:00</published>
+    <updated>2026-09-16T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[見る項目
+
+]]></summary>
+    
+    <content type="html"><![CDATA[見る項目
+
+
+  引用されたドメイン
+  ページ種別（公式、メディア、比較、SNS、DB）
+  自社公式の不足テーマ
+  古い情報・矛盾情報の有無
+
+
+実務の最短ルート
+
+
+  負けている質問を抽出
+  その回答の引用URLを保存
+  競合が勝っている情報源タイプを数える
+  同じ粒度の事実を公式に追加する
+
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦、流入、問い合わせ、売上を保証しません
+  「会社比較ランキング」や未検証の優劣断定は行いません
+  すべてのAIサービスを完全測定できるわけではありません
+  AEO / GEO / AIO / LLMO の用語定義は業界で統一されていません
+
+
+次の一歩
+
+選定前に自社の現在地を確認したい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: 内製／外注判断ガイド / 測定方法 / ツール比較の考え方
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[AI検索SOVとは？計算の考え方と誤用しやすい点]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/ai-search-sov/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/ai-search-sov/</id>
+    <published>2026-09-16T00:00:00+09:00</published>
+    <updated>2026-09-16T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[定義を先に固定する
+
+]]></summary>
+    
+    <content type="html"><![CDATA[定義を先に固定する
+
+
+  
+    
+      項目
+      決めること
+    
+  
+  
+    
+      分母
+      試行数か、成功応答数か
+    
+    
+      分子
+      言及／推薦／引用のどれか
+    
+    
+      欠損
+      エラー時を分母から除くか
+    
+    
+      対象
+      どのAI・どの質問セットか
+    
+  
+
+
+関連: 引用率の計算 / 効果測定方法
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦、流入、問い合わせ、売上を保証しません
+  「会社比較ランキング」や未検証の優劣断定は行いません
+  すべてのAIサービスを完全測定できるわけではありません
+  AEO / GEO / AIO / LLMO の用語定義は業界で統一されていません
+
+
+次の一歩
+
+選定前に自社の現在地を確認したい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: 内製／外注判断ガイド / 測定方法 / ツール比較の考え方
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[AI検索対策会社の選び方｜測定・支援・SEO拡張の3分類で比較する]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/ai-search-optimization-company/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/ai-search-optimization-company/</id>
+    <published>2026-09-16T00:00:00+09:00</published>
+    <updated>2026-09-16T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[結論：会社名より「何を測り、誰が直すか」
+
+]]></summary>
+    
+    <content type="html"><![CDATA[結論：会社名より「何を測り、誰が直すか」
+
+「AI検索対策会社」で検索すると、用語（AEO / GEO / LLMO）やツール名が混在します。選定の本丸は、重要質問での現状を証拠付きで測れるかと、公式一次情報を誰が直すかです。
+
+3分類で整理する
+
+
+  
+    
+      分類
+      強み
+      確認すること
+    
+  
+  
+    
+      測定ツール型
+      継続観測・比較
+      対象AI、証跡、欠損処理
+    
+    
+      支援伴走型
+      施策設計・実行支援
+      役割分担、報告粒度
+    
+    
+      SEO拡張型
+      既存SEOとの一体運用
+      AI回答面の測定有無
+    
+  
+
+
+詳細な比較観点は測定ツール・支援サービスの比較も参照してください。
+
+選定前の5問
+
+
+  どのAIの、どの画面を測るか
+  回答本文と引用URLは残るか
+  競合比較は質問単位か
+  コンテンツ改修は誰が担うか
+  何を保証しないと言っているか
+
+
+Trillion Bankの位置づけ
+
+Trillion Bankはテクノロジー企業として、HackⅡ（限定商用検証・導入相談受付）でAI回答の現在地測定を支援します。成果保証型の「対策会社」ではありません。
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦、流入、問い合わせ、売上を保証しません
+  「会社比較ランキング」や未検証の優劣断定は行いません
+  すべてのAIサービスを完全測定できるわけではありません
+  AEO / GEO / AIO / LLMO の用語定義は業界で統一されていません
+
+
+次の一歩
+
+選定前に自社の現在地を確認したい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: 内製／外注判断ガイド / 測定方法 / ツール比較の考え方
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[AI検索マーケティング支援とは？依頼範囲の切り方と注意点]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/ai-search-marketing-support/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/ai-search-marketing-support/</id>
+    <published>2026-09-16T00:00:00+09:00</published>
+    <updated>2026-09-16T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[依頼範囲のレイヤー
+
+]]></summary>
+    
+    <content type="html"><![CDATA[依頼範囲のレイヤー
+
+
+  
+    
+      レイヤー
+      内容
+    
+  
+  
+    
+      測る
+      質問設計、証跡、競合比較
+    
+    
+      直す
+      定義、FAQ、エンティティ、更新
+    
+    
+      広げる
+      外部メディア、パートナー言及
+    
+    
+      連動する
+      広告・SEOとの役割分担
+    
+  
+
+
+過大な「必ず選ばれる」約束がある提案は避け、測定可能な指標で管理します。
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦、流入、問い合わせ、売上を保証しません
+  「会社比較ランキング」や未検証の優劣断定は行いません
+  すべてのAIサービスを完全測定できるわけではありません
+  AEO / GEO / AIO / LLMO の用語定義は業界で統一されていません
+
+
+次の一歩
+
+選定前に自社の現在地を確認したい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: 内製／外注判断ガイド / 測定方法 / ツール比較の考え方
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[AI検索から問い合わせにつなげる導線設計｜未着手企業向け]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/ai-search-inquiry-conversion/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/ai-search-inquiry-conversion/</id>
+    <published>2026-09-16T00:00:00+09:00</published>
+    <updated>2026-09-16T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[導線の基本形
+
+]]></summary>
+    
+    <content type="html"><![CDATA[導線の基本形
+
+
+  AIが引用しやすい結論（定義・対象・向き不向き）
+  FAQで不安を先回り
+  根拠となる一次情報
+  問い合わせ／商談への明確な次アクション
+  施策前後の再計測
+
+
+Trillion Bankサイトでも、Insights → 問い合わせフォームの接続を重視しています。
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦、流入、問い合わせ、売上を保証しません
+  「会社比較ランキング」や未検証の優劣断定は行いません
+  すべてのAIサービスを完全測定できるわけではありません
+  AEO / GEO / AIO / LLMO の用語定義は業界で統一されていません
+
+
+次の一歩
+
+選定前に自社の現在地を確認したい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: 内製／外注判断ガイド / 測定方法 / ツール比較の考え方
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[AI検索の競合分析のやり方｜質問単位のWin/Lossで見る]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/ai-search-competitor-analysis/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/ai-search-competitor-analysis/</id>
+    <published>2026-09-16T00:00:00+09:00</published>
+    <updated>2026-09-16T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[手順
+
+]]></summary>
+    
+    <content type="html"><![CDATA[手順
+
+
+  重要質問を10〜20個決める
+  競合2〜3社を固定する
+  同じAI・同じプロンプトで記録する
+  言及有無と引用URLを表にする
+  公式／比較／レビュー／メディアに分類する
+  自社が負けている質問の一次情報不足を特定する
+
+
+関連: 競合が勝つ理由 / 中小企業向け競合確認
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦、流入、問い合わせ、売上を保証しません
+  「会社比較ランキング」や未検証の優劣断定は行いません
+  すべてのAIサービスを完全測定できるわけではありません
+  AEO / GEO / AIO / LLMO の用語定義は業界で統一されていません
+
+
+次の一歩
+
+選定前に自社の現在地を確認したい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: 内製／外注判断ガイド / 測定方法 / ツール比較の考え方
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[AIブランド可視性ツールの選び方｜チェックすべき機能]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/ai-brand-visibility-tool/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/ai-brand-visibility-tool/</id>
+    <published>2026-09-16T00:00:00+09:00</published>
+    <updated>2026-09-16T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[6つの確認点
+
+]]></summary>
+    
+    <content type="html"><![CDATA[6つの確認点
+
+
+  対応AIと画面
+  質問セット管理
+  回答本文・引用の保存
+  競合Win/Loss
+  同条件再計測
+  CSV等のエクスポート
+
+
+HackⅡは限定商用検証・導入相談受付の測定サービスです。詳細はHackⅡへ。
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦、流入、問い合わせ、売上を保証しません
+  「会社比較ランキング」や未検証の優劣断定は行いません
+  すべてのAIサービスを完全測定できるわけではありません
+  AEO / GEO / AIO / LLMO の用語定義は業界で統一されていません
+
+
+次の一歩
+
+選定前に自社の現在地を確認したい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: 内製／外注判断ガイド / 測定方法 / ツール比較の考え方
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[AEO支援会社の選び方｜回答エンジン最適化で見るべき比較軸]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/aeo-support-company/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/aeo-support-company/</id>
+    <published>2026-09-16T00:00:00+09:00</published>
+    <updated>2026-09-16T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[AEO支援で起きやすいズレ
+
+]]></summary>
+    
+    <content type="html"><![CDATA[AEO支援で起きやすいズレ
+
+「記事を増やします」「FAQを設置します」だけでは、改善前後を比較できません。支援会社には、同条件で再計測する設計があるかを確認します。
+
+比較表
+
+
+  
+    
+      観点
+      良い兆候
+      注意信号
+    
+  
+  
+    
+      測定
+      質問単位の証跡
+      感覚的な「出てきた」報告のみ
+    
+    
+      改善
+      一次情報の優先度付け
+      キーワード量産が主目的
+    
+    
+      説明
+      非保証範囲が明確
+      上位表示の確約
+    
+  
+
+
+関連: AEO計測ツールの選び方
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦、流入、問い合わせ、売上を保証しません
+  「会社比較ランキング」や未検証の優劣断定は行いません
+  すべてのAIサービスを完全測定できるわけではありません
+  AEO / GEO / AIO / LLMO の用語定義は業界で統一されていません
+
+
+次の一歩
+
+選定前に自社の現在地を確認したい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: 内製／外注判断ガイド / 測定方法 / ツール比較の考え方
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[中小企業がAI検索対策をまだ外注しなくていい段階]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/sme-when-not-to-outsource/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/sme-when-not-to-outsource/</id>
+    <published>2026-09-15T00:00:00+09:00</published>
+    <updated>2026-09-15T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[内製で先にやる3つ
+
+]]></summary>
+    
+    <content type="html"><![CDATA[内製で先にやる3つ
+
+
+  重要質問リスト
+  会社・サービス表記の統一
+  FAQと定義文の公開
+
+
+外注を検討する3つ
+
+
+  複数AIの継続測定
+  証跡付きの競合Win/Loss
+  月次の改善優先度整理
+
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦順位、流入、問い合わせ、売上を保証しません
+  すべてのAIサービス・画面を完全に測定できるわけではありません
+  AI内部の選定理由を断定しません
+  構造化データやFAQの追加だけで引用が増えるとは限りません
+  用語（AEO / GEO / AIO / LLMO）の定義は業界で統一されていません
+
+
+次の一歩
+
+現状の見える化から始めたい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: AI検索の効果測定方法 / 内製か外注かの判断ガイド
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[競合だけがAIに選ばれるとき中小企業が確認すべきこと]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/sme-vs-competitor-ai-visibility/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/sme-vs-competitor-ai-visibility/</id>
+    <published>2026-09-15T00:00:00+09:00</published>
+    <updated>2026-09-15T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[Win/Lossの取り方
+
+]]></summary>
+    
+    <content type="html"><![CDATA[Win/Lossの取り方
+
+同じプロンプト、同じ日、同じAIで、自社・競合A・競合Bの言及有無を表にします。1回の結果で結論を出さず、複数回または複数日で傾向を見ます。
+
+競合が強いときに見られる情報源
+
+
+  明確な「誰向けの何のサービスか」定義
+  比較表・選定基準・導入の向き不向き
+  業界メディアやレビューサイトでの言及
+  更新された数値・事例・FAQ
+
+
+関連: 競合が勝つ理由の整理
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦順位、流入、問い合わせ、売上を保証しません
+  すべてのAIサービス・画面を完全に測定できるわけではありません
+  AI内部の選定理由を断定しません
+  構造化データやFAQの追加だけで引用が増えるとは限りません
+  用語（AEO / GEO / AIO / LLMO）の定義は業界で統一されていません
+
+
+次の一歩
+
+現状の見える化から始めたい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: AI検索の効果測定方法 / 内製か外注かの判断ガイド
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[SEO会社にAI検索対策を頼む前に中小企業が聞くべき質問]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/sme-seo-vendor-questions/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/sme-seo-vendor-questions/</id>
+    <published>2026-09-15T00:00:00+09:00</published>
+    <updated>2026-09-15T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[聞くべき15項目（要約）
+
+]]></summary>
+    
+    <content type="html"><![CDATA[聞くべき15項目（要約）
+
+
+  対応するAIサービスと画面の範囲
+  プロンプトの固定方法
+  回答本文と引用URLの保存有無
+  欠損時（回答失敗）の扱い
+  競合比較の有無
+  月次で何を成功とするか
+  保証しない範囲の明示
+  コンテンツ改修の担当境界
+
+
+関連: ツール・支援サービスの比較の考え方
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦順位、流入、問い合わせ、売上を保証しません
+  すべてのAIサービス・画面を完全に測定できるわけではありません
+  AI内部の選定理由を断定しません
+  構造化データやFAQの追加だけで引用が増えるとは限りません
+  用語（AEO / GEO / AIO / LLMO）の定義は業界で統一されていません
+
+
+次の一歩
+
+現状の見える化から始めたい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: AI検索の効果測定方法 / 内製か外注かの判断ガイド
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[経営者が決めるAI検索投資｜中小企業の判断フレーム]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/sme-owner-ceo-ai-search-decision/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/sme-owner-ceo-ai-search-decision/</id>
+    <published>2026-09-15T00:00:00+09:00</published>
+    <updated>2026-09-15T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[経営会議用の4問
+
+]]></summary>
+    
+    <content type="html"><![CDATA[経営会議用の4問
+
+
+  顧客がAIに聞く質問で、自社は候補に入っているか
+  入っていない質問のうち、事業インパクトが大きいのはどれか
+  公式サイトと社外情報のどちらがボトルネックか
+  誰が測り、誰が直し、いつ再計測するか
+
+
+投資段階
+
+
+  
+    
+      段階
+      内容
+      目的
+    
+  
+  
+    
+      0
+      手動確認
+      危機感の有無を事実で確認
+    
+    
+      1
+      一次情報整備
+      誤情報・不足情報を減らす
+    
+    
+      2
+      継続測定
+      施策前後を比較可能にする
+    
+    
+      3
+      外部支援
+      内製限界を超えた範囲を補う
+    
+  
+
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦順位、流入、問い合わせ、売上を保証しません
+  すべてのAIサービス・画面を完全に測定できるわけではありません
+  AI内部の選定理由を断定しません
+  構造化データやFAQの追加だけで引用が増えるとは限りません
+  用語（AEO / GEO / AIO / LLMO）の定義は業界で統一されていません
+
+
+次の一歩
+
+現状の見える化から始めたい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: AI検索の効果測定方法 / 内製か外注かの判断ガイド
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[AI検索ツール導入前に中小企業が取るべき基準線]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/sme-measure-before-tools/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/sme-measure-before-tools/</id>
+    <published>2026-09-15T00:00:00+09:00</published>
+    <updated>2026-09-15T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[最小テンプレート列
+
+]]></summary>
+    
+    <content type="html"><![CDATA[最小テンプレート列
+
+date | ai | prompt | answer_excerpt | cited_urls | brand_mentioned | competitors | notes
+
+これがあるだけで、後からHackⅡのような継続測定へ移行しても比較しやすくなります。
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦順位、流入、問い合わせ、売上を保証しません
+  すべてのAIサービス・画面を完全に測定できるわけではありません
+  AI内部の選定理由を断定しません
+  構造化データやFAQの追加だけで引用が増えるとは限りません
+  用語（AEO / GEO / AIO / LLMO）の定義は業界で統一されていません
+
+
+次の一歩
+
+現状の見える化から始めたい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: AI検索の効果測定方法 / 内製か外注かの判断ガイド
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[製造業の中小企業向けAI検索対策｜技術情報の出し方]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/sme-manufacturing-ai-search/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/sme-manufacturing-ai-search/</id>
+    <published>2026-09-15T00:00:00+09:00</published>
+    <updated>2026-09-15T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[公開しやすい技術情報の例
+
+]]></summary>
+    
+    <content type="html"><![CDATA[公開しやすい技術情報の例
+
+
+  対応用途と非対応用途
+  材質・サイズ・公差の公開可能範囲
+  試作／量産の境界
+  納期の目安条件（確約表現は避ける）
+  よくある失敗事例と回避条件
+
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦順位、流入、問い合わせ、売上を保証しません
+  すべてのAIサービス・画面を完全に測定できるわけではありません
+  AI内部の選定理由を断定しません
+  構造化データやFAQの追加だけで引用が増えるとは限りません
+  用語（AEO / GEO / AIO / LLMO）の定義は業界で統一されていません
+
+
+次の一歩
+
+現状の見える化から始めたい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: AI検索の効果測定方法 / 内製か外注かの判断ガイド
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[地域密着の中小企業向け｜地図情報とAI検索の役割分担]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/sme-local-brand-ai-and-maps/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/sme-local-brand-ai-and-maps/</id>
+    <published>2026-09-15T00:00:00+09:00</published>
+    <updated>2026-09-15T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[役割分担
+
+]]></summary>
+    
+    <content type="html"><![CDATA[役割分担
+
+
+  
+    
+      チャネル
+      主な役割
+      整える情報
+    
+  
+  
+    
+      地図・ローカル
+      近場の発見・来店
+      NAP、営業時間、カテゴリ
+    
+    
+      AI検索
+      比較・推薦の説明
+      定義、FAQ、強み、向き不向き
+    
+    
+      公式サイト
+      一次情報の正本
+      両方と矛盾しない本文
+    
+  
+
+
+関連: AEOとMEOの実務
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦順位、流入、問い合わせ、売上を保証しません
+  すべてのAIサービス・画面を完全に測定できるわけではありません
+  AI内部の選定理由を断定しません
+  構造化データやFAQの追加だけで引用が増えるとは限りません
+  用語（AEO / GEO / AIO / LLMO）の定義は業界で統一されていません
+
+
+次の一歩
+
+現状の見える化から始めたい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: AI検索の効果測定方法 / 内製か外注かの判断ガイド
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[フランチャイズ本部が整えるべきAI検索の一次情報]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/sme-franchise-hq-ai-search/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/sme-franchise-hq-ai-search/</id>
+    <published>2026-09-15T00:00:00+09:00</published>
+    <updated>2026-09-15T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[本部サイトで揃えるブロック
+
+]]></summary>
+    
+    <content type="html"><![CDATA[本部サイトで揃えるブロック
+
+
+  ブランドは何の課題を解くか
+  加盟に向く人／向かない人
+  本部が支援すること／しないこと
+  よくある誤解へのFAQ
+  問い合わせ前に揃える資料
+
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦順位、流入、問い合わせ、売上を保証しません
+  すべてのAIサービス・画面を完全に測定できるわけではありません
+  AI内部の選定理由を断定しません
+  構造化データやFAQの追加だけで引用が増えるとは限りません
+  用語（AEO / GEO / AIO / LLMO）の定義は業界で統一されていません
+
+
+次の一歩
+
+現状の見える化から始めたい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: AI検索の効果測定方法 / 内製か外注かの判断ガイド
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[未着手企業がまず作るFAQとFAQPageの実務ガイド]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/sme-faq-schema-starter/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/sme-faq-schema-starter/</id>
+    <published>2026-09-15T00:00:00+09:00</published>
+    <updated>2026-09-15T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="技術"/>
+    
+    <summary type="html"><![CDATA[良いFAQの条件
+
+]]></summary>
+    
+    <content type="html"><![CDATA[良いFAQの条件
+
+
+  1問1答で、他ページを読まなくても意味が通る
+  具体的な対象・条件・例外が入っている
+  誇張や保証表現がない
+  更新日が分かる
+
+
+実装の注意
+
+FAQPageは「リッチリザルト獲得」より、機械可読なQ&amp;A提供として扱うのが現実的です。詳細は構造化データとE-E-A-Tを参照してください。
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦順位、流入、問い合わせ、売上を保証しません
+  すべてのAIサービス・画面を完全に測定できるわけではありません
+  AI内部の選定理由を断定しません
+  構造化データやFAQの追加だけで引用が増えるとは限りません
+  用語（AEO / GEO / AIO / LLMO）の定義は業界で統一されていません
+
+
+次の一歩
+
+現状の見える化から始めたい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: AI検索の効果測定方法 / 内製か外注かの判断ガイド
+]]></content>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[中小企業の社名・サービス表記ゆれチェックリスト｜AI検索対策]]></title>
+    <link href="https://trillion-bank.jp/trillionbank/news/sme-entity-consistency-checklist/" rel="alternate" type="text/html"/>
+    <id>https://trillion-bank.jp/trillionbank/news/sme-entity-consistency-checklist/</id>
+    <published>2026-09-15T00:00:00+09:00</published>
+    <updated>2026-09-15T00:00:00+09:00</updated>
+    <author>
+      <name>井上幹太（Kanta Inoue）</name>
+      <uri>https://trillion-bank.jp</uri>
+    </author>
+    
+    <category term="解説"/>
+    
+    <summary type="html"><![CDATA[点検リスト
+
+]]></summary>
+    
+    <content type="html"><![CDATA[点検リスト
+
+
+  会社概要の正式商号
+  ヘッダー／フッターの表記
+  ロゴの文字情報
+  SNSのプロフィール名
+  Googleビジネスプロフィール等の地図情報（店舗がある場合）
+  採用ページ・プレスリリースの旧表記
+  サービス名のカタカナ／英語の揺れ
+
+
+Trillion Bank自身も、旧商号（Regalis Japan Group株式会社）と現商号の関係を公開事実として明示しています。
+
+できないこと・限界
+
+
+  AI回答への掲載、推薦順位、流入、問い合わせ、売上を保証しません
+  すべてのAIサービス・画面を完全に測定できるわけではありません
+  AI内部の選定理由を断定しません
+  構造化データやFAQの追加だけで引用が増えるとは限りません
+  用語（AEO / GEO / AIO / LLMO）の定義は業界で統一されていません
+
+
+次の一歩
+
+現状の見える化から始めたい場合は、お問い合わせフォームからご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+
+関連: AI検索の効果測定方法 / 内製か外注かの判断ガイド
+]]></content>
+    
+  </entry>
+  
+
+</feed>
