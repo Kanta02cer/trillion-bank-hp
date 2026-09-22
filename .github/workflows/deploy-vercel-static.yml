@@ -65,6 +65,7 @@ jobs:
           cd "$WORKDIR"
           rm -f package-lock.json mise.toml Gemfile Gemfile.lock .ruby-version
           test -f api/hack2-measure.js
+          test -f api/gap-analyze.js
           test -f api/site-analyze.js
           git init -b vercel-deploy
           git config user.email "github-actions[bot]@users.noreply.github.com"

@@ -148,6 +148,14 @@ export default async function handler(req, res) {
       });
     }
 
+    const judgments = [
+      { id: 'clarity', label: '明瞭性', thinking: '初見読者に何をする会社か伝わるか判定しています' },
+      { id: 'claim_safety', label: '主張安全性', thinking: '誇大・保証表現のリスクを判定しています' },
+      { id: 'entity_consistency', label: 'エンティティ整合', thinking: '銀行誤認や製品の混同がないか判定しています' },
+      { id: 'primary_job', label: 'ページ役割', thinking: 'ページの主目的を分類しています' },
+      { id: 'needs_edit', label: '編集要否', thinking: '公開一次情報として直すべきか判定しています' }
+    ];
+
     return json(res, 200, {
       ok: true,
       source: {
@@ -156,7 +164,8 @@ export default async function handler(req, res) {
         title: extracted.title || null,
         chars: extracted.text.length
       },
-      model: payload.model,
+      model: payload.model || 'jev-latest',
+      judgments,
       answers: payload.answers,
       usage: payload.usage || null
     });

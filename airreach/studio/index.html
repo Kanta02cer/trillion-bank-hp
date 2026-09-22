@@ -255,7 +255,7 @@ robots: "noindex, follow"
           </div>
 
           <div class="ars-panel" data-panel-view="gaps">
-            <div class="ars-title-row"><div><h2>不足分析</h2></div><button id="run-gap-analysis" class="ars-btn ars-btn-primary" type="button">不足を分析</button></div>
+            <div class="ars-title-row"><div><h2>不足分析</h2><p class="ars-sub">Jevがページ概要から不足項目を判定（Estimated）。チェックは初期ヒントです。</p></div><button id="run-gap-analysis" class="ars-btn ars-btn-primary" type="button">不足を分析</button></div>
             <div class="ars-grid">
               <div class="ars-card ars-c5"><h3>現在ある情報</h3><div class="ars-form">
                 <label class="ars-row"><input type="checkbox" class="gap-check" value="pricing">料金 / プラン</label>
@@ -326,6 +326,7 @@ robots: "noindex, follow"
 </main>
 {% include tb-footer.html %}
 <script src="/assets/js/airreach-api.js" defer></script>
+<script src="/assets/js/airreach-think.js" defer></script>
 <script src="/assets/js/airreach-tip.js" defer></script>
 <script src="/assets/js/airreach-diagnose.js" defer></script>
 <script src="/assets/js/airreach-studio.js" defer></script>

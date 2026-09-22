@@ -186,3 +186,59 @@
 @media (max-width:720px){
   .ars-kw-card{grid-template-columns:1fr;gap:8px}
 }
+
+/* Live Jev / LLM think dock */
+.ars-think{
+  position:fixed;right:16px;bottom:16px;z-index:80;
+  width:min(340px,calc(100vw - 24px));
+  max-height:min(52vh,420px);
+  display:none;flex-direction:column;
+  background:#fff;border:2px solid #93c5fd;border-radius:14px;
+  box-shadow:0 16px 40px rgba(15,23,42,.18);
+  overflow:hidden;font-size:13px;color:#0f172a
+}
+.ars-think.is-open{display:flex}
+.ars-think-head{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+  padding:12px 12px 10px;background:#eff6ff;border-bottom:1px solid #bfdbfe
+}
+.ars-think-head strong{display:block;font-size:14px;line-height:1.3}
+.ars-think-model{display:block;margin-top:2px;font-size:11px;font-weight:700;color:#1d4ed8}
+.ars-think-close{
+  border:0;background:transparent;color:#64748b;font-size:18px;line-height:1;
+  cursor:pointer;padding:0 4px
+}
+.ars-think-list{
+  list-style:none;margin:0;padding:8px 10px;overflow:auto;display:grid;gap:6px;flex:1
+}
+.ars-think-list li{
+  display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;
+  padding:8px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0
+}
+.ars-think-list li b{display:block;font-size:12.5px;line-height:1.3}
+.ars-think-list li small{display:block;margin-top:2px;font-size:11px;color:#475569;line-height:1.35}
+.ars-think-dot{
+  width:10px;height:10px;margin-top:3px;border-radius:50%;background:#cbd5e1
+}
+.ars-think-list li.is-run{border-color:#93c5fd;background:#eff6ff}
+.ars-think-list li.is-run .ars-think-dot{
+  background:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.2);
+  animation:ars-think-pulse 1s ease-in-out infinite
+}
+.ars-think-list li.is-done{border-color:#86efac;background:#ecfdf5}
+.ars-think-list li.is-done .ars-think-dot{background:#16a34a}
+.ars-think-list li.is-error{border-color:#fecaca;background:#fff1f2}
+.ars-think-list li.is-error .ars-think-dot{background:#dc2626}
+.ars-think.is-busy .ars-think-head strong::after{content:' …'}
+.ars-think-log{
+  border-top:1px solid #e2e8f0;padding:8px 12px;background:#fff;
+  font-size:11px;color:#64748b;line-height:1.4;max-height:72px;overflow:auto
+}
+.ars-think-log div + div{margin-top:2px}
+@keyframes ars-think-pulse{
+  0%,100%{transform:scale(1);opacity:1}
+  50%{transform:scale(1.15);opacity:.7}
+}
+@media (prefers-reduced-motion:reduce){
+  .ars-think-list li.is-run .ars-think-dot{animation:none}
+}
