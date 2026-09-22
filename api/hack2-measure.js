@@ -258,20 +258,23 @@ async function measureWithJev(opts) {
 }
 
 async function measureWithProvider(engine, brand, prompts, pageUrl) {
+  const gatewayKey = process.env.AI_GATEWAY_API_KEY || '';
   const keyMap = {
     chatgpt: process.env.OPENAI_API_KEY,
     claude: process.env.ANTHROPIC_API_KEY,
     perplexity: process.env.PERPLEXITY_API_KEY
   };
-  const key = keyMap[engine];
-  if (!key) {
+  const directKey = keyMap[engine];
+  const useGateway = !!gatewayKey && (engine === 'chatgpt' || engine === 'claude' || engine === 'perplexity');
+  if (!useGateway && !directKey) {
     return {
       rows: [],
       status: {
         ok: false,
         error:
-          engine.toUpperCase() +
-          '_API_KEY is not configured on Vercel. Import HackⅡ JSON or enable the key.',
+          'AI_GATEWAY_API_KEY (or provider key) is not configured on Vercel for ' +
+          engine +
+          '. Jev uses TYPESAFE_API_KEY separately.',
         code: 'engine_unavailable'
       }
     };
@@ -280,7 +283,9 @@ async function measureWithProvider(engine, brand, prompts, pageUrl) {
   const rows = [];
   for (let i = 0; i < prompts.length; i++) {
     const p = prompts[i];
-    const answer = await callProvider(engine, key, p.prompt);
+    const answer = useGateway
+      ? await callViaGateway(engine, gatewayKey, p.prompt)
+      : await callProvider(engine, directKey, p.prompt);
     const lower = String(answer || '').toLowerCase();
     const brandL = brand.toLowerCase();
     const mentioned = lower.indexOf(brandL) !== -1 ? 1 : 0;
@@ -298,11 +303,58 @@ async function measureWithProvider(engine, brand, prompts, pageUrl) {
       mentioned,
       cited,
       evidenceClass: 'Observed',
-      source: engineLabel(engine) + ' API',
+      source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
       answer_excerpt: String(answer || '').slice(0, 400)
     });
   }
-  return { rows, status: { ok: true, count: rows.length, evidenceClass: 'Observed' } };
+  return {
+    rows,
+    status: {
+      ok: true,
+      count: rows.length,
+      evidenceClass: 'Observed',
+      via: useGateway ? 'ai-gateway' : 'direct'
+    }
+  };
+}
+
+function gatewayModel(engine) {
+  if (engine === 'chatgpt') return process.env.OPENAI_MODEL || 'openai/gpt-4o-mini';
+  if (engine === 'claude') return process.env.ANTHROPIC_MODEL || 'anthropic/claude-3-5-haiku-latest';
+  if (engine === 'perplexity') return process.env.PERPLEXITY_MODEL || 'perplexity/sonar';
+  return null;
+}
+
+async function callViaGateway(engine, key, prompt) {
+  const model = gatewayModel(engine);
+  if (!model) throw new Error('Unknown engine for AI Gateway');
+  const system =
+    'You are answering a Japanese business search question. Be concise. Prefer factual sources when known.';
+  const res = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + key,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.2
+    })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(
+      (data && data.error && (data.error.message || data.error)) ||
+        ('AI Gateway failed (' + res.status + ')')
+    );
+  }
+  return data.choices && data.choices[0] && data.choices[0].message
+    ? data.choices[0].message.content
+    : '';
 }
 
 async function callProvider(engine, key, prompt) {
