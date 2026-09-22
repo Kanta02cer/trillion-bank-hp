@@ -242,3 +242,18 @@
 @media (prefers-reduced-motion:reduce){
   .ars-think-list li.is-run .ars-think-dot{animation:none}
 }
+
+
+/* Metric clarity + B/W+blue lock */
+.ars-page,.ars-hero{background:#fff !important}
+.ars-hero{background:linear-gradient(180deg,#fff 0%,#f8fafc 100%) !important}
+.ars-model .mval{color:#0f172a}
+.ars-stat .lab,.ars-inline-kpi small{color:#64748b !important}
+.ars-stat .val{color:#0f172a}
+.ars-model{border-color:#e2e8f0;background:#fff}
+.orch-badge-est,.orch-badge-off{border-color:#bfdbfe !important;color:#1d4ed8 !important;background:#eff6ff !important}
+.orch-four-card .lab{color:#64748b}
+.orch-four-card .val{color:#0f172a}
+.orch-kw-meta span{background:#f1f5f9;color:#475569}
+
+.orch-metric-legend{margin:0 0 12px;padding:12px 14px;border:1px solid #bfdbfe;border-radius:10px;background:#eff6ff;font-size:.9rem;line-height:1.55;color:#0f172a;font-weight:600}

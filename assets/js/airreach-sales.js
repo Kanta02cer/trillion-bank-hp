@@ -25,10 +25,10 @@
 
   function scoreMeaning(score) {
     var s = num(score, 40);
-    if (s >= 75) return 'かなり整っています';
-    if (s >= 55) return 'まずまず。まだ伸ばせます';
-    if (s >= 35) return '改善余地があります';
-    return '大きく取りこぼしている可能性があります';
+    if (s >= 75) return '準備度が高い（公開情報が揃っている）';
+    if (s >= 55) return '準備度は中程度（まだ伸ばせる）';
+    if (s >= 35) return '準備度は低め（改善余地が大きい）';
+    return '準備度が低い（情報が足りず取りこぼしやすい）';
   }
 
   function estimateSearchVolume(keyword, mode) {

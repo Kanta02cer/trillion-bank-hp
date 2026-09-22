@@ -12,6 +12,7 @@ robots: "noindex, follow"
 <meta charset="UTF-8">
 {% include tb-head.html %}
 <link rel="stylesheet" href="/assets/css/airreach-studio.css">
+<link rel="stylesheet" href="/assets/css/airreach-system.css">
 <link rel="stylesheet" href="/assets/css/airreach-tip.css">
 </head>
 <body class="ars-page ars-orch">
@@ -81,26 +82,27 @@ robots: "noindex, follow"
 
     <section class="ars-orch-result" id="orch-result" hidden>
       <h2>分析が完了しました</h2>
+      <p class="orch-metric-legend">数字の見方：①対策に使う言葉の数　②その言葉で探している人の目安（推定）　③公開ページの準備度（100点・AI掲載率ではない）　④いま着手すべき改善の件数</p>
       <div class="orch-four">
         <div class="orch-four-card">
           <div class="lab" data-tip="選定した対策キーワード数">① 対策候補</div>
           <div class="val" id="orch-n-kw">—</div>
-          <div class="unit">キーワード</div>
+          <div class="unit">キーワード数</div>
         </div>
         <div class="orch-four-card">
-          <div class="lab" data-tip="市場需要の推定合計。GSCの表示回数ではありません。">② 月間検索需要</div>
+          <div class="lab" data-tip="市場需要の推定合計。GSCの表示回数ではありません。">② 探している人</div>
           <div class="val" id="orch-n-demand">—</div>
-          <div class="unit">回 <span class="orch-badge-est">推定</span></div>
+          <div class="unit">回/月 <span class="orch-badge-est">推定</span></div>
         </div>
         <div class="orch-four-card">
-          <div class="lab" data-tip="公開ページ準備度。AI掲載率ではありません。">③ 今の獲得力</div>
+          <div class="lab" data-tip="公開ページ準備度。AI掲載率ではありません。">③ 準備度</div>
           <div class="val" id="orch-n-score">—</div>
-          <div class="unit">/ 100</div>
+          <div class="unit">/ 100点</div>
         </div>
         <div class="orch-four-card">
-          <div class="lab" data-tip="ページ単位に圧縮した実装候補数">④ 最優先の改善</div>
+          <div class="lab" data-tip="ページ単位に圧縮した実装候補数">④ 直す件数</div>
           <div class="val" id="orch-n-impl">—</div>
-          <div class="unit">実装可能</div>
+          <div class="unit">件（優先）</div>
         </div>
       </div>
 

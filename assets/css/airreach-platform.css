@@ -41,8 +41,19 @@
 
 
 /* Short-copy + tip mode */
-.arp-disclaimer[hidden],.arp-help,.arp-assumption,.arp-data-card small,.arp-hero-metrics small,.arp-big-kpis small,.arp-roi span,.arp-roi small{display:none !important}
+.arp-disclaimer[hidden],.arp-help,.arp-assumption,.arp-data-card small,.arp-roi span,.arp-roi small{display:none !important}
 .arp-import-status{font-size:1.08rem !important;color:#1e293b !important}
 .arp-eyebrow,.arp-mini-label,.arp-chip,.arp-source{font-size:1.05rem !important;letter-spacing:0 !important;text-transform:none !important}
 .arp-page{font-size:20px}
 .arp-section-head p{font-size:1.1rem;color:#1e293b}
+
+
+/* Metric clarity platform — B/W + blue */
+.arp-page,.arp-hero{background:#fff !important}
+.arp-hero{background:linear-gradient(180deg,#fff 0,#f8fafc 100%) !important}
+.arp-big-kpis>div{background:#fff !important;border-color:#e2e8f0 !important}
+.arp-big-kpis small{color:#64748b !important;display:block !important;font-size:.8rem !important}
+.arp-chip{background:#f8fafc !important;color:#475569 !important}
+.arp-source.observed,.arp-source.official{background:#eff6ff !important;color:#1d4ed8 !important}
+.arp-source.inferred,.arp-source.action{background:#f8fafc !important;color:#475569 !important}
+.arp-flow span{background:#eff6ff !important;color:#1d4ed8 !important}

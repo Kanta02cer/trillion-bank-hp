@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 {% include tb-head.html %}
 <link rel="stylesheet" href="{{ '/assets/css/airreach-tip.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/airreach-system.css' | relative_url }}">
 <style>
 .ar-page,.ar-gate,.ar-gate-card{color:#0f172a;background:#fff;font-size:18px;font-family:var(--sans,'Noto Sans JP','Hiragino Sans','Hiragino Kaku Gothic ProN',Meiryo,sans-serif)}
 .ar-page{background:#fff}
@@ -312,7 +313,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
   display:grid;
   grid-template-columns:1.6rem 1fr auto;
   gap:12px;
-  align-items:center;
+  align-items:start;
   position:relative;
   background:#fff;
 }
@@ -473,7 +474,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 }
 
 /* Short-copy: hide microcopy, keep slim type scale */
-.ar-note,.ar-disc,.ar-sub,.ar-lead,.ar-field .why,.ar-act .effect,.ar-expert-sum,.ar-stepn .meaning,.ar-stepn .sub{display:none !important}
+.ar-note,.ar-disc,.ar-sub,.ar-lead,.ar-field .why,.ar-act .effect,.ar-expert-sum{display:none !important}
 .ar-pick .d{display:none !important}
 .ar-gate .lead{display:none !important}
 .ar-badge-e{display:inline-flex;align-items:center}
@@ -615,14 +616,19 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         <h2 class="ar-h2" id="ar-title">診断結果</h2>
         <p class="ar-sub" id="ar-subtitle" hidden></p>
 
+        <div class="ar-metric-legend" id="ar-metric-legend">
+          <strong>数字の見方</strong>
+          <span>①探している人＝需要の目安　②いまの位置＝公開ページの準備度（100点満点）　③直したあと＝改善した場合の参考レンジ　④増える件数＝結果の目安（保証なし）</span>
+        </div>
         <div class="ar-chain" id="ar-chain"></div>
-        <p class="ar-conf"><span data-tip="入力や実測が増えるほど上がる参考指標です。統計的な信頼区間ではありません。">信頼度</span> <b id="ar-confidence">—</b>%</p>
+        <p class="ar-conf"><span data-tip="入力や実測が増えるほど上がる参考指標です。統計的な信頼区間ではありません。">この結果の確かさ</span> <b id="ar-confidence">—</b>%</p>
+        <p class="ar-conf-plain" id="ar-confidence-plain">入力・実測が増えるほど上がります。統計的な信頼区間ではありません。</p>
         <p class="ar-disc" id="ar-disc" hidden></p>
         <span id="ar-confidence-note" hidden></span>
 
         <section class="ar-factors" id="ar-factors" hidden aria-label="点数の内訳">
           <div class="ar-factors-head">
-            <h3><span data-tip="公開ページの準備度を4つの要素に分けた内訳です。AI掲載率そのものではありません。">なぜこの点数？</span></h3>
+            <h3><span data-tip="公開ページの準備度を4つの要素に分けた内訳です。AI掲載率そのものではありません。">点数の内訳（各100点）</span></h3>
           </div>
           <div class="ar-factor-formula" id="ar-factor-formula"></div>
           <div class="ar-factor-grid" id="ar-factor-cards"></div>
@@ -1133,18 +1139,40 @@ document.addEventListener('DOMContentLoaded', function () {
       if (s.indexOf('Estimated') >= 0 || s.indexOf('推定') >= 0) return 'お客さんの言葉などからの目安です。公式の検索回数そのものではありません。';
       return '仮定に基づく参考予測です。成果・順位・掲載を保証しません。';
     }
+    var whatIsMap = {
+      demand: '需要の目安',
+      now: '準備度スコア',
+      after: '改善後の目安',
+      cite_now: '使われ方の目安',
+      cite_after: '改善後の目安',
+      outcome: '結果の目安'
+    };
     report.headline4.forEach(function (h, i) {
       var row = document.createElement('div');
       row.className = 'ar-stepn' + (i === report.headline4.length - 1 ? ' is-accent' : '');
       var detail = [h.meaning, h.sub].filter(Boolean).join(' ');
       var badge = AirReachSales.badgeLabel ? AirReachSales.badgeLabel(h.badge) : h.badge;
+      var what = whatIsMap[h.id] || '参考指標';
       row.innerHTML =
         '<div class="ix">' + (i + 1) + '</div>' +
-        '<div><div class="lab"><span data-tip="' + tipAttr(detail) + '">' + tipAttr(h.label) + '</span></div>' +
-        '<div class="val">' + tipAttr(h.value) + '<span class="unit">' + tipAttr(h.unit || '') + '</span></div></div>' +
+        '<div class="val-wrap">' +
+        '<div class="lab"><span data-tip="' + tipAttr(detail) + '">' + tipAttr(h.label) + '</span></div>' +
+        '<div class="val">' + tipAttr(h.value) + '<span class="unit">' + tipAttr(h.unit || '') + '</span></div>' +
+        '<span class="what-is">' + tipAttr(what) + '</span>' +
+        (h.meaning ? '<div class="meaning">' + tipAttr(h.meaning) + '</div>' : '') +
+        (h.sub ? '<div class="sub">' + tipAttr(h.sub) + '</div>' : '') +
+        '</div>' +
         '<span class="ar-badge-e ' + badgeClass(h.badge) + '" data-tip="' + tipAttr(evidenceTip(h.badge)) + '">' + tipAttr(badge) + '</span>';
       chain.appendChild(row);
     });
+    var legend = $('ar-metric-legend');
+    if (legend && report.headline4 && report.headline4.length) {
+      legend.innerHTML = '<strong>数字の見方</strong><span>' +
+        report.headline4.map(function (h, i) {
+          var marks=['①','②','③','④']; return (marks[i]||String(i+1)) + tipAttr(h.label) + '＝' + tipAttr(whatIsMap[h.id] || '参考指標');
+        }).join('　') +
+        '</span>';
+    }
     if (window.AirReachTip) window.AirReachTip.enhance(chain);
 
     var factorsWrap = $('ar-factors');
@@ -1171,13 +1199,18 @@ document.addEventListener('DOMContentLoaded', function () {
             }).join('') + '</ul>'
           : '<ul class="ar-factor-miss"><li class="is-ok">大きな不足は見当たりません</li></ul>';
         var scoreTxt = f.score == null ? '—' : String(f.score);
+        var plain = f.tip || '';
+        if (f.score != null) {
+          plain = tipAttr(f.label) + 'は ' + tipAttr(scoreTxt) + ' / 100。総合点への重みは ' + tipAttr(String(f.weightPct)) + '%。' + tipAttr((f.level && f.level.label) ? ('いまの評価：' + f.level.label) : '');
+        }
         card.innerHTML =
           '<div class="ar-factor-top">' +
           '<div class="ar-factor-label"><span data-tip="' + tipAttr(f.tip) + '">' + tipAttr(f.label) + '</span></div>' +
-          '<div class="ar-factor-score">' + tipAttr(scoreTxt) + '</div></div>' +
-          '<div class="ar-factor-meta"><span data-tip="' + tipAttr(f.formula) + '">配点 ' + tipAttr(String(f.weightPct)) + '%</span>' +
-          (f.contribution != null ? ' · 寄与 ' + tipAttr(String(f.contribution)) + '点' : '') +
-          ' · ' + tipAttr((f.level && f.level.label) || '') + '</div>' + miss;
+          '<div class="ar-factor-score">' + tipAttr(scoreTxt) + '<span class="ar-factor-score-unit">/ 100</span></div></div>' +
+          '<p class="ar-factor-plain">' + plain + '</p>' +
+          '<div class="ar-factor-meta"><span data-tip="' + tipAttr(f.formula) + '">総合への重み ' + tipAttr(String(f.weightPct)) + '%</span>' +
+          (f.contribution != null ? ' · 寄与約 ' + tipAttr(String(f.contribution)) + '点' : '') +
+          '</div>' + miss;
         factorCards.appendChild(card);
       });
       if (factorGaps) {
