@@ -39,6 +39,7 @@ jobs:
       - name: Publish _site to vercel-deploy branch
         env:
           SHORT_SHA: ${{ github.sha }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           WORKDIR=$(mktemp -d)
