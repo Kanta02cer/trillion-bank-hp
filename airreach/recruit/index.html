@@ -82,6 +82,56 @@ robots: "noindex, follow"
       <div id="arr-results" class="arr-results" hidden></div>
     </section>
 
+
+    <section class="arr-card" aria-labelledby="arr-life-title">
+      <h2 id="arr-life-title">求人ライフサイクル · Indexing API</h2>
+      <p class="arr-note">求人の公開・更新・終了を Google に通知します（JobPosting / ライブ配信向け）。クロール・インデックス・求人検索掲載は保証しません。本番通知には人の承認が必要です。</p>
+      <div class="arr-form">
+        <label for="arr-index-url">求人詳細URL</label>
+        <input id="arr-index-url" type="url" placeholder="https://example.com/careers/sales-tokyo/" autocomplete="url">
+        <label for="arr-lifecycle">状態</label>
+        <select id="arr-lifecycle">
+          <option value="published">求人公開 → URL_UPDATED</option>
+          <option value="updated">内容変更 → URL_UPDATED</option>
+          <option value="closed">募集終了（validThrough確認後）→ URL_UPDATED</option>
+          <option value="removed">ページ削除 → URL_DELETED</option>
+        </select>
+        <label class="arr-check"><input id="arr-index-confirm" type="checkbox"> 事実と一致する求人URLであることを確認し、Googleへ通知することを承認する</label>
+        <div class="arr-btn-row">
+          <button type="button" class="arr-btn arr-btn-secondary" id="arr-index-dry">プレビュー（通知しない）</button>
+          <button type="button" class="arr-btn" id="arr-index-run">Googleへ通知</button>
+          <button type="button" class="arr-btn arr-btn-secondary" id="arr-index-meta">通知メタデータ確認</button>
+        </div>
+        <p class="arr-status" id="arr-index-status" role="status"></p>
+        <p class="arr-note" id="arr-index-config">Indexing API 設定：確認中…</p>
+      </div>
+      <h3 class="arr-subh">通知履歴（ブラウザ内）</h3>
+      <div class="ars-table-wrap"><table class="arr-check-table"><thead><tr><th>日時</th><th>状態</th><th>type</th><th>URL</th><th>結果</th></tr></thead><tbody id="arr-index-history"><tr><td colspan="5">まだありません</td></tr></tbody></table></div>
+    </section>
+
+    <section class="arr-card" aria-labelledby="arr-ai-title">
+      <h2 id="arr-ai-title">採用AI実測（指名 / 一般）</h2>
+      <p class="arr-note">HackⅡ Observed。準備度スコアと混ぜません。指名質問と一般質問を分けて計測します。</p>
+      <div class="arr-form">
+        <label for="arr-brand">会社名（正式名称）</label>
+        <input id="arr-brand" type="text" placeholder="株式会社Trillion Bank" autocomplete="organization">
+        <label for="arr-role">職種・テーマ（任意）</label>
+        <input id="arr-role" type="text" placeholder="例: 営業 / AIエンジニア / 学生インターン">
+        <label for="arr-city">勤務地キーワード（任意）</label>
+        <input id="arr-city" type="text" placeholder="例: 東京">
+        <div class="arr-btn-row">
+          <button type="button" class="arr-btn arr-btn-secondary" id="arr-prompt-build">質問セットを作る</button>
+          <button type="button" class="arr-btn" id="arr-ai-run">Jevで実測する</button>
+        </div>
+        <label for="arr-prompts-branded">指名質問</label>
+        <textarea id="arr-prompts-branded" rows="4" placeholder="会社名を含む質問"></textarea>
+        <label for="arr-prompts-generic">一般質問</label>
+        <textarea id="arr-prompts-generic" rows="4" placeholder="職種・働き方の一般質問"></textarea>
+        <p class="arr-status" id="arr-ai-status" role="status"></p>
+      </div>
+      <div id="arr-ai-results" class="arr-results" hidden></div>
+    </section>
+
     <section class="arr-card arr-detail" aria-labelledby="arr-detail-title">
       <h2 id="arr-detail-title">詳しく見る</h2>
       <ul class="arr-links">
@@ -89,7 +139,7 @@ robots: "noindex, follow"
         <li><a href="/airreach/studio/#hack2">Studio · HackⅡ実測</a></li>
         <li><a href="/airreach/platform/">Platform · Official ベースライン</a></li>
               </ul>
-      <p class="arr-note">Indexing API・応募CV・Evidence Graph・総合スコアは後続フェーズです。</p>
+      <p class="arr-note">応募CV・Evidence Graph・総合スコアは後続フェーズです。Indexing API と採用AI実測は本ページで利用できます。</p>
     </section>
   </div>
 </main>

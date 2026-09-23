@@ -1,6 +1,6 @@
 # AirReach Vertical OS
 
-Status: planning + Recruit v0 scaffold  
+Status: Recruit v0 + Indexing API + recruitment AI prompts (P1 scaffold)  
 Last updated: 2026-09-23  
 Related: `docs/airreach-final-spec.md`, `docs/airreach-product-spec.md`
 
@@ -16,7 +16,7 @@ Vertical modules sit on one **AirReach Core**. They are not separate products.
 |--------|---------|---------------|
 | AirReach Search | SEO / AIO / GEO / LLMO readiness | Current product surface |
 | AirReach Local | Store / MEO / regional AI search | Industry packs (restaurant/clinic) |
-| AirReach Recruit | Jobs / hiring / Google Job search / recruitment AI | v0 scaffold (this doc) |
+| AirReach Recruit | Jobs / hiring / Google Job search / recruitment AI | v0 + Indexing notify + HackⅡ prompt split |
 | AirReach Media | News / third-party articles / AI citation readiness | Industry pack |
 | AirReach Commerce | Product / EC / AI Shopping | Planned |
 | AirReach B2B | Service comparison / inquiry | Industry pack |
@@ -135,14 +135,23 @@ Preferred Sources belong in **AirReach Media**, not Recruit / Search for every S
 
 ## Build order
 
-1. Lock Core contracts above  
-2. **P0** Google Generative AI CSV Official into Studio / Platform  
-3. **Recruit v0** URL / JSON-LD JobPosting validator + fix draft (no invented facts)  
-4. Indexing API lifecycle (P1)  
-5. HackⅡ recruitment prompts (branded vs generic)  
-6. Application flow (GA4 / ATS)  
+1. Lock Core contracts above — done  
+2. **P0** Google Generative AI CSV Official into Studio / Platform — done  
+3. **Recruit v0** URL / JSON-LD JobPosting validator + fix draft (no invented facts) — done  
+4. Indexing API lifecycle (P1) — done (`/api/google/indexing/`, Recruit UI; needs `GOOGLE_INDEXING_*` on Vercel + Search Console owner)  
+5. HackⅡ recruitment prompts (branded vs generic) — done (Recruit page; Jev default; Studio for live LLMs)  
+6. Application flow (GA4 / ATS) — next  
 7. Evidence Graph  
 8. Recruitment Visibility Score only after data
+
+### Indexing API env (Vercel only)
+
+```text
+GOOGLE_INDEXING_CLIENT_EMAIL
+GOOGLE_INDEXING_PRIVATE_KEY
+```
+
+Service account must be added as a Search Console owner for the property. AirReach requires `confirm:true` for live notify; `dryRun` previews without calling Google.
 
 ## Public wording guard
 
