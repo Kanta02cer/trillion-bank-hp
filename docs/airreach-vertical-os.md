@@ -1,6 +1,6 @@
 # AirReach Vertical OS
 
-Status: Recruit v0 + Indexing API + recruitment AI prompts (P1 scaffold)  
+Status: Recruit through Application Flow + Evidence Graph v0  
 Last updated: 2026-09-23  
 Related: `docs/airreach-final-spec.md`, `docs/airreach-product-spec.md`
 
@@ -16,7 +16,7 @@ Vertical modules sit on one **AirReach Core**. They are not separate products.
 |--------|---------|---------------|
 | AirReach Search | SEO / AIO / GEO / LLMO readiness | Current product surface |
 | AirReach Local | Store / MEO / regional AI search | Industry packs (restaurant/clinic) |
-| AirReach Recruit | Jobs / hiring / Google Job search / recruitment AI | v0 + Indexing notify + HackⅡ prompt split |
+| AirReach Recruit | Jobs / hiring / Google Job search / recruitment AI | Validator + Indexing + AI prompts + Application Flow |
 | AirReach Media | News / third-party articles / AI citation readiness | Industry pack |
 | AirReach Commerce | Product / EC / AI Shopping | Planned |
 | AirReach B2B | Service comparison / inquiry | Industry pack |
@@ -140,9 +140,20 @@ Preferred Sources belong in **AirReach Media**, not Recruit / Search for every S
 3. **Recruit v0** URL / JSON-LD JobPosting validator + fix draft (no invented facts) — done  
 4. Indexing API lifecycle (P1) — done (`/api/google/indexing/`, Recruit UI; needs `GOOGLE_INDEXING_*` on Vercel + Search Console owner)  
 5. HackⅡ recruitment prompts (branded vs generic) — done (Recruit page; Jev default; Studio for live LLMs)  
-6. Application flow (GA4 / ATS) — next  
-7. Evidence Graph  
+6. Application flow (GA4 / ATS) — done (`airreach-application-flow.js`: checklist + CSV/manual funnel; no per-ATS adapters yet)  
+7. Evidence Graph — done (v0 claim→evidence; “参照可能な根拠が N 件”; no citation guarantee)  
 8. Recruitment Visibility Score only after data
+
+### Application Flow events (canonical)
+
+```text
+job_view → apply_cta_click → apply_start → apply_complete
+```
+
+- Instrumentation checklist = `Planned`
+- GA4/ATS CSV or manual counts = `Official` / `Customer supplied`
+- Do not mix with JobPosting readiness or HackⅡ Observed rates
+- Snippet is copy-paste guidance only (AirReach does not inject tags into customer sites)
 
 ### Indexing API env (Vercel only)
 

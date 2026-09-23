@@ -47,3 +47,14 @@
 .arr-subh{margin:18px 0 8px;font-size:1rem;color:var(--arr-navy)}
 .arr-form select{width:100%;border:1px solid var(--arr-line);border-radius:8px;padding:10px 12px;font:inherit;background:#fff}
 .arr-form input[type=text]{width:100%;border:1px solid var(--arr-line);border-radius:8px;padding:10px 12px;font:inherit;background:#fff}
+
+.arr-checks{display:grid;gap:8px;margin:0 0 14px}
+.arr-manual-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media(max-width:720px){.arr-manual-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.arr-manual-grid label{display:grid;gap:4px;font-size:.85rem;font-weight:600}
+.arr-manual-grid input{width:100%;border:1px solid var(--arr-line);border-radius:8px;padding:8px 10px;font:inherit}
+.arr-file{display:inline-flex;margin-left:8px;padding:6px 12px;border:1px solid var(--arr-line);border-radius:8px;background:#fff;font-weight:600;cursor:pointer;font-size:.85rem}
+.arr-funnel{display:grid;gap:8px;margin-top:8px}
+.arr-funnel-row{display:grid;grid-template-columns:7rem 1fr 4.5rem;gap:10px;align-items:center}
+.arr-funnel-row .track{height:12px;background:#e2e8f0;border-radius:999px;overflow:hidden}
+.arr-funnel-row .fill{height:100%;background:#0b1f3a;border-radius:999px}

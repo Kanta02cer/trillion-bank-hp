@@ -320,7 +320,7 @@
   }
 
   function updateAiMeter(summary) {
-    var el = document.querySelector('.arr-meter[data-panel="ai"] .arr-meter-val');
+    var el = q('arr-ai-ready') || document.querySelector('.arr-meter[data-panel="ai"] .arr-meter-val');
     if (!el) return;
     if (!summary) {
       el.textContent = '未計測';
@@ -427,6 +427,222 @@
     if (runs[0] && runs[0].all) updateAiMeter(runs[0].all);
   }
 
+
+  var CV_KEY = 'airreach_recruit_application_flow_v1';
+  var CV_FLAGS_KEY = 'airreach_recruit_cv_flags_v1';
+
+  function loadCvState() {
+    return {
+      funnel: loadJson(CV_KEY, null),
+      flags: loadJson(CV_FLAGS_KEY, {})
+    };
+  }
+
+  function updateCvMeter() {
+    var el = q('arr-cv-ready');
+    if (!el || !window.AirReachApplicationFlow) return;
+    var st = loadCvState();
+    var inst = window.AirReachApplicationFlow.instrumentationScore(st.flags);
+    if (st.funnel && st.funnel.stages) {
+      var cvr = st.funnel.overallCvr;
+      var cvrLabel = cvr == null ? 'CVR —' : ('閲覧→完了 ' + Math.round(cvr * 1000) / 10 + '%');
+      el.textContent = inst.label + ' · ' + cvrLabel;
+    } else if (inst.ok > 0) {
+      el.textContent = inst.label + '（実数未取込）';
+    } else {
+      el.textContent = '未計測';
+    }
+  }
+
+  function renderCvResults(funnel) {
+    var box = q('arr-cv-results');
+    if (!box || !funnel) return;
+    box.hidden = false;
+    var max = Math.max.apply(null, funnel.stages.map(function (s) { return s.count; }).concat([1]));
+    var bars = funnel.stages.map(function (s) {
+      var w = Math.round((s.count / max) * 100);
+      return '<div class="arr-funnel-row"><span>' + esc(s.label) + '</span>' +
+        '<div class="track"><div class="fill" style="width:' + w + '%"></div></div>' +
+        '<span class="score">' + esc(String(s.count)) + '</span></div>';
+    }).join('');
+    var rates = (funnel.stepRates || []).map(function (r) {
+      var pct = r.rate == null ? '—' : (Math.round(r.rate * 1000) / 10 + '%');
+      return '<tr><td>' + esc(r.fromLabel) + ' → ' + esc(r.toLabel) + '</td><td>' + pct + '</td></tr>';
+    }).join('');
+    var overall = funnel.overallCvr == null ? '—' : (Math.round(funnel.overallCvr * 1000) / 10 + '%');
+    box.innerHTML =
+      '<p class="arr-note">' + esc(funnel.evidenceClass) + ' · ' + esc(funnel.source) +
+      ' · 全体CVR ' + overall + ' · ' + esc(funnel.note || '') + '</p>' +
+      '<div class="arr-funnel">' + bars + '</div>' +
+      '<table class="arr-check-table" style="margin-top:12px"><thead><tr><th>ステップ</th><th>転換率</th></tr></thead><tbody>' +
+      rates + '</tbody></table>' +
+      ((funnel.unmatched || []).length
+        ? '<p class="arr-note">未マップイベント: ' + esc(funnel.unmatched.join(', ')) + '</p>'
+        : '');
+  }
+
+  function saveFunnel(funnel) {
+    saveJson(CV_KEY, funnel);
+    renderCvResults(funnel);
+    updateCvMeter();
+  }
+
+  function readFlagsFromUi() {
+    var flags = {};
+    document.querySelectorAll('[data-cv-flag]').forEach(function (el) {
+      flags[el.getAttribute('data-cv-flag')] = !!el.checked;
+    });
+    return flags;
+  }
+
+  function restoreCvUi() {
+    var st = loadCvState();
+    document.querySelectorAll('[data-cv-flag]').forEach(function (el) {
+      var k = el.getAttribute('data-cv-flag');
+      el.checked = !!st.flags[k];
+    });
+    if (st.funnel) {
+      renderCvResults(st.funnel);
+      var map = {};
+      (st.funnel.stages || []).forEach(function (s) { map[s.id] = s.count; });
+      if (q('arr-cv-view')) q('arr-cv-view').value = map.job_view || '';
+      if (q('arr-cv-cta')) q('arr-cv-cta').value = map.apply_cta_click || '';
+      if (q('arr-cv-start')) q('arr-cv-start').value = map.apply_start || '';
+      if (q('arr-cv-complete')) q('arr-cv-complete').value = map.apply_complete || '';
+    }
+    updateCvMeter();
+  }
+
+  function onCvFlagsChange() {
+    var flags = readFlagsFromUi();
+    saveJson(CV_FLAGS_KEY, flags);
+    updateCvMeter();
+    setStatus('arr-cv-status', '計測チェックを保存しました（Planned）', 'good');
+  }
+
+  function applyManualCounts() {
+    if (!window.AirReachApplicationFlow) {
+      setStatus('arr-cv-status', 'Application Flow モジュール未読込', 'warn');
+      return;
+    }
+    var counts = {
+      job_view: Number((q('arr-cv-view') && q('arr-cv-view').value) || 0),
+      apply_cta_click: Number((q('arr-cv-cta') && q('arr-cv-cta').value) || 0),
+      apply_start: Number((q('arr-cv-start') && q('arr-cv-start').value) || 0),
+      apply_complete: Number((q('arr-cv-complete') && q('arr-cv-complete').value) || 0)
+    };
+    var funnel = window.AirReachApplicationFlow.buildFunnel(counts, {
+      evidenceClass: 'Customer supplied',
+      source: 'Manual entry'
+    });
+    saveFunnel(funnel);
+    setStatus('arr-cv-status', '手入力を反映しました（Customer supplied）', 'good');
+  }
+
+  function onCvCsv(file) {
+    if (!window.AirReachApplicationFlow) {
+      setStatus('arr-cv-status', 'Application Flow モジュール未読込', 'warn');
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var funnel = window.AirReachApplicationFlow.fromCsvText(reader.result, {
+          evidenceClass: 'Official',
+          source: 'GA4/ATS CSV'
+        });
+        if (!funnel.rowCount) throw new Error('マップできるイベント行がありません');
+        var map = {};
+        funnel.stages.forEach(function (s) { map[s.id] = s.count; });
+        if (q('arr-cv-view')) q('arr-cv-view').value = map.job_view || 0;
+        if (q('arr-cv-cta')) q('arr-cv-cta').value = map.apply_cta_click || 0;
+        if (q('arr-cv-start')) q('arr-cv-start').value = map.apply_start || 0;
+        if (q('arr-cv-complete')) q('arr-cv-complete').value = map.apply_complete || 0;
+        saveFunnel(funnel);
+        setStatus('arr-cv-status', 'CSV取込完了 · ' + funnel.rowCount + '行（Official）', 'good');
+      } catch (e) {
+        setStatus('arr-cv-status', String(e && e.message ? e.message : e), 'warn');
+      }
+    };
+    reader.readAsText(file, 'utf-8');
+  }
+
+  function showSnippet() {
+    if (!window.AirReachApplicationFlow) return;
+    var box = q('arr-cv-snippet-box');
+    if (!box) return;
+    box.hidden = false;
+    box.value = window.AirReachApplicationFlow.snippetTemplate('JOB_ID');
+    setStatus('arr-cv-status', '推奨イベント名のスニペットを表示しました（サイトへは自動埋め込みしません）', 'good');
+  }
+
+  function clearCv() {
+    try {
+      localStorage.removeItem(CV_KEY);
+      localStorage.removeItem(CV_FLAGS_KEY);
+    } catch (e) {}
+    document.querySelectorAll('[data-cv-flag]').forEach(function (el) { el.checked = false; });
+    ['arr-cv-view', 'arr-cv-cta', 'arr-cv-start', 'arr-cv-complete'].forEach(function (id) {
+      if (q(id)) q(id).value = '';
+    });
+    if (q('arr-cv-results')) { q('arr-cv-results').hidden = true; q('arr-cv-results').innerHTML = ''; }
+    if (q('arr-cv-snippet-box')) { q('arr-cv-snippet-box').hidden = true; q('arr-cv-snippet-box').value = ''; }
+    updateCvMeter();
+    setStatus('arr-cv-status', '応募導線データをクリアしました', 'good');
+  }
+
+
+
+  function renderEvidence() {
+    var box = q('arr-eg-list');
+    if (!box || !window.AirReachEvidenceGraph) return;
+    var claims = window.AirReachEvidenceGraph.load();
+    if (!claims.length) {
+      box.innerHTML = '<p class="arr-note">まだ根拠がありません。働き方・福利厚生などの主張に、公式URLを紐づけてください。</p>';
+      return;
+    }
+    box.innerHTML = claims.map(function (c) {
+      var n = (c.evidence || []).length;
+      var ev = (c.evidence || []).map(function (e) {
+        return '<li><a href="' + esc(e.url) + '" target="_blank" rel="noopener">' + esc(e.title || e.url) + '</a> · ' + esc(e.kind) + '</li>';
+      }).join('');
+      return '<article class="arr-meter" style="margin-bottom:10px"><h3>' + esc(c.claim) + '</h3>' +
+        '<p class="arr-meter-hint">この主張について、AIが参照可能な根拠が ' + n + ' 件あります</p>' +
+        '<ul>' + ev + '</ul>' +
+        '<button type="button" class="arr-btn arr-btn-secondary" data-eg-del="' + esc(c.id) + '">削除</button></article>';
+    }).join('');
+    box.querySelectorAll('[data-eg-del]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        window.AirReachEvidenceGraph.removeClaim(btn.getAttribute('data-eg-del'));
+        renderEvidence();
+        setStatus('arr-eg-status', '削除しました', 'good');
+      });
+    });
+  }
+
+  function addEvidence() {
+    if (!window.AirReachEvidenceGraph) {
+      setStatus('arr-eg-status', 'Evidence Graph 未読込', 'warn');
+      return;
+    }
+    var claim = ((q('arr-eg-claim') && q('arr-eg-claim').value) || '').trim();
+    var url = ((q('arr-eg-url') && q('arr-eg-url').value) || '').trim();
+    if (!claim || !url) {
+      setStatus('arr-eg-status', '主張と根拠URLは必須です', 'warn');
+      return;
+    }
+    window.AirReachEvidenceGraph.addClaim(claim, [{
+      url: url,
+      title: ((q('arr-eg-title-input') && q('arr-eg-title-input').value) || '').trim(),
+      kind: (q('arr-eg-kind') && q('arr-eg-kind').value) || 'official'
+    }]);
+    if (q('arr-eg-url')) q('arr-eg-url').value = '';
+    if (q('arr-eg-title-input')) q('arr-eg-title-input').value = '';
+    renderEvidence();
+    setStatus('arr-eg-status', '根拠を追加しました（引用保証ではありません）', 'good');
+  }
+
+
   document.addEventListener('DOMContentLoaded', function () {
     if (q('arr-run')) q('arr-run').addEventListener('click', runValidate);
     if (q('arr-index-dry')) q('arr-index-dry').addEventListener('click', function () { runIndexing({ dryRun: true }); });
@@ -439,8 +655,23 @@
         if (!q('arr-index-url').value) q('arr-index-url').value = q('arr-url').value;
       });
     }
+    document.querySelectorAll('[data-cv-flag]').forEach(function (el) {
+      el.addEventListener('change', onCvFlagsChange);
+    });
+    if (q('arr-cv-apply-manual')) q('arr-cv-apply-manual').addEventListener('click', applyManualCounts);
+    if (q('arr-cv-snippet')) q('arr-cv-snippet').addEventListener('click', showSnippet);
+    if (q('arr-cv-clear')) q('arr-cv-clear').addEventListener('click', clearCv);
+    if (q('arr-cv-csv')) {
+      q('arr-cv-csv').addEventListener('change', function () {
+        var f = q('arr-cv-csv').files && q('arr-cv-csv').files[0];
+        if (f) onCvCsv(f);
+      });
+    }
     renderIndexHistory();
     restoreAiMeter();
+    restoreCvUi();
+    if (q('arr-eg-add')) q('arr-eg-add').addEventListener('click', addEvidence);
+    renderEvidence();
     refreshIndexConfig();
   });
 })();

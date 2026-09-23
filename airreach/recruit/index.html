@@ -43,13 +43,13 @@ robots: "noindex, follow"
         </article>
         <article class="arr-meter" data-panel="ai">
           <h3>AI検索実測</h3>
-          <p class="arr-meter-val">未計測</p>
+          <p class="arr-meter-val" id="arr-ai-ready">未計測</p>
           <p class="arr-meter-hint">HackⅡ Observed（別途実行）</p>
         </article>
         <article class="arr-meter" data-panel="cv">
           <h3>応募導線</h3>
-          <p class="arr-meter-val">未計測</p>
-          <p class="arr-meter-hint">閲覧→応募開始→完了（GA4/ATS・今後）</p>
+          <p class="arr-meter-val" id="arr-cv-ready">未計測</p>
+          <p class="arr-meter-hint">閲覧→応募CTA→開始→完了（計測整備と実数は分離）</p>
         </article>
       </div>
     </section>
@@ -132,6 +132,67 @@ robots: "noindex, follow"
       <div id="arr-ai-results" class="arr-results" hidden></div>
     </section>
 
+
+    <section class="arr-card" aria-labelledby="arr-cv-title">
+      <h2 id="arr-cv-title">応募導線 · Application Flow</h2>
+      <p class="arr-note">求人閲覧 → 応募ボタン → 応募開始 → 応募完了。ATSごとの個別開発はせず、共通イベント名＋CSV取込から始めます。準備度スコアやAI実測とは混ぜません。</p>
+
+      <h3 class="arr-subh">計測チェック（Planned）</h3>
+      <div class="arr-checks" id="arr-cv-checks">
+        <label class="arr-check"><input type="checkbox" data-cv-flag="hasJobView"> job_view（求人詳細の閲覧）を送っている</label>
+        <label class="arr-check"><input type="checkbox" data-cv-flag="hasApplyCta"> apply_cta_click（応募ボタン）を送っている</label>
+        <label class="arr-check"><input type="checkbox" data-cv-flag="hasApplyStart"> apply_start（フォーム開始）を送っている</label>
+        <label class="arr-check"><input type="checkbox" data-cv-flag="hasApplyComplete"> apply_complete（完了）を送っている</label>
+        <label class="arr-check"><input type="checkbox" data-cv-flag="hasJobIdParam"> job_id 等で求人単位に紐づけている</label>
+      </div>
+
+      <h3 class="arr-subh">実数取込（Official / Customer supplied）</h3>
+      <div class="arr-form">
+        <div>GA4 / ATS イベントCSV <label class="arr-file"><input id="arr-cv-csv" type="file" accept=".csv,text/csv,.tsv" hidden>CSVを選択</label></div>
+        <p class="arr-note">列例: <code>Event name,Event count</code> または <code>stage,count</code>（job_view / apply_cta_click / apply_start / apply_complete）</p>
+        <div class="arr-manual-grid">
+          <label>閲覧<input id="arr-cv-view" type="number" min="0" step="1" placeholder="0"></label>
+          <label>応募ボタン<input id="arr-cv-cta" type="number" min="0" step="1" placeholder="0"></label>
+          <label>応募開始<input id="arr-cv-start" type="number" min="0" step="1" placeholder="0"></label>
+          <label>応募完了<input id="arr-cv-complete" type="number" min="0" step="1" placeholder="0"></label>
+        </div>
+        <div class="arr-btn-row">
+          <button type="button" class="arr-btn" id="arr-cv-apply-manual">手入力を反映</button>
+          <button type="button" class="arr-btn arr-btn-secondary" id="arr-cv-snippet">計測スニペット表示</button>
+          <button type="button" class="arr-btn arr-btn-secondary" id="arr-cv-clear">クリア</button>
+        </div>
+        <p class="arr-status" id="arr-cv-status" role="status"></p>
+      </div>
+      <div id="arr-cv-results" class="arr-results" hidden></div>
+      <textarea id="arr-cv-snippet-box" class="arr-code" hidden readonly rows="12"></textarea>
+    </section>
+
+
+    <section class="arr-card" aria-labelledby="arr-eg-title">
+      <h2 id="arr-eg-title">根拠グラフ · Evidence Graph（v0）</h2>
+      <p class="arr-note">「引用される」ではなく「参照可能な根拠が N 件」と表示します。AIがどれを選ぶかは保証しません。</p>
+      <div class="arr-form">
+        <label for="arr-eg-claim">主張（例: リモート勤務可能）</label>
+        <input id="arr-eg-claim" type="text" placeholder="リモート勤務可能">
+        <label for="arr-eg-url">根拠URL</label>
+        <input id="arr-eg-url" type="url" placeholder="https://example.com/careers/benefits/">
+        <label for="arr-eg-title-input">根拠タイトル（任意）</label>
+        <input id="arr-eg-title-input" type="text" placeholder="福利厚生ページ">
+        <label for="arr-eg-kind">種別</label>
+        <select id="arr-eg-kind">
+          <option value="official">公式ページ</option>
+          <option value="job_posting">JobPosting / 求人</option>
+          <option value="interview">社員インタビュー</option>
+          <option value="third_party">第三者記事</option>
+        </select>
+        <div class="arr-btn-row">
+          <button type="button" class="arr-btn" id="arr-eg-add">根拠を追加</button>
+        </div>
+        <p class="arr-status" id="arr-eg-status" role="status"></p>
+      </div>
+      <div id="arr-eg-list" class="arr-results"></div>
+    </section>
+
     <section class="arr-card arr-detail" aria-labelledby="arr-detail-title">
       <h2 id="arr-detail-title">詳しく見る</h2>
       <ul class="arr-links">
@@ -139,12 +200,14 @@ robots: "noindex, follow"
         <li><a href="/airreach/studio/#hack2">Studio · HackⅡ実測</a></li>
         <li><a href="/airreach/platform/">Platform · Official ベースライン</a></li>
               </ul>
-      <p class="arr-note">応募CV・Evidence Graph・総合スコアは後続フェーズです。Indexing API と採用AI実測は本ページで利用できます。</p>
+      <p class="arr-note">総合スコアはデータ蓄積後です。Indexing / 採用AI実測 / 応募導線 / Evidence Graph v0 は本ページで利用できます。</p>
     </section>
   </div>
 </main>
 {% include tb-footer.html %}
 <script src="/assets/js/airreach-api.js" defer></script>
+<script src="/assets/js/airreach-application-flow.js" defer></script>
+<script src="/assets/js/airreach-evidence-graph.js" defer></script>
 <script src="/assets/js/airreach-recruit.js" defer></script>
 </body>
 </html>
