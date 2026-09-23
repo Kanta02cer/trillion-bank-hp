@@ -146,6 +146,7 @@ Preferred Sources belong in **AirReach Media**, not Recruit / Search for every S
 6. Application flow (GA4 / ATS) — done (`airreach-application-flow.js`: checklist + CSV/manual funnel; no per-ATS adapters yet)  
 7. Evidence Graph — done (v0 claim→evidence; “参照可能な根拠が N 件”; no citation guarantee)  
 8. Recruitment Visibility Score v0 — done (4 panels + `composite.not_projected`; JSON export). v1 composite only after calibration data
+9. **Real data board** — done (`airreach-recruit-realdata.js`): aggregates Official GSC / Generative AI / Observed HackⅡ / Application funnel already stored in the browser; job-related filter; no invented metrics
 
 ### Job Canonical CSV Adapter
 

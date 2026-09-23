@@ -59,6 +59,21 @@ robots: "noindex, follow"
       </div>
     </section>
 
+
+    <section class="arr-card" aria-labelledby="arr-real-title">
+      <h2 id="arr-real-title">実データボード · Official / Observed</h2>
+      <p class="arr-note">Studio・Platform・本ページで取り込んだ実数を集約表示します。推測値は入れません。0 と未計測は別です。</p>
+      <div class="arr-btn-row" style="margin-bottom:12px">
+        <label class="arr-check"><input type="checkbox" id="arr-real-jobfilter" checked> 求人関連キーワード／ページを優先表示</label>
+        <button type="button" class="arr-btn arr-btn-secondary" id="arr-real-refresh">実データを再読込</button>
+        <label class="arr-file">生成AI CSV<input id="arr-real-genai-csv" type="file" accept=".csv,text/csv,.tsv" hidden></label>
+        <a class="arr-btn arr-btn-secondary" href="/airreach/studio/#google">StudioでGSC取込</a>
+      </div>
+      <p class="arr-status" id="arr-real-status" role="status"></p>
+      <div class="arr-real-grid" id="arr-real-summary"></div>
+      <div class="arr-real-panels" id="arr-real-panels"></div>
+    </section>
+
     <section class="arr-card" aria-labelledby="arr-gaps-title">
       <h2 id="arr-gaps-title">求職者に足りない情報</h2>
       <div class="arr-bars" id="arr-bars" aria-live="polite">
@@ -217,7 +232,7 @@ robots: "noindex, follow"
         <li><a href="/airreach/studio/#hack2">Studio · HackⅡ実測</a></li>
         <li><a href="/airreach/platform/">Platform · Official ベースライン</a></li>
               </ul>
-      <p class="arr-note">Visibility Score v0 は4パネル分離（総合点は not_projected）。v1 総合点は実データ校正後のみ。Indexing / AI実測 / 応募導線 / Evidence / Canonical CSV は本ページで利用できます。</p>
+      <p class="arr-note">実データボードは Studio/Platform/本ページの Official・Observed を集約します。Visibility Score v0 の総合点は not_projected のままです。</p>
     </section>
   </div>
 </main>
@@ -226,6 +241,8 @@ robots: "noindex, follow"
 <script src="/assets/js/airreach-application-flow.js" defer></script>
 <script src="/assets/js/airreach-job-canonical.js" defer></script>
 <script src="/assets/js/airreach-recruit-score.js" defer></script>
+<script src="/assets/js/airreach-recruit-realdata.js" defer></script>
+<script src="/assets/js/airreach-google-ai-csv.js" defer></script>
 <script src="/assets/js/airreach-evidence-graph.js" defer></script>
 <script src="/assets/js/airreach-recruit.js" defer></script>
 </body>

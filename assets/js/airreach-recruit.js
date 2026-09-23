@@ -421,6 +421,7 @@
         '<tr><td>一般</td><td>' + g.n + '</td><td>' + g.mentionPct + '%</td><td>' + g.citationPct + '%</td></tr>' +
         '</tbody></table>';
 
+      renderRealData();
       rebuildVisibilityScore();
       setStatus('arr-ai-status', '実測完了 · ' + rows.length + ' 行（Observed）', 'good');
     } catch (e) {
@@ -546,6 +547,7 @@
     });
     saveFunnel(funnel);
     rebuildVisibilityScore();
+    renderRealData();
     setStatus('arr-cv-status', '手入力を反映しました（Customer supplied）', 'good');
   }
 
@@ -570,6 +572,7 @@
         if (q('arr-cv-complete')) q('arr-cv-complete').value = map.apply_complete || 0;
         saveFunnel(funnel);
         rebuildVisibilityScore();
+        renderRealData();
         setStatus('arr-cv-status', 'CSV取込完了 · ' + funnel.rowCount + '行（Official）', 'good');
       } catch (e) {
         setStatus('arr-cv-status', String(e && e.message ? e.message : e), 'warn');
@@ -701,6 +704,7 @@
     var score = window.AirReachRecruitScore.build(collectScoreInput());
     window.AirReachRecruitScore.save(score);
     applyScoreToMeters(score);
+    renderRealData();
     setStatus('arr-score-status', '再計算完了 · ' + score.scoreVersion + ' · composite=' + score.composite.status, 'good');
     return score;
   }
@@ -770,6 +774,195 @@
   }
 
 
+
+  function badgeClass(ec) {
+    if (!ec) return 'empty';
+    var x = String(ec).toLowerCase();
+    if (x.indexOf('official') >= 0) return 'official';
+    if (x.indexOf('observed') >= 0) return 'observed';
+    if (x.indexOf('customer') >= 0) return 'customer';
+    if (x.indexOf('planned') >= 0) return 'planned';
+    return 'empty';
+  }
+
+  function renderRealData() {
+    if (!window.AirReachRecruitRealData) return;
+    var jobFilter = !(q('arr-real-jobfilter') && !q('arr-real-jobfilter').checked);
+    var data = window.AirReachRecruitRealData.collect({ jobFilter: jobFilter });
+    var fmt = window.AirReachRecruitRealData.fmt;
+    var pct = window.AirReachRecruitRealData.pct;
+
+    var sum = q('arr-real-summary');
+    if (sum) {
+      sum.innerHTML = data.summary.sources.map(function (src) {
+        var badge = src.status === 'measured'
+          ? '<span class="arr-badge ' + badgeClass(src.evidenceClass) + '">' + esc(src.evidenceClass || '実数') + '</span>'
+          : '<span class="arr-badge empty">未計測</span>';
+        var val = src.status === 'measured' ? '取込済' : '未計測';
+        return '<div class="arr-real-chip"><p class="lbl">' + esc(src.name) + badge + '</p><p class="val">' + val + '</p></div>';
+      }).join('');
+    }
+
+    var panels = q('arr-real-panels');
+    if (!panels) return;
+    var html = [];
+
+    // Search
+    html.push('<div class="arr-real-panel"><h3>通常検索 <span class="arr-badge ' +
+      badgeClass(data.search.evidenceClass) + '">' + esc(data.search.evidenceClass || '未計測') + '</span></h3>');
+    if (data.search.status !== 'measured') {
+      html.push('<p class="arr-real-empty">未計測。Studio / Platform で GSC Performance CSV を取り込んでください。</p>');
+    } else {
+      html.push('<p class="arr-note">' + esc(data.search.source) +
+        (data.search.filtered ? ' · 求人関連キーワード優先' : '') +
+        (data.search.jobKeywordCount != null ? (' · 求人関連 ' + data.search.jobKeywordCount + '件') : '') +
+        '</p>');
+      html.push('<div class="arr-real-grid" style="margin:8px 0">' +
+        '<div class="arr-real-chip"><p class="lbl">表示</p><p class="val">' + fmt(data.search.totalImpressions) + '</p></div>' +
+        '<div class="arr-real-chip"><p class="lbl">クリック</p><p class="val">' + fmt(data.search.totalClicks) + '</p></div>' +
+        '<div class="arr-real-chip"><p class="lbl">CTR</p><p class="val">' + pct(data.search.avgCtr) + '</p></div>' +
+        '<div class="arr-real-chip"><p class="lbl">キーワード</p><p class="val">' + fmt(data.search.keywordCount) + '</p></div>' +
+        '</div>');
+      if (data.search.ga4) {
+        html.push('<p class="arr-note">GA4 sessions(月次換算目安) ' + fmt(data.search.ga4.monthlySessions) +
+          ' · Key Events ' + fmt(data.search.ga4.monthlyKeyEvents) + '</p>');
+      }
+      html.push('<table class="arr-check-table"><thead><tr><th>Keyword</th><th>Imp</th><th>Clicks</th><th>CTR</th><th>Pos</th></tr></thead><tbody>' +
+        (data.search.topKeywords || []).map(function (r) {
+          return '<tr><td>' + esc(r.query) + '</td><td>' + fmt(r.impressions) + '</td><td>' + fmt(r.clicks) +
+            '</td><td>' + pct(r.ctr) + '</td><td>' + (r.position ? r.position.toFixed(1) : '—') + '</td></tr>';
+        }).join('') + '</tbody></table>');
+    }
+    html.push('</div>');
+
+    // Gen AI
+    html.push('<div class="arr-real-panel"><h3>生成AI表示 <span class="arr-badge ' +
+      badgeClass(data.generativeAi.evidenceClass) + '">' + esc(data.generativeAi.evidenceClass || '未計測') + '</span></h3>');
+    if (data.generativeAi.status !== 'measured') {
+      html.push('<p class="arr-real-empty">未計測。上の「生成AI CSV」または Studio Google連携から取り込んでください。</p>');
+    } else {
+      html.push('<p class="arr-note">' + esc(data.generativeAi.source) +
+        (data.generativeAi.filtered ? ' · 求人関連ページ優先' : '') +
+        ' · 通常検索とは別指標</p>');
+      html.push('<div class="arr-real-grid" style="margin:8px 0;grid-template-columns:repeat(2,minmax(0,1fr))">' +
+        '<div class="arr-real-chip"><p class="lbl">AI Imp</p><p class="val">' + fmt(data.generativeAi.totalImpressions) + '</p></div>' +
+        '<div class="arr-real-chip"><p class="lbl">ページ</p><p class="val">' + fmt(data.generativeAi.pageCount) + '</p></div>' +
+        '</div>');
+      html.push('<table class="arr-check-table"><thead><tr><th>Page</th><th>Imp</th></tr></thead><tbody>' +
+        (data.generativeAi.topPages || []).map(function (r) {
+          return '<tr><td>' + esc(r.page) + '</td><td>' + fmt(r.impressions) + '</td></tr>';
+        }).join('') + '</tbody></table>');
+    }
+    html.push('</div>');
+
+    // AI observed
+    html.push('<div class="arr-real-panel"><h3>AI検索実測 <span class="arr-badge ' +
+      badgeClass(data.aiObserved.evidenceClass) + '">' + esc(data.aiObserved.evidenceClass || '未計測') + '</span></h3>');
+    if (data.aiObserved.status !== 'measured') {
+      html.push('<p class="arr-real-empty">未計測。下の「採用AI実測」または Studio HackⅡ を実行してください。</p>');
+    } else {
+      var a = data.aiObserved.all || {};
+      html.push('<p class="arr-note">' + esc(data.aiObserved.source) + (data.aiObserved.brand ? (' · ' + esc(data.aiObserved.brand)) : '') + '</p>');
+      html.push('<div class="arr-real-grid" style="margin:8px 0">' +
+        '<div class="arr-real-chip"><p class="lbl">サンプル</p><p class="val">' + fmt(a.n) + '</p></div>' +
+        '<div class="arr-real-chip"><p class="lbl">言及率</p><p class="val">' + esc(String(a.mentionPct)) + '%</p></div>' +
+        '<div class="arr-real-chip"><p class="lbl">引用率</p><p class="val">' + esc(String(a.citationPct)) + '%</p></div>' +
+        '<div class="arr-real-chip"><p class="lbl">区分</p><p class="val">指名/一般</p></div></div>');
+      if (data.aiObserved.branded || data.aiObserved.generic) {
+        html.push('<table class="arr-check-table"><thead><tr><th>区分</th><th>件数</th><th>言及</th><th>引用</th></tr></thead><tbody>');
+        [['指名', data.aiObserved.branded], ['一般', data.aiObserved.generic]].forEach(function (pair) {
+          var x = pair[1] || { n: 0, mentionPct: 0, citationPct: 0 };
+          html.push('<tr><td>' + pair[0] + '</td><td>' + fmt(x.n) + '</td><td>' + esc(String(x.mentionPct)) + '%</td><td>' + esc(String(x.citationPct)) + '%</td></tr>');
+        });
+        html.push('</tbody></table>');
+      }
+    }
+    html.push('</div>');
+
+    // Application
+    html.push('<div class="arr-real-panel"><h3>応募導線 <span class="arr-badge ' +
+      badgeClass(data.application.evidenceClass) + '">' + esc(data.application.evidenceClass || '未計測') + '</span></h3>');
+    if (data.application.status !== 'measured') {
+      html.push('<p class="arr-real-empty">未計測。応募導線セクションで CSV / 手入力を反映してください。</p>');
+    } else {
+      html.push('<p class="arr-note">' + esc(data.application.source) +
+        ' · 閲覧→完了 ' + (data.application.overallCvr == null ? '—' : pct(data.application.overallCvr)) + '</p>');
+      var max = 1;
+      (data.application.stages || []).forEach(function (st) { if (st.count > max) max = st.count; });
+      html.push('<div class="arr-funnel">' + (data.application.stages || []).map(function (st) {
+        var w = Math.round((st.count / max) * 100);
+        return '<div class="arr-funnel-row"><span>' + esc(st.label) + '</span><div class="track"><div class="fill" style="width:' + w + '%"></div></div><span class="score">' + fmt(st.count) + '</span></div>';
+      }).join('') + '</div>');
+    }
+    html.push('</div>');
+
+    // Inventory
+    var inv = data.inventory || {};
+    html.push('<div class="arr-real-panel"><h3>求人インベントリ</h3>');
+    html.push('<div class="arr-real-grid" style="margin:8px 0">' +
+      '<div class="arr-real-chip"><p class="lbl">Canonical求人</p><p class="val">' + fmt(inv.jobCount) + '</p></div>' +
+      '<div class="arr-real-chip"><p class="lbl">Indexing通知</p><p class="val">' + fmt(inv.indexingEvents) + '</p></div>' +
+      '<div class="arr-real-chip"><p class="lbl">根拠クレーム</p><p class="val">' + fmt(inv.evidenceClaims) + '</p></div>' +
+      '<div class="arr-real-chip"><p class="lbl">根拠URL</p><p class="val">' + fmt(inv.evidenceItems) + '</p></div></div>');
+    html.push('</div>');
+
+    panels.innerHTML = html.join('');
+    setStatus('arr-real-status',
+      '実データ再読込 · 計測ソース ' + data.summary.measuredSources + '/' + data.summary.totalSources +
+      (jobFilter ? ' · 求人優先フィルタON' : ' · 全件表示'),
+      data.summary.measuredSources ? 'good' : 'warn'
+    );
+
+    // feed score supporting
+    try {
+      if (window.AirReachRecruitScore) {
+        var score = window.AirReachRecruitScore.load() || window.AirReachRecruitScore.build({});
+        score.supporting = score.supporting || {};
+        score.supporting.realData = {
+          measuredSources: data.summary.measuredSources,
+          search: data.search.status === 'measured' ? {
+            evidenceClass: 'Official',
+            impressions: data.search.totalImpressions,
+            clicks: data.search.totalClicks
+          } : null,
+          generativeAi: data.generativeAi.status === 'measured' ? {
+            evidenceClass: 'Official',
+            impressions: data.generativeAi.totalImpressions
+          } : null,
+          application: data.application.status === 'measured' ? {
+            evidenceClass: data.application.evidenceClass,
+            overallCvr: data.application.overallCvr
+          } : null
+        };
+        window.AirReachRecruitScore.save(score);
+      }
+    } catch (e) {}
+
+    return data;
+  }
+
+  function onRealGenAiCsv(file) {
+    if (!window.AirReachGoogleAiCsv) {
+      setStatus('arr-real-status', '生成AI CSVヘルパー未読込', 'warn');
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var data = window.AirReachGoogleAiCsv.fromCsvText(reader.result, 28);
+        if (!data.rowCount) throw new Error('生成AIの行が見つかりません');
+        localStorage.setItem('airreach_generative_ai_v1', JSON.stringify(data));
+        renderRealData();
+        rebuildVisibilityScore();
+        setStatus('arr-real-status', '生成AI Official取込完了 · Imp ' + window.AirReachRecruitRealData.fmt(data.totalImpressions), 'good');
+      } catch (e) {
+        setStatus('arr-real-status', String(e && e.message ? e.message : e), 'warn');
+      }
+    };
+    reader.readAsText(file, 'utf-8');
+  }
+
+
   document.addEventListener('DOMContentLoaded', function () {
     if (q('arr-run')) q('arr-run').addEventListener('click', runValidate);
     if (q('arr-index-dry')) q('arr-index-dry').addEventListener('click', function () { runIndexing({ dryRun: true }); });
@@ -807,8 +1000,17 @@
     restoreCvUi();
     if (q('arr-eg-add')) q('arr-eg-add').addEventListener('click', addEvidence);
     renderEvidence();
+    if (q('arr-real-refresh')) q('arr-real-refresh').addEventListener('click', renderRealData);
+    if (q('arr-real-jobfilter')) q('arr-real-jobfilter').addEventListener('change', renderRealData);
+    if (q('arr-real-genai-csv')) {
+      q('arr-real-genai-csv').addEventListener('change', function () {
+        var f = q('arr-real-genai-csv').files && q('arr-real-genai-csv').files[0];
+        if (f) onRealGenAiCsv(f);
+      });
+    }
     renderJobs();
     rebuildVisibilityScore();
+    renderRealData();
     refreshIndexConfig();
   });
 })();
