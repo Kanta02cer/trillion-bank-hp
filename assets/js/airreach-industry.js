@@ -148,6 +148,22 @@
   INDUSTRIES.saas = Object.assign({}, INDUSTRIES.b2b, { id: 'saas', label: 'SaaS' });
   INDUSTRIES.ecommerce = Object.assign({}, INDUSTRIES.other, { id: 'ecommerce', label: 'EC', primary_conversion: 'purchase', display_label: '購入', outcome_label: '購入', impact_current_label: 'いまの購入' });
   INDUSTRIES.hr = Object.assign({}, INDUSTRIES.b2b, { id: 'hr', label: '人材', display_label: '応募・問い合わせ', outcome_label: '応募・問い合わせ' });
+  INDUSTRIES.recruit = Object.assign({}, INDUSTRIES.b2b, {
+    id: 'recruit',
+    label: '採用・求人',
+    primary_conversion: 'application',
+    display_label: '応募',
+    display_label_plural: '応募',
+    outcome_label: '応募',
+    impact_current_label: 'いまの応募',
+    hero_generic: 'この職種を探している人に、求人がどれくらい見つかる？',
+    hero_branded: '会社名で調べられたとき、採用情報はどう見えている？',
+    actions: [
+      { slot: 'NOW', title: '求人詳細の JobPosting を整える', action: '1求人=1ページで職種名・勤務地・応募方法を本文と一致させる（掲載は保証しない）', cta: '検証する' },
+      { slot: '2W', title: '会社理解の材料を増やす', action: '働き方・福利厚生・社員紹介など AI が参照できる公式根拠を増やす', cta: '作成する' },
+      { slot: 'PARTNER', title: 'HackⅡ Teamsに相談する', action: '求人発見から応募までの計測と改善を伴走する', cta: '相談する' }
+    ]
+  });
   INDUSTRIES.realestate = Object.assign({}, INDUSTRIES.other, { id: 'realestate', label: '不動産', display_label: '内見・問い合わせ', outcome_label: '内見・問い合わせ', impact_current_label: 'いまの内見・問い合わせ' });
 
   function scoreText(blob, patterns) {
@@ -179,6 +195,7 @@
       restaurant: 0,
       clinic: 0,
       media: 0,
+      recruit: 0,
       b2b: 0,
       saas: 0,
       ecommerce: 0,

@@ -74,7 +74,7 @@ Must visibly label every metric as one of:
 - URL Inspection: indexing verdict, canonical, crawl, robots, page fetch, rich result details
 - PageSpeed Insights: performance/SEO/accessibility/best-practices and lab/field UX metrics
 
-Google Generative AI reporting must remain a separate source until the Search Console API exposes a documented dedicated endpoint/dimension for it.
+Google Generative AI reporting (Search Console Generative AI performance; worldwide as of 2026-08-31) is an **Official** source via **CSV/Excel import first**. Keep it separate from classic Search metrics and from HackⅡ Observed runs. Do not invent a Generative AI API; automate only after Google documents a public API. Search generative AI control is a confirmed/unconfirmed checklist item only — never auto-toggled. Vertical modules share AirReach Core; see `docs/airreach-vertical-os.md`. Recruit must not reuse site readiness scores as AI selection probability.
 
 ### 5. Keyword / Decision Query registry
 Each item:

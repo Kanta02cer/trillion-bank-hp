@@ -1,0 +1,100 @@
+---
+title: "AirReach Recruit｜求人ページの採用検索OS - Trillion Bank"
+tbdesc: "求人詳細ページと JobPosting を整え、Google求人検索・Google AI・その他AIでの発見から応募までを計測・改善するための採用検索OS。掲載・順位・引用は保証しません。"
+keywords: "AirReach Recruit,求人,JobPosting,Google求人検索,採用,AI検索"
+ai_summary: "AirReach Recruitは求人ページをGoogle求人検索・AIに理解されやすい状態へ整え、発見から応募までを計測する。掲載保証ではない。"
+robots: "noindex, follow"
+---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta name="tb-api-base" content="https://trillion-bank-hp.vercel.app">
+<meta charset="UTF-8">
+{% include tb-head.html %}
+<link rel="stylesheet" href="/assets/css/airreach-system.css">
+<link rel="stylesheet" href="/assets/css/airreach-studio.css">
+<link rel="stylesheet" href="/assets/css/airreach-recruit.css">
+</head>
+<body class="arr-page">
+{% include tb-header.html %}
+<main id="main">
+  <section class="arr-hero">
+    <div class="arr-wrap">
+      <p class="arr-kicker">AirReach Recruit</p>
+      <h1>求人ページを、見つかって応募される状態へ</h1>
+      <p class="arr-lead">Google求人検索・Google AI・ChatGPT等に正しく理解されやすい状態へ整え、求人発見→会社理解→応募までを計測・改善します。掲載・順位・AI引用は保証しません。</p>
+    </div>
+  </section>
+
+  <div class="arr-wrap arr-easy">
+    <section class="arr-card" aria-labelledby="arr-status-title">
+      <h2 id="arr-status-title">採用検索の準備状況</h2>
+      <p class="arr-note">総合スコアはまだ作りません。評価対象が違う指標を混ぜません。</p>
+      <div class="arr-meters" id="arr-meters">
+        <article class="arr-meter" data-panel="job">
+          <h3>Google求人掲載準備度</h3>
+          <p class="arr-meter-val" id="arr-job-ready">未計測</p>
+          <p class="arr-meter-hint">JobPosting / リモート項目 / ポリシーチェック</p>
+        </article>
+        <article class="arr-meter" data-panel="info">
+          <h3>採用情報充足度</h3>
+          <p class="arr-meter-val" id="arr-info-ready">未計測</p>
+          <p class="arr-meter-hint">給与・勤務地・仕事内容・働き方・応募・AI参照材料</p>
+        </article>
+        <article class="arr-meter" data-panel="ai">
+          <h3>AI検索実測</h3>
+          <p class="arr-meter-val">未計測</p>
+          <p class="arr-meter-hint">HackⅡ Observed（別途実行）</p>
+        </article>
+        <article class="arr-meter" data-panel="cv">
+          <h3>応募導線</h3>
+          <p class="arr-meter-val">未計測</p>
+          <p class="arr-meter-hint">閲覧→応募開始→完了（GA4/ATS・今後）</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="arr-card" aria-labelledby="arr-gaps-title">
+      <h2 id="arr-gaps-title">求職者に足りない情報</h2>
+      <div class="arr-bars" id="arr-bars" aria-live="polite">
+        <p class="arr-note">JobPosting を検証すると、低い項目順に表示します。</p>
+      </div>
+    </section>
+
+    <section class="arr-card" aria-labelledby="arr-next-title">
+      <h2 id="arr-next-title">まずやること</h2>
+      <p class="arr-next" id="arr-next">求人詳細ページの JSON-LD（JobPosting）を貼り付けて検証してください。</p>
+    </section>
+
+    <section class="arr-card" aria-labelledby="arr-validate-title">
+      <h2 id="arr-validate-title">JobPosting 検証（v0）</h2>
+      <p class="arr-note">1求人＝1詳細ページ。一覧ページに複数 JobPosting を置かないこと。給与・勤務地は推測しません。</p>
+      <div class="arr-form">
+        <label for="arr-url">求人詳細URL（任意・記録用）</label>
+        <input id="arr-url" type="url" placeholder="https://example.com/careers/sales-tokyo/" autocomplete="url">
+        <label for="arr-jsonld">JobPosting JSON-LD</label>
+        <textarea id="arr-jsonld" rows="14" placeholder='{"@context":"https://schema.org","@type":"JobPosting","title":"営業職",...}'></textarea>
+        <label class="arr-check"><input id="arr-remote-hint" type="checkbox"> ページ本文にフルリモート / 在宅と書いてある</label>
+        <label class="arr-check"><input id="arr-salary-estimate" type="checkbox"> 給与は推定・相場である（Schemaに入れてはいけない）</label>
+        <button type="button" class="arr-btn" id="arr-run">検証する</button>
+        <p class="arr-status" id="arr-status" role="status"></p>
+      </div>
+      <div id="arr-results" class="arr-results" hidden></div>
+    </section>
+
+    <section class="arr-card arr-detail" aria-labelledby="arr-detail-title">
+      <h2 id="arr-detail-title">詳しく見る</h2>
+      <ul class="arr-links">
+        <li><a href="/airreach/studio/#google">Studio · Google通常検索 / 生成AI CSV</a></li>
+        <li><a href="/airreach/studio/#hack2">Studio · HackⅡ実測</a></li>
+        <li><a href="/airreach/platform/">Platform · Official ベースライン</a></li>
+              </ul>
+      <p class="arr-note">Indexing API・応募CV・Evidence Graph・総合スコアは後続フェーズです。</p>
+    </section>
+  </div>
+</main>
+{% include tb-footer.html %}
+<script src="/assets/js/airreach-api.js" defer></script>
+<script src="/assets/js/airreach-recruit.js" defer></script>
+</body>
+</html>

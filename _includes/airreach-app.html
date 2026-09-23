@@ -544,6 +544,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         <button type="button" data-industry="clinic"><div class="t">美容・クリニック</div></button>
         <button type="button" data-industry="b2b"><div class="t">会社向けサービス</div></button>
         <button type="button" data-industry="media"><div class="t">メディア・広報</div></button>
+        <button type="button" data-industry="recruit"><div class="t">採用・求人</div></button>
         <button type="button" data-industry="other"><div class="t">その他</div></button>
       </div>
       <div class="ar-gate-actions">
@@ -813,7 +814,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function industryLabel(id) {
-    var map = { restaurant: '飲食店', clinic: '美容・クリニック', b2b: '会社向けサービス', media: 'メディア・広報', other: 'その他' };
+    var map = { restaurant: '飲食店', clinic: '美容・クリニック', b2b: '会社向けサービス', media: 'メディア・広報', recruit: '採用・求人', other: 'その他' };
     return map[id] || id || '—';
   }
 
@@ -979,7 +980,7 @@ document.addEventListener('DOMContentLoaded', function () {
     $('ar-proxy-consent').checked = !!survey.proxyConsent;
     lastUrl = survey.url || '';
 
-    var labels = { restaurant: '飲食店', clinic: '美容・クリニック', b2b: '会社向けサービス', media: 'メディア・広報', other: 'その他' };
+    var labels = { restaurant: '飲食店', clinic: '美容・クリニック', b2b: '会社向けサービス', media: 'メディア・広報', recruit: '採用・求人', other: 'その他' };
     $('sum-industry').textContent = labels[industryId] || industryId;
     $('sum-url').textContent = survey.url || '—';
     $('sum-goal').textContent = OUTCOME_LABELS[survey.outcomeGoal] || (survey.goal === 'visibility' ? '認知を広げたい' : '新しいお客さん向け');
