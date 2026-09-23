@@ -1,6 +1,6 @@
 # AirReach Vertical OS
 
-Status: Recruit through Application Flow + Evidence Graph v0  
+Status: Recruit Visibility Score v0 + Canonical Job CSV  
 Last updated: 2026-09-23  
 Related: `docs/airreach-final-spec.md`, `docs/airreach-product-spec.md`
 
@@ -16,7 +16,7 @@ Vertical modules sit on one **AirReach Core**. They are not separate products.
 |--------|---------|---------------|
 | AirReach Search | SEO / AIO / GEO / LLMO readiness | Current product surface |
 | AirReach Local | Store / MEO / regional AI search | Industry packs (restaurant/clinic) |
-| AirReach Recruit | Jobs / hiring / Google Job search / recruitment AI | Validator + Indexing + AI prompts + Application Flow |
+| AirReach Recruit | Jobs / hiring / Google Job search / recruitment AI | Full vertical scaffold through Visibility Score v0 |
 | AirReach Media | News / third-party articles / AI citation readiness | Industry pack |
 | AirReach Commerce | Product / EC / AI Shopping | Planned |
 | AirReach B2B | Service comparison / inquiry | Industry pack |
@@ -74,16 +74,19 @@ Search generative AI control (GSC site setting) is a **checklist item** (confirm
 2. **Recruitment AI Visibility** — employer/job questions in ChatGPT / Gemini / etc. (HackⅡ Observed)  
 3. **Application Conversion** — view → apply CTA → start → complete (GA4 / ATS)
 
-### Initial score panels (no single composite in v0)
+### Recruitment Visibility Score
+
+| Version | Behavior |
+|---------|----------|
+| **v0** (`recruitment-visibility-v0`) | Container of 4 separate panels. `composite.status = not_projected`. Never show a single blended “求人AIO点”. |
+| **v1** (future) | Optional calibrated composite only after enough Official/Observed data and an explicit new `scoreVersion`. |
 
 | Panel | Meaning |
 |-------|---------|
 | Google求人掲載準備度 | JobPosting / remote fields / policy checks |
 | 採用情報充足度 | salary, location, role, work style, apply path, AI-usable employer info |
-| AI検索実測 | HackⅡ Observed (not_measured until run) |
-| 応募導線 | Application flow instrumentation |
-
-A future `Recruitment Visibility Score v1` is allowed only after enough real data and an explicit `scoreVersion`.
+| AI検索実測 | HackⅡ Observed (`not_measured` until run; never treat 0 as not_measured) |
+| 応募導線 | Instrumentation checklist + funnel CVR (meanings stay separate) |
 
 ### Job lifecycle (target pipeline)
 
@@ -111,7 +114,7 @@ application_url, direct_apply, source, source_updated_at
 Adapters: API / Webhook / CSV / XML|JSON feed / Website crawler.  
 Do not start with per-ATS custom integrations.
 
-### Evidence Graph (later)
+### Evidence Graph
 
 `employer_claim` → `employer_evidence[]` (official pages, JobPosting snapshot, interviews, third-party articles).  
 UI language: “参照可能な根拠が N 件” — never “引用される”.
@@ -142,7 +145,18 @@ Preferred Sources belong in **AirReach Media**, not Recruit / Search for every S
 5. HackⅡ recruitment prompts (branded vs generic) — done (Recruit page; Jev default; Studio for live LLMs)  
 6. Application flow (GA4 / ATS) — done (`airreach-application-flow.js`: checklist + CSV/manual funnel; no per-ATS adapters yet)  
 7. Evidence Graph — done (v0 claim→evidence; “参照可能な根拠が N 件”; no citation guarantee)  
-8. Recruitment Visibility Score only after data
+8. Recruitment Visibility Score v0 — done (4 panels + `composite.not_projected`; JSON export). v1 composite only after calibration data
+
+### Job Canonical CSV Adapter
+
+```text
+CSV / XML|JSON feed / Website crawler / API / Webhook
+  → Job Canonical Model
+  → JobPosting draft (no invented salary)
+  → Validator
+```
+
+Implemented: CSV Adapter → Canonical Model → “検証用に読込”. Per-ATS adapters stay deferred.
 
 ### Application Flow events (canonical)
 

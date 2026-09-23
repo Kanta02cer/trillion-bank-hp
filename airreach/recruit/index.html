@@ -29,7 +29,12 @@ robots: "noindex, follow"
   <div class="arr-wrap arr-easy">
     <section class="arr-card" aria-labelledby="arr-status-title">
       <h2 id="arr-status-title">採用検索の準備状況</h2>
-      <p class="arr-note">総合スコアはまだ作りません。評価対象が違う指標を混ぜません。</p>
+      <p class="arr-note" id="arr-score-banner">Recruitment Visibility Score <code>v0</code> — 4パネル分離。総合点は <strong>not_projected</strong>（まだ算出しません）。</p>
+      <div class="arr-btn-row" style="margin-bottom:12px">
+        <button type="button" class="arr-btn arr-btn-secondary" id="arr-score-refresh">スコアを再計算</button>
+        <button type="button" class="arr-btn arr-btn-secondary" id="arr-score-export">スコアJSONを書き出す</button>
+      </div>
+      <p class="arr-status" id="arr-score-status" role="status"></p>
       <div class="arr-meters" id="arr-meters">
         <article class="arr-meter" data-panel="job">
           <h3>Google求人掲載準備度</h3>
@@ -64,6 +69,18 @@ robots: "noindex, follow"
     <section class="arr-card" aria-labelledby="arr-next-title">
       <h2 id="arr-next-title">まずやること</h2>
       <p class="arr-next" id="arr-next">求人詳細ページの JSON-LD（JobPosting）を貼り付けて検証してください。</p>
+    </section>
+
+
+    <section class="arr-card" aria-labelledby="arr-jobs-title">
+      <h2 id="arr-jobs-title">求人ソース · Job Canonical Model</h2>
+      <p class="arr-note">ATS個別連携の前に、共通 Canonical Model へCSV変換します。給与は Schema へ自動投入しません。</p>
+      <div class="arr-form">
+        <div>求人CSV <label class="arr-file"><input id="arr-jobs-csv" type="file" accept=".csv,text/csv,.tsv" hidden>CSVを選択</label></div>
+        <p class="arr-note">列例: <code>job_id,title,description,location,employment_type,application_url,remote_policy,date_posted</code></p>
+        <p class="arr-status" id="arr-jobs-status" role="status"></p>
+      </div>
+      <div class="ars-table-wrap"><table class="arr-check-table"><thead><tr><th>job_id</th><th>title</th><th>location</th><th>URL</th><th></th></tr></thead><tbody id="arr-jobs-body"><tr><td colspan="5">まだありません</td></tr></tbody></table></div>
     </section>
 
     <section class="arr-card" aria-labelledby="arr-validate-title">
@@ -200,13 +217,15 @@ robots: "noindex, follow"
         <li><a href="/airreach/studio/#hack2">Studio · HackⅡ実測</a></li>
         <li><a href="/airreach/platform/">Platform · Official ベースライン</a></li>
               </ul>
-      <p class="arr-note">総合スコアはデータ蓄積後です。Indexing / 採用AI実測 / 応募導線 / Evidence Graph v0 は本ページで利用できます。</p>
+      <p class="arr-note">Visibility Score v0 は4パネル分離（総合点は not_projected）。v1 総合点は実データ校正後のみ。Indexing / AI実測 / 応募導線 / Evidence / Canonical CSV は本ページで利用できます。</p>
     </section>
   </div>
 </main>
 {% include tb-footer.html %}
 <script src="/assets/js/airreach-api.js" defer></script>
 <script src="/assets/js/airreach-application-flow.js" defer></script>
+<script src="/assets/js/airreach-job-canonical.js" defer></script>
+<script src="/assets/js/airreach-recruit-score.js" defer></script>
 <script src="/assets/js/airreach-evidence-graph.js" defer></script>
 <script src="/assets/js/airreach-recruit.js" defer></script>
 </body>

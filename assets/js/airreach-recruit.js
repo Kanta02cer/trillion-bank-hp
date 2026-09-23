@@ -12,6 +12,8 @@
 
   var INDEX_KEY = 'airreach_recruit_indexing_events_v1';
   var AI_KEY = 'airreach_recruit_ai_runs_v1';
+  var VALIDATION_KEY = 'airreach_recruit_last_validation_v1';
+  var INFO_KEY = 'airreach_recruit_info_scores_v1';
 
   var LIFECYCLE_TYPE = {
     published: 'URL_UPDATED',
@@ -174,6 +176,11 @@
         })
       });
       renderResults(data);
+      saveJson(VALIDATION_KEY, data);
+      var infoScores = {};
+      INFO_KEYS.forEach(function (k) { infoScores[k.id] = checkScore(data.checks || [], k.from); });
+      saveJson(INFO_KEY, infoScores);
+      rebuildVisibilityScore();
       setStatus('arr-status', '検証完了（Observed · jobposting-readiness-v0）', 'good');
     } catch (e) {
       setStatus('arr-status', String(e && e.message ? e.message : e), 'warn');
@@ -414,6 +421,7 @@
         '<tr><td>一般</td><td>' + g.n + '</td><td>' + g.mentionPct + '%</td><td>' + g.citationPct + '%</td></tr>' +
         '</tbody></table>';
 
+      rebuildVisibilityScore();
       setStatus('arr-ai-status', '実測完了 · ' + rows.length + ' 行（Observed）', 'good');
     } catch (e) {
       setStatus('arr-ai-status', String(e && e.message ? e.message : e), 'warn');
@@ -517,6 +525,7 @@
     var flags = readFlagsFromUi();
     saveJson(CV_FLAGS_KEY, flags);
     updateCvMeter();
+    rebuildVisibilityScore();
     setStatus('arr-cv-status', '計測チェックを保存しました（Planned）', 'good');
   }
 
@@ -536,6 +545,7 @@
       source: 'Manual entry'
     });
     saveFunnel(funnel);
+    rebuildVisibilityScore();
     setStatus('arr-cv-status', '手入力を反映しました（Customer supplied）', 'good');
   }
 
@@ -559,6 +569,7 @@
         if (q('arr-cv-start')) q('arr-cv-start').value = map.apply_start || 0;
         if (q('arr-cv-complete')) q('arr-cv-complete').value = map.apply_complete || 0;
         saveFunnel(funnel);
+        rebuildVisibilityScore();
         setStatus('arr-cv-status', 'CSV取込完了 · ' + funnel.rowCount + '行（Official）', 'good');
       } catch (e) {
         setStatus('arr-cv-status', String(e && e.message ? e.message : e), 'warn');
@@ -639,7 +650,123 @@
     if (q('arr-eg-url')) q('arr-eg-url').value = '';
     if (q('arr-eg-title-input')) q('arr-eg-title-input').value = '';
     renderEvidence();
+    rebuildVisibilityScore();
     setStatus('arr-eg-status', '根拠を追加しました（引用保証ではありません）', 'good');
+  }
+
+
+
+  function collectScoreInput() {
+    var validation = loadJson(VALIDATION_KEY, null);
+    var infoScores = loadJson(INFO_KEY, null);
+    var aiRuns = loadJson(AI_KEY, []);
+    var cv = {
+      flags: loadJson('airreach_recruit_cv_flags_v1', {}),
+      funnel: loadJson('airreach_recruit_application_flow_v1', null)
+    };
+    var claims = (window.AirReachEvidenceGraph && window.AirReachEvidenceGraph.load()) || [];
+    var evidenceCount = claims.reduce(function (n, c) { return n + ((c.evidence || []).length); }, 0);
+    var events = loadJson(INDEX_KEY, []);
+    return {
+      jobValidation: validation,
+      infoScores: infoScores,
+      aiRun: aiRuns[0] || null,
+      application: cv,
+      evidence: { claimCount: claims.length, evidenceCount: evidenceCount },
+      indexing: {
+        eventCount: events.length,
+        lastAt: (events[0] && events[0].at) || null,
+        lastType: (events[0] && events[0].type) || null
+      }
+    };
+  }
+
+  function applyScoreToMeters(score) {
+    if (!score || !score.panels) return;
+    var p = score.panels;
+    if (q('arr-job-ready') && p.jobPostingReadiness) q('arr-job-ready').textContent = p.jobPostingReadiness.display;
+    if (q('arr-info-ready') && p.infoSufficiency) q('arr-info-ready').textContent = p.infoSufficiency.display;
+    if (q('arr-ai-ready') && p.aiObserved) q('arr-ai-ready').textContent = p.aiObserved.display;
+    if (q('arr-cv-ready') && p.applicationFlow) q('arr-cv-ready').textContent = p.applicationFlow.display;
+    if (q('arr-score-banner') && score.composite) {
+      q('arr-score-banner').innerHTML =
+        'Recruitment Visibility Score <code>' + esc(score.scoreVersion) + '</code> — 計測パネル ' +
+        esc(String(score.meta.measuredPanels)) + '/' + esc(String(score.meta.totalPanels)) +
+        ' · 総合点 <strong>' + esc(score.composite.status) + '</strong>（' + esc(score.composite.message) + '）';
+    }
+  }
+
+  function rebuildVisibilityScore() {
+    if (!window.AirReachRecruitScore) return null;
+    var score = window.AirReachRecruitScore.build(collectScoreInput());
+    window.AirReachRecruitScore.save(score);
+    applyScoreToMeters(score);
+    setStatus('arr-score-status', '再計算完了 · ' + score.scoreVersion + ' · composite=' + score.composite.status, 'good');
+    return score;
+  }
+
+  function exportVisibilityScore() {
+    if (!window.AirReachRecruitScore) return;
+    var score = rebuildVisibilityScore() || window.AirReachRecruitScore.load();
+    var blob = new Blob([window.AirReachRecruitScore.toExportJson(score)], { type: 'application/json;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'recruitment-visibility-score-v0.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 300);
+    setStatus('arr-score-status', 'JSONを書き出しました', 'good');
+  }
+
+  function renderJobs() {
+    var body = q('arr-jobs-body');
+    if (!body || !window.AirReachJobCanonical) return;
+    var jobs = window.AirReachJobCanonical.load();
+    if (!jobs.length) {
+      body.innerHTML = '<tr><td colspan="5">まだありません</td></tr>';
+      return;
+    }
+    body.innerHTML = jobs.slice(0, 50).map(function (j) {
+      return '<tr><td>' + esc(j.job_id) + '</td><td>' + esc(j.title || '') + '</td><td>' +
+        esc((j.locations || []).join(', ')) + '</td><td>' + esc(j.application_url || '') +
+        '</td><td><button type="button" class="arr-btn arr-btn-secondary" data-job-draft="' +
+        esc(j.job_id) + '">検証用に読込</button></td></tr>';
+    }).join('');
+    body.querySelectorAll('[data-job-draft]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-job-draft');
+        var job = window.AirReachJobCanonical.load().find(function (x) { return x.job_id === id; });
+        if (!job) return;
+        var draft = window.AirReachJobCanonical.toJobPostingDraft(job);
+        if (q('arr-jsonld')) q('arr-jsonld').value = JSON.stringify(draft, null, 2);
+        if (q('arr-url') && job.application_url) q('arr-url').value = job.application_url;
+        if (q('arr-index-url') && job.application_url) q('arr-index-url').value = job.application_url;
+        if (/telecommute|remote|リモート|在宅/i.test(String(job.remote_policy || '')) && q('arr-remote-hint')) {
+          q('arr-remote-hint').checked = true;
+        }
+        setStatus('arr-jobs-status', 'JobPosting下書きを読み込みました（給与は自動投入していません）', 'good');
+      });
+    });
+  }
+
+  function onJobsCsv(file) {
+    if (!window.AirReachJobCanonical) {
+      setStatus('arr-jobs-status', 'Canonical モジュール未読込', 'warn');
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var result = window.AirReachJobCanonical.fromCsvText(reader.result, 'csv');
+        if (!result.count) throw new Error('求人行が見つかりません');
+        window.AirReachJobCanonical.mergeImport(result);
+        renderJobs();
+        setStatus('arr-jobs-status', '取込 ' + result.count + ' 件（Job Canonical Model）', 'good');
+      } catch (e) {
+        setStatus('arr-jobs-status', String(e && e.message ? e.message : e), 'warn');
+      }
+    };
+    reader.readAsText(file, 'utf-8');
   }
 
 
@@ -667,11 +794,21 @@
         if (f) onCvCsv(f);
       });
     }
+    if (q('arr-score-refresh')) q('arr-score-refresh').addEventListener('click', rebuildVisibilityScore);
+    if (q('arr-score-export')) q('arr-score-export').addEventListener('click', exportVisibilityScore);
+    if (q('arr-jobs-csv')) {
+      q('arr-jobs-csv').addEventListener('change', function () {
+        var f = q('arr-jobs-csv').files && q('arr-jobs-csv').files[0];
+        if (f) onJobsCsv(f);
+      });
+    }
     renderIndexHistory();
     restoreAiMeter();
     restoreCvUi();
     if (q('arr-eg-add')) q('arr-eg-add').addEventListener('click', addEvidence);
     renderEvidence();
+    renderJobs();
+    rebuildVisibilityScore();
     refreshIndexConfig();
   });
 })();
