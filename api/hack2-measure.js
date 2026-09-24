@@ -6,7 +6,7 @@
  */
 const TYPESAFE_URL = 'https://api.typesafe.ai/v1/systemone';
 const MAX_CHARS = 10000;
-const MAX_PROMPTS = 8;
+const MAX_PROMPTS = 16;
 
 const ALLOWED_HOSTS = new Set([
   'trillion-bank.jp',
@@ -49,7 +49,11 @@ export default async function handler(req, res) {
   const brand = String(body.brand || '').trim();
   if (!brand) return json(res, 400, { error: 'brand is required' });
 
-  const prompts = normalizePrompts(body.prompts);
+  const mediaUrlGlobal = String(body.mediaUrl || '').trim() || null;
+  const prompts = normalizePrompts(body.prompts).map(function (p) {
+    if (!p.mediaUrl && mediaUrlGlobal) p.mediaUrl = mediaUrlGlobal;
+    return p;
+  });
   if (!prompts.length) {
     return json(res, 400, { error: 'prompts[] with prompt text is required (max ' + MAX_PROMPTS + ')' });
   }
@@ -136,18 +140,100 @@ export default async function handler(req, res) {
     }
   });
 
+  const perKeyword = summarizePerKeyword(rows, prompts);
   return json(res, 200, {
     ok: rows.length > 0,
     brand,
     url: pageUrl,
+    mediaUrl: mediaUrlGlobal,
     engines,
     engineStatus,
     judgments,
     model: engines.indexOf('jev') >= 0 ? 'jev-latest' : (engines[0] || null),
     rows,
+    perKeyword,
+    scoreVersion: 'keyword-aio-analysis-v1',
     note:
-      'Jev results are Estimated proxy judgments from page text + prompt, not live AI-search captures. Provider engines require their API keys on Vercel.',
+      'Jev results are Estimated proxy judgments from page text + prompt, not live AI-search captures. Provider engines require their API keys on Vercel. Mention/citation rates are not ranking or inclusion guarantees.',
     fetchNote: fetchNote
+  });
+}
+
+function summarizePerKeyword(rows, prompts) {
+  const by = {};
+  (prompts || []).forEach((p) => {
+    const key = p.prompt;
+    by[key] = {
+      keyword: p.keyword || p.prompt,
+      prompt: p.prompt,
+      intent: p.intent || 'generic',
+      entityType: p.entityType || null,
+      mediaUrl: p.mediaUrl || null,
+      runs: 0,
+      mentionSum: 0,
+      citationSum: 0,
+      mediaCitationSum: 0,
+      mediaRuns: 0,
+      engines: []
+    };
+  });
+  (rows || []).forEach((r) => {
+    const key = r.prompt || r.keyword;
+    if (!by[key]) {
+      by[key] = {
+        keyword: r.keyword || r.prompt,
+        prompt: r.prompt || r.keyword,
+        intent: r.intent || 'generic',
+        entityType: r.entityType || null,
+        mediaUrl: r.mediaUrl || null,
+        runs: 0,
+        mentionSum: 0,
+        citationSum: 0,
+        mediaCitationSum: 0,
+        mediaRuns: 0,
+        engines: []
+      };
+    }
+    const b = by[key];
+    b.runs += 1;
+    b.mentionSum += Number(r.mentioned) || 0;
+    b.citationSum += Number(r.cited) || 0;
+    if (r.mediaCited != null) {
+      b.mediaRuns += 1;
+      b.mediaCitationSum += Number(r.mediaCited) || 0;
+    }
+    if (r.engine && b.engines.indexOf(r.engine) === -1) b.engines.push(r.engine);
+  });
+  return Object.keys(by).map((k) => {
+    const b = by[k];
+    const mentionRate = b.runs ? b.mentionSum / b.runs : null;
+    const citationRate = b.runs ? b.citationSum / b.runs : null;
+    const mediaCitationRate = b.mediaRuns ? b.mediaCitationSum / b.mediaRuns : null;
+    // Visibility score 0-100 for this keyword only — not a blended site score
+    let score = null;
+    if (b.runs) {
+      score = Math.round(
+        mentionRate * 50 +
+        citationRate * 30 +
+        (mediaCitationRate == null ? 0 : mediaCitationRate * 20)
+      );
+    }
+    return {
+      keyword: b.keyword,
+      prompt: b.prompt,
+      intent: b.intent,
+      entityType: b.entityType,
+      mediaUrl: b.mediaUrl,
+      runs: b.runs,
+      engines: b.engines,
+      mentionRate,
+      citationRate,
+      mediaCitationRate,
+      keywordScore: score,
+      status: b.runs ? 'measured' : 'not_measured',
+      evidenceClass: b.engines.indexOf('Jev') >= 0 && b.engines.length === 1 ? 'Estimated' : 'Observed',
+      note: 'keywordScore is a local 0-100 mix of mention/citation/(optional media). Not AI selection probability.'
+    };
   });
 }
 
@@ -155,10 +241,14 @@ function normalizePrompts(raw) {
   if (!Array.isArray(raw)) return [];
   return raw
     .map((p) => {
-      if (typeof p === 'string') return { keyword: p, prompt: p };
+      if (typeof p === 'string') return { keyword: p, prompt: p, intent: 'generic', mediaUrl: null };
+      const intent = String((p && p.intent) || '').toLowerCase() === 'branded' ? 'branded' : 'generic';
       return {
         keyword: String((p && (p.keyword || p.prompt)) || '').trim(),
-        prompt: String((p && (p.prompt || p.keyword)) || '').trim()
+        prompt: String((p && (p.prompt || p.keyword)) || '').trim(),
+        intent,
+        mediaUrl: (p && p.mediaUrl) ? String(p.mediaUrl).trim() : null,
+        entityType: (p && p.entityType) ? String(p.entityType).trim() : null
       };
     })
     .filter((p) => p.prompt)
@@ -218,6 +308,19 @@ async function measureWithJev(opts) {
         false: 'Official URL / site is unlikely to be cited'
       }
     };
+    if (p.mediaUrl) {
+      questions['media_cited_' + i] = {
+        type: 'noul',
+        instructions:
+          'Given `page` content and prompt `prompts[' + i + '].prompt`, would a careful AI answer likely cite or mention the third-party media URL `' +
+          p.mediaUrl +
+          '` (or its publisher) as supporting evidence?',
+        criteria: {
+          true: 'Media article / publisher is likely cited or referenced',
+          false: 'Media article is unlikely to be cited'
+        }
+      };
+    }
   });
 
   const tsRes = await fetch(TYPESAFE_URL, {
@@ -241,11 +344,16 @@ async function measureWithJev(opts) {
   return opts.prompts.map((p, i) => {
     const mentioned = noulYes(answers['mentioned_' + i]);
     const cited = noulYes(answers['cited_' + i]);
+    const mediaCited = p.mediaUrl ? (noulYes(answers['media_cited_' + i]) ? 1 : 0) : null;
     return {
       keyword: p.keyword || p.prompt,
       prompt: p.prompt,
+      intent: p.intent || 'generic',
+      entityType: p.entityType || null,
+      mediaUrl: p.mediaUrl || null,
       mentioned: mentioned ? 1 : 0,
       cited: cited ? 1 : 0,
+      mediaCited,
       evidenceClass: 'Estimated',
       source: 'TypeSafe Jev',
       model: payload.model || 'jev-latest',
@@ -296,12 +404,25 @@ async function measureWithProvider(engine, brand, prompts, pageUrl) {
         if (host && lower.indexOf(host) !== -1) cited = 1;
       } catch (e) {}
     }
+    let mediaCited = null;
+    if (p.mediaUrl) {
+      mediaCited = 0;
+      try {
+        const mhost = new URL(p.mediaUrl).hostname.replace(/^www\./, '').toLowerCase();
+        if (mhost && lower.indexOf(mhost) !== -1) mediaCited = 1;
+        if (lower.indexOf(String(p.mediaUrl).toLowerCase()) !== -1) mediaCited = 1;
+      } catch (e) {}
+    }
     rows.push({
       engine: engineLabel(engine),
       keyword: p.keyword || p.prompt,
       prompt: p.prompt,
+      intent: p.intent || 'generic',
+      entityType: p.entityType || null,
+      mediaUrl: p.mediaUrl || null,
       mentioned,
       cited,
+      mediaCited,
       evidenceClass: 'Observed',
       source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
       answer_excerpt: String(answer || '').slice(0, 400)

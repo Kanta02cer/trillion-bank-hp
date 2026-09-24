@@ -1,0 +1,139 @@
+---
+title: "AirReach｜キーワード別AIO分析 - Trillion Bank"
+tbdesc: "公式サイトURLから、ユーザーが実際に調べそうな指名・一般キーワードを提案し、キーワードごとのAI言及・引用を計測・分析します。掲載・引用は保証しません。"
+keywords: "AirReach,キーワード提案,AIO計測,指名検索,一般検索,AI引用"
+ai_summary: "URLから指名・一般キーワードを提案し、キーワード別のAI言及・引用を分析。保証ではない。"
+robots: "noindex, follow"
+permalink: /airreach/keyword-aio/
+---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta name="tb-api-base" content="https://trillion-bank-hp.vercel.app">
+<meta charset="UTF-8">
+{% include tb-head.html %}
+<link rel="stylesheet" href="/assets/css/airreach-system.css">
+<link rel="stylesheet" href="/assets/css/airreach-studio.css">
+<link rel="stylesheet" href="/assets/css/airreach-keyword-aio.css">
+</head>
+<body class="aka-page">
+{% include tb-header.html %}
+<main id="main">
+  <section class="aka-hero">
+    <div class="aka-wrap">
+      <p class="aka-kicker">AirReach · Keyword AIO</p>
+      <h1>調べられそうな言葉から、キーワード別に測る</h1>
+      <p class="aka-lead">公式サイトURLをもとに、ユーザーが実際に調べそうな<strong>指名検索</strong>と<strong>一般検索</strong>のキーワードを提案し、キーワードごとのAI言及・引用を分析します。掲載・引用・順位は保証しません。</p>
+    </div>
+  </section>
+
+  <div class="aka-wrap aka-body">
+    <section class="aka-card" aria-labelledby="aka-input-title">
+      <h2 id="aka-input-title">1. 対象を入れる</h2>
+      <div class="aka-form">
+        <label for="aka-url">公式サイトURL</label>
+        <input id="aka-url" type="url" placeholder="https://example.com/" autocomplete="url">
+        <div class="aka-grid3">
+          <div>
+            <label for="aka-brand">会社名・ブランド</label>
+            <input id="aka-brand" type="text" placeholder="例: メディくる" autocomplete="organization">
+          </div>
+          <div>
+            <label for="aka-ceo">代表者名（任意）</label>
+            <input id="aka-ceo" type="text" placeholder="例: 山田太郎">
+          </div>
+          <div>
+            <label for="aka-service">サービス名（任意）</label>
+            <input id="aka-service" type="text" placeholder="例: ニュース配信">
+          </div>
+        </div>
+        <div class="aka-grid2">
+          <div>
+            <label for="aka-category">業種・カテゴリ（任意）</label>
+            <input id="aka-category" type="text" placeholder="例: パーソナルジム">
+          </div>
+          <div>
+            <label for="aka-region">地域（任意）</label>
+            <input id="aka-region" type="text" placeholder="例: 東京">
+          </div>
+        </div>
+        <label for="aka-media">第三者メディアURL（任意・引用監視）</label>
+        <input id="aka-media" type="url" placeholder="https://news.infoseek.co.jp/article/...">
+        <p class="aka-note">ニュース記事の引用されやすさを見る場合に指定します。引用率の向上は保証しません。</p>
+        <div class="aka-btn-row">
+          <button type="button" class="aka-btn" id="aka-suggest">キーワードを提案する</button>
+        </div>
+        <p class="aka-status" id="aka-suggest-status" role="status"></p>
+      </div>
+    </section>
+
+    <section class="aka-card" aria-labelledby="aka-kw-title">
+      <h2 id="aka-kw-title">2. 提案キーワード（計測する言葉を選ぶ）</h2>
+      <div class="aka-tabs" role="tablist">
+        <button type="button" class="aka-tab is-on" data-tab="all">すべて</button>
+        <button type="button" class="aka-tab" data-tab="branded">指名検索</button>
+        <button type="button" class="aka-tab" data-tab="generic">一般検索</button>
+      </div>
+      <div id="aka-kw-list" class="aka-kw-list" aria-live="polite">
+        <p class="aka-note">まだありません。上で提案してください。</p>
+      </div>
+      <div class="aka-btn-row">
+        <button type="button" class="aka-btn aka-btn-secondary" id="aka-select-branded">指名を全選択</button>
+        <button type="button" class="aka-btn aka-btn-secondary" id="aka-select-generic">一般を全選択</button>
+        <button type="button" class="aka-btn aka-btn-secondary" id="aka-select-clear">選択解除</button>
+      </div>
+    </section>
+
+    <section class="aka-card" aria-labelledby="aka-run-title">
+      <h2 id="aka-run-title">3. キーワード別AIO計測</h2>
+      <p class="aka-note">Jevはページ本文からの推定（Estimated）。ChatGPT等はVercelキーがある場合のみ Observed。</p>
+      <div class="aka-engines">
+        <label><input type="checkbox" data-aka-engine value="jev" checked> Jev</label>
+        <label><input type="checkbox" data-aka-engine value="chatgpt"> ChatGPT</label>
+        <label><input type="checkbox" data-aka-engine value="claude"> Claude</label>
+        <label><input type="checkbox" data-aka-engine value="perplexity"> Perplexity</label>
+      </div>
+      <div class="aka-btn-row">
+        <button type="button" class="aka-btn" id="aka-measure">選択キーワードを計測</button>
+        <button type="button" class="aka-btn aka-btn-secondary" id="aka-save-baseline">いまを基準として保存</button>
+        <button type="button" class="aka-btn aka-btn-secondary" id="aka-export">結果JSON</button>
+      </div>
+      <p class="aka-status" id="aka-measure-status" role="status"></p>
+      <div id="aka-summary" class="aka-summary" hidden></div>
+      <div class="aka-table-wrap">
+        <table class="aka-table">
+          <thead>
+            <tr>
+              <th>区分</th>
+              <th>キーワード / 質問</th>
+              <th>スコア</th>
+              <th>言及率</th>
+              <th>公式引用率</th>
+              <th>メディア引用率</th>
+              <th>基準比</th>
+            </tr>
+          </thead>
+          <tbody id="aka-result-body">
+            <tr><td colspan="7">未計測</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="aka-note">キーワードスコアは言及50%・公式引用30%・メディア引用20%のローカル指標です。AI選出確率ではありません。</p>
+    </section>
+
+    <section class="aka-card">
+      <h2>詳しく見る</h2>
+      <ul class="aka-links">
+        <li><a href="/airreach/studio/#keywords">HackⅡ Studio · 言葉</a></li>
+        <li><a href="/airreach/studio/#hack2">HackⅡ Studio · 実測</a></li>
+        <li><a href="/airreach/">AirReach 診断</a></li>
+      </ul>
+    </section>
+  </div>
+</main>
+{% include tb-footer.html %}
+<script src="/assets/js/airreach-api.js" defer></script>
+<script src="/assets/js/airreach-think.js" defer></script>
+<script src="/assets/js/airreach-keyword-aio.js" defer></script>
+</body>
+</html>

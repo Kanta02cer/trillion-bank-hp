@@ -9,6 +9,7 @@
 | **GSC CSV → Official keyword metrics + visit baseline** | `/airreach/platform/` | Official → Inferred scenario | **Shipped this commit** |
 | **GA4 CSV → Official sessions / key events baseline** | `/airreach/platform/` | Official | **Shipped this commit** |
 | Studio keyword ledger + file generation | `/airreach/studio/` | User Input / draft | Live |
+| **Keyword AIO（URL→指名/一般提案→キーワード別計測）** | `/airreach/keyword-aio/` | Estimated / Observed | **This branch** |
 | Studio GSC/GA4/HackⅡ CSV/JSON timeseries | `/airreach/studio/` | Official / Observed | Live |
 | Studio → Platform baseline handoff | shared `localStorage` | Official | Shipped |
 | **Keyword Planner CSV → Official volume on Studio rows** | `/airreach/studio/` | Official | **Phase 2** |
