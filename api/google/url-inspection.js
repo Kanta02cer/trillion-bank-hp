@@ -1,25 +1,4 @@
-function setCors(req, res) {
-  const origin = req.headers.origin || '';
-  let allow = 'https://trillion-bank.jp';
-  try {
-    const host = origin ? new URL(origin).hostname : '';
-    if (
-      host === 'trillion-bank.jp' ||
-      host === 'www.trillion-bank.jp' ||
-      host === 'trillion-bank-hp.vercel.app' ||
-      host === 'localhost' ||
-      host === '127.0.0.1' ||
-      (host && (host.endsWith('.vercel.app') || host.endsWith('.github.io')))
-    ) {
-      allow = origin;
-    }
-  } catch (e) {}
-  res.setHeader('Access-Control-Allow-Origin', allow);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Vary', 'Origin');
-}
+import { setCors, getAccessToken } from './_lib.js';
 
 export default async function handler(req, res) {
   setCors(req, res);
@@ -76,31 +55,4 @@ export default async function handler(req, res) {
     amp,
     raw: data
   });
-}
-
-async function getAccessToken(req) {
-  const cookies = parseCookies(req.headers.cookie || '');
-  if (cookies.airreach_google_access) return cookies.airreach_google_access;
-  if (!cookies.airreach_google_refresh) return null;
-  const body = new URLSearchParams({
-    client_id: process.env.GOOGLE_CLIENT_ID || '',
-    client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
-    refresh_token: cookies.airreach_google_refresh,
-    grant_type: 'refresh_token'
-  });
-  const r = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body
-  });
-  const data = await r.json();
-  return r.ok ? data.access_token : null;
-}
-
-function parseCookies(raw) {
-  return raw.split(';').reduce((acc, pair) => {
-    const i = pair.indexOf('=');
-    if (i > -1) acc[pair.slice(0, i).trim()] = decodeURIComponent(pair.slice(i + 1).trim());
-    return acc;
-  }, {});
 }

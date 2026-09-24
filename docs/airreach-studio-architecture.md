@@ -22,9 +22,12 @@ AirReach Studio separates three data classes so the UI never presents estimates 
 
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
-- `GOOGLE_REDIRECT_URI` (optional; defaults to `/api/google/callback` on the active origin)
+- `GOOGLE_REDIRECT_URI` — e.g. `https://trillion-bank-hp.vercel.app/api/google/callback/`
+- `GOOGLE_FRONTEND_REDIRECT` — e.g. `https://trillion-bank.jp/airreach/studio/`
+- `GOOGLE_GSC_SITE_URL` (optional) — default Search Console property
+- `GOOGLE_GA4_PROPERTY_ID` (optional) — numeric GA4 property id
 
-The OAuth client must allow the production callback URL, e.g. `https://trillion-bank.jp/api/google/callback` when the site/API is served by Vercel.
+See `docs/google-gsc-ga4-connect.md` for the full setup. Site analytics Measurement ID `G-0XHQPCC4CF` is separate from the Data API property id.
 
 ## Metric definitions
 
@@ -126,7 +129,7 @@ This enables charts to overlay implementation dates with GSC/GA4/HackⅡ changes
 
 ### Phase 2
 - persist workspaces in a database instead of localStorage
-- wire Studio buttons directly to `/api/google/*`
+- ~~wire Studio buttons directly to `/api/google/*`~~ → **done** (`feature/google-gsc-ga4-live-sync`)
 - background/scheduled sync
 - HackⅡ API connector and run-status model
 - competitor crawler/API integration

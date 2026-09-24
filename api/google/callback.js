@@ -1,38 +1,31 @@
-function setCors(req, res) {
-  const origin = req.headers.origin || '';
-  let allow = 'https://trillion-bank.jp';
-  try {
-    const host = origin ? new URL(origin).hostname : '';
-    if (
-      host === 'trillion-bank.jp' ||
-      host === 'www.trillion-bank.jp' ||
-      host === 'trillion-bank-hp.vercel.app' ||
-      host === 'localhost' ||
-      host === '127.0.0.1' ||
-      (host && (host.endsWith('.vercel.app') || host.endsWith('.github.io')))
-    ) {
-      allow = origin;
-    }
-  } catch (e) {}
-  res.setHeader('Access-Control-Allow-Origin', allow);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Vary', 'Origin');
-}
+import { setCors, getOrigin, parseCookies, frontendStudioUrl, cookieAttrs } from './_lib.js';
 
 export default async function handler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
-  const { code, state } = req.query || {};
+  const { code, state, error } = req.query || {};
+  if (error) {
+    res.statusCode = 400;
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.end('Google OAuth error: ' + String(error));
+    return;
+  }
   const cookies = parseCookies(req.headers.cookie || '');
   if (!code || !state || state !== cookies.airreach_google_state) {
-    return res.status(400).send('Invalid OAuth state');
+    res.statusCode = 400;
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.end('Invalid OAuth state');
+    return;
   }
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${getOrigin(req)}/api/google/callback`;
-  if (!clientId || !clientSecret) return res.status(500).send('Google OAuth is not configured');
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${getOrigin(req)}/api/google/callback/`;
+  if (!clientId || !clientSecret) {
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.end('Google OAuth is not configured');
+    return;
+  }
 
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
@@ -46,29 +39,34 @@ export default async function handler(req, res) {
     })
   });
   const tokens = await tokenRes.json();
-  if (!tokenRes.ok) return res.status(400).json(tokens);
+  if (!tokenRes.ok) {
+    res.statusCode = 400;
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.end(JSON.stringify(tokens));
+    return;
+  }
 
-  const secure = 'Path=/; HttpOnly; Secure; SameSite=Lax';
+  const secure = cookieAttrs();
   const cookieHeaders = [
     `airreach_google_access=${encodeURIComponent(tokens.access_token || '')}; ${secure}; Max-Age=${Number(tokens.expires_in || 3600)}`,
-    `airreach_google_state=; ${secure}; Max-Age=0`
+    `airreach_google_state=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`
   ];
   if (tokens.refresh_token) {
-    cookieHeaders.push(`airreach_google_refresh=${encodeURIComponent(tokens.refresh_token)}; ${secure}; Max-Age=2592000`);
+    cookieHeaders.push(
+      `airreach_google_refresh=${encodeURIComponent(tokens.refresh_token)}; ${secure}; Max-Age=2592000`
+    );
   }
   res.setHeader('Set-Cookie', cookieHeaders);
-  res.writeHead(302, { Location: '/airreach/studio/?google=connected' });
-  res.end();
-}
 
-function parseCookies(raw) {
-  return raw.split(';').reduce((acc, pair) => {
-    const idx = pair.indexOf('=');
-    if (idx > -1) acc[pair.slice(0, idx).trim()] = decodeURIComponent(pair.slice(idx + 1).trim());
-    return acc;
-  }, {});
-}
-function getOrigin(req) {
-  const proto = req.headers['x-forwarded-proto'] || 'https';
-  return `${proto}://${req.headers.host}`;
+  // Hash handoff so GitHub Pages Studio can call Vercel APIs with Bearer
+  const hash = new URLSearchParams({
+    access_token: tokens.access_token || '',
+    expires_in: String(tokens.expires_in || 3600),
+    token_type: 'Bearer'
+  });
+  if (tokens.refresh_token) hash.set('refresh_token', tokens.refresh_token);
+
+  const dest = frontendStudioUrl().replace(/\/?$/, '/') + '?google=connected#' + hash.toString();
+  res.writeHead(302, { Location: dest });
+  res.end();
 }
