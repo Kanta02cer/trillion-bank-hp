@@ -5,7 +5,7 @@ toc: true
 direct_answer: "Google AI Overviews（AIO）対策の本筋は、AI専用の特別な施策ではなく、従来SEOの基礎（クロール可能性・質の高いコンテンツ・エンティティの一貫性）の上に、AIが抽出しやすい構造を整えることです。"
 title: "Google AI Overviews対策とは？従来SEOとの関係と実務チェックリスト"
 date: 2026-09-06
-last_modified: 2026-09-06
+last_modified: 2026-09-25
 category: AI検索対策
 author: 井上 幹太
 tbdesc: "Google AI Overviews（AIO）対策の実務を、Google公式のAI最適化ガイドとAhrefs・5WPR・OtterlyAIの調査データに基づいて解説します。従来SEOとの関係、トップ10引用比率の変化、YouTube引用の台頭、実務チェックリストと限界をまとめます。"
@@ -95,4 +95,6 @@ Googleは、AI機能のための特別なschema.org構造化データは存在�
 - 調査ごとに対象クエリ・地域・集計方法が異なり、異なる調査間の数値の単純比較には限界があります
 - YouTube動画も、公開しただけで引用に結びつくわけではありません
 
-AIOと従来SEO・AEO・GEO・LLMOの位置づけの整理は、[SEO・AEO・GEO・AIO・LLMOの違い](/trillionbank/news/seo-aeo-geo-aio-llmo-difference/)を参照してください。
+日本語で「Google AI要約」と調べる場合の定義入口は[Google AI要約とは](/trillionbank/news/google-ai-summary/)、AIOという略語の整理は[AIOとは](/trillionbank/news/aio-towa/)を参照してください。用語横断は[SEO・AEO・GEO・AIO・LLMOの違い](/trillionbank/news/seo-aeo-geo-aio-llmo-difference/)です。
+
+自社URLの準備度を先に見る場合は [AirReach](https://trillion-bank.jp/airreach/)（`https://trillion-bank.jp/airreach/`）を利用できます。掲載・引用は保証しません。

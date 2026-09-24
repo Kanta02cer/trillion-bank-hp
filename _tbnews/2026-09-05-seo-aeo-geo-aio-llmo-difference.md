@@ -3,7 +3,7 @@ layout: tb-article-authority
 title: SEO・AEO・GEO・AIO・LLMOの違いとは？企業が使い分けるための実務整理
 tbdesc: SEO、AEO、GEO、AIO、LLMOは重なる領域が多く、定義も統一されていません。企業が目的・対象面・測定指標・施策で使い分ける方法を整理します。
 date: 2026-09-05
-last_modified: 2026-09-06
+last_modified: 2026-09-25
 category: AI検索基礎
 insight: true
 toc: true
@@ -70,3 +70,10 @@ Googleは、AI OverviewsやAI Modeに表示されるための特別なAI用マ�
 ## Trillion Bankの扱い方
 
 当社では、用語を増やすことより、質問と測定条件を定め、回答・競合・引用URLを保存し、改善後に再測定できる状態を重視しています。HackⅡの提供範囲は契約時の検証状況に応じて確定し、AI回答への掲載や売上を保証しません。
+
+## ヘッド語の代表ページ
+
+- [AIOとは](/trillionbank/news/aio-towa/)
+- [GEOとは](/trillionbank/news/geo-towa/)
+- [Google AI要約とは](/trillionbank/news/google-ai-summary/)
+- 無料診断：[AirReach](https://trillion-bank.jp/airreach/)（`https://trillion-bank.jp/airreach/`）

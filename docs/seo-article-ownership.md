@@ -30,6 +30,9 @@ Companion: docs/eeat-media-authority-strategy.md / docs/seo-p0-site-architecture
 | 意図 | 代表記事 | 支援・統合候補 |
 |---|---|---|
 | SEO/AEO/GEO/AIO/LLMOの違い | `/trillionbank/news/seo-aeo-geo-aio-llmo-difference/` | `llmo-geo-aeo`（旧）→ 代表へ誘導優先 |
+| AIO（ヘッド語） | `/trillionbank/news/aio-towa/` | 詳細は違い記事・AI Overviews記事へ |
+| GEO（ヘッド語） | `/trillionbank/news/geo-towa/` | 会社選定は `geo-consulting-company` |
+| Google AI要約 | `/trillionbank/news/google-ai-summary/` | 深掘りは `ai-overviews-optimization` |
 | AI検索の効果測定 | `ai-search-effect-measurement` / `ai-search-measurement-method` | 重複見出しを代表1本に寄せる |
 | 引用率・引用分析 | `ai-citation-rate-calculation` / `generative-ai-citation-analysis` | 定義は前者、手順は後者 |
 | SOV | `ai-search-sov` | 調査レポートはデータ側 |
