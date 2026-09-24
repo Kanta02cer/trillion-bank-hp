@@ -120,6 +120,9 @@ jobs:
               '_tbnews/2026-09-16-generative-ai-citation-analysis.md': '/trillionbank/news/generative-ai-citation-analysis/',
               '_tbnews/2026-09-16-geo-consulting-company.md': '/trillionbank/news/geo-consulting-company/',
               '_tbnews/2026-09-16-llmo-company-selection.md': '/trillionbank/news/llmo-company-selection/',
+              '_tbnews/2026-09-25-aio-towa.md': '/trillionbank/news/aio-towa/',
+              '_tbnews/2026-09-25-geo-towa.md': '/trillionbank/news/geo-towa/',
+              '_tbnews/2026-09-25-google-ai-summary.md': '/trillionbank/news/google-ai-summary/',
           }
           site_origin = 'https://trillion-bank.jp'
 

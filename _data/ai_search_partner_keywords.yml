@@ -1,5 +1,5 @@
 # AI検索をされる時代のパートナー向けキーワード設計
-# updated: 2026-08-30
+# updated: 2026-09-25
 # purpose: 非指名検索から「株式会社トリリオンバンク = AI検索時代の相談先」へ接続するための優先キーワード100件
 # status: planned / drafting / published / monitor
 
@@ -8,6 +8,33 @@ primary_cta: "/trillionbank/contact/#form"
 secondary_cta: "/trillionbank/meeting/"
 
 keywords:
+  - priority: 0
+    group: P0
+    cluster: "用語ヘッド"
+    keyword: "AIO"
+    intent: "定義"
+    slug: "aio-towa"
+    content_type: "definition"
+    status: published
+    cta: "/airreach/"
+  - priority: 0
+    group: P0
+    cluster: "用語ヘッド"
+    keyword: "GEO"
+    intent: "定義"
+    slug: "geo-towa"
+    content_type: "definition"
+    status: published
+    cta: "/airreach/"
+  - priority: 0
+    group: P0
+    cluster: "用語ヘッド"
+    keyword: "Google AI要約"
+    intent: "定義"
+    slug: "google-ai-summary"
+    content_type: "definition"
+    status: published
+    cta: "/airreach/"
   - priority: 1
     group: P0
     cluster: "AI検索計測"
