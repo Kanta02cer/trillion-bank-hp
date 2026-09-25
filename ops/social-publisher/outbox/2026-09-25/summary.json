@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-25",
+  "items": [
+    {
+      "date": "2026-09-25",
+      "keyword": "AI検索対策 会社",
+      "priority": 2,
+      "group": "P0",
+      "cluster": "支援会社",
+      "article_slug": "ai-search-optimization-company",
+      "article_url": "https://trillion-bank.jp/trillionbank/news/ai-search-optimization-company/",
+      "x_file": "002-ai-search-optimization-company.x.txt",
+      "note_file": "002-ai-search-optimization-company.note.md",
+      "status": "draft"
+    },
+    {
+      "date": "2026-09-25",
+      "keyword": "GEOコンサルティング 会社",
+      "priority": 3,
+      "group": "P0",
+      "cluster": "支援会社",
+      "article_slug": "geo-consulting-company",
+      "article_url": "https://trillion-bank.jp/trillionbank/news/geo-consulting-company/",
+      "x_file": "003-geo-consulting-company.x.txt",
+      "note_file": "003-geo-consulting-company.note.md",
+      "status": "draft"
+    },
+    {
+      "date": "2026-09-25",
+      "keyword": "AEO支援会社",
+      "priority": 4,
+      "group": "P0",
+      "cluster": "支援会社",
+      "article_slug": "aeo-support-company",
+      "article_url": "https://trillion-bank.jp/trillionbank/news/aeo-support-company/",
+      "x_file": "004-aeo-support-company.x.txt",
+      "note_file": "004-aeo-support-company.note.md",
+      "status": "draft"
+    }
+  ]
+}
