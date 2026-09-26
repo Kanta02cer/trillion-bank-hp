@@ -63,6 +63,7 @@ robots: "noindex, follow"
         <label>CSVの期間（日）<input id="arp-period-days" type="number" min="1" max="366" value="28"></label>
         <label>GSC Performance CSV<input id="arp-gsc-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values"></label>
         <label>GA4 CSV（任意）<input id="arp-ga4-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values"></label>
+        <label>生成AI Performance CSV（Official）<input id="arp-genai-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values"></label>
         <label>&nbsp;<button id="arp-load-studio" class="arp-btn arp-secondary" type="button" style="width:100%">HackⅡ Studio計測を読み込む</button></label>
       </div>
       <p class="arp-import-status" id="arp-import-status">未取込。手入力でも試算できます（その場合は User Input）。</p>
@@ -139,7 +140,7 @@ robots: "noindex, follow"
     <div class="arp-section-head"><div><div class="arp-eyebrow" data-tip="公式・観測・推定を分けて表示します。">データ一覧</div><h2>何が測れるか</h2></div></div>
     <div class="arp-data-grid">
       <article class="arp-data-card"><div class="arp-source official">OFFICIAL</div><h3>Google Search Console</h3><p>Clicks / Impressions / CTR / Position / Query / Page / Date / Country / Device</p><small>OAuth接続。通常検索データは公式API。</small></article>
-      <article class="arp-data-card"><div class="arp-source official">OFFICIAL UI</div><h3>Google生成AIレポート</h3><p>AI検索機能のImpressions / Page / Country / Device / Time series</p><small>専用API仕様が公開されるまでは公式UI/エクスポート取込を分離。</small></article>
+      <article class="arp-data-card"><div class="arp-source official">OFFICIAL CSV</div><h3>Google生成AIレポート</h3><p id="arp-genai-summary">未取込。Search Console生成AIパフォーマンスのCSVを取り込むと、ページ別 Imp（Official）を表示します。</p><small>通常検索・HackⅡ実測とは別指標。専用APIが公式化されるまでCSVのみ。</small><div class="arp-scenario-table-wrap" style="margin-top:10px"><table class="arp-scenario-table"><thead><tr><th>Page</th><th>Imp</th></tr></thead><tbody id="arp-genai-body"><tr><td colspan="2">—</td></tr></tbody></table></div></article>
       <article class="arp-data-card"><div class="arp-source official">OFFICIAL</div><h3>GA4</h3><p>Sessions / Active Users / Landing Page / Key Events / Revenue</p><small>問い合わせ・LINE等をKey Eventとして結合。</small></article>
       <article class="arp-data-card"><div class="arp-source official">OFFICIAL</div><h3>URL Inspection</h3><p>Index status / canonical / crawl / rich result information</p><small>Search Console OAuthで対象プロパティのみ。</small></article>
       <article class="arp-data-card"><div class="arp-source public">PUBLIC</div><h3>PageSpeed / CrUX</h3><p>Performance / Lighthouse / LCP / INP / CLS / field UX</p><small>PageSpeedはキーなし利用可。CrUXは無料APIキー。</small></article>
@@ -154,6 +155,7 @@ robots: "noindex, follow"
   <div class="arp-wrap">
     <div class="arp-section-head"><div><div class="arp-eyebrow">機能</div><h2 data-tip="計測だけで終わらず、改善まで回すための機能です。">改善まで回す</h2></div></div>
     <div class="arp-module-grid">
+      <article><span>00</span><h3>AirReach Recruit</h3><p>求人詳細の JobPosting 検証と採用検索OS（掲載・順位は保証しない）。<a href="/airreach/recruit/">開く</a></p></article>
       <article><span>01</span><h3>AI Visibility</h3><p>ChatGPT / Gemini / Claude / Perplexity / Google系の言及・引用・SOVをPrompt単位で時系列化。</p></article>
       <article><span>02</span><h3>Search Intelligence</h3><p>GSCとGA4を統合し、Keyword → Click → Session → Inquiryまで一本化。</p></article>
       <article><span>03</span><h3>Technical AIO</h3><p>index、canonical、robots、Schema、FAQ、内部リンク、Core Web Vitalsの不足を検出。</p></article>
@@ -196,6 +198,7 @@ robots: "noindex, follow"
 {% include tb-footer.html %}
 <script src="/assets/js/airreach-tip.js" defer></script>
 <script src="/assets/js/airreach-handoff.js" defer></script>
+<script src="/assets/js/airreach-google-ai-csv.js" defer></script>
 <script src="/assets/js/airreach-platform.js" defer></script>
 </body>
 </html>

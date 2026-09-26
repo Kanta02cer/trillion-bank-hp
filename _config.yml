@@ -54,6 +54,10 @@ defaults:
     values:
       robots: "noindex, follow"
   - scope:
+      path: "airreach/recruit"
+    values:
+      robots: "noindex, follow"
+  - scope:
       path: ""
       type: "news"
     values:

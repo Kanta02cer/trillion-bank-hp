@@ -1,0 +1,249 @@
+---
+title: "AirReach Recruit｜求人ページの採用検索OS - Trillion Bank"
+tbdesc: "求人詳細ページと JobPosting を整え、Google求人検索・Google AI・その他AIでの発見から応募までを計測・改善するための採用検索OS。掲載・順位・引用は保証しません。"
+keywords: "AirReach Recruit,求人,JobPosting,Google求人検索,採用,AI検索"
+ai_summary: "AirReach Recruitは求人ページをGoogle求人検索・AIに理解されやすい状態へ整え、発見から応募までを計測する。掲載保証ではない。"
+robots: "noindex, follow"
+---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta name="tb-api-base" content="https://trillion-bank-hp.vercel.app">
+<meta charset="UTF-8">
+{% include tb-head.html %}
+<link rel="stylesheet" href="/assets/css/airreach-system.css">
+<link rel="stylesheet" href="/assets/css/airreach-studio.css">
+<link rel="stylesheet" href="/assets/css/airreach-recruit.css">
+</head>
+<body class="arr-page">
+{% include tb-header.html %}
+<main id="main">
+  <section class="arr-hero">
+    <div class="arr-wrap">
+      <p class="arr-kicker">AirReach Recruit</p>
+      <h1>求人ページを、見つかって応募される状態へ</h1>
+      <p class="arr-lead">Google求人検索・Google AI・ChatGPT等に正しく理解されやすい状態へ整え、求人発見→会社理解→応募までを計測・改善します。掲載・順位・AI引用は保証しません。</p>
+    </div>
+  </section>
+
+  <div class="arr-wrap arr-easy">
+    <section class="arr-card" aria-labelledby="arr-status-title">
+      <h2 id="arr-status-title">採用検索の準備状況</h2>
+      <p class="arr-note" id="arr-score-banner">Recruitment Visibility Score <code>v0</code> — 4パネル分離。総合点は <strong>not_projected</strong>（まだ算出しません）。</p>
+      <div class="arr-btn-row" style="margin-bottom:12px">
+        <button type="button" class="arr-btn arr-btn-secondary" id="arr-score-refresh">スコアを再計算</button>
+        <button type="button" class="arr-btn arr-btn-secondary" id="arr-score-export">スコアJSONを書き出す</button>
+      </div>
+      <p class="arr-status" id="arr-score-status" role="status"></p>
+      <div class="arr-meters" id="arr-meters">
+        <article class="arr-meter" data-panel="job">
+          <h3>Google求人掲載準備度</h3>
+          <p class="arr-meter-val" id="arr-job-ready">未計測</p>
+          <p class="arr-meter-hint">JobPosting / リモート項目 / ポリシーチェック</p>
+        </article>
+        <article class="arr-meter" data-panel="info">
+          <h3>採用情報充足度</h3>
+          <p class="arr-meter-val" id="arr-info-ready">未計測</p>
+          <p class="arr-meter-hint">給与・勤務地・仕事内容・働き方・応募・AI参照材料</p>
+        </article>
+        <article class="arr-meter" data-panel="ai">
+          <h3>AI検索実測</h3>
+          <p class="arr-meter-val" id="arr-ai-ready">未計測</p>
+          <p class="arr-meter-hint">HackⅡ Observed（別途実行）</p>
+        </article>
+        <article class="arr-meter" data-panel="cv">
+          <h3>応募導線</h3>
+          <p class="arr-meter-val" id="arr-cv-ready">未計測</p>
+          <p class="arr-meter-hint">閲覧→応募CTA→開始→完了（計測整備と実数は分離）</p>
+        </article>
+      </div>
+    </section>
+
+
+    <section class="arr-card" aria-labelledby="arr-real-title">
+      <h2 id="arr-real-title">実データボード · Official / Observed</h2>
+      <p class="arr-note">Studio・Platform・本ページで取り込んだ実数を集約表示します。推測値は入れません。0 と未計測は別です。</p>
+      <div class="arr-btn-row" style="margin-bottom:12px">
+        <label class="arr-check"><input type="checkbox" id="arr-real-jobfilter" checked> 求人関連キーワード／ページを優先表示</label>
+        <button type="button" class="arr-btn arr-btn-secondary" id="arr-real-refresh">実データを再読込</button>
+        <label class="arr-file">生成AI CSV<input id="arr-real-genai-csv" type="file" accept=".csv,text/csv,.tsv" hidden></label>
+        <a class="arr-btn arr-btn-secondary" href="/airreach/studio/#google">StudioでGSC取込</a>
+      </div>
+      <p class="arr-status" id="arr-real-status" role="status"></p>
+      <div class="arr-real-grid" id="arr-real-summary"></div>
+      <div class="arr-real-panels" id="arr-real-panels"></div>
+    </section>
+
+    <section class="arr-card" aria-labelledby="arr-gaps-title">
+      <h2 id="arr-gaps-title">求職者に足りない情報</h2>
+      <div class="arr-bars" id="arr-bars" aria-live="polite">
+        <p class="arr-note">JobPosting を検証すると、低い項目順に表示します。</p>
+      </div>
+    </section>
+
+    <section class="arr-card" aria-labelledby="arr-next-title">
+      <h2 id="arr-next-title">まずやること</h2>
+      <p class="arr-next" id="arr-next">求人詳細ページの JSON-LD（JobPosting）を貼り付けて検証してください。</p>
+    </section>
+
+
+    <section class="arr-card" aria-labelledby="arr-jobs-title">
+      <h2 id="arr-jobs-title">求人ソース · Job Canonical Model</h2>
+      <p class="arr-note">ATS個別連携の前に、共通 Canonical Model へCSV変換します。給与は Schema へ自動投入しません。</p>
+      <div class="arr-form">
+        <div>求人CSV <label class="arr-file"><input id="arr-jobs-csv" type="file" accept=".csv,text/csv,.tsv" hidden>CSVを選択</label></div>
+        <p class="arr-note">列例: <code>job_id,title,description,location,employment_type,application_url,remote_policy,date_posted</code></p>
+        <p class="arr-status" id="arr-jobs-status" role="status"></p>
+      </div>
+      <div class="ars-table-wrap"><table class="arr-check-table"><thead><tr><th>job_id</th><th>title</th><th>location</th><th>URL</th><th></th></tr></thead><tbody id="arr-jobs-body"><tr><td colspan="5">まだありません</td></tr></tbody></table></div>
+    </section>
+
+    <section class="arr-card" aria-labelledby="arr-validate-title">
+      <h2 id="arr-validate-title">JobPosting 検証（v0）</h2>
+      <p class="arr-note">1求人＝1詳細ページ。一覧ページに複数 JobPosting を置かないこと。給与・勤務地は推測しません。</p>
+      <div class="arr-form">
+        <label for="arr-url">求人詳細URL（任意・記録用）</label>
+        <input id="arr-url" type="url" placeholder="https://example.com/careers/sales-tokyo/" autocomplete="url">
+        <label for="arr-jsonld">JobPosting JSON-LD</label>
+        <textarea id="arr-jsonld" rows="14" placeholder='{"@context":"https://schema.org","@type":"JobPosting","title":"営業職",...}'></textarea>
+        <label class="arr-check"><input id="arr-remote-hint" type="checkbox"> ページ本文にフルリモート / 在宅と書いてある</label>
+        <label class="arr-check"><input id="arr-salary-estimate" type="checkbox"> 給与は推定・相場である（Schemaに入れてはいけない）</label>
+        <button type="button" class="arr-btn" id="arr-run">検証する</button>
+        <p class="arr-status" id="arr-status" role="status"></p>
+      </div>
+      <div id="arr-results" class="arr-results" hidden></div>
+    </section>
+
+
+    <section class="arr-card" aria-labelledby="arr-life-title">
+      <h2 id="arr-life-title">求人ライフサイクル · Indexing API</h2>
+      <p class="arr-note">求人の公開・更新・終了を Google に通知します（JobPosting / ライブ配信向け）。クロール・インデックス・求人検索掲載は保証しません。本番通知には人の承認が必要です。</p>
+      <div class="arr-form">
+        <label for="arr-index-url">求人詳細URL</label>
+        <input id="arr-index-url" type="url" placeholder="https://example.com/careers/sales-tokyo/" autocomplete="url">
+        <label for="arr-lifecycle">状態</label>
+        <select id="arr-lifecycle">
+          <option value="published">求人公開 → URL_UPDATED</option>
+          <option value="updated">内容変更 → URL_UPDATED</option>
+          <option value="closed">募集終了（validThrough確認後）→ URL_UPDATED</option>
+          <option value="removed">ページ削除 → URL_DELETED</option>
+        </select>
+        <label class="arr-check"><input id="arr-index-confirm" type="checkbox"> 事実と一致する求人URLであることを確認し、Googleへ通知することを承認する</label>
+        <div class="arr-btn-row">
+          <button type="button" class="arr-btn arr-btn-secondary" id="arr-index-dry">プレビュー（通知しない）</button>
+          <button type="button" class="arr-btn" id="arr-index-run">Googleへ通知</button>
+          <button type="button" class="arr-btn arr-btn-secondary" id="arr-index-meta">通知メタデータ確認</button>
+        </div>
+        <p class="arr-status" id="arr-index-status" role="status"></p>
+        <p class="arr-note" id="arr-index-config">Indexing API 設定：確認中…</p>
+      </div>
+      <h3 class="arr-subh">通知履歴（ブラウザ内）</h3>
+      <div class="ars-table-wrap"><table class="arr-check-table"><thead><tr><th>日時</th><th>状態</th><th>type</th><th>URL</th><th>結果</th></tr></thead><tbody id="arr-index-history"><tr><td colspan="5">まだありません</td></tr></tbody></table></div>
+    </section>
+
+    <section class="arr-card" aria-labelledby="arr-ai-title">
+      <h2 id="arr-ai-title">採用AI実測（指名 / 一般）</h2>
+      <p class="arr-note">HackⅡ Observed。準備度スコアと混ぜません。指名質問と一般質問を分けて計測します。</p>
+      <div class="arr-form">
+        <label for="arr-brand">会社名（正式名称）</label>
+        <input id="arr-brand" type="text" placeholder="株式会社Trillion Bank" autocomplete="organization">
+        <label for="arr-role">職種・テーマ（任意）</label>
+        <input id="arr-role" type="text" placeholder="例: 営業 / AIエンジニア / 学生インターン">
+        <label for="arr-city">勤務地キーワード（任意）</label>
+        <input id="arr-city" type="text" placeholder="例: 東京">
+        <div class="arr-btn-row">
+          <button type="button" class="arr-btn arr-btn-secondary" id="arr-prompt-build">質問セットを作る</button>
+          <button type="button" class="arr-btn" id="arr-ai-run">Jevで実測する</button>
+        </div>
+        <label for="arr-prompts-branded">指名質問</label>
+        <textarea id="arr-prompts-branded" rows="4" placeholder="会社名を含む質問"></textarea>
+        <label for="arr-prompts-generic">一般質問</label>
+        <textarea id="arr-prompts-generic" rows="4" placeholder="職種・働き方の一般質問"></textarea>
+        <p class="arr-status" id="arr-ai-status" role="status"></p>
+      </div>
+      <div id="arr-ai-results" class="arr-results" hidden></div>
+    </section>
+
+
+    <section class="arr-card" aria-labelledby="arr-cv-title">
+      <h2 id="arr-cv-title">応募導線 · Application Flow</h2>
+      <p class="arr-note">求人閲覧 → 応募ボタン → 応募開始 → 応募完了。ATSごとの個別開発はせず、共通イベント名＋CSV取込から始めます。準備度スコアやAI実測とは混ぜません。</p>
+
+      <h3 class="arr-subh">計測チェック（Planned）</h3>
+      <div class="arr-checks" id="arr-cv-checks">
+        <label class="arr-check"><input type="checkbox" data-cv-flag="hasJobView"> job_view（求人詳細の閲覧）を送っている</label>
+        <label class="arr-check"><input type="checkbox" data-cv-flag="hasApplyCta"> apply_cta_click（応募ボタン）を送っている</label>
+        <label class="arr-check"><input type="checkbox" data-cv-flag="hasApplyStart"> apply_start（フォーム開始）を送っている</label>
+        <label class="arr-check"><input type="checkbox" data-cv-flag="hasApplyComplete"> apply_complete（完了）を送っている</label>
+        <label class="arr-check"><input type="checkbox" data-cv-flag="hasJobIdParam"> job_id 等で求人単位に紐づけている</label>
+      </div>
+
+      <h3 class="arr-subh">実数取込（Official / Customer supplied）</h3>
+      <div class="arr-form">
+        <div>GA4 / ATS イベントCSV <label class="arr-file"><input id="arr-cv-csv" type="file" accept=".csv,text/csv,.tsv" hidden>CSVを選択</label></div>
+        <p class="arr-note">列例: <code>Event name,Event count</code> または <code>stage,count</code>（job_view / apply_cta_click / apply_start / apply_complete）</p>
+        <div class="arr-manual-grid">
+          <label>閲覧<input id="arr-cv-view" type="number" min="0" step="1" placeholder="0"></label>
+          <label>応募ボタン<input id="arr-cv-cta" type="number" min="0" step="1" placeholder="0"></label>
+          <label>応募開始<input id="arr-cv-start" type="number" min="0" step="1" placeholder="0"></label>
+          <label>応募完了<input id="arr-cv-complete" type="number" min="0" step="1" placeholder="0"></label>
+        </div>
+        <div class="arr-btn-row">
+          <button type="button" class="arr-btn" id="arr-cv-apply-manual">手入力を反映</button>
+          <button type="button" class="arr-btn arr-btn-secondary" id="arr-cv-snippet">計測スニペット表示</button>
+          <button type="button" class="arr-btn arr-btn-secondary" id="arr-cv-clear">クリア</button>
+        </div>
+        <p class="arr-status" id="arr-cv-status" role="status"></p>
+      </div>
+      <div id="arr-cv-results" class="arr-results" hidden></div>
+      <textarea id="arr-cv-snippet-box" class="arr-code" hidden readonly rows="12"></textarea>
+    </section>
+
+
+    <section class="arr-card" aria-labelledby="arr-eg-title">
+      <h2 id="arr-eg-title">根拠グラフ · Evidence Graph（v0）</h2>
+      <p class="arr-note">「引用される」ではなく「参照可能な根拠が N 件」と表示します。AIがどれを選ぶかは保証しません。</p>
+      <div class="arr-form">
+        <label for="arr-eg-claim">主張（例: リモート勤務可能）</label>
+        <input id="arr-eg-claim" type="text" placeholder="リモート勤務可能">
+        <label for="arr-eg-url">根拠URL</label>
+        <input id="arr-eg-url" type="url" placeholder="https://example.com/careers/benefits/">
+        <label for="arr-eg-title-input">根拠タイトル（任意）</label>
+        <input id="arr-eg-title-input" type="text" placeholder="福利厚生ページ">
+        <label for="arr-eg-kind">種別</label>
+        <select id="arr-eg-kind">
+          <option value="official">公式ページ</option>
+          <option value="job_posting">JobPosting / 求人</option>
+          <option value="interview">社員インタビュー</option>
+          <option value="third_party">第三者記事</option>
+        </select>
+        <div class="arr-btn-row">
+          <button type="button" class="arr-btn" id="arr-eg-add">根拠を追加</button>
+        </div>
+        <p class="arr-status" id="arr-eg-status" role="status"></p>
+      </div>
+      <div id="arr-eg-list" class="arr-results"></div>
+    </section>
+
+    <section class="arr-card arr-detail" aria-labelledby="arr-detail-title">
+      <h2 id="arr-detail-title">詳しく見る</h2>
+      <ul class="arr-links">
+        <li><a href="/airreach/studio/#google">Studio · Google通常検索 / 生成AI CSV</a></li>
+        <li><a href="/airreach/studio/#hack2">Studio · HackⅡ実測</a></li>
+        <li><a href="/airreach/platform/">Platform · Official ベースライン</a></li>
+              </ul>
+      <p class="arr-note">実データボードは Studio/Platform/本ページの Official・Observed を集約します。Visibility Score v0 の総合点は not_projected のままです。</p>
+    </section>
+  </div>
+</main>
+{% include tb-footer.html %}
+<script src="/assets/js/airreach-api.js" defer></script>
+<script src="/assets/js/airreach-application-flow.js" defer></script>
+<script src="/assets/js/airreach-job-canonical.js" defer></script>
+<script src="/assets/js/airreach-recruit-score.js" defer></script>
+<script src="/assets/js/airreach-recruit-realdata.js" defer></script>
+<script src="/assets/js/airreach-google-ai-csv.js" defer></script>
+<script src="/assets/js/airreach-evidence-graph.js" defer></script>
+<script src="/assets/js/airreach-recruit.js" defer></script>
+</body>
+</html>

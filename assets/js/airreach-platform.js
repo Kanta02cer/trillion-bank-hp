@@ -7,9 +7,15 @@
   'use strict';
 
   var BASELINE_KEY = 'airreach_official_baseline_v1';
+  var GENAI_KEY = 'airreach_generative_ai_v1';
   var STUDIO_KEY = 'airreach_studio_v1';
 
   function q(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
   function n(id) {
     var el = q(id);
     var v = el ? parseFloat(el.value) : 0;
@@ -347,6 +353,7 @@
     }
     renderBaselineBadge(baseline);
     renderKeywords(baseline);
+    renderGenAi();
   }
 
   function setStatus(msg, kind) {
@@ -354,6 +361,53 @@
     if (!el) return;
     el.textContent = msg;
     el.className = 'arp-import-status' + (kind ? ' is-' + kind : '');
+  }
+
+
+  function loadGenAi() {
+    try { return JSON.parse(localStorage.getItem(GENAI_KEY) || 'null'); }
+    catch (e) { return null; }
+  }
+
+  function saveGenAi(data) {
+    try { localStorage.setItem(GENAI_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function renderGenAi() {
+    var sum = q('arp-genai-summary');
+    var body = q('arp-genai-body');
+    if (!sum || !body) return;
+    var g = loadGenAi();
+    if (!g || !(g.pages || []).length) {
+      sum.textContent = '未取込。Search Console生成AIパフォーマンスのCSVを取り込むと、ページ別 Imp（Official）を表示します。';
+      body.innerHTML = '<tr><td colspan="2">—</td></tr>';
+      return;
+    }
+    sum.textContent = 'Official · ' + (g.source || 'GSC Generative AI CSV') +
+      ' · 合計 Imp ' + count(g.totalImpressions || 0) +
+      ' · ' + (g.rowCount || 0) + '行（通常検索とは別）';
+    body.innerHTML = (g.pages || []).slice(0, 15).map(function (row) {
+      return '<tr><td>' + esc(row.page) + '</td><td>' + count(row.impressions) + '</td></tr>';
+    }).join('') || '<tr><td colspan="2">—</td></tr>';
+  }
+
+  function onGenAiFile(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        if (!window.AirReachGoogleAiCsv) throw new Error('CSVヘルパー未読込');
+        var period = numCell((q('arp-period-days') || {}).value) || 28;
+        var rows = window.AirReachGoogleAiCsv.parseCsv(reader.result);
+        var data = window.AirReachGoogleAiCsv.aggregate(rows, period);
+        if (!data.rowCount) throw new Error('生成AIの行が見つかりません（Page / Impressions 列を確認）');
+        saveGenAi(data);
+        renderGenAi();
+        setStatus('生成AI Official取込完了: Imp ' + count(data.totalImpressions) + ' · ページ ' + data.pages.length + '件', 'ok');
+      } catch (e) {
+        setStatus('生成AI CSVを読めませんでした: ' + (e && e.message ? e.message : e), 'warn');
+      }
+    };
+    reader.readAsText(file, 'utf-8');
   }
 
   function onGscFile(file) {
@@ -464,6 +518,12 @@
     if (ga4) {
       ga4.addEventListener('change', function () {
         if (ga4.files && ga4.files[0]) onGa4File(ga4.files[0]);
+      });
+    }
+    var genai = q('arp-genai-file');
+    if (genai) {
+      genai.addEventListener('change', function () {
+        if (genai.files && genai.files[0]) onGenAiFile(genai.files[0]);
       });
     }
     var fromStudio = q('arp-load-studio');
