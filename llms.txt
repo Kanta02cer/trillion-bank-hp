@@ -117,4 +117,7 @@ Last reviewed: 2026-09-16
 ## AirReach
 
 - [AirReach｜AI検索準備度の無料診断](https://trillion-bank.jp/airreach/)
+- [SI・AIクローラー・PPC解説ニュース一覧](https://trillion-bank.jp/trillionbank/news/ai-newsroom-series/)
+- [スーパーインテリジェンスとは](https://trillion-bank.jp/trillionbank/news/superintelligence-towa/)
+- [PPCの二つの意味](https://trillion-bank.jp/trillionbank/news/ppc-two-meanings/)
 

@@ -371,6 +371,37 @@ defaults:
     values:
       robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
 
+  - scope:
+      path: "_tbnews/2026-09-26-superintelligence-towa.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-26-superintelligence-ai-search.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-26-ai-crawler-vs-search.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-26-ppc-two-meanings.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-26-cloudflare-pay-per-crawl.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+  - scope:
+      path: "_tbnews/2026-09-26-ai-newsroom-series.md"
+      type: "tbnews"
+    values:
+      robots: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+
 jekyll:
   environment: production
 

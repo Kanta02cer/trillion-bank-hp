@@ -5,7 +5,7 @@ toc: true
 direct_answer: "AIクローラーの制御は、各社が公式に公表するUser-Agentトークンをrobots.txtへ用途別（学習・検索・ユーザー操作）に記述して行い、学習用のGPTBotやClaudeBotを拒否しつつ、検索引用用のOAI-SearchBotやClaude-SearchBotを許可する、という切り分けが基本です。"
 title: "AIクローラー一覧と制御方法｜robots.txtでの許可・拒否の考え方"
 date: 2026-09-06
-last_modified: 2026-09-06
+last_modified: 2026-09-26
 category: AI検索対策
 author: 井上 幹太
 tbdesc: "GPTBot・ClaudeBot・PerplexityBotなど主要AIクローラーのUser-Agentを公式ドキュメントで確認できた範囲で一覧化し、学習は拒否しつつ検索引用は許可するrobots.txt設定例と、その限界・確認方法を解説します。"
@@ -142,3 +142,5 @@ robots.txtの設定が実際にどう働いているかは、自社のアクセ�
 なお、Googleは自社のAI機能への表示にあたり、新しい機械可読ファイルやAI用テキストファイルを作成する必要はないと公表しています（developers.google.com/search/docs/appearance/ai-features）。llms.txtのような試みは、AIによる利用や引用を約束するものではなく、現時点では効果が確立していない実験的な補助手段として扱うのが妥当です。
 
 株式会社Trillion Bank（トリリオンバンク）は、限定商用検証・導入相談受付中のHackⅡで、選定した質問に対するAI回答本文と引用URLの保存・比較を支援しています。robots.txt変更の前後で同一質問を再測定すれば、引用状況の変化を証跡付きで確認できます。ただし、測定はAI検索での引用や流入を保証するものではありません。
+
+判断の前に読む入門は[AIクローラーと検索クローラーの違い](/trillionbank/news/ai-crawler-vs-search/)です。シリーズ全体は[解説ニュース一覧](/trillionbank/news/ai-newsroom-series/)にまとめています。
