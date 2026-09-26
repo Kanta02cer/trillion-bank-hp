@@ -126,6 +126,7 @@ jobs:
               '_tbnews/2026-09-26-ppc-two-meanings.md': '/trillionbank/news/ppc-two-meanings/',
               '_tbnews/2026-09-26-cloudflare-pay-per-crawl.md': '/trillionbank/news/cloudflare-pay-per-crawl/',
               '_tbnews/2026-09-26-ai-newsroom-series.md': '/trillionbank/news/ai-newsroom-series/',
+              '_tbnews/2026-09-27-pay-per-crawl-research-note.md': '/trillionbank/news/pay-per-crawl-research-note/',
           }
           site_origin = 'https://trillion-bank.jp'
 

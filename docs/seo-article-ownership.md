@@ -38,6 +38,7 @@ Companion: docs/eeat-media-authority-strategy.md / docs/seo-p0-site-architecture
 | スーパーインテリジェンス | `/trillionbank/news/superintelligence-towa/` | 実務は `superintelligence-ai-search` |
 | AIクローラーと検索の違い | `/trillionbank/news/ai-crawler-vs-search/` | 設定詳細は `ai-crawler-list-control` |
 | PPCの意味の切り分け | `/trillionbank/news/ppc-two-meanings/` | Cloudflare実装は `cloudflare-pay-per-crawl`。概念入口は `pay-per-crawl-towa` |
+| Pay per Crawl研究整理 | `/trillionbank/news/pay-per-crawl-research-note/` | 事業定義は `/trillionbank/business/pay-per-crawl/`。件数は未公開 |
 | 解説ニュース一覧 | `/trillionbank/news/ai-newsroom-series/` | 上記の目次。量産記事の受け皿にはしない |
 | AI Overviews | `ai-overviews-optimization` | — |
 | ChatGPT検索 | `chatgpt-search-optimization` | — |

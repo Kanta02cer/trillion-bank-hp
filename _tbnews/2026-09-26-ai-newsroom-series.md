@@ -5,7 +5,7 @@ toc: true
 direct_answer: "このシリーズは、スーパーインテリジェンス、AIクローラー、Pay per Crawl（PPCとの混同を含む）を、新聞の速報ではなく意思決定できる長さで解説する一覧です。順位や掲載は約束しません。"
 title: "SI・AIクローラー・PPC解説ニュース一覧【2026年9月】"
 date: 2026-09-26
-last_modified: 2026-09-26
+last_modified: 2026-09-27
 category: 解説
 author: 井上 幹太
 reviewed_by: 株式会社Trillion Bank 編集部
@@ -55,6 +55,7 @@ faq_items:
 - [PPCとは二つある](/trillionbank/news/ppc-two-meanings/)
 - [CloudflareのPay per Crawl](/trillionbank/news/cloudflare-pay-per-crawl/)
 - 概念の入口：[Pay per Crawlとは](/trillionbank/news/pay-per-crawl-towa/)
+- 当社の研究整理：[Pay per Crawl研究メモ（2026年9月）](/trillionbank/news/pay-per-crawl-research-note/)
 - 利用単位との違い：[Pay per CrawlとPay per Use](/trillionbank/news/pay-per-crawl-pay-per-use-difference/)
 
 ## 読後にできること

@@ -120,4 +120,5 @@ Last reviewed: 2026-09-16
 - [SI・AIクローラー・PPC解説ニュース一覧](https://trillion-bank.jp/trillionbank/news/ai-newsroom-series/)
 - [スーパーインテリジェンスとは](https://trillion-bank.jp/trillionbank/news/superintelligence-towa/)
 - [PPCの二つの意味](https://trillion-bank.jp/trillionbank/news/ppc-two-meanings/)
+- [Pay per Crawl研究メモ](https://trillion-bank.jp/trillionbank/news/pay-per-crawl-research-note/)
 
