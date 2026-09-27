@@ -297,6 +297,36 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 .ar-summary p{margin:0 0 4px;font-size:.9rem;color:#334155;font-weight:500}
 .ar-summary b{font-weight:700;color:var(--ar-ink)}
 .ar-sec{padding:clamp(20px,4vw,36px) 0 48px}
+/* —— Summary card (診断結果サマリー) —— */
+.ar-h2 em{font-style:normal;color:var(--ar-accent)}
+.ar-sumcard{border:1px solid var(--ar-line);border-radius:14px;background:#fff;padding:18px 18px 6px;margin:6px 0 4px}
+.ar-gauge-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.ar-gauge{position:relative;width:128px;height:128px;flex:0 0 auto}
+.ar-gauge svg{display:block;width:128px;height:128px}
+.ar-gauge-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ar-gauge-num b{font-size:2.35rem;font-weight:800;letter-spacing:-.04em;color:var(--ar-ink)}
+.ar-gauge-num span{font-size:.8rem;font-weight:600;color:var(--ar-muted);margin-top:4px}
+.ar-gauge-unknown{font-size:.95rem;font-weight:700;color:var(--ar-muted)}
+.ar-gauge-side{flex:1 1 200px;min-width:0}
+.ar-gauge-title{font-size:1rem;font-weight:700;color:var(--ar-ink);margin-bottom:8px}
+.ar-gauge-band{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.ar-gauge-band .ar-band{font-size:.95rem;padding:5px 12px}
+.ar-gauge-note{margin:0;font-size:.8rem;line-height:1.55;color:var(--ar-muted)}
+.ar-sum-verdict{margin:16px 0 4px;font-size:1.08rem;font-weight:700;color:var(--ar-ink);line-height:1.5}
+.ar-sum-verdict-sub{margin:0 0 6px;font-size:.92rem;color:#334155;line-height:1.6}
+.ar-sum-rows{display:grid;margin-top:8px}
+.ar-sum-row{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:14px 0;border-top:1px solid var(--ar-line)}
+.ar-sum-ico{width:40px;height:40px;border-radius:10px;background:var(--ar-accent-soft);color:var(--ar-accent);display:flex;align-items:center;justify-content:center}
+.ar-sum-ico svg{width:22px;height:22px}
+.ar-sum-body{min-width:0}
+.ar-sum-lab{font-size:.85rem;font-weight:600;color:#334155;margin-bottom:2px}
+.ar-sum-val{font-size:1.45rem;font-weight:800;letter-spacing:-.02em;color:var(--ar-ink);line-height:1.15}
+.ar-sum-val .unit{font-size:.85rem;font-weight:600;color:var(--ar-muted);margin-left:5px}
+.ar-sum-row.is-accent .ar-sum-val{color:var(--ar-accent)}
+.ar-sum-note{font-size:.8rem;color:var(--ar-muted);margin-top:3px;line-height:1.5}
+.ar-ind a{color:var(--ar-accent);text-decoration:none;font-weight:600;word-break:break-all}
+.ar-ind a:hover{text-decoration:underline}
+@media(max-width:520px){.ar-sum-row{grid-template-columns:36px 1fr;grid-template-rows:auto auto}.ar-sum-row .ar-badge-e{grid-column:2;justify-self:start}.ar-gauge-row{justify-content:center;text-align:center}.ar-gauge-band{justify-content:center}}
 .ar-steps{gap:6px;margin:0 0 16px}
 .ar-steps span{
   padding:6px 12px;
@@ -633,11 +663,22 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         <h2 class="ar-h2" id="ar-title">診断結果</h2>
         <p class="ar-sub" id="ar-subtitle" hidden></p>
 
-        <div class="ar-metric-legend" id="ar-metric-legend">
-          <strong>数字の見方</strong>
-          <span>①探している人＝需要の目安　②いまの点数＝ホームページの情報整備（100点満点。AI掲載率・順位・予約数ではありません）　③直したあと＝改善した場合の参考レンジ　④増える件数＝結果の目安（保証なし）</span>
+        <!-- サマリー: 円ゲージ（情報整備の点数）＋ 3行（需要・改善後・増える件数）。数値は report.headline4 から -->
+        <div class="ar-sumcard" id="ar-sumcard">
+          <div class="ar-gauge-row">
+            <div class="ar-gauge" id="ar-gauge" role="img" aria-label="ホームページの情報整備の点数"></div>
+            <div class="ar-gauge-side">
+              <div class="ar-gauge-title" id="ar-gauge-title">ホームページの情報整備</div>
+              <div class="ar-gauge-band" id="ar-gauge-band"></div>
+              <p class="ar-gauge-note" id="ar-gauge-note"></p>
+            </div>
+          </div>
+          <p class="ar-sum-verdict" id="ar-sum-verdict"></p>
+          <p class="ar-sum-verdict-sub" id="ar-sum-verdict-sub"></p>
+          <div class="ar-sum-rows" id="ar-sum-rows"></div>
         </div>
-        <div class="ar-chain" id="ar-chain"></div>
+        <div class="ar-chain" id="ar-chain" hidden></div>
+        <div class="ar-metric-legend" id="ar-metric-legend" hidden></div>
         <p class="ar-conf"><span data-tip="入力や実測が増えるほど上がる参考指標です。統計的な信頼区間ではありません。" data-tip-icon>この結果の確かさ</span> <b id="ar-confidence">—</b>%</p>
         <p class="ar-conf-plain" id="ar-confidence-plain">入力・実測が増えるほど上がります。統計的な信頼区間ではありません。</p>
         <p class="ar-disc" id="ar-disc" hidden></p>
@@ -1069,12 +1110,24 @@ document.addEventListener('DOMContentLoaded', function () {
     if ($('expert-view')) $('expert-view').classList.add('is-hidden');
     if ($('actions')) $('actions').classList.add('is-hidden');
 
-    $('ar-analyzing').textContent = report.modeLabel + ' · ' + (report.industryLabel || '');
-    $('ar-industry-line').innerHTML = 'お店・会社：<b>' + (report.industryLabel || '—') + '</b> · ホームページ：<b>' + (report.url || lastUrl || '—') + '</b>';
-    $('ar-title').textContent = report.keyword
-      ? ('「' + report.keyword + '」で調べました')
-      : (report.heroTitle || '診断結果');
-    $('ar-subtitle').textContent = 'まずはこの4つだけ。';
+    $('ar-analyzing').textContent = 'AirReach';
+    // Headline: the outcome range as a 目安 (never a promise). Branded/media mode falls back to the hero title.
+    (function () {
+      var t = $('ar-title');
+      var inq = report.inquiries || {};
+      var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+      if (report.mode !== 'branded_search' && inq.addLow != null && inq.addHigh != null) {
+        t.innerHTML = 'このサイトは、<em>あと' + esc(inq.addLow) + '〜' + esc(inq.addHigh) + '件</em>、' + esc(report.displayLabel || '問い合わせ') + 'が増える目安です。';
+      } else if (report.brand && report.brand.citationCurrent != null) {
+        t.innerHTML = '会社名で調べられたとき、この情報が使われる割合は <em>' + esc(report.brand.citationCurrent) + '%</em> が目安です。';
+      } else {
+        t.textContent = report.heroTitle || '診断結果';
+      }
+    })();
+    var urlShown = report.url || lastUrl || '';
+    $('ar-industry-line').innerHTML = (urlShown ? '<a href="' + urlShown.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener noreferrer">' + urlShown.replace(/</g, '&lt;') + ' ↗</a> · ' : '') +
+      'お店・会社：<b>' + (report.industryLabel || '—') + '</b>' + (report.keyword ? ' · 調べた言葉：<b>「' + report.keyword.replace(/</g, '&lt;') + '」</b>' : '');
+    $('ar-subtitle').textContent = '件数・点数は参考の目安で、掲載・順位・成果を保証するものではありません。';
     $('ar-disc').textContent = report.disclaimer;
     $('ar-confidence').textContent = String(report.confidence);
     $('ar-confidence-note').textContent = '実測データが増えるほど上がります（参考）';
@@ -1178,35 +1231,75 @@ document.addEventListener('DOMContentLoaded', function () {
       cite_after: '改善後の目安',
       outcome: '結果の目安'
     };
-    report.headline4.forEach(function (h, i) {
-      var row = document.createElement('div');
-      row.className = 'ar-stepn' + (i === report.headline4.length - 1 ? ' is-accent' : '');
-      var detail = [h.meaning, h.sub].filter(Boolean).join(' ');
-      var badge = AirReachSales.badgeLabel ? AirReachSales.badgeLabel(h.badge) : h.badge;
-      var what = whatIsMap[h.id] || '参考指標';
-      row.innerHTML =
-        '<div class="ix">' + (i + 1) + '</div>' +
-        '<div class="val-wrap">' +
-        '<div class="lab"><span data-tip="' + tipAttr(detail) + '">' + tipAttr(h.label) + '</span></div>' +
-        '<div class="val">' + tipAttr(h.value) + '<span class="unit">' + tipAttr(h.unit || '') + '</span>' +
-        (h.band ? ' <span class="ar-band is-' + tipAttr(h.band.tone || 'muted') + '" data-tip="' + tipAttr(h.band.meaning || '') + '">' + tipAttr(h.band.label || '') + '</span>' : '') +
-        '</div>' +
-        '<span class="what-is">' + tipAttr(what) + '</span>' +
-        (h.meaning ? '<div class="meaning">' + tipAttr(h.meaning) + '</div>' : '') +
-        (h.sub ? '<div class="sub">' + tipAttr(h.sub) + '</div>' : '') +
-        '</div>' +
-        '<span class="ar-badge-e ' + badgeClass(h.badge) + '" data-tip="' + tipAttr(evidenceTip(h.badge)) + '" data-tip-icon>' + tipAttr(badge) + '</span>';
-      chain.appendChild(row);
-    });
-    var legend = $('ar-metric-legend');
-    if (legend && report.headline4 && report.headline4.length) {
-      legend.innerHTML = '<strong>数字の見方</strong><span>' +
-        report.headline4.map(function (h, i) {
-          var marks=['①','②','③','④']; return (marks[i]||String(i+1)) + tipAttr(h.label) + '＝' + tipAttr(whatIsMap[h.id] || '参考指標');
-        }).join('　') +
-        '</span>';
+    // ---- Summary card: gauge (now) + three rows (the other headline items) ----
+    var ICONS = {
+      demand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+      after: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+      outcome: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.5a5 5 0 0 1 6 5"/></svg>',
+      cite_now: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6M9 13h7M9 17h7"/></svg>',
+      cite_after: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'
+    };
+    var nowRow = null, otherRows = [];
+    (report.headline4 || []).forEach(function (h) { if (h.id === 'now') nowRow = h; else otherRows.push(h); });
+    var band = (nowRow && nowRow.band) || (window.AirReachDisplay ? AirReachDisplay.band(null) : { label: '未確認', tone: 'muted', color: '#64748b', meaning: '' });
+    var scoreNum = nowRow && nowRow.value !== '—' ? Number(nowRow.value) : null;
+    var gauge = $('ar-gauge');
+    if (gauge) {
+      var r = 52, c = 2 * Math.PI * r;
+      var pct = scoreNum == null ? 0 : Math.max(0, Math.min(100, scoreNum)) / 100;
+      var color = band.color || '#2563eb';
+      gauge.innerHTML =
+        '<svg viewBox="0 0 128 128" width="128" height="128" aria-hidden="true">' +
+        '<circle cx="64" cy="64" r="' + r + '" fill="none" stroke="#e2e8f0" stroke-width="12"/>' +
+        '<circle cx="64" cy="64" r="' + r + '" fill="none" stroke="' + tipAttr(color) + '" stroke-width="12" stroke-linecap="round" transform="rotate(-90 64 64)" stroke-dasharray="' + (c * pct).toFixed(1) + ' ' + c.toFixed(1) + '"/>' +
+        '</svg>' +
+        '<div class="ar-gauge-num">' + (scoreNum == null ? '<span class="ar-gauge-unknown">未確認</span>' : '<b>' + scoreNum + '</b><span>/ 100</span>') + '</div>';
+      gauge.setAttribute('aria-label', 'ホームページの情報整備 ' + (scoreNum == null ? '未確認' : scoreNum + '点、区分 ' + band.label));
     }
-    if (window.AirReachTip) window.AirReachTip.enhance(chain);
+    if ($('ar-gauge-title')) $('ar-gauge-title').textContent = (nowRow && nowRow.label) || 'ホームページの情報整備';
+    if ($('ar-gauge-band')) {
+      $('ar-gauge-band').innerHTML = '<span class="ar-band is-' + tipAttr(band.tone || 'muted') + '">' + tipAttr(band.label || '未確認') + '</span>' +
+        (nowRow && nowRow.badge ? ' <span class="ar-badge-e ' + badgeClass(nowRow.badge) + '" data-tip="' + tipAttr(evidenceTip(nowRow.badge)) + '" data-tip-icon>' + tipAttr(AirReachSales.badgeLabel ? AirReachSales.badgeLabel(nowRow.badge) : nowRow.badge) + '</span>' : '');
+    }
+    if ($('ar-gauge-note')) $('ar-gauge-note').textContent = window.AirReachDisplay ? AirReachDisplay.scopeSentence() : '点数はホームページの情報整備の区分です。';
+    // verdict: band + number of items that were fetched and found missing (never counts 未確認)
+    var gapCount = (lastDiagnose && lastDiagnose.gaps) ? lastDiagnose.gaps.length : 0;
+    var goalWord = report.displayLabel || 'お客様';
+    var verdict = '', verdictSub = '';
+    if (scoreNum == null) {
+      verdict = '一部の情報が取得できなかったため、総合点は出していません。';
+      verdictSub = '取得できた項目だけを下の内訳に表示しています（0点ではありません）。';
+    } else if (band.key === 'high') {
+      verdict = '情報はかなり整っています。';
+      verdictSub = gapCount ? ('あと' + gapCount + '項目を整えると、' + goalWord + 'の前に知りたい情報がさらに見つけやすくなります。') : '大きな不足は見当たりません。';
+    } else if (band.key === 'mid') {
+      verdict = '基本的な情報は載っています。';
+      verdictSub = '足りない' + (gapCount || '') + '項目を整えると、' + goalWord + 'の前に知りたい情報が見つけやすくなります。';
+    } else {
+      verdict = '知りたい情報が、ホームページで見つけにくい状態です。';
+      verdictSub = 'まず下の' + (gapCount ? gapCount + '項目' : '不足項目') + 'から整えるのが先です。';
+    }
+    if ($('ar-sum-verdict')) $('ar-sum-verdict').textContent = verdict;
+    if ($('ar-sum-verdict-sub')) $('ar-sum-verdict-sub').textContent = verdictSub;
+    var rowsEl = $('ar-sum-rows');
+    if (rowsEl) {
+      rowsEl.innerHTML = '';
+      otherRows.forEach(function (h) {
+        var badge = AirReachSales.badgeLabel ? AirReachSales.badgeLabel(h.badge) : h.badge;
+        var row = document.createElement('div');
+        row.className = 'ar-sum-row' + (h.id === 'outcome' || h.id === 'cite_after' ? ' is-accent' : '');
+        row.innerHTML =
+          '<div class="ar-sum-ico">' + (ICONS[h.id] || ICONS.demand) + '</div>' +
+          '<div class="ar-sum-body">' +
+          '<div class="ar-sum-lab">' + tipAttr(h.id === 'outcome' ? '増やせる' + h.label : h.label) + '</div>' +
+          '<div class="ar-sum-val">' + tipAttr(h.value) + '<span class="unit">' + tipAttr(h.unit || '') + '</span></div>' +
+          (h.meaning ? '<div class="ar-sum-note">' + tipAttr(h.meaning) + '</div>' : '') +
+          '</div>' +
+          '<span class="ar-badge-e ' + badgeClass(h.badge) + '" data-tip="' + tipAttr(evidenceTip(h.badge)) + '" data-tip-icon>' + tipAttr(badge) + '</span>';
+        rowsEl.appendChild(row);
+      });
+    }
+    if (window.AirReachTip) { window.AirReachTip.enhance($('ar-sumcard')); }
 
     var factorsWrap = $('ar-factors');
     var factorCards = $('ar-factor-cards');

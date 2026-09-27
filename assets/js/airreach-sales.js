@@ -103,6 +103,9 @@
     var gap = clamp(78 - s, 8, 45);
     var low = clamp(Math.round(s + gap * 0.55), s + 5, 92);
     var high = clamp(Math.round(s + gap * 0.95), low + 4, 96);
+    // Never show a range above the 100-point scale (high scores used to produce 98〜102).
+    low = Math.min(low, 100);
+    high = Math.min(Math.max(high, low), 100);
     var multLow = Math.round((low / Math.max(s, 1)) * 10) / 10;
     var multHigh = Math.round((high / Math.max(s, 1)) * 10) / 10;
     return {
