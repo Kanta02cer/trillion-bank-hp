@@ -23,12 +23,17 @@
     return 'generic_search';
   }
 
+  // Band / wording come only from the display contract (_data/airreach_display.yml via airreach-display.js).
+  function display() { return window.AirReachDisplay || null; }
+  function band(score) {
+    var d = display();
+    if (d) return d.band(score);
+    return { key: 'unknown', label: '未確認', tone: 'muted', meaning: '' };
+  }
   function scoreMeaning(score) {
-    var s = num(score, 40);
-    if (s >= 75) return '準備度が高い（公開情報が揃っている）';
-    if (s >= 55) return '準備度は中程度（まだ伸ばせる）';
-    if (s >= 35) return '準備度は低め（改善余地が大きい）';
-    return '準備度が低い（情報が足りず取りこぼしやすい）';
+    var d = display();
+    if (d) return d.scoreMeaning(score);
+    return '未確認';
   }
 
   function estimateSearchVolume(keyword, mode) {
@@ -55,13 +60,29 @@
   }
 
   function acquisitionScoreFromDiagnose(result) {
-    if (!result || result.overall == null) {
+    if (!result) {
       return { score: 40, evidenceClass: 'Estimated', note: 'URL診断前の仮値' };
+    }
+    if (result.overall == null) {
+      // Diagnosed, but a required item could not be fetched: no overall score (never 0, never a guess).
+      return {
+        score: null,
+        evidenceClass: 'Observed',
+        note: '未取得の項目があるため総合点なし',
+        state: result.state || 'partial',
+        parts: {
+          structure: result.structure,
+          entity: result.entity,
+          faq: result.faq,
+          discover: result.discover
+        }
+      };
     }
     return {
       score: result.overall,
       evidenceClass: 'Observed',
       note: '公開ページ準備度（URL診断）',
+      state: result.state || 'verified',
       parts: {
         structure: result.structure,
         entity: result.entity,
@@ -330,8 +351,11 @@
   function buildExpertInsight(diagnose, actions) {
     var d = diagnose || {};
     var checks = d.checks || [];
-    var good = checks.filter(function (c) { return c.ok; });
-    var bad = checks.filter(function (c) { return !c.ok; });
+    // Three states: ok / ng / unknown. Older stored results only have `ok`; treat those as known.
+    function stateOf(c) { return c.state || (c.ok ? 'ok' : 'ng'); }
+    var good = checks.filter(function (c) { return stateOf(c) === 'ok'; });
+    var bad = checks.filter(function (c) { return stateOf(c) === 'ng'; });
+    var unknown = checks.filter(function (c) { return stateOf(c) === 'unknown'; });
     var factorNames = {
       structure: 'ページの骨格',
       entity: '会社・サービス情報',
@@ -340,9 +364,11 @@
     };
     var byFactor = {};
     checks.forEach(function (c) {
-      byFactor[c.factor] = byFactor[c.factor] || { id: c.factor, label: factorNames[c.factor] || c.factor, good: [], bad: [], score: d[c.factor] };
-      if (c.ok) byFactor[c.factor].good.push(c);
-      else byFactor[c.factor].bad.push(c);
+      byFactor[c.factor] = byFactor[c.factor] || { id: c.factor, label: factorNames[c.factor] || c.factor, good: [], bad: [], unknown: [], score: d[c.factor], band: band(d[c.factor]) };
+      var s = stateOf(c);
+      if (s === 'ok') byFactor[c.factor].good.push(c);
+      else if (s === 'ng') byFactor[c.factor].bad.push(c);
+      else byFactor[c.factor].unknown.push(c);
     });
     var nextNow = (d.actions && d.actions.now) || [];
     var nextWeeks = (d.actions && d.actions.weeks) || [];
@@ -354,12 +380,16 @@
         href: a.href || '/airreach/studio/'
       };
     });
+    var diagnosed = !!(d.checks && d.checks.length);
     return {
-      summary: (d.review && d.review.summary) || (d.overall != null ? ('準備度 ' + d.overall + ' / 100') : '診断前の仮評価'),
-      evidenceClass: d.overall != null ? 'Observed' : 'Estimated',
+      summary: (d.review && d.review.summary) || (d.overall != null ? ('準備度 ' + d.overall + ' / 100') : (diagnosed ? '未取得の項目があるため総合点なし' : '診断前の仮評価')),
+      evidenceClass: diagnosed ? 'Observed' : 'Estimated',
       evidenceTip: '公開HTML等から観測した準備度です。AI回答の掲載率・予約増を保証しません。',
+      state: d.state || (diagnosed ? 'verified' : null),
+      band: band(d.overall),
       good: good,
       bad: bad,
+      unknown: unknown,
       byFactor: Object.keys(byFactor).map(function (k) { return byFactor[k]; }),
       nextNow: nextNow,
       nextWeeks: nextWeeks,
@@ -426,24 +456,28 @@
         missingWhen: function (diag) {
           var out = [];
           if (!diag) return ['診断前のため未確認'];
-          if (!diag.page || !diag.page.hasLlms) out.push('llms.txtが無い／薄い');
-          if (!diag.page || !diag.page.hasRobots) out.push('robots.txtを確認できなかった');
+          var page = diag.page || {};
+          // hasLlms / hasRobots: true = あり, false = なし, null = 取得できず（未確認）
+          if (page.hasLlms === null) out.push('llms.txtは未確認（取得できませんでした）');
+          else if (!page.hasLlms) out.push('llms.txtが無い／薄い');
+          if (page.hasRobots === null) out.push('robots.txtは未確認（取得できませんでした）');
+          else if (!page.hasRobots) out.push('robots.txtが無い');
           return out;
         }
       }
     ];
 
+    // Band comes from the display contract only (no thresholds in this file).
     function level(score) {
-      score = Number(score);
-      if (!isFinite(score)) return { key: 'unknown', label: '未計測', tone: 'muted' };
-      if (score < 45) return { key: 'low', label: '弱い', tone: 'bad' };
-      if (score < 70) return { key: 'mid', label: '普通', tone: 'warn' };
-      return { key: 'high', label: '良い', tone: 'good' };
+      var b = band(score);
+      return { key: b.key, label: b.label, tone: b.tone, color: b.color, meaning: b.meaning };
     }
 
+    var factorStates = d.factors || {};
     var factors = parts.map(function (p) {
       var score = p.score == null ? null : Number(p.score);
       var lv = level(score);
+      var fstate = factorStates[p.id] && factorStates[p.id].state ? factorStates[p.id].state : (score == null ? 'unknown' : 'verified');
       var missing = p.missingWhen(d);
       // also pull matching gaps text
       (d.gaps || []).forEach(function (g) {
@@ -463,24 +497,34 @@
         weightPct: Math.round(p.weight * 100),
         contribution: contrib,
         level: lv,
+        state: fstate,
         missing: missing.slice(0, 3),
         formula: p.label + ' × ' + p.weight
       };
     });
 
     var overall = d.overall != null ? Number(d.overall) : null;
-    var weak = factors.filter(function (f) { return f.score != null && f.score < 60; })
+    var weak = factors.filter(function (f) { return f.score != null && f.level.key !== 'high'; })
       .sort(function (a, b) { return (a.score || 0) - (b.score || 0); });
+    var diagnosed = !!(d.checks && d.checks.length);
+    var disp = display();
 
     return {
       overall: overall,
+      band: band(overall),
+      state: d.state || (diagnosed ? 'verified' : null),
+      ruleVersion: d.ruleVersion || null,
+      displayVersion: d.displayVersion || (disp ? disp.version : null),
+      scopeSentence: disp ? disp.scopeSentence() : '',
+      legend: disp ? disp.legend() : [],
       formula: '総合 = 骨格×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25',
       formulaTip: '公開HTMLの準備度です。AI回答の掲載率や予約増を保証しません。',
       factors: factors,
       weakFactors: weak,
       gaps: (d.gaps || []).slice(0, 5),
+      unknowns: (d.unknowns || []).slice(0, 5),
       strengths: (d.strengths || []).slice(0, 4),
-      evidenceClass: d.overall != null ? 'Observed' : 'Estimated'
+      evidenceClass: diagnosed ? 'Observed' : 'Estimated'
     };
   }
 
@@ -512,11 +556,24 @@
         { key: 'faq', label: 'FAQ（FAQPage・可視FAQ）', weight: 0.20, maxPts: '8点満点→100換算' },
         { key: 'discover', label: '発見性（robots/llms/内部リンク等）', weight: 0.25, maxPts: '発見系チェック→100換算' }
       ];
-      var recon = 0;
+      var recon = 0, reconW = 0;
       weights.forEach(function (row) {
-        var v = num(parts[row.key], 0);
+        var raw = parts[row.key];
+        if (raw == null || !isFinite(Number(raw))) {
+          // Not fetched: shown as 未確認, excluded from the sum (never counted as 0).
+          readinessRows.push({
+            label: row.label,
+            formula: 'score(' + row.key + ') × ' + row.weight,
+            value: '未確認（取得できず・計算から除外）',
+            note: row.maxPts,
+            evidence: acq.evidenceClass || 'Observed'
+          });
+          return;
+        }
+        var v = Number(raw);
         var contrib = Math.round(v * row.weight * 10) / 10;
         recon += v * row.weight;
+        reconW += row.weight;
         readinessRows.push({
           label: row.label,
           formula: 'score(' + row.key + ') × ' + row.weight,
@@ -525,11 +582,13 @@
           evidence: acq.evidenceClass || 'Observed'
         });
       });
+      var overallShown = acq.score == null ? '未確認（必須項目が未取得）' : String(acq.score);
+      var reconShown = reconW > 0 ? Math.round(recon / reconW) : null;
       readinessRows.push({
         label: '総合準備度（overall）',
-        formula: '0.30·S + 0.25·E + 0.20·F + 0.25·D',
-        value: Math.round(recon) + ' / 100（表示値 ' + score + '）',
-        note: '公開HTMLの観測に基づく。AI実回答の引用率ではない。',
+        formula: '0.30·S + 0.25·E + 0.20·F + 0.25·D（未確認の要素は重みを再配分）',
+        value: (reconShown == null ? '—' : reconShown + ' / 100') + '（表示値 ' + overallShown + '）',
+        note: '公開HTMLの観測に基づく。AI実回答の引用率ではない。判定ルール ' + ((diagnose && diagnose.ruleVersion) || '—') + ' / 表示区分 ' + ((diagnose && diagnose.displayVersion) || '—'),
         evidence: acq.evidenceClass || 'Observed'
       });
     } else {
@@ -796,11 +855,12 @@
         {
           id: 'now',
           label: profile.now_label,
-          value: String(bScore),
-          unit: '/ 100',
+          value: bScore == null ? '—' : String(bScore),
+          unit: bScore == null ? '' : '/ 100',
           badge: brand ? brand.evidenceClass : 'Observed',
+          band: band(bScore),
           meaning: profile.now_meaning + ' · ' + scoreMeaning(bScore),
-          sub: scoreMeaning(bScore)
+          sub: bScore == null ? (acq.note || '未確認') : scoreMeaning(bScore)
         },
         {
           id: 'cite_now',
@@ -836,11 +896,12 @@
         {
           id: 'now',
           label: profile.now_label,
-          value: String(acq.score),
-          unit: '/ 100',
+          value: acq.score == null ? '—' : String(acq.score),
+          unit: acq.score == null ? '' : '/ 100',
           badge: acq.evidenceClass === 'Observed' ? 'Observed' : 'Estimated',
+          band: band(acq.score),
           meaning: profile.now_meaning + ' · ' + scoreMeaning(acq.score),
-          sub: scoreMeaning(acq.score)
+          sub: acq.score == null ? (acq.note || '未確認') : scoreMeaning(acq.score)
         },
         {
           id: 'after',
@@ -935,6 +996,7 @@
     yen: yen,
     cnt: cnt,
     badgeLabel: badgeLabel,
-    scoreMeaning: scoreMeaning
+    scoreMeaning: scoreMeaning,
+    band: band
   };
 })();

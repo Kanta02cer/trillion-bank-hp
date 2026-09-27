@@ -80,6 +80,16 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-factor-formula{margin-top:10px;padding:14px 16px;border:3px solid #93c5fd;border-radius:14px;background:#eff6ff;font-size:1.05rem;font-weight:800;color:#1e3a8a;line-height:1.5}
 .ar-gap-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
 .ar-gap-list li{border:3px solid #fecaca;background:#fff1f2;border-radius:12px;padding:12px 14px;font-weight:800;color:#9f1239;font-size:1.05rem}
+.ar-gap-list li.is-unknown{border-color:#cbd5e1;background:#f8fafc;color:#475569}
+/* 区分ラベル: 色だけに頼らず、常に文字を併記する（_data/airreach_display.yml） */
+.ar-band{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:2px solid #cbd5e1;background:#f8fafc;color:#334155;font-size:.9rem;font-weight:800;line-height:1.2;vertical-align:middle;white-space:nowrap}
+.ar-band::before{content:"";width:.6em;height:.6em;border-radius:999px;background:currentColor;opacity:.85}
+.ar-band.is-bad{border-color:#fca5a5;background:#fef2f2;color:#b91c1c}
+.ar-band.is-warn{border-color:#fcd34d;background:#fffbeb;color:#b45309}
+.ar-band.is-good{border-color:#86efac;background:#ecfdf5;color:#15803d}
+.ar-band.is-muted{border-color:#cbd5e1;background:#f8fafc;color:#475569}
+.ar-band-legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:10px;font-size:.95rem;font-weight:700;color:#334155}
+.ar-band-scope{margin:8px 0 0;font-size:.95rem;font-weight:700;color:#475569;line-height:1.5}
 @media (max-width:640px){.ar-factor-grid{grid-template-columns:1fr}}
 
 .ar-hero{padding:clamp(56px,8vw,88px) 0 28px;border-bottom:1px solid #e5e7eb;background:#f8fbff}
@@ -725,6 +735,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 <script src="{{ '/assets/js/airreach-think.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-tip.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-handoff.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/airreach-display.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-diagnose.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-industry.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-sales.js' | relative_url }}" defer></script>
@@ -1081,7 +1092,12 @@ document.addEventListener('DOMContentLoaded', function () {
           url: report.url || prev.url || lastUrl,
           industryId: report.industryId || prev.industryId,
           keyword: report.keyword || prev.keyword,
-          scoreOverall: (report.acquisition && report.acquisition.score != null) ? report.acquisition.score : (prev.scoreOverall != null ? prev.scoreOverall : report.confidence),
+          // Never store a guessed score: diagnosed-but-unknown stays null (not confidence, not 0).
+          scoreOverall: (report.acquisition && report.acquisition.score != null) ? report.acquisition.score : (prev.scoreOverall != null ? prev.scoreOverall : null),
+          diagnoseState: lastDiagnose ? (lastDiagnose.state || 'verified') : (prev.diagnoseState || 'not_diagnosed'),
+          ruleVersion: (lastDiagnose && lastDiagnose.ruleVersion) || prev.ruleVersion || null,
+          displayVersion: (lastDiagnose && lastDiagnose.displayVersion) || prev.displayVersion || (window.AirReachDisplay ? AirReachDisplay.version : null),
+          evidencePageUrl: (lastDiagnose && lastDiagnose.page && (lastDiagnose.page.finalUrl || lastDiagnose.page.baseHref)) || prev.evidencePageUrl || null,
           firstFix: firstFix,
           displayName: prev.displayName || report.keyword || report.url,
           reportLite: {
@@ -1157,7 +1173,9 @@ document.addEventListener('DOMContentLoaded', function () {
         '<div class="ix">' + (i + 1) + '</div>' +
         '<div class="val-wrap">' +
         '<div class="lab"><span data-tip="' + tipAttr(detail) + '">' + tipAttr(h.label) + '</span></div>' +
-        '<div class="val">' + tipAttr(h.value) + '<span class="unit">' + tipAttr(h.unit || '') + '</span></div>' +
+        '<div class="val">' + tipAttr(h.value) + '<span class="unit">' + tipAttr(h.unit || '') + '</span>' +
+        (h.band ? ' <span class="ar-band is-' + tipAttr(h.band.tone || 'muted') + '" data-tip="' + tipAttr(h.band.meaning || '') + '">' + tipAttr(h.band.label || '') + '</span>' : '') +
+        '</div>' +
         '<span class="what-is">' + tipAttr(what) + '</span>' +
         (h.meaning ? '<div class="meaning">' + tipAttr(h.meaning) + '</div>' : '') +
         (h.sub ? '<div class="sub">' + tipAttr(h.sub) + '</div>' : '') +
@@ -1186,7 +1204,20 @@ document.addEventListener('DOMContentLoaded', function () {
       if (factorFormula) {
         factorFormula.innerHTML = '<span data-tip="' + tipAttr(fb.formulaTip || '') + '">計算式</span>　' + tipAttr(fb.formula || '');
         if (fb.overall != null) {
-          factorFormula.innerHTML += '　→　<span data-tip="4要素の加重平均です。">総合 ' + tipAttr(String(fb.overall)) + ' / 100</span>';
+          factorFormula.innerHTML += '　→　<span data-tip="4要素の加重平均です。">総合 ' + tipAttr(String(fb.overall)) + ' / 100</span>' +
+            (fb.band ? ' <span class="ar-band is-' + tipAttr(fb.band.tone || 'muted') + '">' + tipAttr(fb.band.label || '') + '</span>' : '');
+        } else if (fb.state === 'partial') {
+          factorFormula.innerHTML += '　→　<span data-tip="必須項目が取得できなかったため、総合点は出していません。0点ではありません。">総合 未確認</span>';
+        }
+        // 区分の凡例と、点数が意味する範囲（表示契約から）
+        if (fb.legend && fb.legend.length) {
+          factorFormula.innerHTML += '<div class="ar-band-legend">' + fb.legend.map(function (b) {
+            return '<span class="ar-band is-' + tipAttr(b.tone) + '" data-tip="' + tipAttr(b.meaning || '') + '">' + tipAttr(b.label) + ' ' + tipAttr(b.range) + '点</span>';
+          }).join('') + '<span class="ar-band is-muted">未確認 = 取得できず（0点ではない）</span></div>';
+        }
+        if (fb.scopeSentence) {
+          factorFormula.innerHTML += '<p class="ar-band-scope">' + tipAttr(fb.scopeSentence) +
+            (fb.displayVersion ? ' <span style="color:#64748b;font-weight:600">（表示区分 ' + tipAttr(fb.displayVersion) + (fb.ruleVersion ? ' / 判定ルール ' + tipAttr(fb.ruleVersion) : '') + '）</span>' : '') + '</p>';
         }
       }
       factorCards.innerHTML = '';
@@ -1195,18 +1226,24 @@ document.addEventListener('DOMContentLoaded', function () {
         card.className = 'ar-factor-card is-' + ((f.level && f.level.tone) || 'muted');
         var miss = (f.missing && f.missing.length)
           ? '<ul class="ar-factor-miss">' + f.missing.map(function (m) {
-              return '<li>' + tipAttr(m) + '</li>';
+              var isUnknown = /未確認/.test(String(m));
+              return '<li' + (isUnknown ? ' style="color:#475569;background:#f1f5f9"' : '') + '>' + tipAttr(m) + '</li>';
             }).join('') + '</ul>'
           : '<ul class="ar-factor-miss"><li class="is-ok">大きな不足は見当たりません</li></ul>';
-        var scoreTxt = f.score == null ? '—' : String(f.score);
+        var unknownFactor = f.score == null;
+        var scoreTxt = unknownFactor ? '—' : String(f.score);
+        var bandLabel = (f.level && f.level.label) ? f.level.label : '未確認';
         var plain = f.tip || '';
-        if (f.score != null) {
-          plain = tipAttr(f.label) + 'は ' + tipAttr(scoreTxt) + ' / 100。総合点への重みは ' + tipAttr(String(f.weightPct)) + '%。' + tipAttr((f.level && f.level.label) ? ('いまの評価：' + f.level.label) : '');
+        if (!unknownFactor) {
+          plain = tipAttr(f.label) + 'は ' + tipAttr(scoreTxt) + ' / 100。総合点への重みは ' + tipAttr(String(f.weightPct)) + '%。いまの区分：' + tipAttr(bandLabel) + (f.state === 'partial' ? '（一部の項目は未確認）' : '');
+        } else {
+          plain = tipAttr(f.label) + 'は未確認です。取得できなかったため点数を出していません（0点ではありません）。';
         }
         card.innerHTML =
           '<div class="ar-factor-top">' +
           '<div class="ar-factor-label"><span data-tip="' + tipAttr(f.tip) + '">' + tipAttr(f.label) + '</span></div>' +
-          '<div class="ar-factor-score">' + tipAttr(scoreTxt) + '<span class="ar-factor-score-unit">/ 100</span></div></div>' +
+          '<div class="ar-factor-score">' + tipAttr(scoreTxt) + (unknownFactor ? '' : '<span class="ar-factor-score-unit">/ 100</span>') +
+          ' <span class="ar-band is-' + tipAttr((f.level && f.level.tone) || 'muted') + '" data-tip="' + tipAttr((f.level && f.level.meaning) || '') + '">' + tipAttr(bandLabel) + '</span></div></div>' +
           '<p class="ar-factor-plain">' + plain + '</p>' +
           '<div class="ar-factor-meta"><span data-tip="' + tipAttr(f.formula) + '">総合への重み ' + tipAttr(String(f.weightPct)) + '%</span>' +
           (f.contribution != null ? ' · 寄与約 ' + tipAttr(String(f.contribution)) + '点' : '') +
@@ -1215,11 +1252,14 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       if (factorGaps) {
         var gaps = (fb.gaps && fb.gaps.length) ? fb.gaps : (fb.weakFactors || []).map(function (w) {
-          return w.label + 'が弱い（' + w.score + '点）';
+          return w.label + 'が' + ((w.level && w.level.label) || '低い') + '区分（' + w.score + '点）';
         });
-        factorGaps.innerHTML = gaps.length
+        var unknownsHtml = (fb.unknowns || []).map(function (u) {
+          return '<li class="is-unknown" data-tip="取得できなかった項目です。不足と断定していません。">' + tipAttr(u) + '</li>';
+        }).join('');
+        factorGaps.innerHTML = (gaps.length
           ? gaps.map(function (g) { return '<li>' + tipAttr(g) + '</li>'; }).join('')
-          : '<li style="border-color:#86efac;background:#ecfdf5;color:#047857">大きな不足は検出されませんでした</li>';
+          : '<li style="border-color:#86efac;background:#ecfdf5;color:#047857">大きな不足は検出されませんでした</li>') + unknownsHtml;
       }
       if (window.AirReachTip) window.AirReachTip.enhance(factorsWrap);
     } else if (factorsWrap) {
@@ -1256,6 +1296,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (actCta && report.actionsCta) {
       actCta.textContent = report.actionsCta.label || actCta.textContent;
       if (report.actionsCta.href) actCta.href = report.actionsCta.href;
+    }
+
+    function scoreCell(v) {
+      if (v == null || !isFinite(Number(v))) return '<span data-tip="取得できなかったため判定していません。0点ではありません。">未確認</span>';
+      var b = window.AirReachDisplay ? AirReachDisplay.band(v) : null;
+      return String(v) + ' / 100' + (b ? ' <span class="ar-band is-' + tipAttr(b.tone) + '">' + tipAttr(b.label) + '</span>' : '');
     }
 
     function renderCheckList(items, ok) {
@@ -1297,6 +1343,14 @@ document.addEventListener('DOMContentLoaded', function () {
         '<div class="ar-expert-cols">' +
         '<div class="ar-expert-col is-good"><h3><span data-tip="公開ページで検出できた良い点です。">あるもの</span></h3>' + renderCheckList(insight.good, true) + '</div>' +
         '<div class="ar-expert-col is-bad"><h3><span data-tip="足りない・弱い点です。総合点が下がる主因です。">ないもの</span></h3>' + renderCheckList(insight.bad, false) + '</div>' +
+        ((insight.unknown && insight.unknown.length)
+          ? '<div class="ar-expert-col" style="border-color:#cbd5e1;background:#f8fafc"><h3><span data-tip="取得できなかったため判定していない項目です。0点にはしていません。">未確認</span></h3>' +
+            '<ul class="ar-check-list">' + insight.unknown.map(function (c) {
+              var ev = c.evidence || {};
+              var why = ev.url ? ('取得できませんでした：' + ev.url) : '取得できませんでした';
+              return '<li><span class="mark" style="background:#64748b;color:#fff">?</span><span data-tip="' + tipAttr(why) + '">' + tipAttr(c.label || '') + '</span></li>';
+            }).join('') + '</ul></div>'
+          : '') +
         '</div>' +
         '<div><h3 style="margin:0 0 12px;font-size:1.25rem;font-weight:900"><span data-tip="不足を埋めるための具体的な次の一手です。">次にやること</span></h3><div class="ar-next-grid">' + nextHtml + '</div></div>';
       if (window.AirReachTip) window.AirReachTip.enhance(shell);
@@ -1312,12 +1366,15 @@ document.addEventListener('DOMContentLoaded', function () {
           '<h3><span data-tip="4要素の加重平均です。AI掲載率ではありません。">総合点の内訳</span></h3>' +
           '<p class="sum">' + tipAttr((insight && insight.formula) || '総合 = 骨格×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25') + '</p>' +
           '<table class="ar-expert-table"><tbody>' +
-          '<tr><th><span data-tip="title / H1 / meta / canonical 等">骨格</span></th><td class="val">' + lastDiagnose.structure + ' / 100</td><td class="formula">× 0.30</td></tr>' +
-          '<tr><th><span data-tip="Organization / Service 等">会社情報</span></th><td class="val">' + lastDiagnose.entity + ' / 100</td><td class="formula">× 0.25</td></tr>' +
-          '<tr><th><span data-tip="FAQPage・可視FAQ">FAQ</span></th><td class="val">' + lastDiagnose.faq + ' / 100</td><td class="formula">× 0.20</td></tr>' +
-          '<tr><th><span data-tip="llms.txt / robots 等">見つけやすさ</span></th><td class="val">' + lastDiagnose.discover + ' / 100</td><td class="formula">× 0.25</td></tr>' +
-          '<tr><th>総合</th><td class="val">' + lastDiagnose.overall + ' / 100</td><td class="formula">計算結果</td></tr>' +
-          '</tbody></table></div>';
+          '<tr><th><span data-tip="title / H1 / meta / canonical 等">骨格</span></th><td class="val">' + scoreCell(lastDiagnose.structure) + '</td><td class="formula">× 0.30</td></tr>' +
+          '<tr><th><span data-tip="Organization / Service 等">会社情報</span></th><td class="val">' + scoreCell(lastDiagnose.entity) + '</td><td class="formula">× 0.25</td></tr>' +
+          '<tr><th><span data-tip="FAQPage・可視FAQ">FAQ</span></th><td class="val">' + scoreCell(lastDiagnose.faq) + '</td><td class="formula">× 0.20</td></tr>' +
+          '<tr><th><span data-tip="llms.txt / robots 等">見つけやすさ</span></th><td class="val">' + scoreCell(lastDiagnose.discover) + '</td><td class="formula">× 0.25</td></tr>' +
+          '<tr><th>総合</th><td class="val">' + scoreCell(lastDiagnose.overall) + '</td><td class="formula">' + (lastDiagnose.overall == null ? '必須項目が未取得のため出さない' : '計算結果') + '</td></tr>' +
+          '</tbody></table>' +
+          '<p class="sum" style="margin-top:8px">確認したページ：' + tipAttr((lastDiagnose.page && (lastDiagnose.page.finalUrl || lastDiagnose.page.baseHref)) || lastUrl || '—') +
+          (lastDiagnose.ruleVersion ? ' · 判定ルール ' + tipAttr(lastDiagnose.ruleVersion) : '') +
+          (lastDiagnose.displayVersion ? ' · 表示区分 ' + tipAttr(lastDiagnose.displayVersion) : '') + '</p></div>';
       } else {
         ex.innerHTML = '<p class="ar-note">URL診断前のため、準備度は仮値です。</p>';
       }
@@ -1451,6 +1508,10 @@ document.addEventListener('DOMContentLoaded', function () {
         displayName: survey.siteTitle || survey.url,
         siteTitle: survey.siteTitle || '',
         scoreOverall: surveyState.previewDiagnose ? surveyState.previewDiagnose.overall : null,
+        diagnoseState: surveyState.previewDiagnose ? (surveyState.previewDiagnose.state || 'verified') : 'not_diagnosed',
+        ruleVersion: surveyState.previewDiagnose ? surveyState.previewDiagnose.ruleVersion : null,
+        displayVersion: surveyState.previewDiagnose ? surveyState.previewDiagnose.displayVersion : (window.AirReachDisplay ? AirReachDisplay.version : null),
+        evidencePageUrl: surveyState.previewDiagnose && surveyState.previewDiagnose.page ? (surveyState.previewDiagnose.page.finalUrl || surveyState.previewDiagnose.page.baseHref) : null,
         previewDiagnose: surveyState.previewDiagnose,
         source: 'airreach_free'
       });
