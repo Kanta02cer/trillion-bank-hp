@@ -448,7 +448,7 @@
     var bad = checks.filter(function (c) { return stateOf(c) === 'ng'; });
     var unknown = checks.filter(function (c) { return stateOf(c) === 'unknown'; });
     var factorNames = {
-      structure: 'ページの骨格',
+      structure: 'ページ構造',
       entity: '会社・サービス情報',
       faq: 'よくある質問',
       discover: '見つけやすさ'
@@ -485,7 +485,7 @@
       nextNow: nextNow,
       nextWeeks: nextWeeks,
       nextSales: salesActions,
-      formula: '総合 = 骨格×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25',
+      formula: '総合 = ページ構造×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25',
       overall: d.overall
     };
   }
@@ -495,7 +495,7 @@
     var parts = [
       {
         id: 'structure',
-        label: 'ページの骨格',
+        label: 'ページ構造',
         tip: 'タイトル・H1・説明文など、ページの基本骨格です。主題が伝わるかを見ます。',
         score: d.structure,
         weight: 0.30,
@@ -608,7 +608,7 @@
       displayVersion: d.displayVersion || (disp ? disp.version : null),
       scopeSentence: disp ? disp.scopeSentence() : '',
       legend: disp ? disp.legend() : [],
-      formula: '総合 = 骨格×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25',
+      formula: '総合 = ページ構造×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25',
       formulaTip: '公開HTMLの準備度です。AI回答の掲載率や予約増を保証しません。',
       factors: factors,
       weakFactors: weak,

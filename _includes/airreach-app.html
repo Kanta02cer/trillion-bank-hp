@@ -195,6 +195,42 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-fix-example p{margin:8px 0 0;font-size:.9rem;line-height:1.65;color:#334155;background:#fff;border:1px solid var(--ar-line,#e2e8f0);border-radius:8px;padding:10px 12px}
 .ar-fix-details{width:100%;justify-content:center;background:var(--ar-accent-soft,#eff6ff);border-color:#bfdbfe;color:var(--ar-accent,#1d4ed8);font-weight:700}
 @media(max-width:520px){.ar-fix-desc{margin-left:0}}
+/* —— 詳細データ —— */
+.ar-detail-list{display:grid;gap:10px;margin:4px 0 22px}
+.ar-drow{border:1px solid var(--ar-line,#e2e8f0);border-radius:12px;background:#fff;overflow:hidden}
+.ar-drow-btn{display:grid;grid-template-columns:44px 1fr auto 20px;gap:12px;align-items:center;width:100%;padding:14px 14px;border:0;background:transparent;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.ar-drow-btn:hover{background:var(--ar-soft,#f8fafc)}
+.ar-drow-ico{width:44px;height:44px;border-radius:10px;background:var(--ar-accent-soft,#eff6ff);color:var(--ar-accent,#1d4ed8);display:flex;align-items:center;justify-content:center}
+.ar-drow-ico svg{width:22px;height:22px}
+.ar-drow-main{min-width:0}
+.ar-drow-lab{display:block;font-size:.85rem;font-weight:600;color:#334155;margin-bottom:2px}
+.ar-drow-score{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;color:var(--ar-ink,#0f172a);line-height:1.1}
+.ar-drow-score b{font-size:1.6rem}
+.ar-drow-unk{font-size:1rem;font-weight:700;color:var(--ar-muted,#64748b)}
+.ar-drow-chev{color:#94a3b8;font-size:1.4rem;line-height:1;transition:transform .15s}
+.ar-drow.is-open .ar-drow-chev{transform:rotate(90deg)}
+.ar-drow-panel{padding:0 14px 14px 70px;border-top:1px solid var(--ar-line,#e2e8f0);background:var(--ar-soft,#f8fafc)}
+.ar-drow-meta{margin:12px 0 8px;font-size:.88rem;color:#334155;line-height:1.6}
+.ar-drow-items{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.ar-drow-items li{font-size:.9rem;font-weight:600;padding:8px 10px;border-radius:8px;background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
+.ar-drow-items li.is-unknown{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
+.ar-drow-ok{margin:0;font-size:.9rem;font-weight:600;color:#047857}
+.ar-detail-h3{margin:0 0 10px;font-size:1rem;font-weight:700;color:var(--ar-ink,#0f172a)}
+.ar-detail-checks{list-style:none;margin:0 0 6px;padding:0;border:1px solid var(--ar-line,#e2e8f0);border-radius:12px;background:#fff;overflow:hidden}
+.ar-dchk{display:grid;grid-template-columns:28px 1fr 24px;gap:10px;align-items:center;padding:11px 14px;border-top:1px solid var(--ar-line,#e2e8f0)}
+.ar-dchk:first-child{border-top:0}
+.ar-dchk-mark{width:22px;height:22px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff}
+.ar-dchk.is-ok .ar-dchk-mark{background:#16a34a}
+.ar-dchk.is-ng .ar-dchk-mark{background:#dc2626}
+.ar-dchk.is-unknown .ar-dchk-mark{background:#64748b}
+.ar-dchk-lab{font-size:.92rem;font-weight:600;color:var(--ar-ink,#0f172a);min-width:0}
+.ar-dchk-state{margin-left:8px;font-size:.75rem;font-weight:600;color:var(--ar-muted,#64748b)}
+.ar-dchk.is-ng .ar-dchk-state{color:#b91c1c}
+.ar-dchk-link{color:#94a3b8;font-size:1.3rem;line-height:1;text-decoration:none;text-align:center}
+.ar-dchk-link:hover{color:var(--ar-accent,#1d4ed8)}
+.ar-dchk-link.is-off{opacity:.35}
+.ar-logic summary{font-size:.95rem}
+@media(max-width:520px){.ar-drow-btn{grid-template-columns:40px 1fr auto 16px;gap:8px}.ar-drow-panel{padding-left:14px}}
 /* HackⅡ 案内は対策と視覚的に分ける（別サービス） */
 .ar-referral{margin-top:22px;padding:18px 20px;border:2px dashed #cbd5e1;border-radius:14px;background:#f8fafc;color:#334155}
 .ar-referral-kicker{font-size:.85rem;font-weight:800;letter-spacing:.04em;color:#64748b;margin-bottom:6px}
@@ -683,8 +719,8 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
       <div id="ar-dash" class="ar-dash" aria-live="polite">
         <div class="ar-steps" id="ar-steps" aria-label="進捗">
           <span class="is-on" data-step="1">1 いま</span>
-          <span data-step="2">2 くわしく見る</span>
-          <span data-step="3">3 やること</span>
+          <span data-step="2">2 改善内容</span>
+          <span data-step="3">3 詳細データ</span>
         </div>
         <div class="ar-kicker" id="ar-analyzing" data-tip="お店・会社の担当者向けに、結論だけを先に出しています。">結論</div>
         <p class="ar-ind" id="ar-industry-line"></p>
@@ -716,7 +752,6 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <div class="ar-factors-head">
             <h3><span data-tip="公開ページの準備度を4つの要素に分けた内訳です。AI掲載率そのものではありません。">点数の内訳（各100点）</span></h3>
           </div>
-          <div class="ar-factor-formula" id="ar-factor-formula"></div>
           <div class="ar-factor-grid" id="ar-factor-cards"></div>
           <h3 style="margin:8px 0 0;font-size:1.2rem;font-weight:800"><span data-tip="点数が低い主な不足です。ここから直すと総合点が上がりやすいです。">足りないもの</span></h3>
           <ul class="ar-gap-list" id="ar-factor-gaps"></ul>
@@ -767,22 +802,6 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <a id="ar-cta-to-actions" href="#actions" hidden></a>
         </div>
 
-        <div class="ar-panel is-hidden" id="expert-view">
-          <div class="ar-kicker" data-tip="ホームページの内容から、良い点・足りない点・次にやることを整理します。">くわしく見る</div>
-          <h2 class="ar-h2">なにがあって、なにが足りないか</h2>
-          <div class="ar-expert-shell" id="ar-expert-shell"></div>
-          <div class="ar-logic" id="ar-logic-wrap">
-            <details id="ar-logic">
-              <summary><span data-tip="点数の式・代入値・エビデンス区分です。必要な人だけ開いてください。">算出ロジックの根拠を見る</span></summary>
-              <div id="ar-expert-meters" style="margin-top:16px"></div>
-              <div id="ar-expert-method" style="margin-top:12px" aria-live="polite"></div>
-            </details>
-          </div>
-          <div class="ar-cta-row">
-            <a class="ar-btn ar-btn-primary" href="#actions" id="ar-cta-to-actions-main">次にやることへ</a>
-          </div>
-        </div>
-
         <div class="ar-panel is-hidden" id="actions">
           <div class="ar-kicker">改善内容</div>
           <h2 class="ar-h2" id="ar-actions-title">まずやるべき改善</h2>
@@ -814,6 +833,27 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           </details>
           <p class="ar-note" id="ar-google-note" hidden></p>
         </div>
+        <div class="ar-panel is-hidden" id="expert-view">
+          <div class="ar-kicker">詳細データ</div>
+          <h2 class="ar-h2">詳細データ</h2>
+          <p class="ar-fix-lead" id="ar-detail-lead">各項目の点数と、検出した項目の詳細です。点数は「ホームページの情報整備」の区分で、AI掲載率・順位・成果ではありません。</p>
+          <!-- 項目別の点数（押すと不足・未確認の内訳が開く） -->
+          <div class="ar-detail-list" id="ar-detail-factors"></div>
+          <h3 class="ar-detail-h3">検出されたその他の項目</h3>
+          <ul class="ar-detail-checks" id="ar-detail-checks"></ul>
+          <div class="ar-logic" id="ar-logic-wrap">
+            <details id="ar-logic">
+              <summary>計算式と算出の詳細</summary>
+              <div class="ar-factor-formula" id="ar-factor-formula" style="margin-top:14px"></div>
+              <div id="ar-expert-meters" style="margin-top:16px"></div>
+              <div id="ar-expert-method" style="margin-top:12px" aria-live="polite"></div>
+            </details>
+          </div>
+          <div class="ar-cta-row">
+            <a class="ar-btn ar-btn-line" href="#actions" id="ar-cta-to-actions-main">改善内容に戻る</a>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -1340,7 +1380,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var fb = report.factors || (window.AirReachSales && AirReachSales.buildFactorBreakdown
       ? AirReachSales.buildFactorBreakdown(lastDiagnose) : null);
     if (factorsWrap && factorCards && fb) {
-      factorsWrap.hidden = false;
+      factorsWrap.hidden = true; // 内訳は「詳細データ」で表示する
       if (factorFormula) {
         factorFormula.innerHTML = '<span data-tip="' + tipAttr(fb.formulaTip || '') + '" data-tip-icon>計算式</span>　' + tipAttr(fb.formula || '');
         if (fb.overall != null) {
@@ -1494,48 +1534,73 @@ document.addEventListener('DOMContentLoaded', function () {
       }).join('') + '</ul>';
     }
 
-    var shell = $('ar-expert-shell');
     var insight = report.expertInsight || (window.AirReachSales && AirReachSales.buildExpertInsight
       ? AirReachSales.buildExpertInsight(lastDiagnose, report.actions) : null);
-    if (shell && insight) {
-      var nextHtml = '';
-      (insight.nextNow || []).forEach(function (t) {
-        nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="今すぐ着手できる公開ページの修正です。">今すぐ</span></div><p class="what">' + tipAttr(t) + '</p></div>';
+
+    // ---- 詳細データ: 項目別の点数（開閉）＋ 検出された項目の一覧 ----
+    var DICONS = {
+      structure: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6M9 13h7M9 17h7"/></svg>',
+      entity: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6M3 21h18"/></svg>',
+      faq: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>',
+      discover: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>'
+    };
+    var DLABEL = { structure: 'ページ構造', entity: '会社・サービス情報', faq: 'よくある質問', discover: '見つけやすさ' };
+    var detailFactors = $('ar-detail-factors');
+    if (detailFactors) {
+      detailFactors.innerHTML = '';
+      (fb && fb.factors ? fb.factors : []).forEach(function (f) {
+        var unknown = f.score == null;
+        var lv = f.level || { label: '未確認', tone: 'muted' };
+        var row = document.createElement('div');
+        row.className = 'ar-drow';
+        var items = (f.missing || []).map(function (m) {
+          var isUnk = /未確認/.test(String(m));
+          return '<li class="' + (isUnk ? 'is-unknown' : 'is-ng') + '">' + tipAttr(m) + '</li>';
+        }).join('');
+        row.innerHTML =
+          '<button type="button" class="ar-drow-btn" aria-expanded="false">' +
+          '<span class="ar-drow-ico">' + (DICONS[f.id] || DICONS.structure) + '</span>' +
+          '<span class="ar-drow-main"><span class="ar-drow-lab">' + tipAttr(DLABEL[f.id] || f.label) + '</span>' +
+          '<span class="ar-drow-score">' + (unknown ? '<span class="ar-drow-unk">未確認</span>' : '<b>' + tipAttr(String(f.score)) + '</b> / 100') + '</span></span>' +
+          '<span class="ar-band is-' + tipAttr(lv.tone || 'muted') + '">' + tipAttr(lv.label || '未確認') + '</span>' +
+          '<span class="ar-drow-chev" aria-hidden="true">›</span>' +
+          '</button>' +
+          '<div class="ar-drow-panel" hidden>' +
+          '<p class="ar-drow-meta">' + tipAttr(f.tip || '') + (unknown ? ' 取得できなかったため点数を出していません（0点ではありません）。' : ' 総合への重み ' + tipAttr(String(f.weightPct)) + '%・寄与約 ' + tipAttr(String(f.contribution)) + '点。') + '</p>' +
+          (items ? '<ul class="ar-drow-items">' + items + '</ul>' : '<p class="ar-drow-ok">大きな不足は見当たりません。</p>') +
+          '</div>';
+        var btn = row.querySelector('.ar-drow-btn');
+        var panel = row.querySelector('.ar-drow-panel');
+        btn.addEventListener('click', function () {
+          var open = panel.hidden;
+          panel.hidden = !open;
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+          row.classList.toggle('is-open', open);
+        });
+        detailFactors.appendChild(row);
       });
-      (insight.nextWeeks || []).slice(0, 3).forEach(function (t) {
-        nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="1〜2週間で整えると効果が出やすい項目です。">次に</span></div><p class="what">' + tipAttr(t) + '</p></div>';
-      });
-      (insight.nextSales || []).forEach(function (a) {
-        nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="' + tipAttr(a.tip || '') + '">優先対策</span></div><p class="what">' + tipAttr(a.action || a.title) +
-          (a.evidence && a.evidence.href ? ' <a class="ar-act-evidence" href="' + tipAttr(a.evidence.href) + '" target="_blank" rel="noopener noreferrer" data-tip="' + tipAttr(a.evidence.note || '') + '">' + tipAttr(a.evidence.label) + ' ↗</a>' : '') +
-          '</p></div>';
-      });
-      if (!nextHtml) {
-        nextHtml = '<div class="ar-next-card"><div class="when">次に</div><p class="what">「ないもの」に挙がった項目を、確認したページから順に補ってください。</p></div>';
+    }
+    var detailChecks = $('ar-detail-checks');
+    if (detailChecks) {
+      detailChecks.innerHTML = '';
+      var checks = (lastDiagnose && lastDiagnose.checks) || [];
+      if (!checks.length) {
+        detailChecks.innerHTML = '<li class="ar-dchk is-unknown"><span class="ar-dchk-mark">?</span><span class="ar-dchk-lab">診断データがまだありません。</span></li>';
       }
-      var badgeTxt = (AirReachSales.badgeLabel ? AirReachSales.badgeLabel(insight.evidenceClass) : insight.evidenceClass) || '';
-      shell.innerHTML =
-        '<div class="ar-expert-hero">' +
-        '<div class="lbl"><span data-tip="' + tipAttr(insight.evidenceTip) + '">ホームページの情報整備</span> <span class="ar-badge-e ' + badgeClass(insight.evidenceClass) + '">' + tipAttr(badgeTxt) + '</span></div>' +
-        '<div class="score">' + tipAttr(insight.overall != null ? String(insight.overall) : '—') + ' <span style="font-size:1.1rem;color:#334155">/ 100</span></div>' +
-        '<div style="margin-top:10px;font-weight:800;color:#1e293b;font-size:1.05rem"><span data-tip="' + tipAttr(insight.formula) + '">計算で出た点数</span></div>' +
-        '</div>' +
-        '<div class="ar-expert-cols">' +
-        '<div class="ar-expert-col is-good"><h3><span data-tip="公開ページで検出できた良い点です。">あるもの</span></h3>' + renderCheckList(insight.good, true) + '</div>' +
-        '<div class="ar-expert-col is-bad"><h3><span data-tip="足りない・弱い点です。総合点が下がる主因です。">ないもの</span></h3>' + renderCheckList(insight.bad, false) + '</div>' +
-        ((insight.unknown && insight.unknown.length)
-          ? '<div class="ar-expert-col" style="border-color:#cbd5e1;background:#f8fafc"><h3><span data-tip="取得できなかったため判定していない項目です。0点にはしていません。" data-tip-icon>未確認</span></h3>' +
-            '<ul class="ar-check-list">' + insight.unknown.map(function (c) {
-              var ev = c.evidence || {};
-              var why = ev.url ? ('取得できませんでした：' + ev.url) : '取得できませんでした';
-              return '<li><span class="mark" style="background:#64748b;color:#fff">?</span><span data-tip="' + tipAttr(why) + '">' + tipAttr(c.label || '') + '</span></li>';
-            }).join('') + '</ul></div>'
-          : '') +
-        '</div>' +
-        '<div><h3 style="margin:0 0 12px;font-size:1.25rem;font-weight:900"><span data-tip="不足を埋めるための具体的な次の一手です。">次にやること</span></h3><div class="ar-next-grid">' + nextHtml + '</div></div>';
-      if (window.AirReachTip) window.AirReachTip.enhance(shell);
-    } else if (shell) {
-      shell.innerHTML = '<p class="ar-note">診断データがまだありません。</p>';
+      checks.forEach(function (c) {
+        var state = c.state || (c.ok ? 'ok' : 'ng');
+        var mark = state === 'ok' ? '✓' : (state === 'ng' ? '!' : '?');
+        var label = String(c.label || '').replace(/がある$/, '');
+        var ev = c.evidence || {};
+        var href = state !== 'unknown' && ev.finalUrl ? ev.finalUrl + (ev.anchor ? '#' + ev.anchor : '') : '';
+        var li = document.createElement('li');
+        li.className = 'ar-dchk is-' + state;
+        li.innerHTML =
+          '<span class="ar-dchk-mark" aria-hidden="true">' + mark + '</span>' +
+          '<span class="ar-dchk-lab">' + tipAttr(label) + '<span class="ar-dchk-state">' + (state === 'ok' ? 'あり' : (state === 'ng' ? 'なし' : '未確認')) + '</span></span>' +
+          (href ? '<a class="ar-dchk-link" href="' + tipAttr(href) + '" target="_blank" rel="noopener noreferrer" title="確認したページを開く" aria-label="' + tipAttr(label) + ' の確認したページを開く">›</a>' : '<span class="ar-dchk-link is-off" aria-hidden="true">›</span>');
+        detailChecks.appendChild(li);
+      });
     }
 
     var ex = $('ar-expert-meters');
@@ -1544,9 +1609,9 @@ document.addEventListener('DOMContentLoaded', function () {
         ex.innerHTML =
           '<div class="ar-expert-block">' +
           '<h3><span data-tip="4要素の加重平均です。AI掲載率ではありません。">総合点の内訳</span></h3>' +
-          '<p class="sum">' + tipAttr((insight && insight.formula) || '総合 = 骨格×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25') + '</p>' +
+          '<p class="sum">' + tipAttr((insight && insight.formula) || '総合 = ページ構造×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25') + '</p>' +
           '<table class="ar-expert-table"><tbody>' +
-          '<tr><th><span data-tip="title / H1 / meta / canonical 等">骨格</span></th><td class="val">' + scoreCell(lastDiagnose.structure) + '</td><td class="formula">× 0.30</td></tr>' +
+          '<tr><th><span data-tip="title / H1 / meta / canonical 等">ページ構造</span></th><td class="val">' + scoreCell(lastDiagnose.structure) + '</td><td class="formula">× 0.30</td></tr>' +
           '<tr><th><span data-tip="Organization / Service 等">会社情報</span></th><td class="val">' + scoreCell(lastDiagnose.entity) + '</td><td class="formula">× 0.25</td></tr>' +
           '<tr><th><span data-tip="FAQPage・可視FAQ">FAQ</span></th><td class="val">' + scoreCell(lastDiagnose.faq) + '</td><td class="formula">× 0.20</td></tr>' +
           '<tr><th><span data-tip="llms.txt / robots 等">見つけやすさ</span></th><td class="val">' + scoreCell(lastDiagnose.discover) + '</td><td class="formula">× 0.25</td></tr>' +
@@ -1741,7 +1806,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (href.indexOf('expert-view') >= 0) {
       revealPanel('expert-view');
-      setStep(2);
+      setStep(3);
       $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
       if ($('ar-next-bar')) {
         $('ar-next-label').textContent = '次：いちばん直すことを決める';
@@ -1752,16 +1817,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     goActions();
     if ($('ar-next-bar')) {
-      $('ar-next-label').textContent = '次：この店の対策を相談する';
-      $('ar-next-btn').setAttribute('href', '#actions');
-      $('ar-next-btn').textContent = '相談へ';
+      $('ar-next-label').textContent = '次：詳しいデータを見る';
+      $('ar-next-btn').setAttribute('href', '#expert-view');
+      $('ar-next-btn').textContent = '進む';
     }
   });
   if ($('ar-cta-more')) {
     $('ar-cta-more').addEventListener('click', function (e) {
       e.preventDefault();
       revealPanel('expert-view');
-      setStep(2);
+      setStep(3);
       $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
@@ -1786,19 +1851,27 @@ document.addEventListener('DOMContentLoaded', function () {
     $('ar-cta-brand-next').addEventListener('click', function (e) {
       e.preventDefault();
       revealPanel('expert-view');
-      setStep(2);
+      setStep(3);
       $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
   function goActions(e) {
     if (e) e.preventDefault();
     revealPanel('actions');
-    setStep(3);
+    setStep(2);
     $('actions').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   if ($('ar-cta-to-actions')) $('ar-cta-to-actions').addEventListener('click', goActions);
   if ($('ar-cta-to-actions-main')) $('ar-cta-to-actions-main').addEventListener('click', goActions);
-  if ($('ar-cta-actions')) $('ar-cta-actions').addEventListener('click', function () { setStep(3); });
+  if ($('ar-cta-actions')) $('ar-cta-actions').addEventListener('click', function () { setStep(2); });
+  if ($('ar-cta-details')) {
+    $('ar-cta-details').addEventListener('click', function (e) {
+      e.preventDefault();
+      revealPanel('expert-view');
+      setStep(3);
+      $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
   $('ar-google-connect').addEventListener('click', function () {
     var __auth=(window.AirReachAPI&&window.AirReachAPI.apiUrl)?window.AirReachAPI.apiUrl('/api/google/auth'):'/api/google/auth/';
