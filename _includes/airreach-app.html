@@ -13,7 +13,7 @@
 .ar-badge,.ar-kicker,.ar-gate-kicker,.ar-gate-prog{font-family:var(--mono,'Space Grotesk','Inter',ui-monospace,monospace)}
 .ar-wrap{width:min(880px,calc(100% - 36px));margin:0 auto}
 body.ar-gated{overflow:hidden}
-body[data-industry]:not([data-industry=""]) #gate-industry{display:none}
+body[data-industry]:not([data-industry=""]) #gate-industry-wrap{display:none}
 body[data-industry]:not([data-industry=""]) .ar-gate-step[data-step="1"] .lead::after{content:"";display:block}
 
 body.ar-gated #main,body.ar-gated .site-header,body.ar-gated .site-footer,
@@ -57,6 +57,43 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-btn-primary{background:#2563eb;border-color:#1d4ed8;color:#fff;box-shadow:0 8px 20px rgba(37,99,235,.25)}
 .ar-btn-primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 .ar-btn-line{border-color:#93c5fd;color:#1d4ed8;background:#fff;font-weight:800}
+/* —— 入力画面（1）と診断中（2） —— */
+.ar-gate-card{width:min(560px,100%)}
+.ar-gate-lead{margin:0 0 22px;font-size:1rem;line-height:1.7;color:#334155;font-weight:500}
+.ar-gate-lead-center{text-align:center}
+.ar-gate-h1-center{text-align:center}
+.ar-gate label.ar-field-big{display:block;font-size:.95rem;font-weight:700;color:#0f172a;margin:0 0 6px}
+.ar-field-opt{font-weight:500;color:#64748b;font-size:.85rem}
+.ar-gate input[type=url]{width:100%;box-sizing:border-box;margin:0 0 16px;border:1.5px solid #cbd5e1;border-radius:10px;padding:14px 16px;font-size:1.05rem;min-height:52px;background:#fff}
+.ar-gate input[type=url]:focus{outline:3px solid rgba(37,99,235,.2);border-color:#2563eb}
+.ar-select-wrap{position:relative;margin:0 0 16px}
+.ar-select-wrap::after{content:"⌄";position:absolute;right:14px;top:50%;transform:translateY(-60%);color:#64748b;pointer-events:none;font-size:1.1rem}
+.ar-gate select{width:100%;box-sizing:border-box;appearance:none;-webkit-appearance:none;border:1.5px solid #cbd5e1;border-radius:10px;padding:14px 40px 14px 16px;font:inherit;font-size:1.05rem;min-height:52px;background:#fff;color:#0f172a}
+.ar-gate select:focus{outline:3px solid rgba(37,99,235,.2);border-color:#2563eb}
+.ar-gate label.ar-consent-line{display:flex;grid-template-columns:none;gap:10px;align-items:flex-start;margin:4px 0 18px;font-size:.92rem;font-weight:600;color:#0f172a;cursor:pointer}
+.ar-consent-line input{width:20px;height:20px;margin-top:2px;accent-color:#2563eb;flex:0 0 auto}
+.ar-consent-line small{display:block;margin-top:3px;font-size:.78rem;font-weight:500;color:#64748b;line-height:1.55}
+.ar-gate-cta{width:100%;justify-content:center;font-size:1.05rem;min-height:54px}
+.ar-gate-badges{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:14px 0 0;font-size:.85rem;color:#475569;font-weight:600}
+.ar-gate-badges span{display:inline-flex;align-items:center;gap:6px}
+.ar-gate-badges svg{width:16px;height:16px;color:#475569}
+.ar-gate-loading{text-align:center;padding:8px 0 4px}
+.ar-spinner{width:64px;height:64px;margin:22px auto 26px;border-radius:999px;border:6px solid #e2e8f0;border-top-color:#2563eb;animation:ar-spin 1s linear infinite}
+.ar-spinner.is-stopped{animation:none;border-top-color:#cbd5e1}
+@keyframes ar-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.ar-spinner{animation:none;border-top-color:#2563eb}}
+.ar-progress{list-style:none;margin:0 auto;padding:0;display:grid;gap:12px;max-width:340px;text-align:left}
+.ar-progress li{display:flex;gap:10px;align-items:center;font-size:.92rem;font-weight:600;color:#94a3b8}
+.ar-progress-mark{width:20px;height:20px;border-radius:999px;border:2px solid #cbd5e1;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff}
+.ar-progress li.is-active{color:#0f172a}
+.ar-progress li.is-active .ar-progress-mark{border-color:#2563eb;background:#eff6ff}
+.ar-progress li.is-done{color:#334155}
+.ar-progress li.is-done .ar-progress-mark{border-color:#2563eb;background:#2563eb}
+.ar-progress li.is-done .ar-progress-mark::after{content:"✓"}
+.ar-progress li.is-failed{color:#b91c1c}
+.ar-progress li.is-failed .ar-progress-mark{border-color:#dc2626;background:#dc2626}
+.ar-progress li.is-failed .ar-progress-mark::after{content:"!"}
+.ar-gate-loading .ar-gate-actions{margin-top:22px}
 .ar-consent-card{display:flex;gap:14px;align-items:center;border:3px solid #93c5fd;border-radius:16px;padding:18px 20px;margin:8px 0 20px;background:#eff6ff;cursor:pointer;font-size:1.2rem;font-weight:800;color:#0f172a}
 .ar-consent-card.is-on{border-color:#16a34a;background:#ecfdf5;color:#14532d}
 .ar-consent-card input{width:26px;height:26px;accent-color:#16a34a;flex:0 0 auto}
@@ -637,60 +674,58 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 <body class="ar-page ar-gated" data-industry="{{ page.airreach_industry | default: '' }}" data-tip-mode="minimal">
 {% include tb-header.html %}
 
-<!-- Frosted glass survey: blocks page until answered -->
+<!-- Frosted glass gate: 1 入力 → 2 診断中 → 結果へ遷移 -->
 <div id="ar-gate" class="ar-gate is-on" role="dialog" aria-modal="true" aria-labelledby="gate-title">
   <div class="ar-gate-card">
-    <div class="ar-gate-prog" aria-hidden="true">
-      <span class="is-on" data-g="1"></span>
-      <span data-g="2"></span>
-      <span data-g="3"></span>
-    </div>
 
     <div class="ar-gate-step is-on" data-step="1">
-      <p class="ar-gate-kicker">STEP 1 / 3 ・ ホームページ</p>
-      <h1 id="gate-title">あなたのお店を調べます</h1>
-      <label class="ar-field-big"><span data-tip="お店や会社の公式サイトのURLです。">ホームページのURL</span>
-        <input id="gate-url" type="url" inputmode="url" placeholder="https://example.com/" autocomplete="url" required>
-      </label>
-      <label class="ar-consent-card" id="gate-consent-card" for="gate-proxy">
+      <p class="ar-gate-kicker">AirReach</p>
+      <h1 id="gate-title">検索から、<br>お客様を増やせるか<br>診断します。</h1>
+      <p class="ar-gate-lead">あなたのサイトを解析し、検索から増やせる問い合わせ数の目安と改善ポイントをお伝えします。</p>
+
+      <label class="ar-field-big" for="gate-url">ホームページのURL</label>
+      <input id="gate-url" type="url" inputmode="url" placeholder="https://example.com/" autocomplete="url" required>
+
+      <label class="ar-field-big" for="gate-outcome-select">増やしたいこと</label>
+      <div class="ar-select-wrap"><select id="gate-outcome-select" required></select></div>
+
+      <div id="gate-industry-wrap">
+        <label class="ar-field-big" for="gate-industry-select">お店・会社の種類 <span class="ar-field-opt">（任意）</span></label>
+        <div class="ar-select-wrap"><select id="gate-industry-select">
+          <option value="">自動で判定する</option>
+          <option value="restaurant">飲食店</option>
+          <option value="clinic">美容・クリニック</option>
+          <option value="b2b">会社向けサービス</option>
+          <option value="media">メディア・広報</option>
+          <option value="other">その他</option>
+        </select></div>
+      </div>
+
+      <label class="ar-consent-line" for="gate-proxy">
         <input id="gate-proxy" type="checkbox" required aria-required="true">
-        <span class="ar-consent-title" data-tip="サイト情報を調べるために必要な同意です。直接取れないときだけ、ログイン情報を除いたURLを取得します。成果や掲載は保証しません。">サイト情報の取得に同意する</span>
+        <span>サイト情報の取得に同意する<small>診断のために公開ページを読み取ります。直接取れないときだけ、ログイン情報を除いたURLを当社の取得サーバー経由で取得します。成果や掲載は保証しません。</small></span>
       </label>
-      <div class="ar-gate-actions">
-        <button type="button" class="ar-btn ar-btn-primary" id="gate-next-1" disabled>30秒で無料診断する</button>
-      </div>
-      <p class="ar-gate-note" id="gate-step1-hint">業種や店名は、サイトから自動で読み取ります。</p>
+
+      <button type="button" class="ar-btn ar-btn-primary ar-gate-cta" id="gate-next-1" disabled>診断をはじめる →</button>
+      <p class="ar-gate-badges" aria-label="補足">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>無料で診断できます</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>登録不要です</span>
+      </p>
     </div>
 
-    <div class="ar-gate-step" data-step="2">
-      <p class="ar-gate-kicker">STEP 2 / 3 ・ 確認</p>
-      <h1>このお店で合っていますか？</h1>
-      <div class="ar-confirm-card" id="gate-confirm-card">
-        <p class="ar-confirm-name" id="gate-confirm-name">—</p>
-        <p class="ar-confirm-meta" id="gate-confirm-meta">—</p>
-        <p class="ar-confirm-url" id="gate-confirm-url">—</p>
-      </div>
-      <p class="ar-gate-kicker" style="margin-top:16px">違う場合は種類だけ直す</p>
-      <div class="ar-pick" id="gate-industry">
-        <button type="button" data-industry="restaurant"><div class="t">飲食店</div></button>
-        <button type="button" data-industry="clinic"><div class="t">美容・クリニック</div></button>
-        <button type="button" data-industry="b2b"><div class="t">会社向けサービス</div></button>
-        <button type="button" data-industry="media"><div class="t">メディア・広報</div></button>
-        <button type="button" data-industry="other"><div class="t">その他</div></button>
-      </div>
-      <div class="ar-gate-actions">
-        <button type="button" class="ar-btn ar-btn-line" id="gate-back-2">戻る</button>
-        <button type="button" class="ar-btn ar-btn-primary" id="gate-next-2">はい、このお店です</button>
-      </div>
-    </div>
-
-    <div class="ar-gate-step" data-step="3">
-      <p class="ar-gate-kicker">STEP 3 / 3 ・ 増やしたいこと</p>
-      <h1>何を増やしたいですか？</h1>
-      <div class="ar-pick" id="gate-outcome"></div>
-      <div class="ar-gate-actions">
-        <button type="button" class="ar-btn ar-btn-line" id="gate-back-3">戻る</button>
-        <button type="button" class="ar-btn ar-btn-primary" id="gate-submit" disabled>この条件で診断する</button>
+    <div class="ar-gate-step ar-gate-loading" data-step="2" aria-live="polite">
+      <p class="ar-gate-kicker">AirReach</p>
+      <h1 class="ar-gate-h1-center">診断中です。</h1>
+      <p class="ar-gate-lead ar-gate-lead-center">ホームページを解析しています。<br>しばらくお待ちください。</p>
+      <div class="ar-spinner" id="gate-spinner" aria-hidden="true"></div>
+      <ul class="ar-progress" id="gate-progress">
+        <li data-p="1"><span class="ar-progress-mark" aria-hidden="true"></span><span>サイトの情報を取得しています</span></li>
+        <li data-p="2"><span class="ar-progress-mark" aria-hidden="true"></span><span>検索エンジンでの見つけやすさを分析</span></li>
+        <li data-p="3"><span class="ar-progress-mark" aria-hidden="true"></span><span>改善ポイントを算出しています</span></li>
+      </ul>
+      <div class="ar-gate-actions" id="gate-fail-actions" hidden>
+        <button type="button" class="ar-btn ar-btn-line" id="gate-retry">入力に戻る</button>
+        <button type="button" class="ar-btn ar-btn-primary" id="gate-continue">推定のまま結果を見る</button>
       </div>
     </div>
 
@@ -959,16 +994,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function updateGateStep1() {
     var url = ($('gate-url').value || '').trim();
-    var ok = !!$('gate-proxy').checked && !!url;
+    var sel = $('gate-outcome-select');
+    var ok = !!$('gate-proxy').checked && !!url && !!(sel && sel.value);
     var btn = $('gate-next-1');
     if (btn) btn.disabled = !ok;
-    var card = $('gate-consent-card');
-    if (card) card.classList.toggle('is-on', !!$('gate-proxy').checked);
-  }
-
-  function updateGateSubmit() {
-    var btn = $('gate-submit');
-    if (btn) btn.disabled = !surveyState.outcomeGoal;
   }
 
   function industryLabel(id) {
@@ -985,34 +1014,21 @@ document.addEventListener('DOMContentLoaded', function () {
     return defaults[industry] || defaults.other;
   }
 
-  function fillConfirmCard() {
-    $('gate-confirm-name').textContent = surveyState.siteTitle || '（店名を読み取り中）';
-    $('gate-confirm-meta').textContent = industryLabel(surveyState.industryId);
-    $('gate-confirm-url').textContent = surveyState.url || '—';
-    document.querySelectorAll('#gate-industry button').forEach(function (b) {
-      b.classList.toggle('is-on', b.getAttribute('data-industry') === surveyState.industryId);
-    });
-  }
-
-  function renderOutcomes() {
-    var wrap = $('gate-outcome');
-    if (!wrap) return;
-    var list = OUTCOMES[surveyState.industryId] || OUTCOMES.other;
-    wrap.innerHTML = list.map(function (o) {
-      return '<button type="button" data-outcome="' + o.id + '" data-goal="' + o.goal + '"><div class="t">' + o.label + '</div></button>';
-    }).join('');
-    wrap.querySelectorAll('button').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        wrap.querySelectorAll('button').forEach(function (b) { b.classList.remove('is-on'); });
-        btn.classList.add('is-on');
-        surveyState.outcomeGoal = btn.getAttribute('data-outcome');
-        surveyState.goal = btn.getAttribute('data-goal');
-        updateGateSubmit();
+  // 「増やしたいこと」: 業種ページではその業種の選択肢、柱ページでは全選択肢
+  function renderOutcomeSelect() {
+    var sel = $('gate-outcome-select');
+    if (!sel) return;
+    var list;
+    if (pageIndustry) {
+      list = OUTCOMES[pageIndustry] || OUTCOMES.other;
+    } else {
+      list = Object.keys(OUTCOME_LABELS).map(function (id) {
+        return { id: id, label: OUTCOME_LABELS[id], goal: (id === 'awareness' || id === 'citation') ? 'visibility' : 'acquisition' };
       });
-    });
-    surveyState.outcomeGoal = '';
-    surveyState.goal = '';
-    updateGateSubmit();
+    }
+    sel.innerHTML = '<option value="">選んでください</option>' + list.map(function (o) {
+      return '<option value="' + o.id + '" data-goal="' + o.goal + '">' + o.label + '</option>';
+    }).join('');
   }
 
   function openGate() {
@@ -1037,40 +1053,51 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.ar-gate-step').forEach(function (el) {
       el.classList.toggle('is-on', Number(el.getAttribute('data-step')) === n);
     });
-    document.querySelectorAll('.ar-gate-prog span').forEach(function (el) {
-      el.classList.toggle('is-on', Number(el.getAttribute('data-g')) <= n);
-    });
     gateErr('');
-    if (n === 3) renderOutcomes();
   }
 
-  function startPreviewDiagnose() {
+  // 診断中の進行表示。done = 完了した行数、failed = 失敗した行番号
+  function setProgress(done, failed) {
+    document.querySelectorAll('#gate-progress li').forEach(function (li) {
+      var p = Number(li.getAttribute('data-p'));
+      li.classList.toggle('is-done', p <= done);
+      li.classList.toggle('is-active', p === done + 1 && !failed);
+      li.classList.toggle('is-failed', !!failed && p === failed);
+    });
+    var sp = $('gate-spinner');
+    if (sp) sp.classList.toggle('is-stopped', !!failed || done >= 3);
+  }
+
+  function startDiagnoseFlow() {
     var url = ($('gate-url').value || '').trim();
     if (!url) { gateErr('ホームページのURLを入力してください。'); return; }
-    var normalized = url.indexOf('http') === 0 ? url : ('https://' + url);
-    try { new URL(normalized); } catch (e) { gateErr('正しいURL形式で入力してください（https://…）。'); return; }
-    if (!$('gate-proxy').checked) { gateErr('サイト情報の取得に同意してください。'); updateGateStep1(); return; }
-    var btn = $('gate-next-1');
-    btn.disabled = true;
-    btn.textContent = '調べています…';
-    gateErr('');
-    surveyState.url = url;
+    if (!$('gate-proxy').checked) { gateErr('サイト情報の取得に同意してください。'); return; }
+    var sel = $('gate-outcome-select');
+    var opt = sel && sel.options[sel.selectedIndex];
+    if (!sel || !sel.value) { gateErr('増やしたいことを選んでください。'); return; }
+    if (!window.AirReach) { gateErr('診断スクリプトの読み込みに失敗しました。'); return; }
+    surveyState.outcomeGoal = sel.value;
+    surveyState.goal = (opt && opt.getAttribute('data-goal')) || 'acquisition';
     surveyState.proxyConsent = true;
-    if (!window.AirReach) {
-      gateErr('診断スクリプトの読み込みに失敗しました。');
-      btn.disabled = false;
-      btn.textContent = '30秒で無料診断する';
-      return;
-    }
+    var chosen = pageIndustry || (($('gate-industry-select') && $('gate-industry-select').value) || '');
+    var normalized = url.indexOf('http') === 0 ? url : ('https://' + url);
+    var started = Date.now();
+    setGateStep(2);
+    $('gate-fail-actions').hidden = true;
+    setProgress(0);
+    var t1 = setTimeout(function () { setProgress(1); }, 700);
+
     window.AirReach.diagnose(url, { allowProxy: true }).then(function (result) {
+      clearTimeout(t1);
       surveyState.previewDiagnose = result;
       lastDiagnose = result;
-      try { lastUrl = window.AirReach.normalizeUrl(url).href; surveyState.url = lastUrl; } catch (e) { lastUrl = normalized; surveyState.url = lastUrl; }
+      try { lastUrl = window.AirReach.normalizeUrl(url).href; } catch (e) { lastUrl = normalized; }
+      surveyState.url = lastUrl;
       var det = window.AirReachIndustry
         ? AirReachIndustry.detectIndustry({ url: lastUrl, diagnose: result })
         : { id: 'other', label: 'その他', confidence: 40 };
-      if (pageIndustry) {
-        surveyState.industryId = pageIndustry;
+      if (chosen) {
+        surveyState.industryId = chosen;
       } else {
         var id = det.id || 'other';
         if (id === 'saas' || id === 'hr') id = 'b2b';
@@ -1080,52 +1107,38 @@ document.addEventListener('DOMContentLoaded', function () {
       industryDetect = det;
       surveyState.siteTitle = (result.page && (result.page.h1 || result.page.title)) || lastUrl;
       surveyState.keyword = autoKeyword(result, surveyState.industryId);
-      fillConfirmCard();
-      setGateStep(2);
-      btn.textContent = '30秒で無料診断する';
-      updateGateStep1();
+      setProgress(2);
+      setTimeout(function () {
+        setProgress(3);
+        var wait = Math.max(300, 1400 - (Date.now() - started));
+        setTimeout(finishSurvey, wait);
+      }, 350);
     }).catch(function (ex) {
+      clearTimeout(t1);
       surveyState.previewDiagnose = null;
-      try { lastUrl = window.AirReach.normalizeUrl(url).href; surveyState.url = lastUrl; } catch (e) { lastUrl = normalized; surveyState.url = lastUrl; }
-      surveyState.industryId = pageIndustry || 'other';
+      try { lastUrl = window.AirReach.normalizeUrl(url).href; } catch (e) { lastUrl = normalized; }
+      surveyState.url = lastUrl;
+      surveyState.industryId = chosen || 'other';
       surveyState.siteTitle = String(lastUrl).replace(/^https?:\/\//, '').split('/')[0];
       surveyState.keyword = autoKeyword(null, surveyState.industryId);
-      fillConfirmCard();
-      setGateStep(2);
-      gateErr((ex && ex.message ? ex.message + ' ' : '') + '取得に失敗したため、推定で進めます。');
-      btn.textContent = '30秒で無料診断する';
-      updateGateStep1();
+      setProgress(0, 1);
+      gateErr((ex && ex.message ? ex.message + ' ' : '') + 'サイトを取得できなかったため、このまま進むと推定だけの結果になります。');
+      $('gate-fail-actions').hidden = false;
     });
   }
 
-  document.querySelectorAll('#gate-industry button').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('#gate-industry button').forEach(function (b) { b.classList.remove('is-on'); });
-      btn.classList.add('is-on');
-      surveyState.industryId = btn.getAttribute('data-industry');
-      fillConfirmCard();
-    });
-  });
-
-  $('gate-next-1').addEventListener('click', startPreviewDiagnose);
-  $('gate-back-2').addEventListener('click', function () { setGateStep(1); });
-  $('gate-next-2').addEventListener('click', function () {
-    if (!surveyState.industryId) { gateErr('お店・会社の種類を確認してください。'); return; }
-    setGateStep(3);
-  });
-  $('gate-back-3').addEventListener('click', function () { setGateStep(2); });
-
+  $('gate-next-1').addEventListener('click', startDiagnoseFlow);
+  $('gate-retry').addEventListener('click', function () { setGateStep(1); });
+  $('gate-continue').addEventListener('click', function () { finishSurvey(); });
   ['input', 'change'].forEach(function (ev) {
     $('gate-url').addEventListener(ev, updateGateStep1);
     $('gate-proxy').addEventListener(ev, updateGateStep1);
-  });
-  $('gate-consent-card').addEventListener('click', function (e) {
-    if (e.target && e.target.id === 'gate-proxy') return;
-    setTimeout(updateGateStep1, 0);
+    $('gate-outcome-select').addEventListener(ev, updateGateStep1);
   });
   $('gate-url').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); if (!$('gate-next-1').disabled) startPreviewDiagnose(); }
+    if (e.key === 'Enter') { e.preventDefault(); if (!$('gate-next-1').disabled) startDiagnoseFlow(); }
   });
+  renderOutcomeSelect();
   updateGateStep1();
 
   function applySurveyToPage(survey, route) {
@@ -1788,7 +1801,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.location.assign(target);
   }
 
-  $('gate-submit').addEventListener('click', finishSurvey);
+  // 入力画面の「診断をはじめる」→ 診断中 → finishSurvey（gate-submit は廃止）
 
   $('ar-restart').addEventListener('click', function () {
     window.AirReachOnboard.clearSurvey();
@@ -1797,12 +1810,11 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     surveyState = { industryId: '', url: '', goal: '', keyword: '', mediaUrl: '', proxyConsent: false, outcomeGoal: '', siteTitle: '', previewDiagnose: null };
-    document.querySelectorAll('#gate-industry button').forEach(function (b) { b.classList.remove('is-on'); });
     $('gate-url').value = '';
     $('gate-proxy').checked = false;
-    var out = $('gate-outcome'); if (out) out.innerHTML = '';
+    if ($('gate-outcome-select')) $('gate-outcome-select').value = '';
+    if ($('gate-industry-select')) $('gate-industry-select').value = '';
     updateGateStep1();
-    updateGateSubmit();
     $('ar-dash').classList.remove('is-on');
     $('ar-empty').style.display = '';
     openGate();
