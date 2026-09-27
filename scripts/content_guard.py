@@ -95,10 +95,37 @@ def scan_reviewed_text(path: Path, config: dict) -> list[str]:
     return findings
 
 
+def scan_scoped_claims(config: dict) -> list[str]:
+    """Assertive-claim patterns limited to named roots (e.g. AirReach result copy)."""
+    findings: list[str] = []
+    extensions = {str(ext).lower() for ext in config.get("scan_extensions", [])} | {".js"}
+    for group in config.get("scoped_claim_patterns", []):
+        patterns = group.get("patterns", [])
+        for root_name in group.get("roots", []):
+            root = ROOT / str(root_name)
+            if root.is_file():
+                candidates = [root]
+            elif root.is_dir():
+                candidates = [p for p in root.rglob("*") if p.is_file() and p.suffix.lower() in extensions]
+            else:
+                continue
+            for path in candidates:
+                text = read_text(path)
+                rel = path.relative_to(ROOT).as_posix()
+                for item in patterns:
+                    pattern = item.get("regex")
+                    if pattern and re.search(pattern, text):
+                        findings.append(
+                            f"{rel}: claim pattern '{pattern}' ({group.get('name', '')}) - {item.get('reason', '')}"
+                        )
+    return findings
+
+
 def main() -> int:
     config = load_config()
     allowed = config.get("allowed_paths_for_restricted_terms", [])
     findings: list[str] = check_forbidden_paths(config)
+    findings.extend(scan_scoped_claims(config))
 
     for path in iter_files(config, "global_scan_roots"):
         findings.extend(scan_patterns(path, config.get("global_private_patterns", [])))

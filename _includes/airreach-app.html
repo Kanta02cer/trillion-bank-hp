@@ -166,6 +166,13 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-act h3{margin:0 0 8px;font-size:1.35rem;line-height:1.4}
 .ar-act p{margin:0;color:#334155;font-size:1.08rem;line-height:1.6}
 .ar-act .effect{margin-top:10px;color:#475569;font-size:1rem;line-height:1.55}
+.ar-act-evidence{display:inline-block;margin-top:10px;font-size:.98rem;font-weight:800;color:#1d4ed8;text-decoration:underline;text-underline-offset:3px}
+/* HackⅡ 案内は対策と視覚的に分ける（別サービス） */
+.ar-referral{margin-top:22px;padding:18px 20px;border:2px dashed #cbd5e1;border-radius:14px;background:#f8fafc;color:#334155}
+.ar-referral-kicker{font-size:.85rem;font-weight:800;letter-spacing:.04em;color:#64748b;margin-bottom:6px}
+.ar-referral-title{margin:0 0 8px;font-size:1.15rem;font-weight:800;color:#0f172a;line-height:1.4}
+.ar-referral-body{margin:0 0 12px;font-size:1rem;line-height:1.6}
+.ar-referral-note{margin:10px 0 0;font-size:.9rem;color:#64748b;line-height:1.5}
 .ar-source{width:100%;border-collapse:collapse;font-size:1.05rem;margin-top:10px}
 .ar-source th,.ar-source td{text-align:left;padding:12px 8px;border-bottom:1px solid #e5e7eb}
 .ar-disc{font-size:.95rem;color:#64748b;line-height:1.65;margin-top:14px}
@@ -628,7 +635,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 
         <div class="ar-metric-legend" id="ar-metric-legend">
           <strong>数字の見方</strong>
-          <span>①探している人＝需要の目安　②いまの位置＝公開ページの準備度（100点満点）　③直したあと＝改善した場合の参考レンジ　④増える件数＝結果の目安（保証なし）</span>
+          <span>①探している人＝需要の目安　②いまの点数＝ホームページの情報整備（100点満点。AI掲載率・順位・予約数ではありません）　③直したあと＝改善した場合の参考レンジ　④増える件数＝結果の目安（保証なし）</span>
         </div>
         <div class="ar-chain" id="ar-chain"></div>
         <p class="ar-conf"><span data-tip="入力や実測が増えるほど上がる参考指標です。統計的な信頼区間ではありません。">この結果の確かさ</span> <b id="ar-confidence">—</b>%</p>
@@ -708,12 +715,20 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         </div>
 
         <div class="ar-panel is-hidden" id="actions">
-          <div class="ar-kicker" data-tip="診断結果から、いま手を付けるべき3つです。">次にやること</div>
-          <h2 class="ar-h2">最優先の対策3つ</h2>
+          <div class="ar-kicker" data-tip="診断で「なし」だった項目から、ホームページで先に整える3つです。">次にやること</div>
+          <h2 class="ar-h2">まず整えること3つ</h2>
+          <p class="ar-note" style="margin:0 0 12px">各対策の「確認したページを開く」は、診断時に取得した実際のページへ移動します。該当箇所が見つからなかった場合はページ先頭を開き、場所を推測して付けることはしません。</p>
           <div class="ar-actions3" id="ar-actions3"></div>
-          <div class="ar-cta-row">
-            <a class="ar-btn ar-btn-primary" id="ar-cta-meet" href="/trillionbank/meeting/?type=company&from=airreach-teams" data-tip="優先順位の設計から継続改善まで一緒に進めます。">この店の対策を相談する</a>
-          </div>
+          <!-- HackⅡ は別サービス。対策・根拠リンクには混ぜず、ここだけで案内する -->
+          <aside class="ar-referral" id="ar-referral" hidden aria-label="別のサービスの案内">
+            <div class="ar-referral-kicker" id="ar-referral-kicker">別のサービスの案内</div>
+            <h3 class="ar-referral-title" id="ar-referral-title"></h3>
+            <p class="ar-referral-body" id="ar-referral-body"></p>
+            <div class="ar-cta-row">
+              <a class="ar-btn ar-btn-line" id="ar-cta-meet" href="/trillionbank/meeting/?type=company&from=airreach-referral">HackⅡについて相談する</a>
+            </div>
+            <p class="ar-referral-note" id="ar-referral-note"></p>
+          </aside>
           <details class="ar-more-tools">
             <summary>その他のツール</summary>
             <div class="ar-cta-row">
@@ -1157,7 +1172,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     var whatIsMap = {
       demand: '需要の目安',
-      now: '準備度スコア',
+      now: '情報整備の点数',
       after: '改善後の目安',
       cite_now: '使われ方の目安',
       cite_after: '改善後の目安',
@@ -1282,20 +1297,40 @@ document.addEventListener('DOMContentLoaded', function () {
     report.actions.forEach(function (a) {
       var el = document.createElement('div');
       el.className = 'ar-act';
-      var effect = a.effect || (a.slot === 'PARTNER'
-        ? '測定と改善をまとめて任せられます'
-        : '情報が伝わりやすくなり、選ばれやすさが上がる可能性');
+      var effect = a.effect || '来店・相談の前に知りたい情報が、見つけやすくなる可能性';
       el.innerHTML = '<div class="tag"></div><h3></h3>';
       el.querySelector('.tag').textContent = a.title;
       var h3 = el.querySelector('h3');
       h3.textContent = a.action;
       h3.setAttribute('data-tip', effect);
+      // 根拠リンク: 診断時に取得した実URLだけ。存在しないアンカーは付けない。
+      if (a.evidence && a.evidence.href) {
+        var ev = document.createElement('a');
+        ev.className = 'ar-act-evidence';
+        ev.href = a.evidence.href;
+        ev.target = '_blank';
+        ev.rel = 'noopener noreferrer';
+        ev.textContent = a.evidence.label + ' ↗';
+        ev.setAttribute('data-tip', a.evidence.note || '');
+        el.appendChild(ev);
+      }
       box.appendChild(el);
     });
-    var actCta = $('ar-cta-actions');
-    if (actCta && report.actionsCta) {
-      actCta.textContent = report.actionsCta.label || actCta.textContent;
-      if (report.actionsCta.href) actCta.href = report.actionsCta.href;
+    // HackⅡ referral: separate frame under the actions, never inside them.
+    var ref = $('ar-referral');
+    if (ref && report.referral) {
+      ref.hidden = false;
+      $('ar-referral-kicker').textContent = report.referral.kicker || '別のサービスの案内';
+      $('ar-referral-title').textContent = report.referral.title || '';
+      $('ar-referral-body').textContent = report.referral.body || '';
+      $('ar-referral-note').textContent = report.referral.note || '';
+      var meetBtn = $('ar-cta-meet');
+      if (meetBtn) {
+        meetBtn.textContent = report.referral.cta || 'HackⅡについて相談する';
+        if (report.referral.href) meetBtn.href = report.referral.href;
+      }
+    } else if (ref) {
+      ref.hidden = true;
     }
 
     function scoreCell(v) {
@@ -1328,15 +1363,17 @@ document.addEventListener('DOMContentLoaded', function () {
         nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="1〜2週間で整えると効果が出やすい項目です。">次に</span></div><p class="what">' + tipAttr(t) + '</p></div>';
       });
       (insight.nextSales || []).forEach(function (a) {
-        nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="' + tipAttr(a.tip || '') + '">優先対策</span></div><p class="what">' + tipAttr(a.action || a.title) + '</p></div>';
+        nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="' + tipAttr(a.tip || '') + '">優先対策</span></div><p class="what">' + tipAttr(a.action || a.title) +
+          (a.evidence && a.evidence.href ? ' <a class="ar-act-evidence" href="' + tipAttr(a.evidence.href) + '" target="_blank" rel="noopener noreferrer" data-tip="' + tipAttr(a.evidence.note || '') + '">' + tipAttr(a.evidence.label) + ' ↗</a>' : '') +
+          '</p></div>';
       });
       if (!nextHtml) {
-        nextHtml = '<div class="ar-next-card"><div class="when">次に</div><p class="what">不足項目の確認後、HackⅡ Studioで実装パッケージを作成してください。</p></div>';
+        nextHtml = '<div class="ar-next-card"><div class="when">次に</div><p class="what">「ないもの」に挙がった項目を、確認したページから順に補ってください。</p></div>';
       }
       var badgeTxt = (AirReachSales.badgeLabel ? AirReachSales.badgeLabel(insight.evidenceClass) : insight.evidenceClass) || '';
       shell.innerHTML =
         '<div class="ar-expert-hero">' +
-        '<div class="lbl"><span data-tip="' + tipAttr(insight.evidenceTip) + '">公開ページ準備度</span> <span class="ar-badge-e ' + badgeClass(insight.evidenceClass) + '">' + tipAttr(badgeTxt) + '</span></div>' +
+        '<div class="lbl"><span data-tip="' + tipAttr(insight.evidenceTip) + '">ホームページの情報整備</span> <span class="ar-badge-e ' + badgeClass(insight.evidenceClass) + '">' + tipAttr(badgeTxt) + '</span></div>' +
         '<div class="score">' + tipAttr(insight.overall != null ? String(insight.overall) : '—') + ' <span style="font-size:1.1rem;color:#334155">/ 100</span></div>' +
         '<div style="margin-top:10px;font-weight:800;color:#1e293b;font-size:1.05rem"><span data-tip="' + tipAttr(insight.formula) + '">計算で出た点数</span></div>' +
         '</div>' +
@@ -1411,7 +1448,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     var meet = $('ar-cta-meet');
     if (meet) {
-      meet.href = '/trillionbank/meeting/?type=company&from=airreach&q=' +
+      meet.href = '/trillionbank/meeting/?type=company&from=airreach-referral&q=' +
         encodeURIComponent((report.keyword || '') + ' industry=' + report.industryId);
     }
   }

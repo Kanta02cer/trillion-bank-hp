@@ -318,10 +318,16 @@
     if (!page.metaDesc || page.metaDesc.length < 40) actions.now.push('meta descriptionを40文字以上で、サービスの対象を明確に書く');
     if (llmsKnown && (!llmsText || llmsText.length < 80)) actions.weeks.push('llms.txtで主要ページ（会社・サービス・FAQ・ポリシー）への案内を置く');
     if (page.h1.length !== 1) actions.weeks.push('トップと主要LPのH1を「何のサービスか」が一瞬で分かる文言に揃える');
-    actions.weeks.push('重要カテゴリ質問で競合が出る場合の公式比較軸・対象外をページ化する');
-    actions.partner.push('ChatGPT / Gemini / Perplexity / AI Overviewsでの言及・引用・推薦を同条件で測定する（HackⅡ）');
-    actions.partner.push('競合Win/Lossと引用URLから、優先施策を週次で更新する伴走に切り替える');
-    actions.partner.push('一次情報の改修と再計測をセットにした伴走モニター枠で実装まで任せる');
+    actions.weeks.push('サービスの対象・対象外・比較の軸を公式ページに書く');
+    // HackⅡ (a separate measurement service) is never listed as a 対策. It lives in `referral` and is shown in its own frame.
+    var referral = {
+      kicker: '別のサービスの案内',
+      title: 'AI回答で紹介されるか・引用元・他店との比較を調べたい場合',
+      body: 'この診断はホームページの情報整備を見るもので、AI回答の中身は測っていません。実際のAI回答での言及・引用・比較を同条件で測る場合は、別サービスのHackⅡで行います。',
+      cta: 'HackⅡについて相談する',
+      href: '/trillionbank/meeting/?type=company&from=airreach-referral',
+      note: '対策の手順や根拠リンクとは別枠の案内です。診断の点数には影響しません。'
+    };
 
     var host = '';
     try { host = new URL(baseHref).hostname; } catch (e) { host = baseHref; }
@@ -330,12 +336,12 @@
     var tone;
     if (overall == null) tone = '未取得の項目があるため、総合点は出していません。取得できた項目だけを表示しています。';
     else if (!display) tone = '項目ごとの点数と不足を確認してください。';
-    else if (bandKey === 'high') tone = '公開ページの土台は比較的整っています。次は実AI回答での出現を同条件測定し、負けている質問から直す段階です。';
-    else if (bandKey === 'mid') tone = '基本要素は一部ありますが、AIが引用・比較しやすい「定義・FAQ・エンティティ」がまだ弱い可能性があります。';
-    else tone = '公開情報の整備がまだ薄い状態です。まず公式の定義とFAQ、組織情報を厚くするのが先です。';
+    else if (bandKey === 'high') tone = 'ホームページの情報整備はひととおり揃っています。残っている不足項目を個別に確認してください。';
+    else if (bandKey === 'mid') tone = '基本的な情報は載っていますが、定義・よくある質問・会社情報に足りない項目があります。';
+    else tone = 'ホームページの情報整備がまだ薄い状態です。まず公式の定義とよくある質問、会社情報を補うのが先です。';
     var summary = overall == null
-      ? host + ' の公開ページ準備度は未確認です。' + tone
-      : host + ' の公開ページ準備度は ' + overall + ' / 100 です。' + tone;
+      ? host + ' のホームページ情報整備は未確認です。' + tone
+      : host + ' のホームページ情報整備は ' + overall + ' / 100 です。' + tone;
 
     return {
       ruleVersion: RULE_VERSION,
@@ -354,6 +360,7 @@
       checks: checks,
       adjustments: adjustments,
       actions: actions,
+      referral: referral,
       evidence: {
         page: evidenceFrom(pageRes),
         llms: Object.assign(evidenceFrom(llmsRes), { state: llmsRes.state, status: llmsRes.status, error: llmsRes.error }),
@@ -365,7 +372,7 @@
         gaps: gaps.slice(0, 5),
         unknowns: unknowns.slice(0, 4),
         conversionHint: '表示だけでなく問い合わせにつなげるには、「誰向けか／何ができるか／何をしないか／次の相談先」が同一ページで完結しているかが重要です。',
-        disclaimer: 'このレビューは公開HTML等の準備度に基づく自動生成です。実際のAI回答での引用・推薦・出現率はHackⅡの測定が必要です。掲載や問い合わせ増を保証するものではありません。'
+        disclaimer: 'このレビューは公開HTML等の情報整備に基づく自動生成です。AI回答での引用・紹介・順位・予約数は測っておらず、掲載や問い合わせ増を保証するものではありません。'
       },
       page: {
         title: page.title,

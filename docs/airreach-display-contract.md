@@ -81,3 +81,11 @@ Source: 画面設計案「色分けと根拠リンク」2026-09-25、業種展�
 2. `bundle exec jekyll build` → `/airreach/` で診断し、項目カードに区分ラベルと「未確認」が出ること
 3. robots.txt を返さないサイトで「見つけやすさ」が未確認（0点でない）になること
 4. 内訳表の総合行に判定ルール・表示区分の版が出ること
+
+## 対策・根拠リンク・HackⅡ案内の分離（2026-09-27 追加）
+
+- 対策（`report.actions`）は最大3件で、診断で「なし」だった項目と業種の既定から作る。HackⅡ / Teams は対策に入れない。
+- 各対策に `evidence { label, href, note }` を付ける。`href` は診断時に取得した最終URL。FAQ系の対策で取得HTMLに実在する id があるときだけ `#id` を付け、無ければページ先頭を開く（`#faq` を推測しない）。
+- HackⅡ の案内は `report.referral`（エンジン側は `result.referral`）として別オブジェクトにし、画面では対策の下の破線枠（`#ar-referral`）にだけ表示する。相談CTA（`#ar-cta-meet`）もこの枠に置く。
+- 4数字の「いま」のラベルは `ホームページの情報整備`、意味文は「…の点数（AI掲載率・順位・予約数ではありません）」に統一（`airreach-industry.js`）。結果文の `summary` も情報整備の言い方に限定。
+- `content_guard.py` に `scoped_claim_patterns` を追加。AirReach のJS・include・データに対して、AI掲載・順位・成果の断定表現と、HackⅡ を対策に混ぜる書き方を検出する（否定形は許容）。

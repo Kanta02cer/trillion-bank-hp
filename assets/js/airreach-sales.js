@@ -285,64 +285,94 @@
     };
   }
 
+  /**
+   * Evidence link for an action: the page actually fetched during diagnosis.
+   * Uses a verified anchor only when the fetched HTML really had that id (never guesses "#faq").
+   */
+  function evidenceLinkFor(diagnose, kind) {
+    var page = (diagnose && diagnose.page) || {};
+    var base = page.finalUrl || page.baseHref || '';
+    if (!base) return null;
+    var anchor = '';
+    if (kind === 'faq' && page.faqAnchor) anchor = '#' + page.faqAnchor;
+    return {
+      label: anchor ? '確認した箇所を開く' : '確認したページを開く',
+      href: base + anchor,
+      note: anchor
+        ? '診断時に取得したページの、該当する見出し（id="' + page.faqAnchor + '"）へ移動します。'
+        : '診断時に取得したページを開きます。該当箇所が見つからなかったため、ページ先頭へ移動します。'
+    };
+  }
+
+  function actionKind(text) {
+    var t = String(text || '');
+    if (/FAQ|質問/.test(t)) return 'faq';
+    if (/Organization|LocalBusiness|会社|お店の基本情報|組織/.test(t)) return 'entity';
+    if (/問い合わせ|相談|導線|次の一歩/.test(t)) return 'contact';
+    return 'page';
+  }
+
+  /**
+   * Up to 3 対策. HackⅡ / Teams is intentionally NOT an action here: it is a separate
+   * service and goes into the report's `referral` block, rendered in its own frame.
+   */
   function top3Actions(industry, mode, diagnose, brand) {
     var profile = industry || (window.AirReachIndustry && window.AirReachIndustry.getIndustry('other'));
     var industryId = (profile && profile.id) || 'other';
-    var defaults = (profile && profile.actions) ? profile.actions.slice(0, 3) : [];
+    var defaults = ((profile && profile.actions) ? profile.actions : []).filter(function (d) { return d.slot !== 'PARTNER'; });
     var actions = [];
 
-    // 個別課題：診断ギャップから最大2件を平易な対策に翻訳
+    function push(item) {
+      if (actions.length >= 3) return;
+      // Two gaps often map to the same plain action; show each action once.
+      if (actions.some(function (a) { return a.title === item.title; })) return;
+      var kind = actionKind(item.title + ' ' + item.action);
+      actions.push({
+        slot: actions.length === 0 ? 'NOW' : '2W',
+        title: item.title,
+        action: item.action,
+        effect: item.effect || '次に起きること：来店・相談の前に知りたい情報が、見つけやすくなる可能性',
+        kind: kind,
+        evidence: evidenceLinkFor(diagnose, kind)
+      });
+    }
+
+    // 個別課題：診断ギャップ（取得できて「なし」だった項目）から最大2件を平易な対策に翻訳
     if (diagnose && diagnose.gaps && diagnose.gaps.length) {
-      diagnose.gaps.slice(0, 2).forEach(function (gap, i) {
-        var plain = gapToPlainAction(gap, industryId);
-        actions.push({
-          slot: i === 0 ? 'NOW' : '2W',
-          title: plain.title,
-          action: plain.action,
-          effect: plain.effect,
-          cta: 'HackⅡ Studioで作る',
-          href: '/airreach/studio/'
-        });
-      });
+      diagnose.gaps.slice(0, 4).forEach(function (gap) { if (actions.length < 2) push(gapToPlainAction(gap, industryId)); });
     }
-
-    // 足りない分は業種デフォルトで埋める（PARTNER以外）
+    // 足りない分は業種デフォルトで埋める
     defaults.forEach(function (d) {
-      if (actions.length >= 2) return;
-      if (d.slot === 'PARTNER') return;
-      actions.push({
-        slot: actions.length === 0 ? 'NOW' : '2W',
-        title: d.title,
-        action: d.action,
-        effect: '次に起きること：情報が伝わりやすくなり、選ばれやすさが上がる可能性',
-        cta: 'HackⅡ Studioで作る',
-        href: '/airreach/studio/'
-      });
+      if (actions.some(function (a) { return a.title === d.title; })) return;
+      push({ title: d.title, action: d.action });
     });
-
-    while (actions.length < 2) {
-      actions.push({
-        slot: actions.length === 0 ? 'NOW' : '2W',
-        title: 'よく聞かれる質問を追加する',
-        action: '購入・予約・相談の前に聞かれることを公式に置く',
-        effect: '次に起きること：迷いが減り、行動につながりやすくなる可能性',
-        cta: 'HackⅡ Studioで作る',
-        href: '/airreach/studio/'
-      });
+    while (actions.length < 3) {
+      var fallbacks = [
+        { title: 'よく聞かれる質問を追加する', action: '購入・予約・相談の前に聞かれることを公式に置く', effect: '次に起きること：迷いが減り、行動につながりやすくなる可能性' },
+        { title: '会社・お店の基本情報を揃える', action: '正式名称・所在地・連絡先・営業時間を、同じ内容で公式ページに載せる' },
+        { title: 'サイトの案内情報を整える', action: '重要ページへの案内と、ページの主題（見出し）を分かりやすくそろえる' }
+      ];
+      var next = fallbacks.filter(function (f) { return !actions.some(function (a) { return a.title === f.title; }); })[0];
+      if (!next) break;
+      push(next);
     }
 
-    // 3つ目は常に Teams（コンサル）
-    actions = actions.slice(0, 2);
-    actions.push({
-      slot: 'PARTNER',
-      title: 'HackⅡ Teamsに任せる',
-      action: '優先順位の設計から、継続測定・改善伴走までコンサルティングとして一緒に進める',
-      effect: '測定と改善をまとめて任せられます',
-      cta: '相談する',
-      href: '/trillionbank/meeting/?type=company&from=airreach-teams'
-    });
+    return actions.slice(0, 3);
+  }
 
-    return actions;
+  /** HackⅡ referral: separate frame, never mixed into 対策 or evidence links. */
+  function buildReferral(profile, diagnose) {
+    var partner = ((profile && profile.actions) || []).filter(function (d) { return d.slot === 'PARTNER'; })[0] || null;
+    var base = (diagnose && diagnose.referral) || {};
+    return {
+      kicker: base.kicker || '別のサービスの案内',
+      title: base.title || 'AI回答で紹介されるか・引用元・他店との比較を調べたい場合',
+      body: base.body || 'この診断はホームページの情報整備を見るもので、AI回答の中身は測っていません。実際のAI回答での言及・引用・比較を同条件で測る場合は、別サービスのHackⅡで行います。',
+      partnerNote: partner ? partner.action : '',
+      cta: base.cta || 'HackⅡについて相談する',
+      href: base.href || '/trillionbank/meeting/?type=company&from=airreach-referral',
+      note: base.note || '対策の手順や根拠リンクとは別枠の案内です。診断の点数には影響しません。'
+    };
   }
 
 
@@ -377,7 +407,7 @@
         title: a.title || a.n || '対策',
         action: a.action || '',
         tip: a.effect || '優先して直す項目です。',
-        href: a.href || '/airreach/studio/'
+        evidence: a.evidence || null
       };
     });
     var diagnosed = !!(d.checks && d.checks.length);
@@ -787,7 +817,7 @@
     var industryId = opts.industryId || 'other';
     var industryDetect = opts.industryDetect || null;
     var profile = (window.AirReachIndustry && window.AirReachIndustry.getIndustry(industryId))
-      || { id: 'other', label: 'その他', display_label: '問い合わせ', demand_label: 'この言葉で探している人', now_label: '今、選ばれそうな度合い', after_label: '直したあとの目安', outcome_label: '問い合わせ', demand_meaning: '', now_meaning: '', after_meaning: '', outcome_meaning: '', hero_generic: '診断結果', hero_branded: '診断結果', cta_generic: 'まず何を直すか見る', cta_branded: 'まず何を直すか見る', impact_current_label: 'いま' };
+      || { id: 'other', label: 'その他', display_label: '問い合わせ', demand_label: 'この言葉で探している人', now_label: 'ホームページの情報整備', after_label: '直したあとの目安', outcome_label: '問い合わせ', demand_meaning: '', now_meaning: '', after_meaning: '', outcome_meaning: '', hero_generic: '診断結果', hero_branded: '診断結果', cta_generic: 'まず何を直すか見る', cta_branded: 'まず何を直すか見る', impact_current_label: 'いま' };
 
     var baseline = (window.AirReachHandoff && window.AirReachHandoff.loadOfficialBaseline)
       ? window.AirReachHandoff.loadOfficialBaseline()
@@ -832,6 +862,7 @@
     };
     var confidence = confidenceScore(confidenceBreakdown);
     var actions = top3Actions(profile, mode, diagnose, brand);
+    var referral = buildReferral(profile, diagnose);
     var expertInsight = buildExpertInsight(diagnose, actions);
 
     var headline4;
@@ -964,10 +995,10 @@
       }),
       headline4: headline4,
       actions: actions,
+      referral: referral,
       displayLabel: profile.display_label,
       impactCurrentLabel: profile.impact_current_label || ('いまの' + profile.display_label),
       cta: { label: primaryCta, hash: ctaHash },
-      actionsCta: { label: '最優先の対策をHackⅡ Studioで進める', href: '/airreach/studio/' },
       disclaimer: '表示は参考シミュレーションです。検索順位・AI掲載・予約・問い合わせ・売上を保証しません。',
       steps: ['いま', '直したあと', 'やること']
     };

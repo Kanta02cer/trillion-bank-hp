@@ -33,7 +33,7 @@ bands:
     max: 39
     tone: bad
     color: "#dc2626"
-    meaning: "来店前に知りたい情報が、ホームページで見つけにくい"
+    meaning: "来店・相談の前に知りたい情報が、ホームページで見つけにくい"
   - key: mid
     label: "普通"
     min: 40
