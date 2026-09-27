@@ -5,15 +5,30 @@
 (function () {
   'use strict';
 
+  /**
+   * Minimal mode (<body data-tip-mode="minimal">): only elements that also carry
+   * `data-tip-icon` get the "?" mark and bubble. Every other data-tip becomes a
+   * native title attribute, so the detail is still reachable on hover but the
+   * screen is not covered in question marks.
+   */
+  function isMinimal() {
+    return !!(document.body && document.body.getAttribute('data-tip-mode') === 'minimal');
+  }
+
   function enhance(root) {
     root = root || document;
     var nodes = root.querySelectorAll('[data-tip]');
+    var minimal = isMinimal();
     for (var i = 0; i < nodes.length; i++) {
       var el = nodes[i];
       if (el.getAttribute('data-tip-ready') === '1') continue;
       var text = String(el.getAttribute('data-tip') || '').trim();
       if (!text) continue;
       el.setAttribute('data-tip-ready', '1');
+      if (minimal && !el.hasAttribute('data-tip-icon')) {
+        if (!el.getAttribute('title')) el.setAttribute('title', text);
+        continue;
+      }
       el.classList.add('ar-tip');
       if (el.tagName !== 'BUTTON' && el.tagName !== 'A' && !el.hasAttribute('tabindex')) {
         el.tabIndex = 0;

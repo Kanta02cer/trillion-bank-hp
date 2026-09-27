@@ -519,7 +519,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 }
 </style>
 </head>
-<body class="ar-page ar-gated" data-industry="{{ page.airreach_industry | default: '' }}">
+<body class="ar-page ar-gated" data-industry="{{ page.airreach_industry | default: '' }}" data-tip-mode="minimal">
 {% include tb-header.html %}
 
 <!-- Frosted glass survey: blocks page until answered -->
@@ -638,7 +638,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <span>①探している人＝需要の目安　②いまの点数＝ホームページの情報整備（100点満点。AI掲載率・順位・予約数ではありません）　③直したあと＝改善した場合の参考レンジ　④増える件数＝結果の目安（保証なし）</span>
         </div>
         <div class="ar-chain" id="ar-chain"></div>
-        <p class="ar-conf"><span data-tip="入力や実測が増えるほど上がる参考指標です。統計的な信頼区間ではありません。">この結果の確かさ</span> <b id="ar-confidence">—</b>%</p>
+        <p class="ar-conf"><span data-tip="入力や実測が増えるほど上がる参考指標です。統計的な信頼区間ではありません。" data-tip-icon>この結果の確かさ</span> <b id="ar-confidence">—</b>%</p>
         <p class="ar-conf-plain" id="ar-confidence-plain">入力・実測が増えるほど上がります。統計的な信頼区間ではありません。</p>
         <p class="ar-disc" id="ar-disc" hidden></p>
         <span id="ar-confidence-note" hidden></span>
@@ -1195,7 +1195,7 @@ document.addEventListener('DOMContentLoaded', function () {
         (h.meaning ? '<div class="meaning">' + tipAttr(h.meaning) + '</div>' : '') +
         (h.sub ? '<div class="sub">' + tipAttr(h.sub) + '</div>' : '') +
         '</div>' +
-        '<span class="ar-badge-e ' + badgeClass(h.badge) + '" data-tip="' + tipAttr(evidenceTip(h.badge)) + '">' + tipAttr(badge) + '</span>';
+        '<span class="ar-badge-e ' + badgeClass(h.badge) + '" data-tip="' + tipAttr(evidenceTip(h.badge)) + '" data-tip-icon>' + tipAttr(badge) + '</span>';
       chain.appendChild(row);
     });
     var legend = $('ar-metric-legend');
@@ -1217,12 +1217,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (factorsWrap && factorCards && fb) {
       factorsWrap.hidden = false;
       if (factorFormula) {
-        factorFormula.innerHTML = '<span data-tip="' + tipAttr(fb.formulaTip || '') + '">計算式</span>　' + tipAttr(fb.formula || '');
+        factorFormula.innerHTML = '<span data-tip="' + tipAttr(fb.formulaTip || '') + '" data-tip-icon>計算式</span>　' + tipAttr(fb.formula || '');
         if (fb.overall != null) {
           factorFormula.innerHTML += '　→　<span data-tip="4要素の加重平均です。">総合 ' + tipAttr(String(fb.overall)) + ' / 100</span>' +
             (fb.band ? ' <span class="ar-band is-' + tipAttr(fb.band.tone || 'muted') + '">' + tipAttr(fb.band.label || '') + '</span>' : '');
         } else if (fb.state === 'partial') {
-          factorFormula.innerHTML += '　→　<span data-tip="必須項目が取得できなかったため、総合点は出していません。0点ではありません。">総合 未確認</span>';
+          factorFormula.innerHTML += '　→　<span data-tip="必須項目が取得できなかったため、総合点は出していません。0点ではありません。" data-tip-icon>総合 未確認</span>';
         }
         // 区分の凡例と、点数が意味する範囲（表示契約から）
         if (fb.legend && fb.legend.length) {
@@ -1381,7 +1381,7 @@ document.addEventListener('DOMContentLoaded', function () {
         '<div class="ar-expert-col is-good"><h3><span data-tip="公開ページで検出できた良い点です。">あるもの</span></h3>' + renderCheckList(insight.good, true) + '</div>' +
         '<div class="ar-expert-col is-bad"><h3><span data-tip="足りない・弱い点です。総合点が下がる主因です。">ないもの</span></h3>' + renderCheckList(insight.bad, false) + '</div>' +
         ((insight.unknown && insight.unknown.length)
-          ? '<div class="ar-expert-col" style="border-color:#cbd5e1;background:#f8fafc"><h3><span data-tip="取得できなかったため判定していない項目です。0点にはしていません。">未確認</span></h3>' +
+          ? '<div class="ar-expert-col" style="border-color:#cbd5e1;background:#f8fafc"><h3><span data-tip="取得できなかったため判定していない項目です。0点にはしていません。" data-tip-icon>未確認</span></h3>' +
             '<ul class="ar-check-list">' + insight.unknown.map(function (c) {
               var ev = c.evidence || {};
               var why = ev.url ? ('取得できませんでした：' + ev.url) : '取得できませんでした';
