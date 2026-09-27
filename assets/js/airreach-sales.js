@@ -366,7 +366,7 @@
   function actionKind(text) {
     var t = String(text || '');
     if (/FAQ|質問/.test(t)) return 'faq';
-    if (/Organization|LocalBusiness|会社|お店の基本情報|組織/.test(t)) return 'entity';
+    if (/Organization|LocalBusiness|会社|お店の基本情報|組織|サービスの対象|Service/.test(t)) return 'entity';
     if (/問い合わせ|相談|導線|次の一歩/.test(t)) return 'contact';
     return 'page';
   }
