@@ -274,6 +274,27 @@
         effect: '次に起きること：探している人に見つけてもらいやすくなる可能性'
       };
     }
+    if (/Service|Product/i.test(g)) {
+      return {
+        title: 'サービスの対象・対象外を明記する',
+        action: 'どんな人向けの何のサービスかを冒頭で1文で書き、同じ内容を Service の構造化データにも入れる',
+        effect: '次に起きること：何のサービスかが取り違えなく伝わる可能性'
+      };
+    }
+    if (/Breadcrumb|パンくず/i.test(g)) {
+      return {
+        title: 'ページの階層（パンくず）を示す',
+        action: '「トップ ＞ サービス ＞ 料金」のような現在地の表示を各ページに置き、BreadcrumbList の構造化データも入れる',
+        effect: '次に起きること：サイトのどこに何があるかが伝わりやすくなる可能性'
+      };
+    }
+    if (/og:title|共有/i.test(g)) {
+      return {
+        title: 'SNS共有用のタイトルを設定する',
+        action: 'ページを共有したときに表示されるタイトル（og:title）を、ページの主題が分かる文言で設定する',
+        effect: '次に起きること：共有されたときに何のページか伝わる可能性'
+      };
+    }
     if (/問い合わせ|相談|導線|contact/i.test(g)) {
       return {
         title: '次の一歩をはっきり書く',
@@ -307,6 +328,41 @@
     };
   }
 
+  /**
+   * Plain-language guide for an action: why it matters, what to do, and an example.
+   * Copy is about ホームページの情報整備 only (no AI / ranking / outcome claims).
+   */
+  function actionGuide(kind, industryId) {
+    var shop = industryId === 'restaurant' ? 'お店' : industryId === 'clinic' ? '医院' : '会社';
+    var guides = {
+      faq: {
+        why: '来店・相談の前に気になる条件を、お客様がホームページ上で確認できるようにします。',
+        steps: ['よく聞かれる質問を3つ選ぶ', shop + 'の実際の対応内容を、そのまま短く書く', 'ホームページの分かりやすい場所に「よくある質問」として載せる'],
+        example: industryId === 'restaurant'
+          ? '例：「予約は必要ですか？」「子連れでも大丈夫ですか？」「アレルギー対応はできますか？」に、営業時間や席の案内と一緒に答える。'
+          : industryId === 'clinic'
+            ? '例：「初診に必要なものは？」「料金の目安は？」「予約の方法は？」に、診療時間と一緒に答える。'
+            : '例：「料金の目安は？」「導入までの流れは？」「対応エリアは？」に、問い合わせ方法と一緒に答える。'
+      },
+      entity: {
+        why: '誰の・何のサービスかが、検索エンジンにも人にも取り違えなく伝わるようにします。',
+        steps: ['正式名称・所在地・電話番号・営業時間を1か所にまとめる', 'サービス名と、どんな人向けかを1文で書く', '同じ内容を構造化データ（Organization / Service）にも入れる'],
+        example: '例：ページ下部に「' + shop + '名・住所・電話・営業時間」をまとめた欄を置き、トップの冒頭に「〇〇向けの△△サービスです」と1文添える。'
+      },
+      contact: {
+        why: '興味を持った人が、次に何をすればいいか迷わないようにします。',
+        steps: ['予約・問い合わせ・資料請求のうち、いちばん取りたい行動を1つ決める', 'そのボタンをページの上部と下部に置く', 'ボタンの近くに、対応時間と返信の目安を書く'],
+        example: '例：「予約する」ボタンをトップ上部と各ページ末尾に置き、「当日予約は電話で。メールは翌営業日までに返信」と添える。'
+      },
+      page: {
+        why: 'ページの主題と案内が整うと、探している人が目的の情報にたどり着きやすくなります。',
+        steps: ['トップページの見出し（H1）を「何の' + shop + 'か」が分かる1文にする', 'ページの説明文（meta description）を40文字以上で書く', '重要ページ（サービス・料金・アクセス・よくある質問）へのリンクをまとめる'],
+        example: '例：見出しを「渋谷駅3分・個室ありの焼肉店」のように具体化し、説明文に対象・場所・特徴を入れる。'
+      }
+    };
+    return guides[kind] || guides.page;
+  }
+
   function actionKind(text) {
     var t = String(text || '');
     if (/FAQ|質問/.test(t)) return 'faq';
@@ -332,10 +388,12 @@
       var kind = actionKind(item.title + ' ' + item.action);
       actions.push({
         slot: actions.length === 0 ? 'NOW' : '2W',
+        priority: actions.length === 0 ? 'high' : 'mid',
         title: item.title,
         action: item.action,
         effect: item.effect || '次に起きること：来店・相談の前に知りたい情報が、見つけやすくなる可能性',
         kind: kind,
+        guide: actionGuide(kind, industryId),
         evidence: evidenceLinkFor(diagnose, kind)
       });
     }

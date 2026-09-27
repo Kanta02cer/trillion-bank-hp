@@ -167,6 +167,34 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-act p{margin:0;color:#334155;font-size:1.08rem;line-height:1.6}
 .ar-act .effect{margin-top:10px;color:#475569;font-size:1rem;line-height:1.55}
 .ar-act-evidence{display:inline-block;margin-top:10px;font-size:.98rem;font-weight:800;color:#1d4ed8;text-decoration:underline;text-underline-offset:3px}
+/* —— 改善内容（対策カード） —— */
+.ar-fix-lead{margin:0 0 14px;font-size:.95rem;color:#334155;line-height:1.6}
+.ar-fixes{display:grid;gap:14px}
+.ar-fix{border:1px solid var(--ar-line,#e2e8f0);border-radius:14px;background:#fff;padding:18px 18px 14px}
+.ar-fix-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:8px}
+.ar-fix-num{flex:0 0 auto;width:34px;height:34px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem}
+.ar-fix-num.is-1{background:#fee2e2;color:#b91c1c}
+.ar-fix-num.is-2{background:#fef3c7;color:#b45309}
+.ar-fix-headtext{min-width:0}
+.ar-fix-title{margin:0 0 6px;font-size:1.08rem;font-weight:700;line-height:1.4;color:var(--ar-ink,#0f172a)}
+.ar-fix-pri{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.78rem;font-weight:700}
+.ar-fix-pri.is-high{background:#fee2e2;color:#b91c1c}
+.ar-fix-pri.is-mid{background:#fef3c7;color:#b45309}
+.ar-fix-desc{margin:0 0 14px 46px;font-size:.95rem;line-height:1.65;color:#334155}
+.ar-fix-how{width:100%;justify-content:center}
+.ar-fix-panel{margin-top:12px;padding:14px 16px;border-radius:10px;background:var(--ar-soft,#f8fafc);border:1px solid var(--ar-line,#e2e8f0)}
+.ar-fix-what{margin:0 0 10px;font-size:.95rem;font-weight:700;color:var(--ar-ink,#0f172a);line-height:1.5}
+.ar-fix-steps{margin:0 0 10px;padding-left:1.4em;font-size:.92rem;line-height:1.65;color:#334155}
+.ar-fix-steps li{margin-bottom:4px}
+.ar-fix-panel .ar-act-evidence{margin-top:4px}
+.ar-fix-example{margin-top:10px;border-top:1px dashed var(--ar-line,#e2e8f0);padding-top:8px}
+.ar-fix-example summary{cursor:pointer;font-size:.9rem;font-weight:600;color:#475569;text-align:center;list-style:none}
+.ar-fix-example summary::-webkit-details-marker{display:none}
+.ar-fix-example summary::after{content:" ⌄"}
+.ar-fix-example[open] summary::after{content:" ⌃"}
+.ar-fix-example p{margin:8px 0 0;font-size:.9rem;line-height:1.65;color:#334155;background:#fff;border:1px solid var(--ar-line,#e2e8f0);border-radius:8px;padding:10px 12px}
+.ar-fix-details{width:100%;justify-content:center;background:var(--ar-accent-soft,#eff6ff);border-color:#bfdbfe;color:var(--ar-accent,#1d4ed8);font-weight:700}
+@media(max-width:520px){.ar-fix-desc{margin-left:0}}
 /* HackⅡ 案内は対策と視覚的に分ける（別サービス） */
 .ar-referral{margin-top:22px;padding:18px 20px;border:2px dashed #cbd5e1;border-radius:14px;background:#f8fafc;color:#334155}
 .ar-referral-kicker{font-size:.85rem;font-weight:800;letter-spacing:.04em;color:#64748b;margin-bottom:6px}
@@ -756,10 +784,14 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         </div>
 
         <div class="ar-panel is-hidden" id="actions">
-          <div class="ar-kicker" data-tip="診断で「なし」だった項目から、ホームページで先に整える3つです。">次にやること</div>
-          <h2 class="ar-h2">まず整えること3つ</h2>
-          <p class="ar-note" style="margin:0 0 12px">各対策の「確認したページを開く」は、診断時に取得した実際のページへ移動します。該当箇所が見つからなかった場合はページ先頭を開き、場所を推測して付けることはしません。</p>
-          <div class="ar-actions3" id="ar-actions3"></div>
+          <div class="ar-kicker">改善内容</div>
+          <h2 class="ar-h2" id="ar-actions-title">まずやるべき改善</h2>
+          <p class="ar-fix-lead" id="ar-actions-lead"></p>
+          <!-- 対策カード（2件）。「改善方法を見る」はその場で手順を開く。根拠リンクは取得した実URLだけ -->
+          <div class="ar-fixes" id="ar-actions3"></div>
+          <div class="ar-cta-row">
+            <a class="ar-btn ar-btn-line ar-fix-details" href="#expert-view" id="ar-cta-details">詳しいデータを見る ⌄</a>
+          </div>
           <!-- HackⅡ は別サービス。対策・根拠リンクには混ぜず、ここだけで案内する -->
           <aside class="ar-referral" id="ar-referral" hidden aria-label="別のサービスの案内">
             <div class="ar-referral-kicker" id="ar-referral-kicker">別のサービスの案内</div>
@@ -1387,26 +1419,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var box = $('ar-actions3');
     box.innerHTML = '';
-    report.actions.forEach(function (a) {
-      var el = document.createElement('div');
-      el.className = 'ar-act';
-      var effect = a.effect || '来店・相談の前に知りたい情報が、見つけやすくなる可能性';
-      el.innerHTML = '<div class="tag"></div><h3></h3>';
-      el.querySelector('.tag').textContent = a.title;
-      var h3 = el.querySelector('h3');
-      h3.textContent = a.action;
-      h3.setAttribute('data-tip', effect);
-      // 根拠リンク: 診断時に取得した実URLだけ。存在しないアンカーは付けない。
-      if (a.evidence && a.evidence.href) {
-        var ev = document.createElement('a');
-        ev.className = 'ar-act-evidence';
-        ev.href = a.evidence.href;
-        ev.target = '_blank';
-        ev.rel = 'noopener noreferrer';
-        ev.textContent = a.evidence.label + ' ↗';
-        ev.setAttribute('data-tip', a.evidence.note || '');
-        el.appendChild(ev);
-      }
+    var fixes = (report.actions || []).slice(0, 2);
+    var PRI = [{ key: 'high', label: '優先度：高' }, { key: 'mid', label: '優先度：中' }];
+    if ($('ar-actions-title')) $('ar-actions-title').textContent = fixes.length ? ('まずやるべき改善（あと' + fixes.length + '件）') : 'まずやるべき改善';
+    if ($('ar-actions-lead')) {
+      $('ar-actions-lead').textContent = fixes.length
+        ? ('この' + fixes.length + 'つを整えると、' + (report.displayLabel || 'お客様') + 'の前に知りたい情報が見つけやすくなる可能性があります。成果は保証しません。')
+        : '診断で取得できた範囲では、大きな不足は見当たりませんでした。';
+    }
+    fixes.forEach(function (a, i) {
+      var pri = PRI[i] || PRI[1];
+      var g = a.guide || {};
+      var el = document.createElement('article');
+      el.className = 'ar-fix';
+      var stepsHtml = (g.steps || []).map(function (s) { return '<li>' + tipAttr(s) + '</li>'; }).join('');
+      var evHtml = (a.evidence && a.evidence.href)
+        ? '<a class="ar-act-evidence" href="' + tipAttr(a.evidence.href) + '" target="_blank" rel="noopener noreferrer" title="' + tipAttr(a.evidence.note || '') + '">' + tipAttr(a.evidence.label) + ' ↗</a>'
+        : '';
+      el.innerHTML =
+        '<div class="ar-fix-head">' +
+        '<span class="ar-fix-num is-' + (i + 1) + '">' + (i + 1) + '</span>' +
+        '<div class="ar-fix-headtext"><h3 class="ar-fix-title">' + tipAttr(a.title) + '</h3>' +
+        '<span class="ar-fix-pri is-' + pri.key + '">' + pri.label + '</span></div></div>' +
+        '<p class="ar-fix-desc">' + tipAttr(g.why || a.action) + '</p>' +
+        '<button type="button" class="ar-btn ar-btn-primary ar-fix-how" aria-expanded="false">改善方法を見る →</button>' +
+        '<div class="ar-fix-panel" hidden>' +
+        '<p class="ar-fix-what">' + tipAttr(a.action) + '</p>' +
+        (stepsHtml ? '<ol class="ar-fix-steps">' + stepsHtml + '</ol>' : '') +
+        evHtml +
+        '</div>' +
+        (g.example ? '<details class="ar-fix-example"><summary>具体例を見る</summary><p>' + tipAttr(g.example) + '</p></details>' : '');
+      var how = el.querySelector('.ar-fix-how');
+      var panel = el.querySelector('.ar-fix-panel');
+      how.addEventListener('click', function () {
+        var open = panel.hidden;
+        panel.hidden = !open;
+        how.setAttribute('aria-expanded', open ? 'true' : 'false');
+        how.textContent = open ? '改善方法を閉じる' : '改善方法を見る →';
+      });
       box.appendChild(el);
     });
     // HackⅡ referral: separate frame under the actions, never inside them.
