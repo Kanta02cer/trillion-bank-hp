@@ -4,6 +4,24 @@
 <head>
 <meta charset="UTF-8">
 {% include tb-head.html %}
+{% if page.url == '/airreach/' %}{% assign _ar = site.data.public_facts.products.airreach %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "@id": {{ _ar.schema_id | jsonify }},
+  "name": {{ _ar.name | jsonify }},
+  "alternateName": {{ _ar.aliases | jsonify }},
+  "url": {{ _ar.url | jsonify }},
+  "serviceType": {{ _ar.service_type | jsonify }},
+  "description": {{ page.page_summary | default: page.tbdesc | jsonify }},
+  "provider": {"@id": "https://trillion-bank.jp/#organization"},
+  "isRelatedTo": {"@id": {{ site.data.public_facts.products.hack2.schema_id | jsonify }}},
+  "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY", "description": "無料診断。掲載・順位・予約数は保証しません。"},
+  "subjectOf": {% include tb-media-subjectof.html scope="service:airreach" %}
+}
+</script>
+{% endif %}
 <link rel="stylesheet" href="{{ '/assets/css/airreach-tip.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/css/airreach-system.css' | relative_url }}">
 <style>

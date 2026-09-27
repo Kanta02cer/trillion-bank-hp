@@ -27,8 +27,9 @@ Press Kit と突合する。
 
 ## 2. 自社サイト同期
 
-- [ ] `/trillionbank/media/` にカード追加（分類バッジ付き）
-- [ ] `/trillionbank/ceo/` の `subjectOf`（該当時）と実績セクションを同期
+- [ ] `_data/media_coverage.yml` に1行追加（媒体・URL・掲載日・要約・記事区分・subjects・service_ids・approval）。カードと `subjectOf` はここから自動生成される
+- [ ] `approval.status: approved` は書面確認後にだけ付ける。URLが無い間は本文カードのみ出る
+- [ ] `/trillionbank/ceo/` の実績セクション本文を同期（`subjectOf` は台帳から自動）
 - [ ] 関連 Insights から **1本だけ** 文脈リンク（キーワード詰め込み禁止）
 - [ ] `public_facts.yml` に無い新事実を書いていないか確認
 - [ ] `python3 scripts/content_guard.py` を実行

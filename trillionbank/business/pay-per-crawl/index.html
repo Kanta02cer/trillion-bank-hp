@@ -21,8 +21,11 @@ permalink: /trillionbank/business/pay-per-crawl/
   {
     "@context": "https://schema.org",
     "@type": "Service",
+    "@id": "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/#service",
     "name": "Adctor / Pay per Crawl",
-    "provider": { "@type": "Organization", "name": "株式会社Trillion Bank" },
+    "url": "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/",
+    "provider": {"@id": "https://trillion-bank.jp/#organization"},
+    "subjectOf": {% include tb-media-subjectof.html scope="service:adctor" %},
     "description": "AIクローラー・AI Agentによるコンテンツアクセスの証跡記録と、契約・請求接続を目指す研究開発・PoC",
     "serviceType": "AI情報利用管理"
   }

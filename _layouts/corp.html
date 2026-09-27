@@ -304,91 +304,8 @@
   <link rel="apple-touch-icon" sizes="144x144" href="{{ '/favicon-144.png' | relative_url }}">
 
   {% unless page.schema_graph %}
-  <!-- JSON-LD: WebSite -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "@id": "https://trillion-bank.jp/#website",
-    "name": "株式会社Trillion Bank",
-    "url": "https://trillion-bank.jp",
-    "description": "AI検索時代の情報流通を測る・守る・正規化する東京・千代田区のITカンパニー。HackⅡではAI回答内での候補入り・競合との勝敗・引用元を証拠付きで測定し、AEO/GEO/SEOの実装まで支援します。",
-    "inLanguage": "ja",
-    "publisher": {
-      "@type": "Organization",
-      "@id": "https://trillion-bank.jp/#organization"
-    }
-  }
-  </script>
-
-  <!-- JSON-LD: Organization -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "@id": "https://trillion-bank.jp/#organization",
-    "name": "株式会社Trillion Bank",
-    "legalName": "株式会社Trillion Bank",
-    "alternateName": ["株式会社トリリオンバンク", "トリリオンバンク", "Trillion Bank Co., Ltd."],
-    "brand": {"@type": "Brand", "name": "トリリオンバンク"},
-    "disambiguatingDescription": "AI検索最適化・DXを専門とするITカンパニー。釣具ブランドや「LEGALISS（legaliss.ai）」等の同名他社とは事業・資本ともに無関係。",
-    "foundingDate": "2025-12-23",
-    "foundingLocation": {"@type": "Place", "name": "東京都千代田区麹町"},
-    "isicV4": "6201",
-    "url": "https://trillion-bank.jp",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "{{ '/images/hero/tb-logo-symbol.webp' | absolute_url }}",
-      "width": 414,
-      "height": 318
-    },
-    "slogan": "AI検索時代の情報流通を、測る・守る・正規化する",
-    "description": "AI検索計測・AEO/GEO/SEO実装支援サービス「HackⅡ（ハックツ）」を開発・提供する東京都千代田区のITカンパニー。AI回答内での候補入り、競合との勝敗、引用元、AI流入を証拠付きで測定し、改善実装と再計測まで支援。",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
-      "addressLocality": "千代田区",
-      "addressRegion": "東京都",
-      "postalCode": "102-0083",
-      "addressCountry": "JP"
-    },
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "contactType": "customer service",
-      "url": "https://trillion-bank.jp/trillionbank/contact/",
-      "availableLanguage": "Japanese"
-    },
-    "areaServed": [
-      {"@type": "Place", "name": "麹町"},
-      {"@type": "AdministrativeArea", "name": "千代田区"},
-      {"@type": "AdministrativeArea", "name": "東京都"},
-      {"@type": "Country", "name": "JP"}
-    ],
-    "sameAs": [
-      "https://www.instagram.com/trillionbank_jp/"
-    ],
-    "knowsAbout": ["LLMO", "AIO", "AEO", "GEO", "AI検索最適化", "SEO", "DXコンサルティング", "オウンドメディア運営代行", "llms.txt", "構造化データ", "FAQPage", "HowToスキーマ", "AI引用最適化", "Web開発"],
-    "subjectOf": [
-      {"@type": "Article", "name": "HackⅡ完全解説", "url": "https://trillion-bank.jp/trillionbank/business/hack2/"},
-      {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
-      {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
-      {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
-      {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
-    ],
-    "founder": {
-      "@type": "Person",
-      "@id": "https://trillion-bank.jp/#kanta-inoue",
-      "name": "井上幹太",
-      "alternateName": ["Kanta Inoue", "井上かんた", "かんちゃん", "かんちゃん トリリオンバンク"],
-      "jobTitle": "代表取締役CEO",
-      "description": "不登校からの起業家（12年間の不登校経験を経て2025年に起業）。ソフトバンクアカデミア17期修了、J-StarX（経済産業省 起業家育成プログラム）第1期参加、令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL獲得。ZEN大学1期特別奨学生。JCI JAPAN TOYP2026ファイナリスト（青年版国民栄誉賞）。株式会社TiesBrick所属。",
-      "worksFor": {"@type": "Organization", "@id": "https://trillion-bank.jp/#organization"},
-      "award": ["令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL", "JCI JAPAN TOYP2026ファイナリスト（青年版国民栄誉賞）", "ソフトバンクアカデミア17期", "J-StarX第1期", "ZEN大学1期特別奨学生"],
-      "knowsAbout": ["LLMO", "AIO", "AEO", "GEO", "AI検索最適化", "DX戦略", "SEO", "Web開発", "llms.txt", "構造化データ"],
-      "sameAs": ["https://www.instagram.com/trillionbank_jp/"]
-    }
-  }
-  </script>
+  <!-- JSON-LD: WebSite + Organization + Person（_includes/tb-entity-jsonld.html で一元化） -->
+  {% include tb-entity-jsonld.html %}
 
   {% if page.jsonld %}{{ page.jsonld }}{% endif %}
 
@@ -451,6 +368,7 @@
       "@type": "Offer",
       "itemOffered": {
         "@type": "Service",
+        "@id": "https://trillion-bank.jp/trillionbank/business/hack2/#service",
         "name": "HackⅡ AI検索計測・分析支援",
         "url": "https://trillion-bank.jp/trillionbank/business/hack2/",
         "description": "選定した質問について、AI回答本文、引用URL、自社・競合の言及、測定日時・条件を保存し、AI検索上の現在地と改善判断を支援するサービス。価格は対象範囲に応じた個別見積もり。"

@@ -7,30 +7,7 @@
 {
   "@context": "https://schema.org",
   "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://trillion-bank.jp/#organization",
-      "name": "株式会社Trillion Bank",
-      "legalName": "株式会社Trillion Bank",
-      "alternateName": ["株式会社トリリオンバンク", "トリリオンバンク", "Trillion Bank", "TRILLION BANK"],
-      "url": "https://trillion-bank.jp/",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp",
-        "width": 414,
-        "height": 318
-      },
-      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
-      "sameAs": ["https://www.instagram.com/trillionbank_jp/"]
-    },
-    {
-      "@type": "Person",
-      "@id": "https://trillion-bank.jp/#kanta-inoue",
-      "name": "井上幹太",
-      "alternateName": ["Kanta Inoue", "かんちゃん"],
-      "jobTitle": "代表取締役CEO",
-      "worksFor": {"@id": "https://trillion-bank.jp/#organization"}
-    },
+{% comment %}Organization / Person は tb-head.html（tb-entity-jsonld.html）で出す。ここでは @id 参照だけ。{% endcomment %}
     {
       "@type": "LocalBusiness",
       "@id": "https://trillion-bank.jp/#localbusiness",
@@ -59,7 +36,8 @@
       "name": {{ page.title | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' | jsonify }},
       "description": {{ page.tbdesc | default: page.ai_summary | default: page.title | truncate: 160 | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' | jsonify }},
       "inLanguage": "ja",
-      "about": {"@id": "https://trillion-bank.jp/#organization"},
+{% assign _svc = nil %}{% if page.about_service %}{% assign _svc = site.data.public_facts.products[page.about_service] %}{% endif %}
+      "about": {"@id": {% if _svc and _svc.schema_id %}{{ _svc.schema_id | jsonify }}{% else %}"https://trillion-bank.jp/#organization"{% endif %}},
       "mainEntity": {"@id": "{{ page.url | absolute_url }}#article"},
       "breadcrumb": {"@id": "{{ page.url | absolute_url }}#breadcrumb"}
     },
@@ -73,7 +51,10 @@
       "dateModified": "{% if page.last_modified %}{{ page.last_modified }}T00:00:00+09:00{% else %}{{ page.date | date_to_xmlschema }}{% endif %}",
       "author": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
       "publisher": {"@id": "https://trillion-bank.jp/#organization"},
-      "mainEntityOfPage": {"@id": "{{ page.url | absolute_url }}#webpage"},
+{% comment %}about_service: 記事の主題がそのサービスのとき（例: about_service: hack2）。触れただけなら mentions_services: [airreach] を使う。{% endcomment %}
+      "about": {"@id": {% if _svc and _svc.schema_id %}{{ _svc.schema_id | jsonify }}{% else %}"https://trillion-bank.jp/#organization"{% endif %}},
+{% if page.mentions_services %}      "mentions": [{% for _mid in page.mentions_services %}{% assign _m = site.data.public_facts.products[_mid] %}{% if _m and _m.schema_id %}{"@type": "Service", "@id": {{ _m.schema_id | jsonify }}, "name": {{ _m.name | jsonify }}}{% unless forloop.last %},{% endunless %}{% endif %}{% endfor %}],
+{% endif %}      "mainEntityOfPage": {"@id": "{{ page.url | absolute_url }}#webpage"},
       "inLanguage": "ja",
       "articleSection": {{ page.category | default: 'AI検索対策' | jsonify }},
       "keywords": {{ page.keywords | default: 'AI検索対策,GEO,AIO,LLMO,HackⅡ' | jsonify }}

@@ -24,6 +24,9 @@ products:
   hack2:
     name: "HackⅡ"
     aliases: ["ハックツ", "Hack2", "HackII"]
+    url: "https://trillion-bank.jp/trillionbank/business/hack2/"
+    schema_id: "https://trillion-bank.jp/trillionbank/business/hack2/#service"
+    service_type: "AI検索測定・意思決定支援サービス"
     status: "限定商用検証・導入相談受付"
     public_definition: "選定した質問について、AI回答本文、引用URL、自社・競合の言及、測定日時・条件を保存し、AI検索上の現在地と改善判断を支援するサービス。伴走コンサルティングはHackⅡ Teamsとして提供する。"
     verified_scope:
@@ -41,6 +44,10 @@ products:
 
   airreach:
     name: "AirReach"
+    aliases: ["エアリーチ"]
+    url: "https://trillion-bank.jp/airreach/"
+    schema_id: "https://trillion-bank.jp/airreach/#service"
+    service_type: "AI検索・SEO無料診断ツール"
     status: "店舗・営業向け無料診断。URL入力から店情報を確認し、増やしたいことを選んで診断する。"
     public_definition: "ホームページのURLを起点に、お店の確認と「何を増やしたいか」を聞いて診断する無料入口。業種・店名・調べる言葉はサイト情報から自動取得し、必要なら確認画面で直せる。結果は見つかりやすさの点数といちばん最初に直すこと、主ボタン1つを中心に返す。診断はscan IDで端末内に保存し、/airreach/result/ と /airreach/sales/ から開き直せる。くわしい分析や直す材料は結果の「その他のツール」から。数字はGoogle実測 / AirReach実測 / お客様入力 / 参考予測を区別する。"
     limitations:
@@ -77,6 +84,9 @@ products:
     public_definition: "HackⅡ本体の測定設計から優先順位整理・継続改善までを、コンサルティングとして一緒に進める伴走枠。"
   adctor:
     name: "Adctor"
+    url: "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/"
+    schema_id: "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/#service"
+    service_type: "AI情報利用管理（研究開発・PoC）"
     status: "研究開発・PoC相談"
     public_definition: "AI・RAG・MCP・Agentによるコンテンツ利用を、契約・認証・利用証跡・請求へ接続するための研究開発プロジェクト。"
     limitations:
