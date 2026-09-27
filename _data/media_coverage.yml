@@ -1,0 +1,133 @@
+# 掲載実績の台帳（メディア掲載・出演・記事）
+#
+# /trillionbank/media/ のカード、Organization / Person / Service の subjectOf は
+# すべてこの台帳から生成する（_includes/tb-media-subjectof.html）。HTMLに直書きしない。
+#
+# 公開ルール
+# - approval.status が approved で、url がある行だけ JSON-LD に出す。
+# - 承認済みでも url が無い行（掲載予定など）は本文カードのみ。
+# - 顧客名・成果数字・未許諾の画像は入れない（画像は許諾確認後に image を追加）。
+# - 事実は元記事と一致させる。掲載日が分からない行は published_at を null のままにし、確認中と表示する。
+#
+# 各行の項目（AI検索メディア引用 技術資料 2026-09-22 の CMS 設計に対応）
+#   id            台帳内の識別子
+#   kind          ceo_appearance | company_coverage | ceo_past | scheduled | pending
+#   kind_label    画面のバッジ文言（代表出演 / 会社掲載 / 代表者 過去掲載 / 掲載予定 / 確認中）
+#   schema_type   VideoObject | NewsArticle | Article | WebPage（JSON-LD の @type）
+#   headline      元記事・番組の正確なタイトル
+#   publisher     媒体・番組名
+#   url           元記事URL（無ければ null）
+#   published_at  掲載・公開日（不明なら null）
+#   summary       紹介された内容の短い要約（本文カードに表示）
+#   article_type  取材 / 出演 / プレスリリース転載 / 広告 / 過去掲載
+#   subjects      subjectOf を付ける対象: organization / ceo
+#   service_ids   紹介対象サービス（public_facts.products のキー）。会社全体なら []
+#   approval      { status: approved|pending, ref, approved_on }
+#   checked_at    最終確認日
+#   link_status   ok | unchecked | broken
+#   related_post  関連する自社お知らせのパス（あれば）
+last_reviewed: "2026-09-27"
+policy: "承認済み・URLありの行だけ構造化データに出す。要約は自社の言葉で書き、本文の転載はしない。"
+
+entries:
+  - id: reiwa-tora-jinzai
+    kind: ceo_appearance
+    kind_label: "代表出演"
+    schema_type: VideoObject
+    headline: "令和の虎 CHANNEL（人財版）出演回"
+    publisher: "令和の虎 CHANNEL"
+    url: "https://www.youtube.com/watch?v=tXTnZBE4-wM"
+    published_at: null
+    summary: "累計1,600万円・2連続完全ALL達成"
+    article_type: "出演"
+    subjects: [organization, ceo]
+    service_ids: []
+    approval: { status: approved, ref: "MEDIA-PUBLIC-20260927", approved_on: "2026-09-27", note: "台帳化前から /trillionbank/media/ と JSON-LD で公開済みの内容を移行" }
+    checked_at: "2026-09-27"
+    link_status: unchecked
+    related_post: "/trillionbank/news/reiwa-no-tora-jinzai/"
+
+  - id: reiwa-tora-juken
+    kind: ceo_appearance
+    kind_label: "代表出演"
+    schema_type: VideoObject
+    headline: "令和の虎 CHANNEL（受験生版）出演回"
+    publisher: "令和の虎 CHANNEL"
+    url: "https://youtu.be/tvK855skBTM"
+    published_at: null
+    summary: "代表出演"
+    article_type: "出演"
+    subjects: [organization, ceo]
+    service_ids: []
+    approval: { status: approved, ref: "MEDIA-PUBLIC-20260927", approved_on: "2026-09-27", note: "台帳化前から公開済みの内容を移行" }
+    checked_at: "2026-09-27"
+    link_status: unchecked
+    related_post: null
+
+  - id: nontitle-s6
+    kind: ceo_appearance
+    kind_label: "代表出演"
+    schema_type: VideoObject
+    headline: "Nontitle Season 6 出演回"
+    publisher: "Nontitle"
+    url: "https://youtu.be/AcJNa6jw1IY"
+    published_at: null
+    summary: "起業リアリティ番組出演"
+    article_type: "出演"
+    subjects: [organization, ceo]
+    service_ids: []
+    approval: { status: approved, ref: "MEDIA-PUBLIC-20260927", approved_on: "2026-09-27", note: "台帳化前から公開済みの内容を移行" }
+    checked_at: "2026-09-27"
+    link_status: unchecked
+    related_post: "/trillionbank/news/nontitle-appearance/"
+
+  - id: sbi-business-drive
+    kind: ceo_appearance
+    kind_label: "代表出演"
+    schema_type: VideoObject
+    headline: "SBI証券ビジネスドライブ出演回"
+    publisher: "SBI証券ビジネスドライブ"
+    url: "https://youtu.be/F2hO--D6Hd0"
+    published_at: null
+    summary: "代表出演"
+    article_type: "出演"
+    subjects: [organization, ceo]
+    service_ids: []
+    approval: { status: approved, ref: "MEDIA-PUBLIC-20260927", approved_on: "2026-09-27", note: "台帳化前から公開済みの内容を移行" }
+    checked_at: "2026-09-27"
+    link_status: unchecked
+    related_post: null
+
+  - id: keido-aidma
+    kind: scheduled
+    kind_label: "掲載予定"
+    schema_type: Article
+    headline: "経道 / アイドマ・ホールディングス（会社掲載）"
+    publisher: "経道 / アイドマ・ホールディングス"
+    url: null
+    published_at: null
+    summary: "会社掲載（掲載予定）"
+    article_type: "取材"
+    subjects: [organization]
+    service_ids: []
+    approval: { status: approved, ref: "MEDIA-PUBLIC-20260927", approved_on: "2026-09-27", note: "URL未確定のため本文カードのみ。公開後に url と published_at を追加する" }
+    checked_at: "2026-09-27"
+    link_status: unchecked
+    related_post: null
+
+  - id: houdou-keizai
+    kind: ceo_past
+    kind_label: "代表者 過去掲載"
+    schema_type: WebPage
+    headline: "経済報道テレビ 掲載"
+    publisher: "経済報道テレビ"
+    url: "https://houdou.jp/special/3417/"
+    published_at: null
+    summary: "代表者の過去（旧会社時）掲載"
+    article_type: "過去掲載"
+    subjects: [ceo]
+    service_ids: []
+    approval: { status: approved, ref: "MEDIA-PUBLIC-20260927", approved_on: "2026-09-27", note: "旧会社時の掲載。会社の subjectOf には入れない" }
+    checked_at: "2026-09-27"
+    link_status: unchecked
+    related_post: null

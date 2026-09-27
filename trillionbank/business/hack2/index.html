@@ -19,11 +19,12 @@ permalink: /trillionbank/business/hack2/
   {
     "@context": "https://schema.org",
     "@type": "Service",
+    "@id": "https://trillion-bank.jp/trillionbank/business/hack2/#service",
     "name": "HackⅡ",
-    "provider": {
-      "@type": "Organization",
-      "name": "株式会社Trillion Bank"
-    },
+    "alternateName": ["ハックツ", "Hack2", "HackII"],
+    "url": "https://trillion-bank.jp/trillionbank/business/hack2/",
+    "provider": {"@id": "https://trillion-bank.jp/#organization"},
+    "subjectOf": {% include tb-media-subjectof.html scope="service:hack2" %},
     "description": "AI回答内での候補入り・競合との勝敗・引用された情報源を証拠付きで測定し、次に投資すべきコンテンツ・PR・外部メディア施策を特定するAI Recommendation Intelligence（限定商用検証・導入相談受付）",
     "serviceType": "AI検索測定・意思決定支援サービス"
   }

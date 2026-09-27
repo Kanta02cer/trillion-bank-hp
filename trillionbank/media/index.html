@@ -15,21 +15,34 @@ permalink: /trillionbank/media/
   ]
 }
 </script>
+{% comment %}掲載実績の一覧（承認済み・URLあり）。個々の subjectOf は Organization / Person 側に付く。{% endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "@id": "https://trillion-bank.jp/trillionbank/media/#coverage",
+  "name": "株式会社Trillion Bank メディア掲載・出演",
+  "itemListOrder": "https://schema.org/ItemListUnordered",
+  "itemListElement": [{% assign _pos = 0 %}{% for e in site.data.media_coverage.entries %}{% if e.approval.status == "approved" and e.url %}{% assign _pos = _pos | plus: 1 %}{% if _pos > 1 %},{% endif %}
+    {"@type": "ListItem", "position": {{ _pos }}, "item": {"@type": {{ e.schema_type | default: "WebPage" | jsonify }}, "name": {{ e.headline | jsonify }}, "url": {{ e.url | jsonify }}, "publisher": {"@type": "Organization", "name": {{ e.publisher | jsonify }}}{% if e.published_at %}, "datePublished": {{ e.published_at | jsonify }}{% endif %}}}{% endif %}{% endfor %}
+  ]
+}
+</script>
 </head>
 <body>{% include tb-header.html %}
 <main id="main">
 <section class="phero"><div class="wrap"><div class="crumb"><a href="/">HOME</a> ／ Media / News</div><span class="ey">MEDIA / NEWS</span><h1>メディア・お知らせ</h1></div></section>
 
 <section class="sec"><div class="wrap"><div class="khead"><span class="no">01 — MEDIA</span><h2 class="rv">メディア掲載・出演</h2></div>
+{% comment %}掲載実績は _data/media_coverage.yml から描画する。カードを直書きしない。{% endcomment %}
+{% assign _mc = site.data.media_coverage %}
 <div class="mcards rv">
-  <a class="mcard" href="https://www.youtube.com/watch?v=tXTnZBE4-wM" target="_blank" rel="noopener"><span class="badge past">代表出演</span><div class="mt">令和の虎 CHANNEL（人財版）</div><div class="ms">累計1,600万円・2連続完全ALL達成 <span class="a">▶</span></div></a>
-  <a class="mcard" href="https://youtu.be/tvK855skBTM" target="_blank" rel="noopener"><span class="badge past">代表出演</span><div class="mt">令和の虎 CHANNEL（受験生版）</div><div class="ms">代表出演 <span class="a">▶</span></div></a>
-  <a class="mcard" href="https://youtu.be/AcJNa6jw1IY" target="_blank" rel="noopener"><span class="badge past">代表出演</span><div class="mt">Nontitle Season 6</div><div class="ms">起業リアリティ番組出演 <span class="a">▶</span></div></a>
-  <a class="mcard" href="https://youtu.be/F2hO--D6Hd0" target="_blank" rel="noopener"><span class="badge past">代表出演</span><div class="mt">SBI証券ビジネスドライブ</div><div class="ms">代表出演 <span class="a">▶</span></div></a>
-  <div class="mcard"><span class="badge sched">掲載予定</span><div class="mt">経道 / アイドマ・ホールディングス</div><div class="ms">会社掲載（掲載予定）</div></div>
-  <a class="mcard" href="https://houdou.jp/special/3417/" target="_blank" rel="noopener"><span class="badge past">代表者 過去掲載</span><div class="mt">経済報道テレビ</div><div class="ms">代表者の過去（旧会社時）掲載 <span class="a">▶</span></div></a>
+{% for e in _mc.entries %}{% if e.approval.status == "approved" %}
+{% assign _badge = "past" %}{% if e.kind == "scheduled" %}{% assign _badge = "sched" %}{% elsif e.kind == "pending" %}{% assign _badge = "pending" %}{% endif %}
+  {% if e.url %}<a class="mcard" href="{{ e.url }}" target="_blank" rel="noopener">{% else %}<div class="mcard">{% endif %}<span class="badge {{ _badge }}">{{ e.kind_label }}</span><div class="mt">{{ e.publisher }}</div><div class="ms">{{ e.summary }}{% if e.url %} <span class="a">▶</span>{% endif %}</div><div class="ms" style="margin-top:4px">{% if e.published_at %}掲載日 {{ e.published_at }}{% else %}掲載日 確認中{% endif %} · {{ e.article_type }} · 確認 {{ e.checked_at }}</div>{% if e.url %}</a>{% else %}</div>{% endif %}
+{% endif %}{% endfor %}
 </div>
-<p style="margin-top:16px;font-size:.78rem;color:var(--muted)">※ 画像利用の許諾が確認できるまで、番組・媒体のサムネイル画像は掲載していません。媒体名はテキストで表記しています。分類は「代表出演／会社掲載／代表者 過去掲載／掲載予定／確認中」に基づきます。</p>
+<p style="margin-top:16px;font-size:.78rem;color:var(--muted)">※ 画像利用の許諾が確認できるまで、番組・媒体のサムネイル画像は掲載していません。媒体名はテキストで表記しています。分類は「代表出演／会社掲載／代表者 過去掲載／掲載予定／確認中」に基づきます。掲載日・紹介内容・確認日は台帳（{{ _mc.last_reviewed }} 更新）から表示しています。</p>
 </div></section>
 
 <section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">02 — NEWS</span><h2 class="rv">お知らせ・コラム</h2></div>

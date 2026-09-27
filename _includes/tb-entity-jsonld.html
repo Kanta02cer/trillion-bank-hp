@@ -1,0 +1,95 @@
+{%- comment -%}
+会社・代表・サイトのエンティティ JSON-LD（唯一の出力元）。
+tb-head.html と _layouts/corp.html の両方がこれを読む。事実は _data/public_facts.yml、
+掲載実績（subjectOf）は _data/media_coverage.yml から取る。ページ側で Organization / Person を
+再定義しない（@id 参照のみ）。
+{%- endcomment -%}
+{%- assign _f = site.data.public_facts -%}
+{%- capture _org_subject_of -%}{% include tb-media-subjectof.html scope="organization" %}{%- endcapture -%}
+{%- capture _ceo_subject_of -%}{% include tb-media-subjectof.html scope="ceo" %}{%- endcapture -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": {{ _f.company.legal_name | jsonify }},
+      "legalName": {{ _f.company.legal_name | jsonify }},
+      "alternateName": [{{ _f.company.display_name | jsonify }}, {{ _f.company.japanese_alias | jsonify }}, "株式会社トリリオンバンク", "TRILLION BANK", "Trillion Bank Co., Ltd."],
+      "brand": {"@type": "Brand", "name": {{ _f.company.japanese_alias | jsonify }}},
+      "url": {{ _f.company.website | jsonify }},
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp",
+        "width": 414,
+        "height": 318
+      },
+      "description": {{ _f.positioning.long | jsonify }},
+      "disambiguatingDescription": {{ _f.company.bank_disclaimer | append: " AI検索の見え方と情報利用の測定・研究に取り組むテクノロジー企業で、同名の他社・作品とは無関係です。" | jsonify }},
+      "foundingDate": {{ _f.company.founded | jsonify }},
+      "foundingLocation": {"@type": "Place", "name": "東京都千代田区麹町"},
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": {{ _f.company.address.postal_code | jsonify }},
+        "addressRegion": {{ _f.company.address.region | jsonify }},
+        "addressLocality": {{ _f.company.address.locality | jsonify }},
+        "streetAddress": {{ _f.company.address.street | jsonify }},
+        "addressCountry": {{ _f.company.address.country | jsonify }}
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "llms.txt",
+        "JSON-LD構造化データ",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "makesOffer": [
+        {"@type": "Offer", "itemOffered": {"@id": {{ _f.products.hack2.schema_id | jsonify }}}},
+        {"@type": "Offer", "itemOffered": {"@id": {{ _f.products.airreach.schema_id | jsonify }}}}
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": {{ _org_subject_of | strip }}
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": {{ _f.company.representative | jsonify }},
+      "alternateName": ["井上幹太", "Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役CEO",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI検索の効果測定"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/",
+      "sameAs": ["https://www.instagram.com/trillionbank_jp/"],
+      "subjectOf": {{ _ceo_subject_of | strip }}
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": {{ _f.company.legal_name | jsonify }},
+      "url": {{ _f.company.website | jsonify }},
+      "description": {{ _f.positioning.short | jsonify }},
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>

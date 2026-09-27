@@ -1,0 +1,31 @@
+{%- comment -%}
+掲載実績の台帳 (_data/media_coverage.yml) から subjectOf の JSON 配列を出す。
+使い方:  {% include tb-media-subjectof.html scope="organization" %}
+         {% include tb-media-subjectof.html scope="ceo" %}
+         {% include tb-media-subjectof.html scope="service:hack2" %}
+出す条件: approval.status == approved かつ url あり。掲載予定など URL の無い行は出さない。
+sameAs には入れない（同一性ではなく「この対象についての記事」の関係）。
+{%- endcomment -%}
+{%- assign _scope = include.scope | default: "organization" -%}
+{%- assign _is_service = false -%}
+{%- if _scope contains "service:" -%}
+  {%- assign _is_service = true -%}
+  {%- assign _service_id = _scope | remove: "service:" -%}
+{%- endif -%}
+{%- assign _out = "" -%}
+{%- for e in site.data.media_coverage.entries -%}
+  {%- if e.approval.status != "approved" or e.url == nil or e.url == "" -%}{%- continue -%}{%- endif -%}
+  {%- assign _match = false -%}
+  {%- if _is_service -%}
+    {%- if e.service_ids contains _service_id -%}{%- assign _match = true -%}{%- endif -%}
+  {%- else -%}
+    {%- if e.subjects contains _scope -%}{%- assign _match = true -%}{%- endif -%}
+  {%- endif -%}
+  {%- if _match -%}
+    {%- capture _item -%}
+{"@type": {{ e.schema_type | default: "WebPage" | jsonify }}, "name": {{ e.headline | jsonify }}, "url": {{ e.url | jsonify }}{% if e.publisher %}, "publisher": {"@type": "Organization", "name": {{ e.publisher | jsonify }}}{% endif %}{% if e.published_at %}, "datePublished": {{ e.published_at | jsonify }}{% endif %}}
+    {%- endcapture -%}
+    {%- if _out == "" -%}{%- assign _out = _item -%}{%- else -%}{%- assign _out = _out | append: ", " | append: _item -%}{%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+[{{ _out }}]
