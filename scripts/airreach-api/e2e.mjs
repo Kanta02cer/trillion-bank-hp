@@ -232,7 +232,16 @@ try {
   expect('fetch POST → 405', r.status === 405, `status=${r.status}`);
   r = await fx(`${TARGET}/`, { origin: BAD_ORIGIN });
   expect('fetch from disallowed origin → 403', r.status === 403, `status=${r.status}`);
-  for (const bad of ['http://localhost:54322/', 'http://metadata.google.internal/', 'http://10.0.0.1/', 'http://169.254.169.254/latest/', 'http://[::1]/', 'http://192.168.1.1/', 'http://0.0.0.0/', 'http://foo.local/', 'http://intranet/', 'ftp://example.com/', 'http://100.64.0.1/']) {
+  const SSRF_CASES = [
+    'http://localhost:54322/', 'http://metadata.google.internal/', 'http://10.0.0.1/', 'http://169.254.169.254/latest/', 'http://192.168.1.1/',
+    'http://0.0.0.0/', 'http://foo.local/', 'http://intranet/', 'ftp://example.com/', 'http://100.64.0.1/', 'http://192.0.2.1/', 'http://198.18.0.1/',
+    // IPv6: 要求ケース
+    'http://[::ffff:127.0.0.1]/', 'http://[::ffff:10.0.0.1]/', 'http://[::ffff:192.168.1.1]/', 'http://[::1]/', 'http://[fe80::1]/', 'http://[fc00::1]/', 'http://[fd00::1]/', 'http://[ff02::1]/',
+    // IPv6: Node が正規化する 16 進 IPv4-mapped、未指定、IPv4-compatible、NAT64、文書用、Teredo、6to4、site-local、discard
+    'http://[::ffff:7f00:1]/', 'http://[::ffff:a00:1]/', 'http://[::ffff:c0a8:101]/', 'http://[::ffff:169.254.169.254]/', 'http://[::]/', 'http://[::7f00:1]/',
+    'http://[64:ff9b::7f00:1]/', 'http://[2001:db8::1]/', 'http://[2001::1]/', 'http://[2002:c0a8:101::1]/', 'http://[fec0::1]/', 'http://[100::1]/', 'http://[3fff::1]/',
+  ];
+  for (const bad of SSRF_CASES) {
     r = await fx(bad);
     expect(`fetch SSRF ${bad} → 400`, r.status === 400 && r.json?.error?.code === 'bad_request', `status=${r.status}`);
   }
@@ -240,13 +249,17 @@ try {
     r = await fx('https://example.com/');
     expect('fetch external https://example.com/ → 200', r.status === 200 && /Example Domain/.test(r.text), `status=${r.status}`);
   } catch (e) { record('fetch external https://example.com/ (skipped: offline)', true); }
+  // 公開 IPv6 リテラル（グローバルユニキャスト）は許可される。IPv6 経路が無い環境では 502 になるので情報扱い
+  r = await fx('https://[2606:4700:4700::1111]/');
+  if (r.status === 200) expect('fetch public IPv6 literal https://[2606:4700:4700::1111]/ → 200', true);
+  else record(`fetch public IPv6 literal (allowed by guard; environment returned ${r.status} — no IPv6 egress?)`, r.status !== 400, `status=${r.status}`);
   r = await fx('http://localtest.me/');
   expect('fetch hostname resolving to 127.0.0.1 (DNS check) → 400', r.status === 400, `status=${r.status} ${r.text.slice(0, 120)}`);
 
   // ---- URL guard without the test flag (production behaviour) ------------------------------
   const guard = spawn(process.execPath, ['--input-type=module', '-e', `
     import { sanitizeHttpUrl } from ${JSON.stringify(path.join(ROOT, 'api/airreach/_lib/url.js'))};
-    const bad = ['http://127.0.0.1:54322/', 'http://127.1/', 'http://0x7f000001/', 'http://localhost/', 'http://[::1]/', 'http://10.1.2.3/'];
+    const bad = ['http://127.0.0.1:54322/', 'http://127.1/', 'http://0x7f000001/', 'http://0177.0.0.1/', 'http://localhost/', 'http://[::1]/', 'http://[::ffff:127.0.0.1]/', 'http://[::ffff:7f00:1]/', 'http://10.1.2.3/'];
     let rejected = 0; for (const b of bad) { try { sanitizeHttpUrl(b); } catch { rejected += 1; } }
     console.log(JSON.stringify({ rejected, total: bad.length }));
   `], { env: { ...process.env, AIRREACH_FETCH_ALLOW_LOOPBACK_FOR_TESTS: '' } });

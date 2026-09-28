@@ -49,12 +49,22 @@ try {
   expect('2 fetch robots.txt → 200 text', r.status === 200 && /User-agent/i.test(r.text), `status=${r.status}`);
   r = await fx('https://trillion-bank.jp/definitely-missing-page-airreach-check');
   expect('2 fetch 404 passthrough (empty body)', r.status === 404 && r.text === '', `status=${r.status} len=${r.text.length}`);
-  for (const bad of ['http://localhost/', 'http://127.0.0.1/', 'http://10.0.0.1/', 'http://169.254.169.254/latest/meta-data/', 'http://[::1]/', 'http://192.168.1.1/', 'http://metadata.google.internal/', 'http://localtest.me/']) {
+  for (const bad of [
+    'http://localhost/', 'http://127.0.0.1/', 'http://10.0.0.1/', 'http://169.254.169.254/latest/meta-data/', 'http://192.168.1.1/', 'http://metadata.google.internal/', 'http://localtest.me/',
+    'http://[::ffff:127.0.0.1]/', 'http://[::ffff:10.0.0.1]/', 'http://[::ffff:192.168.1.1]/', 'http://[::1]/', 'http://[fe80::1]/', 'http://[fc00::1]/', 'http://[fd00::1]/', 'http://[ff02::1]/',
+    'http://[::ffff:7f00:1]/', 'http://[::]/', 'http://[2001:db8::1]/', 'http://[64:ff9b::7f00:1]/', 'http://[2002:c0a8:101::1]/',
+  ]) {
     r = await fx(bad);
     expect(`2 fetch SSRF ${bad} → 400`, r.status === 400 && r.json?.error?.code === 'bad_request', `status=${r.status} ${r.text.slice(0, 100)}`);
   }
   r = await call('/api/airreach/fetch/');
   expect('2 fetch without url → 400', r.status === 400, `status=${r.status}`);
+  r = await fx('https://8.8.8.8/');
+  expect('2 fetch public IPv4 literal https://8.8.8.8/ → not rejected by guard', r.status !== 400, `status=${r.status}`);
+  r = await fx('https://[2606:4700:4700::1111]/');
+  expect(`2 fetch public IPv6 literal → not rejected by guard (status ${r.status}; 502 means no IPv6 egress on the platform)`, r.status !== 400, `status=${r.status}`);
+  r = await fx('https://ipv6.google.com/');
+  expect(`2 fetch AAAA-only host ipv6.google.com → not rejected by guard (status ${r.status})`, r.status !== 400, `status=${r.status} ${r.text.slice(0, 80)}`);
 
   // 3. save
   const payload = buildScanPayload({ url: 'https://example.com/' });
