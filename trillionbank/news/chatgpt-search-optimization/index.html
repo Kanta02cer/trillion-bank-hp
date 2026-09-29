@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0XHQPCC4CF');
+</script>
+
+
+
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+<title>ChatGPT検索対策の実務｜Bing・OAI-SearchBot・引用元の考え方</title>
+<meta name="description" content="ChatGPT検索対策の出発点はBingへのインデックス登録とOAI-SearchBot・ChatGPT-Userの許可です。ChatGPTの情報取得3経路、Bing対策が前提になる根拠、robots.txt設定例、引用されやすい情報源の偏りと限界を一次情報つきで解説します。">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<meta property="og:title" content="ChatGPT検索対策の実務｜Bing・OAI-SearchBot・引用元の考え方">
+<meta property="og:description" content="ChatGPT検索対策の出発点はBingへのインデックス登録とOAI-SearchBot・ChatGPT-Userの許可です。ChatGPTの情報取得3経路、Bing対策が前提になる根拠、robots.txt設定例、引用されやすい情報源の偏りと限界を一次情報つきで解説します。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/">
+<meta property="og:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="株式会社Trillion Bank">
+
+<meta property="article:published_time" content="2026-09-06T00:00:00+09:00">
+<meta property="article:modified_time" content="2026-09-06T00:00:00+09:00">
+<meta property="article:author" content="井上 幹太">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ChatGPT検索対策の実務｜Bing・OAI-SearchBot・引用元の考え方">
+<meta name="twitter:description" content="ChatGPT検索対策の出発点はBingへのインデックス登録とOAI-SearchBot・ChatGPT-Userの許可です。ChatGPTの情報取得3経路、Bing対策が前提になる根拠、robots.txt設定例、引用されやすい情報源の偏りと限界を一次情報つきで解説します。">
+<meta name="twitter:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+
+<link rel="canonical" href="https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/">
+<link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/">
+<link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/">
+<link rel="sitemap" type="application/xml" href="https://trillion-bank.jp/sitemap-index.xml">
+
+<!-- AI / LLM discovery -->
+<meta name="ai-summary" content="ChatGPT検索は外部の提携検索プロバイダー（公式ヘルプはMicrosoftのプライバシーポリシーを明記）、自社クローラーOAI-SearchBotのインデックス、ユーザー起点のChatGPT-Userという複数経路で情報を取得する。対策はBing Webmaster Tools登録とIndexNow、robots.txtでのOAI-SearchBot・ChatGPT-User許可、構造化コンテンツ、第三者言及の獲得が基本で、引用は保証されず引用元シェアは短期間で急変する。">
+<link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="https://trillion-bank.jp/feed.xml">
+<link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+<link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+<link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["Trillion Bank", "トリリオンバンク", "株式会社トリリオンバンク", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {"@type": "ImageObject", "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp"},
+      "description": "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。",
+      "foundingDate": "2025-12-23",
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": [
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+        {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+        {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI情報流通インフラ"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/#webpage",
+      "url": "https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/",
+      "name": "ChatGPT検索対策の実務｜Bing・OAI-SearchBot・引用元の考え方",
+      "description": "ChatGPT検索対策の出発点はBingへのインデックス登録とOAI-SearchBot・ChatGPT-Userの許可です。ChatGPTの情報取得3経路、Bing対策が前提になる根拠、robots.txt設定例、引用されやすい情報源の偏りと限界を一次情報つきで解説します。",
+      "inLanguage": "ja",
+      "isPartOf": {"@id": "https://trillion-bank.jp/#website"},
+      "about": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntity": {"@id": "https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/#article"},
+      "breadcrumb": {"@id": "https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/#breadcrumb"}
+    },
+    {
+      "@type": "Article",
+      "@id": "https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/#article",
+      "headline": "ChatGPT検索対策の実務｜Bing・OAI-SearchBot・引用元の考え方",
+      "description": "ChatGPT検索対策の出発点はBingへのインデックス登録とOAI-SearchBot・ChatGPT-Userの許可です。ChatGPTの情報取得3経路、Bing対策が前提になる根拠、robots.txt設定例、引用されやすい情報源の偏りと限界を一次情報つきで解説します。",
+      "image": "https://trillion-bank.jp/images/hero/tb-logo-color.webp",
+      "datePublished": "2026-09-06T00:00:00+09:00",
+      "dateModified": "2026-09-06T00:00:00+09:00",
+      "author": {"@type": "Person", "name": "井上 幹太", "@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "editor": {"@type": "Organization", "name": "株式会社Trillion Bank 編集部"},
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntityOfPage": {"@id": "https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/#webpage"},
+      "inLanguage": "ja",
+      "articleSection": "技術"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/#breadcrumb",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "HOME", "item": "https://trillion-bank.jp/"},
+        {"@type": "ListItem", "position": 2, "name": "Insights", "item": "https://trillion-bank.jp/trillionbank/insights/"},
+        {"@type": "ListItem", "position": 3, "name": "ChatGPT検索対策の実務｜Bing・OAI-SearchBot・引用元の考え方", "item": "https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/"}
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/#faq",
+      "mainEntity": [{"@type":"Question","name":"ChatGPTに引用されるにはBing対策が必要ですか？","acceptedAnswer":{"@type":"Answer","text":"重要な前提条件です。OpenAIの公式ヘルプはChatGPT検索が外部の検索プロバイダーと提携することを明記し、提携先に関連してMicrosoft等のプライバシーポリシーを明記しています。SearchGPTを対象にしたSeer Interactiveの調査でも、引用の87%超がBingのオーガニック上位と一致しました。ただしBing上位に入れば引用されるという保証はありません。"}},{"@type":"Question","name":"robots.txtでどのOpenAIボットを許可すべきですか？","acceptedAnswer":{"@type":"Answer","text":"ChatGPTの検索結果に載るためにはOAI-SearchBotを、ユーザー操作起点のページ取得を受けるにはChatGPT-Userを許可します。学習用クローラーのGPTBotは目的が別で、許可するかどうかは自社の学習提供方針として切り分けて判断します。"}},{"@type":"Question","name":"GPTBotを拒否するとChatGPT検索に出なくなりますか？","acceptedAnswer":{"@type":"Answer","text":"OpenAIの公式仕様では、GPTBotは生成AIモデルの学習用、OAI-SearchBotは検索結果表示用と役割が分かれています。GPTBotを拒否してもOAI-SearchBotを許可していれば検索経由の表示機会は残ります。ただし表示や引用そのものが約束されるわけではありません。"}},{"@type":"Question","name":"ChatGPT検索対策の効果はどのくらい持続しますか？","acceptedAnswer":{"@type":"Answer","text":"引用元の傾向は短期間で大きく変わります。Semrushの13週調査では、ChatGPTがRedditを引用する割合が2025年8月上旬の約60%から9月中旬には約10%へ急落しました。特定の引用元シェアを前提にした施策は崩れやすく、継続的な観測が必要です。"}}]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+<header class="tbh" id="tbh">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+      <img src="/images/hero/tb-logo-symbol.webp" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
+    </a>
+    <nav class="links" aria-label="グローバル">
+      <div class="mega">
+        <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
+        <div class="mega-panel" id="mega-biz">
+          <a href="/airreach/"><span class="mt">AirReach <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はHackⅡへ</span></a>
+          <a href="/trillionbank/business/hack2/"><span class="mt">HackⅡ <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+        </div>
+      </div>
+      <a href="/trillionbank/mission/">MISSION</a>
+      <a href="/trillionbank/insights/">INSIGHTS</a>
+      <a href="/trillionbank/company/">COMPANY</a>
+      <a href="/trillionbank/media/">MEDIA / NEWS</a>
+      <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="header" data-cta="header_contact_form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
+    </nav>
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+<section class="phero"><div class="wrap"><nav class="crumb" aria-label="パンくずリスト"><a href="/">HOME</a> ／ <a href="/trillionbank/insights/">Insights</a> ／ 技術</nav><span class="en" style="font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:var(--gold)">2026.09.06　技術</span><h1 style="font-size:clamp(1.7rem,4vw,2.9rem);margin-top:14px">ChatGPT検索対策の実務｜Bing・OAI-SearchBot・引用元の考え方</h1></div></section>
+<section class="sec"><div class="wrap"><article class="article">
+<div class="byline" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--hair,#e5e7eb);font-size:.86rem;color:var(--muted,#6b7280);"><span>執筆：井上 幹太</span><span>確認：株式会社Trillion Bank 編集部</span><span>公開：2026年09月06日</span><span>最終確認：2026-09-06</span></div>
+
+
+
+<section class="direct-answer" aria-label="結論">
+  <span class="da-label">ANSWER ── 結論</span>
+  <p>ChatGPT検索対策の第一歩は、Bingに正しくインデックスされることと、robots.txtでOAI-SearchBotとChatGPT-Userを許可することです。</p>
+</section>
+
+
+
+
+
+
+
+<nav class="tb-toc" aria-label="目次">
+  <span class="toc-label">CONTENTS ── 目次</span>
+  <ol><li class="lv2"><a href="#chatgptが情報を取得する3つの経路">ChatGPTが情報を取得する3つの経路</a></li><li class="lv2"><a href="#なぜbing対策が前提になるのか">なぜBing対策が前提になるのか</a></li><li class="lv2"><a href="#robotstxtでの許可設定">robots.txtでの許可設定</a></li><li class="lv2"><a href="#引用されやすい情報源の偏り">引用されやすい情報源の偏り</a></li><li class="lv2"><a href="#実務チェックリスト">実務チェックリスト</a></li><li class="lv2"><a href="#できないこと限界">できないこと・限界</a></li></ol>
+</nav>
+
+
+<p>ChatGPTは外部の提携検索プロバイダー（公式ヘルプがMicrosoftのプライバシーポリシーを明記）、自社クローラーOAI-SearchBotによるインデックス、ユーザー操作起点のライブ取得という複数の経路で情報を取得するため、対策もこの3層に沿って整理するのが実務的です。</p>
+<h2 id="chatgptが情報を取得する3つの経路">ChatGPTが情報を取得する3つの経路</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>経路</th>
+      <th>役割</th>
+      <th>根拠（一次情報）</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>提携検索プロバイダー</td>
+      <td>外部検索エンジンの結果を利用。公式ヘルプは提携先のプライバシーポリシーとしてMicrosoft（Bingの運営元）を明記</td>
+      <td>OpenAIヘルプ「Searching the web with ChatGPT」</td>
+    </tr>
+    <tr>
+      <td>OAI-SearchBot</td>
+      <td>ChatGPTの検索機能でサイトを表示するためのOpenAI自社クローラー</td>
+      <td>OpenAI公式Bots文書</td>
+    </tr>
+    <tr>
+      <td>ChatGPT-User</td>
+      <td>ユーザーの操作を起点にページを取得。自動クロールや検索インデックスには使われない</td>
+      <td>OpenAI公式Bots文書</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>つまり「ChatGPTに見つけてもらう」経路は1つではありません。Bingのインデックス、OpenAI自身のインデックス、回答生成時のライブ取得のそれぞれに受け皿を用意します。</p>
+
+<h2 id="なぜbing対策が前提になるのか">なぜBing対策が前提になるのか</h2>
+
+<p>ChatGPT検索の前身SearchGPTを対象にSeer Interactiveが行った調査（約100クエリ・500件超の引用を分析）では、<strong>引用の87%超がBingのオーガニック上位結果と一致</strong>しました。同じ質問でのGoogle一致率は56%にとどまり、ChatGPTの引用がBingの評価に強く依存していることを示しています。</p>
+
+<p>実務では次の2点が出発点です。</p>
+
+<ul>
+  <li>Bing Webmaster Toolsにサイトを登録し、サイトマップを送信する</li>
+  <li>IndexNow（Microsoft Bingなどが支持する更新通知プロトコル）で新規・更新URLを即時通知する</li>
+</ul>
+
+<h2 id="robotstxtでの許可設定">robots.txtでの許可設定</h2>
+
+<p>OpenAIの公式Bots文書に基づく設定例です。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># ChatGPT検索での表示を受け入れる
+User-agent: OAI-SearchBot
+Allow: /
+
+# ユーザー起点のライブ取得を受け入れる
+User-agent: ChatGPT-User
+Allow: /
+
+# 学習用クローラーは別判断（拒否する場合の例）
+User-agent: GPTBot
+Disallow: /
+</code></pre></div></div>
+
+<p>GPTBotは生成AIモデルの学習用で、検索表示用のOAI-SearchBotとは役割が異なります。「学習には使わせないが検索経由の引用機会は残す」という切り分けが公式仕様上可能です。なおOAI-SearchBotのrobots.txt反映には24時間程度かかり、ChatGPT-Userはユーザー起点の取得のためrobots.txtが適用されない場合があると明記されています。各社クローラーの一覧と設定の考え方は「<a href="/trillionbank/news/ai-crawler-list-control/">AIクローラー一覧と制御方法</a>」で整理しています。</p>
+
+<h2 id="引用されやすい情報源の偏り">引用されやすい情報源の偏り</h2>
+
+<p>Profoundの調査（2024年8月〜2025年6月、6.8億件の引用を分析）では、ChatGPTの引用上位10ドメイン内でWikipediaが47.9%を占めました（全引用に対しては7.8%）。レビュー・比較サイトなど第三者による評価コンテンツも引用されやすい傾向があります。</p>
+
+<p>自社サイトの整備だけでは届かない領域があるということです。業界メディアへの寄稿、比較サイトへの正確な情報掲載、一次データの公開など、第三者に言及される状態をつくることがChatGPT対策の一部になります。</p>
+
+<h2 id="実務チェックリスト">実務チェックリスト</h2>
+
+<ol>
+  <li>Bing Webmaster Toolsにサイトを登録し、サイトマップを送信した</li>
+  <li>IndexNowによる更新通知を導入した</li>
+  <li>robots.txtでOAI-SearchBotとChatGPT-Userを許可した</li>
+  <li>GPTBot（学習用）の扱いを自社方針として決めた</li>
+  <li>質問に直接答える構造（見出し・表・FAQ・結論先出し）へコンテンツを整備した</li>
+  <li>業界メディア・比較サイトなど第三者言及の獲得を進めた</li>
+  <li>サーバーログでOAI-SearchBot・ChatGPT-Userのアクセスを観測している</li>
+  <li>ChatGPTでの引用の有無と引用元URLを質問単位で記録している</li>
+</ol>
+
+<h2 id="できないこと限界">できないこと・限界</h2>
+
+<ul>
+  <li>上記をすべて実施しても、ChatGPTでの表示・引用は保証されません</li>
+  <li>引用元のシェアは急変します。Semrushの13週調査（2025年7月〜10月、23万件超のプロンプト）では、ChatGPTがRedditを引用する割合が8月上旬の約60%から9月中旬に約10%へ急落しました。特定ドメインの引用傾向を前提にした施策は短期間で崩れる可能性があります</li>
+  <li>Bing上位と引用の一致は相関であり、Bing対策が引用を生む因果の証明ではありません</li>
+  <li>ChatGPT-Userはrobots.txtの適用外となる場合があり、許可・拒否を完全には制御できません</li>
+</ul>
+
+<p>当社ではHackⅡ（限定商用検証・導入相談受付）で、質問単位にAIの回答本文と引用元URLを記録し、こうした引用傾向の変化を継続観測しています。AI向け案内ファイルの位置づけは「<a href="/trillionbank/news/llms-txt-guide/">llms.txtとは</a>」も参考にしてください。ChatGPT検索対策は、正確な一次情報の整備とBingへの確実な到達を土台に、効果を断定せず観測で検証し続けることが本質です。</p>
+
+<section aria-labelledby="article-faq" style="margin-top:48px"><h2 id="article-faq">よくある質問</h2><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">ChatGPTに引用されるにはBing対策が必要ですか？</h3><p>重要な前提条件です。OpenAIの公式ヘルプはChatGPT検索が外部の検索プロバイダーと提携することを明記し、提携先に関連してMicrosoft等のプライバシーポリシーを明記しています。SearchGPTを対象にしたSeer Interactiveの調査でも、引用の87%超がBingのオーガニック上位と一致しました。ただしBing上位に入れば引用されるという保証はありません。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">robots.txtでどのOpenAIボットを許可すべきですか？</h3><p>ChatGPTの検索結果に載るためにはOAI-SearchBotを、ユーザー操作起点のページ取得を受けるにはChatGPT-Userを許可します。学習用クローラーのGPTBotは目的が別で、許可するかどうかは自社の学習提供方針として切り分けて判断します。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">GPTBotを拒否するとChatGPT検索に出なくなりますか？</h3><p>OpenAIの公式仕様では、GPTBotは生成AIモデルの学習用、OAI-SearchBotは検索結果表示用と役割が分かれています。GPTBotを拒否してもOAI-SearchBotを許可していれば検索経由の表示機会は残ります。ただし表示や引用そのものが約束されるわけではありません。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">ChatGPT検索対策の効果はどのくらい持続しますか？</h3><p>引用元の傾向は短期間で大きく変わります。Semrushの13週調査では、ChatGPTがRedditを引用する割合が2025年8月上旬の約60%から9月中旬には約10%へ急落しました。特定の引用元シェアを前提にした施策は崩れやすく、継続的な観測が必要です。</p></div></section>
+<div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);"><h2 style="font-size:1rem;margin-bottom:12px">参考文献・一次情報</h2><ol style="font-size:.86rem;color:var(--muted,#6b7280);padding-left:20px"><li style="margin-bottom:8px"><a href="https://help.openai.com/en/articles/9237897-chatgpt-search" target="_blank" rel="noopener noreferrer">OpenAI Help Center — Searching the web with ChatGPT</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://developers.openai.com/api/docs/bots" target="_blank" rel="noopener noreferrer">OpenAI — Bots（OpenAIクローラーの公式仕様）</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://www.seerinteractive.com/insights/87-percent-of-searchgpt-citations-match-bings-top-results" target="_blank" rel="noopener noreferrer">Seer Interactive — 87% of SearchGPT Citations Match Bing's Top Results</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://www.tryprofound.com/blog/ai-platform-citation-patterns" target="_blank" rel="noopener noreferrer">Profound — AI Platform Citation Patterns</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://www.semrush.com/blog/most-cited-domains-ai/" target="_blank" rel="noopener noreferrer">Semrush — The Most-Cited Domains in AI: A 3-Month Study</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://www.indexnow.org/" target="_blank" rel="noopener noreferrer">IndexNow — 公式サイト</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://www.bing.com/webmasters/about" target="_blank" rel="noopener noreferrer">Bing Webmaster Tools</a>（確認日：2026-09-06）</li></ol></div>
+<div style="margin-top:40px;padding:20px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);font-size:.8rem;color:var(--muted,#6b7280)"><p style="margin:0">本記事は公開時点の一次情報と当社の分析に基づきます。用語や各サービスの仕様は変わる可能性があります。誤りを確認した場合は、お問い合わせ窓口からお知らせください。</p></div>
+
+
+
+<aside class="author-box" aria-label="この記事の著者">
+  
+  <img src="/images/ceo-kanta.webp" alt="井上 幹太" width="72" height="72" loading="lazy">
+  <div class="ab-body">
+    <span class="ab-label">AUTHOR ── この記事の著者</span>
+    <p class="ab-name">井上 幹太<span class="ab-role">株式会社Trillion Bank 代表取締役</span></p>
+    <p class="ab-bio">AI検索計測「HackⅡ」とAIコンテンツ利用管理「Adctor / Pay per Crawl」の研究開発・事業化に取り組む。令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL。ソフトバンクアカデミア17期／J-StarX第1期／ZEN大学1期特別奨学生。</p>
+    <a class="ab-link" href="/trillionbank/ceo/">プロフィールと実績を見る <span aria-hidden="true">→</span></a>
+  </div>
+  
+</aside>
+
+<div class="article-cta" style="margin-top:56px;padding-top:36px;border-top:2px solid var(--blue-600)"><h2 style="font-size:clamp(1.2rem,2.4vw,1.55rem)">この記事のテーマを、自社・競合で確認する</h2><p>HackⅡは、選定した質問についてAI回答、引用URL、自社・競合の言及と測定条件を保存し、改善判断を支援します。</p><div style="display:flex;gap:14px;flex-wrap:wrap"><a class="btn btn-primary" href="/trillionbank/meeting/?type=company" data-event="meeting_form_open" data-service="hack2_company" data-cta="article_footer">AI検索の現在地を相談する <span class="a">→</span></a><a class="btn btn-line" href="/trillionbank/meeting/?type=agency" data-event="meeting_form_open" data-service="hack2_agency" data-cta="article_footer">共同提案を相談する <span class="a">→</span></a></div><p style="margin-top:14px;font-size:.78rem;color:var(--muted)">AI回答への掲載、順位、問い合わせ、売上を保証するサービスではありません。</p></div>
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<div style="margin-top:56px;padding-top:34px;border-top:1px solid var(--border,#DDE3EC)">
+  <h2 style="font-family:var(--mono);font-size:.78rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-bottom:18px">関連記事</h2>
+  <div class="nlist">
+    
+    <a class="nitem" href="/trillionbank/news/sme-faq-schema-starter/"><span class="date">2026.09.15</span><span class="ncat">技術</span><span class="nt">未着手企業がまず作るFAQとFAQPageの実務ガイド</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/llms-txt-guide/"><span class="date">2026.09.06</span><span class="ncat">技術</span><span class="nt">llms.txtとは？書き方・設置方法・効果と限界【実装例つき】</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/json-ld-eeat-ai-search/"><span class="date">2026.09.06</span><span class="ncat">技術</span><span class="nt">構造化データ（JSON-LD）でE-E-A-Tを機械可読にする実装ガイド</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/hack2-measurement-data-policy/"><span class="date">2026.08.14</span><span class="ncat">技術</span><span class="nt">HackⅡの測定方法とデータポリシー｜何をどう測り、何を公開しないか</span><span class="go">→</span></a>
+    
+  </div>
+</div>
+
+
+<div style="margin-top:44px"><a class="btn btn-line" href="/trillionbank/insights/">← Insights一覧へ</a></div>
+</article></div></section>
+</main>
+
+<footer class="tbf">
+  <div class="wrap">
+    <div class="top">
+      <div><a class="brand" href="/" aria-label="Trillion Bank ホーム"><img src="/images/hero/tb-logo-color.webp" alt="TRILLION BANK" width="160" height="40" style="height:32px;width:auto;filter:brightness(10)"></a><p class="addr">株式会社Trillion Bank<br>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ<br>株式会社Trillion Bankは銀行業を営む会社ではありません。</p></div>
+      <div class="fcol"><h5>BUSINESS</h5><a href="/trillionbank/business/hack2/">HackⅡ</a><a href="/trillionbank/business/pay-per-crawl/">Adctor</a></div>
+      <div class="fcol"><h5>INSIGHTS</h5><a href="/trillionbank/insights/">実務解説</a><a href="/trillionbank/company/">会社概要</a><a href="/trillionbank/media/">お知らせ</a></div>
+      <div class="fcol"><h5>CONTACT</h5><a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a><a href="/trillionbank/contact/#form">お問い合わせ</a></div>
+    </div>
+    <div class="bottom"><span>© 2026 Trillion Bank Co., Ltd.</span><span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a></span></div>
+  </div>
+</footer>
+<script>
+(function(){var h=document.getElementById('tbh'),b=document.getElementById('tbBurger');if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});document.querySelectorAll('.mega-t').forEach(function(btn){btn.addEventListener('click',function(){btn.setAttribute('aria-expanded',String(btn.getAttribute('aria-expanded')!=='true'))})});})();
+</script>
+
+</body>
+</html>

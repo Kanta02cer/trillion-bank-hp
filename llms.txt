@@ -1,0 +1,120 @@
+# 株式会社Trillion Bank
+
+> 株式会社Trillion Bank（トリリオンバンク）は、AI検索とAIエージェント時代の情報流通を、測定・証跡・運用へ変えるテクノロジー企業です。銀行業を営む会社ではありません。
+
+## Canonical company information
+
+- Company: 株式会社Trillion Bank（トリリオンバンク / Trillion Bank）
+- Former name: Regalis Japan Group株式会社（2026-06-30に商号変更、沿革情報）
+- Representative: 井上 幹太（Kanta Inoue）
+- Founded: 2025-12-23
+- Address: 〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ
+- Website: https://trillion-bank.jp/
+- Company profile: https://trillion-bank.jp/trillionbank/company/
+- Mission: https://trillion-bank.jp/trillionbank/mission/
+- CEO profile: https://trillion-bank.jp/trillionbank/ceo/
+- Business overview: https://trillion-bank.jp/trillionbank/business/
+- Insights: https://trillion-bank.jp/trillionbank/insights/
+- News / Media: https://trillion-bank.jp/trillionbank/media/
+- Contact: https://trillion-bank.jp/trillionbank/contact/
+
+## Products and programs
+
+### HackⅡ
+
+HackⅡ is in limited commercial validation and accepts implementation consultations. For an agreed set of questions, it stores AI answer text, cited URLs, company/competitor mentions, measurement time and conditions, and supports analysis and improvement prioritization.
+
+- Product page: https://trillion-bank.jp/trillionbank/business/hack2/
+- It does not guarantee AI inclusion, rankings, traffic, leads, bookings, or revenue.
+- Supported AI services, question count, competitors and measurement frequency are agreed for each engagement.
+
+### Adctor
+
+Adctor is a research and PoC program for connecting AI/RAG/MCP/Agent content use with contracts, authentication, usage evidence and future billing workflows.
+
+- Program page: https://trillion-bank.jp/trillionbank/business/pay-per-crawl/
+- It is not a completed autonomous payment, collection or distribution network.
+- It does not claim to identify every unknown AI bot or observe every external AI use.
+
+## Reviewed guides
+
+- SEO・AEO・GEO・AIO・LLMOの違い: https://trillion-bank.jp/trillionbank/news/seo-aeo-geo-aio-llmo-difference/
+- AI検索の測定方法: https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/
+- Pay per CrawlとPay per Useの違い: https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/
+- AI検索対策の内製／外注 判断ガイド: https://trillion-bank.jp/trillionbank/guide/inhouse-or-outsource/
+- 販売代理店・制作会社向け 共同提案ガイド: https://trillion-bank.jp/trillionbank/guide/agency-co-proposal/
+- Pay per Crawlとは: https://trillion-bank.jp/trillionbank/news/pay-per-crawl-towa/
+- AI検索の引用率の計算方法: https://trillion-bank.jp/trillionbank/news/ai-citation-rate-calculation/
+- AI検索モニタリングツール選定チェックリスト: https://trillion-bank.jp/trillionbank/news/ai-search-monitoring-rfp-checklist/
+- LLMO（生成AI検索最適化）とは: https://trillion-bank.jp/trillionbank/news/llmo-towa/
+- LLMO・GEO・AEOの違い: https://trillion-bank.jp/trillionbank/news/llmo-geo-aeo/
+- 生成AIに引用されない原因とGEO対策: https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/
+- AI検索の引用状況を調べるプロンプト集: https://trillion-bank.jp/trillionbank/news/prompt-collection/
+- 最新AIモデルまとめとAI検索への影響: https://trillion-bank.jp/trillionbank/news/latest-ai-models/
+- AEO計測ツールの選び方: https://trillion-bank.jp/trillionbank/news/aeo-tools/
+- llms.txtとは（書き方・限界）: https://trillion-bank.jp/trillionbank/news/llms-txt-guide/
+- AIクローラー一覧と制御方法: https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/
+- 構造化データでE-E-A-Tを機械可読にする: https://trillion-bank.jp/trillionbank/news/json-ld-eeat-ai-search/
+- AI検索対策ツール・支援サービスの比較の考え方: https://trillion-bank.jp/trillionbank/news/ai-search-tools-vendors/
+- AI検索の統計データまとめ: https://trillion-bank.jp/trillionbank/news/ai-search-statistics/
+- ChatGPT検索対策の実務: https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/
+- Google AI Overviews対策: https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/
+
+## Notes
+
+This file is an experimental, human-readable index of approved public pages. It is not a ranking instruction or an inclusion guarantee. The HTML pages above are the canonical sources.
+
+
+## SME / Partner lead guides (2026-09-15)
+
+- 広告代理店がAI検索測定を提案に足す理由: https://trillion-bank.jp/trillionbank/news/partner-ad-agency-pitch/
+- 販売代理店向け｜HackⅡ共同提案の進め方: https://trillion-bank.jp/trillionbank/news/partner-co-sell-process/
+- 販売代理店検討でよくある質問｜範囲と役割分担: https://trillion-bank.jp/trillionbank/news/partner-faq-scope-roles/
+- 販売代理店が最初の1社にHackⅡを提案する手順: https://trillion-bank.jp/trillionbank/news/partner-first-client-playbook/
+- 代理店検討の商談前チェックリスト: https://trillion-bank.jp/trillionbank/news/partner-meeting-prep-checklist/
+- 「御社に代理店になってほしい」依頼をお受けしない理由: https://trillion-bank.jp/trillionbank/news/partner-not-becoming-your-agent/
+- Trillion Bankサービス販売代理店の検討ガイド: https://trillion-bank.jp/trillionbank/news/partner-program-overview/
+- SEO会社がHackⅡを提案メニューに追加する考え方: https://trillion-bank.jp/trillionbank/news/partner-seo-firm-add-on/
+- Web制作会社がAI検索対策を継続収益にする設計: https://trillion-bank.jp/trillionbank/news/partner-web-production-add-on/
+- HackⅡ販売代理店に向いている業者の特徴: https://trillion-bank.jp/trillionbank/news/partner-who-fits/
+- 中小企業がAI検索対策に予算を付ける根拠の作り方: https://trillion-bank.jp/trillionbank/news/sme-ai-search-budget-justification/
+- AI検索対策で中小企業が最初にやりがちな失敗: https://trillion-bank.jp/trillionbank/news/sme-ai-search-common-first-mistakes/
+- 中小企業がAI検索対策を始める最初の30日｜未着手からの手順: https://trillion-bank.jp/trillionbank/news/sme-ai-search-first-30-days/
+- 中小企業が抱きやすいAI検索・SEOの誤解10選: https://trillion-bank.jp/trillionbank/news/sme-ai-seo-myths/
+- 社内稟議用｜AI検索対策の説明文テンプレート（中小企業）: https://trillion-bank.jp/trillionbank/news/sme-board-proposal-template/
+- BtoBサービス業の中小企業がAIにおすすめされない理由: https://trillion-bank.jp/trillionbank/news/sme-btob-services-ai-recommend/
+- ChatGPTに自社が出てこない中小企業向けチェックリスト: https://trillion-bank.jp/trillionbank/news/sme-chatgpt-not-mentioned/
+- 問い合わせ前に揃える｜AI検索対策の相談準備チェックリスト: https://trillion-bank.jp/trillionbank/news/sme-contact-ready-checklist/
+- 既存サイトのAI向け棚卸し｜中小企業のページ点検手順: https://trillion-bank.jp/trillionbank/news/sme-content-inventory-for-ai/
+- スクール・研修事業の中小企業向けAI検索対策: https://trillion-bank.jp/trillionbank/news/sme-education-school-ai-search/
+- 中小企業の社名・サービス表記ゆれチェックリスト｜AI検索対策: https://trillion-bank.jp/trillionbank/news/sme-entity-consistency-checklist/
+- 未着手企業がまず作るFAQとFAQPageの実務ガイド: https://trillion-bank.jp/trillionbank/news/sme-faq-schema-starter/
+- フランチャイズ本部が整えるべきAI検索の一次情報: https://trillion-bank.jp/trillionbank/news/sme-franchise-hq-ai-search/
+- 地域密着の中小企業向け｜地図情報とAI検索の役割分担: https://trillion-bank.jp/trillionbank/news/sme-local-brand-ai-and-maps/
+- 製造業の中小企業向けAI検索対策｜技術情報の出し方: https://trillion-bank.jp/trillionbank/news/sme-manufacturing-ai-search/
+- AI検索ツール導入前に中小企業が取るべき基準線: https://trillion-bank.jp/trillionbank/news/sme-measure-before-tools/
+- 経営者が決めるAI検索投資｜中小企業の判断フレーム: https://trillion-bank.jp/trillionbank/news/sme-owner-ceo-ai-search-decision/
+- SEO会社にAI検索対策を頼む前に中小企業が聞くべき質問: https://trillion-bank.jp/trillionbank/news/sme-seo-vendor-questions/
+- 競合だけがAIに選ばれるとき中小企業が確認すべきこと: https://trillion-bank.jp/trillionbank/news/sme-vs-competitor-ai-visibility/
+- 中小企業がAI検索対策をまだ外注しなくていい段階: https://trillion-bank.jp/trillionbank/news/sme-when-not-to-outsource/
+
+
+## P0 selection / measurement guides (2026-09-16)
+
+- AEO支援会社の選び方｜回答エンジン最適化で見るべき比較軸: https://trillion-bank.jp/trillionbank/news/aeo-support-company/
+- AIブランド可視性ツールの選び方｜チェックすべき機能: https://trillion-bank.jp/trillionbank/news/ai-brand-visibility-tool/
+- AI検索の競合分析のやり方｜質問単位のWin/Lossで見る: https://trillion-bank.jp/trillionbank/news/ai-search-competitor-analysis/
+- AI検索から問い合わせにつなげる導線設計｜未着手企業向け: https://trillion-bank.jp/trillionbank/news/ai-search-inquiry-conversion/
+- AI検索マーケティング支援とは？依頼範囲の切り方と注意点: https://trillion-bank.jp/trillionbank/news/ai-search-marketing-support/
+- AI検索対策会社の選び方｜測定・支援・SEO拡張の3分類で比較する: https://trillion-bank.jp/trillionbank/news/ai-search-optimization-company/
+- AI検索SOVとは？計算の考え方と誤用しやすい点: https://trillion-bank.jp/trillionbank/news/ai-search-sov/
+- 生成AI引用分析とは？見るべき項目と実務手順: https://trillion-bank.jp/trillionbank/news/generative-ai-citation-analysis/
+- GEOコンサルティング会社の選び方｜定義の揺れを踏まえた確認項目: https://trillion-bank.jp/trillionbank/news/geo-consulting-company/
+- LLMO対策会社の選び方｜生成AI検索最適化の依頼範囲を決める: https://trillion-bank.jp/trillionbank/news/llmo-company-selection/
+
+Last reviewed: 2026-09-16
+
+## AirReach
+
+- [AirReach｜AI検索準備度の無料診断](https://trillion-bank.jp/airreach/)
+

@@ -1,0 +1,65 @@
+<h1 id="hackⅱ-founding-monitor-lp-制作プレビュー">HackⅡ Founding Monitor LP 制作プレビュー</h1>
+
+<p>このLPは、<code class="language-plaintext highlighter-rouge">main</code>へ反映する前に専用ブランチ上のGitHub Codespacesで確認します。</p>
+
+<h2 id="対象">対象</h2>
+
+<ul>
+  <li>リポジトリ: <code class="language-plaintext highlighter-rouge">Kanta02cer/trillion-bank-hp</code></li>
+  <li>制作ブランチ: <code class="language-plaintext highlighter-rouge">preview/hack2-founding-monitor</code></li>
+  <li>対象ページ: <code class="language-plaintext highlighter-rouge">/lp/hack2/founding-monitor/</code></li>
+  <li>開発サーバー: Jekyll / port <code class="language-plaintext highlighter-rouge">4000</code></li>
+</ul>
+
+<h2 id="1クリックで開く">1クリックで開く</h2>
+
+<p><a href="https://codespaces.new/Kanta02cer/trillion-bank-hp/tree/preview%2Fhack2-founding-monitor?quickstart=1">GitHub Codespacesで制作プレビューを開く</a></p>
+
+<p>初回は「Create codespace」を選択してください。依存関係のインストール後、Jekyll開発サーバーが自動起動し、ポート4000のプレビューが開きます。</p>
+
+<p>確認するURLパスは次のとおりです。</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/lp/hack2/founding-monitor/
+</code></pre></div></div>
+
+<h2 id="修正確認の流れ">修正確認の流れ</h2>
+
+<ol>
+  <li>このチャットで修正内容を伝える</li>
+  <li>修正を <code class="language-plaintext highlighter-rouge">preview/hack2-founding-monitor</code> にコミットする</li>
+  <li>Codespacesのターミナルで次を実行する</li>
+</ol>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git pull <span class="nt">--ff-only</span>
+</code></pre></div></div>
+
+<ol>
+  <li>ブラウザのプレビューを再読み込みして確認する</li>
+  <li>承認後にのみ <code class="language-plaintext highlighter-rouge">main</code> へマージする</li>
+</ol>
+
+<h2 id="修正依頼テンプレート">修正依頼テンプレート</h2>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>対象: PC / スマートフォン / 両方
+セクション: Hero、課題、機能、料金・仕様、CTA、フォーム、FAQ など
+現状: 現在どのように見えるか
+修正: どのように変えたいか
+参考: 参考URL、画像、色、文言など
+優先度: 高 / 中 / 低
+</code></pre></div></div>
+
+<h2 id="開発サーバーを再起動する場合">開発サーバーを再起動する場合</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bash .devcontainer/start-preview.sh
+</code></pre></div></div>
+
+<p>ログを確認する場合は次を実行します。</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">tail</span> <span class="nt">-f</span> .preview/jekyll.log
+</code></pre></div></div>
+
+<p>プレビューが自動で開かない場合は、Codespaces下部の「PORTS」タブからポート<code class="language-plaintext highlighter-rouge">4000</code>を開いてください。</p>
+
+<h2 id="本番への影響">本番への影響</h2>
+
+<p>この制作ブランチを確認している間、<code class="language-plaintext highlighter-rouge">trillion-bank.jp</code>の本番ページは変更されません。ドラフトPRを承認して<code class="language-plaintext highlighter-rouge">main</code>へマージした時点で、既存のGitHub Pagesデプロイ処理が動作します。</p>

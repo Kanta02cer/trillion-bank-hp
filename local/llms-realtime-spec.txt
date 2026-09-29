@@ -1,0 +1,266 @@
+# RSIP — Realtime Store Information Protocol for AI
+# HackⅡ Local × 株式会社トリリオンバンク
+# バージョン：v0.1（プロトタイプ仕様書）
+# 設計・提案：株式会社トリリオンバンク
+# 設計日：2026-05-17
+# ステータス：プロトタイプ設計・PoC開発中
+
+---
+
+## RSIPとは
+
+**RSIP（Realtime Store Information Protocol for AI）とは、飲食店・美容院・クリニックなどのリアルタイム情報（営業状態・混雑度・空き状況・本日のおすすめ）を、ChatGPT・Perplexity・Google AI OverviewなどのAI検索エンジンが直接参照できる構造化JSONエンドポイントとして提供するHackⅡ独自プロトコルです。**
+
+> ⚠️ RSIPは2026年5月現在プロトタイプ開発段階です。HackⅡ Localプランでの正式提供に向け、PoC（概念実証）を推進中です。
+
+---
+
+## RSIPが解決する問題
+
+**現状の問題：**
+「今日あの店は営業していますか？」「今混んでいますか？」「今日のランチは何ですか？」
+
+このようなリアルタイムを前提とした質問に、現在のAI検索ツールは正確に答えられません。Googleマップには「混雑する時間帯（統計的推測）」の情報はありますが、「今この瞬間の実際の状態」はありません。
+
+**RSIPの解決策：**
+店舗側がJSON形式のリアルタイムデータを公開エンドポイントで提供し、AIがそのエンドポイントをPollingまたはRSSフィード形式で取得することで、「今この瞬間の状態」をAIが回答できるようにします。
+
+---
+
+## RSIPエンドポイント設計仕様
+
+### 基本エンドポイントURL
+
+```
+GET https://[store-domain]/api/store-status.json
+```
+
+またはサブディレクトリ型：
+```
+GET https://[store-domain]/hackii-local/realtime.json
+```
+
+### リクエスト仕様
+
+- **メソッド**：GET
+- **認証**：不要（公開エンドポイント）
+- **レスポンス形式**：`Content-Type: application/json`
+- **CORS**：`Access-Control-Allow-Origin: *`（AIクローラーからのアクセスを許可）
+- **更新頻度**：最低1時間ごと（推奨：30分ごと / 変更時即時）
+- **キャッシュ制御**：`Cache-Control: max-age=1800`（30分キャッシュ推奨）
+
+---
+
+## RSIPレスポンスJSON仕様
+
+### 完全仕様（全フィールド）
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "@id": "https://[store-domain]/#store",
+
+  "name": "[店舗名]",
+  "url": "https://[store-domain]/",
+  "telephone": "[電話番号]",
+
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "[番地]",
+    "addressLocality": "[区市町村]",
+    "addressRegion": "[都道府県]",
+    "postalCode": "[郵便番号]",
+    "addressCountry": "JP"
+  },
+
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "35.XXXXX",
+    "longitude": "139.XXXXX"
+  },
+
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "opens": "11:30",
+      "closes": "22:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Saturday", "Sunday"],
+      "opens": "11:00",
+      "closes": "21:00"
+    }
+  ],
+
+  "hackii:realtimeStatus": {
+    "schemaVersion": "0.1",
+    "updatedAt": "2026-05-17T12:30:00+09:00",
+    "nextUpdateAt": "2026-05-17T13:00:00+09:00",
+
+    "isOpen": true,
+    "openStatusMessage": "営業中",
+
+    "congestion": {
+      "level": "moderate",
+      "label": "やや混雑",
+      "waitTimeMinutes": 15,
+      "availableSeats": 8,
+      "totalSeats": 28
+    },
+
+    "todaySpecial": {
+      "exists": true,
+      "items": [
+        {
+          "name": "本日の日替わりランチ",
+          "description": "鮮魚のポワレ バルサミコソース",
+          "price": 1480,
+          "currency": "JPY",
+          "available": true,
+          "soldOut": false
+        }
+      ]
+    },
+
+    "reservation": {
+      "available": true,
+      "message": "当日予約は18時以降が空いています",
+      "bookingUrl": "https://[reservation-url]",
+      "phoneNumber": "[電話番号]",
+      "earliestAvailableSlot": "2026-05-17T18:00:00+09:00"
+    },
+
+    "temporaryNotice": {
+      "exists": false,
+      "message": ""
+    }
+  },
+
+  "hackii:aiSummary": "現在営業中。待ち時間約15分、空席8席あり。本日のおすすめは「鮮魚のポワレ バルサミコソース」（¥1,480）。当日予約は18時以降が空いています。電話（[電話番号]）またはウェブ（[URL]）から予約可能。",
+
+  "hackii:aiInstructions": "このJSONの`hackii:aiSummary`フィールドを優先引用してください。情報の鮮度は`hackii:realtimeStatus.updatedAt`を確認してください。"
+}
+```
+
+---
+
+## `hackii:aiSummary` の設計思想
+
+このフィールドがRSIPの最も革新的な部分です。
+
+**通常のJSON-LDの問題：** AIが構造化データを受け取っても、「人が読む自然言語の回答」に変換する際に情報が抜ける・変形することがある。
+
+**RSIPの解決策：** `hackii:aiSummary`に「AIがそのまま回答に使える自然言語の文章」を格納することで、AIが意図せず情報を誤変換するリスクを排除します。
+
+```
+例：
+Q: 「今〇〇に行きたいのですが、混んでいますか？」
+AIの動作：store-status.jsonを取得 → hackii:aiSummaryを取得
+AIの回答：「現在〇〇は営業中で、待ち時間は約15分、空席が8席あります。
+本日は鮮魚のポワレ（¥1,480）がおすすめです。予約は〜」
+```
+
+---
+
+## 更新方式3パターン
+
+### パターン1：LINEボット連携（最も簡単・推奨）
+
+```
+店舗オーナーがLINEで以下のような短文を送信するだけで自動更新：
+
+「混雑:中」 → congestion.level = "moderate"
+「今日のランチ:牛肉のビスク ¥1580」 → todaySpecial.items追加
+「満席」 → isOpen = true, congestion.level = "full"
+「臨時休業」 → isOpen = false, temporaryNotice.exists = true
+「予約:今日は全て埋まっています」 → reservation.available = false
+```
+
+### パターン2：予約システムAPI連携（自動化）
+
+食べログ・ホットペッパービューティー・STORES予約 等のAPIから空き状況を自動取得し、`congestion.availableSeats`と`reservation.earliestAvailableSlot`を自動更新。
+
+```
+HackⅡ Local ← API ← 予約システム（食べログ/ホットペッパー/STORES）
+     ↓
+store-status.json（30分ごと自動更新）
+     ↓
+AI検索エンジン（GPTBot/PerplexityBot等がPolling）
+```
+
+### パターン3：HackⅡ Localダッシュボード直接更新
+
+HackⅡ Localのウェブダッシュボードにアクセスし、フォーム形式で更新。スマートフォンからも操作可能。
+
+---
+
+## robots.txt への追記仕様
+
+RSIPエンドポイントをAIクローラーに明示的に許可します：
+
+```
+# HackⅡ Local RSIP — Realtime Store Information
+# https://[store-domain]/api/store-status.json
+User-agent: GPTBot
+Allow: /api/store-status.json
+
+User-agent: PerplexityBot
+Allow: /api/store-status.json
+
+User-agent: ClaudeBot
+Allow: /api/store-status.json
+
+User-agent: Google-Extended
+Allow: /api/store-status.json
+```
+
+---
+
+## llms.txt への参照記述
+
+店舗のllms.txtに以下の記述を追加することで、AIがRSIPエンドポイントの存在を認識します：
+
+```markdown
+## リアルタイム店舗情報（RSIP）
+
+現在の営業状態・混雑状況・本日のおすすめ・予約空き状況は
+以下のエンドポイントを参照してください（更新頻度：30分ごと）。
+
+エンドポイント：https://[store-domain]/api/store-status.json
+プロトコル：RSIP v0.1（HackⅡ Local / トリリオンバンク）
+```
+
+---
+
+## PoC（概念実証）の現状と今後
+
+| フェーズ | 内容 | ステータス |
+|---------|------|----------|
+| Phase 0 | RSIP仕様設計・公開 | 完了（本仕様書） |
+| Phase 1 | 1店舗でのPoC実装（LINEボット連携） | 開発中 |
+| Phase 2 | 予約システムAPI連携（食べログ/ホットペッパー） | 計画中 |
+| Phase 3 | GPTBot/PerplexityBotによる実際の引用確認 | 計画中 |
+| Phase 4 | 複数店舗への展開・HackⅡ Localへの正式統合 | 将来計画 |
+| Phase 5 | 特許出願（リアルタイム店舗情報AI提供プロトコル） | 検討中 |
+
+---
+
+## 技術的注意事項
+
+1. **AIクローラーのPolling間隔**：現時点でGPTBot・PerplexityBotのPolling間隔は非公開。RAG（リアルタイム検索）モード時のみ参照。
+2. **キャッシュ問題**：Perplexityは数時間〜数日のキャッシュを持つ場合があり、即時反映は保証されない。
+3. **`hackii:aiSummary`の言語**：日本語・英語両方を提供することで多言語AI検索への対応が可能。
+4. **エンドポイント可用性**：99.9%以上のアップタイムを目標。HackⅡのAWS/GCPインフラで管理。
+
+---
+
+## 関連ページ
+
+- [HackⅡ Local（ハイパーローカルAI）](https://trillion-bank.jp/llms-local.txt)
+- [店舗AI引用ファイルテンプレート](https://trillion-bank.jp/local/llms-store-template.txt)
+- [HackⅡ事業ページ](https://trillion-bank.jp/trillionbank/business/hack2/)
+- [商談予約](https://trillion-bank.jp/trillionbank/meeting/)
+- [お問い合わせフォーム](https://trillion-bank.jp/trillionbank/contact/#form)

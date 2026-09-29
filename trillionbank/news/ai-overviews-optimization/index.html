@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0XHQPCC4CF');
+</script>
+
+
+
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+<title>Google AI Overviews対策とは？従来SEOとの関係と実務チェックリスト</title>
+<meta name="description" content="Google AI Overviews（AIO）対策の実務を、Google公式のAI最適化ガイドとAhrefs・5WPR・OtterlyAIの調査データに基づいて解説します。従来SEOとの関係、トップ10引用比率の変化、YouTube引用の台頭、実務チェックリストと限界をまとめます。">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<meta property="og:title" content="Google AI Overviews対策とは？従来SEOとの関係と実務チェックリスト">
+<meta property="og:description" content="Google AI Overviews（AIO）対策の実務を、Google公式のAI最適化ガイドとAhrefs・5WPR・OtterlyAIの調査データに基づいて解説します。従来SEOとの関係、トップ10引用比率の変化、YouTube引用の台頭、実務チェックリストと限界をまとめます。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/">
+<meta property="og:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="株式会社Trillion Bank">
+
+<meta property="article:published_time" content="2026-09-06T00:00:00+09:00">
+<meta property="article:modified_time" content="2026-09-06T00:00:00+09:00">
+<meta property="article:author" content="井上 幹太">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Google AI Overviews対策とは？従来SEOとの関係と実務チェックリスト">
+<meta name="twitter:description" content="Google AI Overviews（AIO）対策の実務を、Google公式のAI最適化ガイドとAhrefs・5WPR・OtterlyAIの調査データに基づいて解説します。従来SEOとの関係、トップ10引用比率の変化、YouTube引用の台頭、実務チェックリストと限界をまとめます。">
+<meta name="twitter:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+
+<link rel="canonical" href="https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/">
+<link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/">
+<link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/">
+<link rel="sitemap" type="application/xml" href="https://trillion-bank.jp/sitemap-index.xml">
+
+<!-- AI / LLM discovery -->
+<meta name="ai-summary" content="Google AI Overviews対策の本筋は従来SEOの基礎の上に抽出しやすい構造を整えることで、Googleは特別なAI用ファイルやマークアップは不要と公式に明言している。AhrefsによるとAIO引用に占めるトップ10ページの比率は2025年7月の76%から2026年再調査で38%に低下し、クエリファンアウト経由の引用が拡大した。YouTubeは主要な引用元となり、再生数と被引用の相関はほぼゼロと報告されている。">
+<link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="https://trillion-bank.jp/feed.xml">
+<link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+<link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+<link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["Trillion Bank", "トリリオンバンク", "株式会社トリリオンバンク", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {"@type": "ImageObject", "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp"},
+      "description": "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。",
+      "foundingDate": "2025-12-23",
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": [
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+        {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+        {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI情報流通インフラ"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/#webpage",
+      "url": "https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/",
+      "name": "Google AI Overviews対策とは？従来SEOとの関係と実務チェックリスト",
+      "description": "Google AI Overviews（AIO）対策の実務を、Google公式のAI最適化ガイドとAhrefs・5WPR・OtterlyAIの調査データに基づいて解説します。従来SEOとの関係、トップ10引用比率の変化、YouTube引用の台頭、実務チェックリストと限界をまとめます。",
+      "inLanguage": "ja",
+      "isPartOf": {"@id": "https://trillion-bank.jp/#website"},
+      "about": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntity": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/#article"},
+      "breadcrumb": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/#breadcrumb"}
+    },
+    {
+      "@type": "Article",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/#article",
+      "headline": "Google AI Overviews対策とは？従来SEOとの関係と実務チェックリスト",
+      "description": "Google AI Overviews（AIO）対策の実務を、Google公式のAI最適化ガイドとAhrefs・5WPR・OtterlyAIの調査データに基づいて解説します。従来SEOとの関係、トップ10引用比率の変化、YouTube引用の台頭、実務チェックリストと限界をまとめます。",
+      "image": "https://trillion-bank.jp/images/hero/tb-logo-color.webp",
+      "datePublished": "2026-09-06T00:00:00+09:00",
+      "dateModified": "2026-09-06T00:00:00+09:00",
+      "author": {"@type": "Person", "name": "井上 幹太", "@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "editor": {"@type": "Organization", "name": "株式会社Trillion Bank 編集部"},
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntityOfPage": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/#webpage"},
+      "inLanguage": "ja",
+      "articleSection": "AI検索対策"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/#breadcrumb",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "HOME", "item": "https://trillion-bank.jp/"},
+        {"@type": "ListItem", "position": 2, "name": "Insights", "item": "https://trillion-bank.jp/trillionbank/insights/"},
+        {"@type": "ListItem", "position": 3, "name": "Google AI Overviews対策とは？従来SEOとの関係と実務チェックリスト", "item": "https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/"}
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/#faq",
+      "mainEntity": [{"@type":"Question","name":"Google AI Overviews対策に特別なAI用ファイルやマークアップは必要ですか？","acceptedAnswer":{"@type":"Answer","text":"不要です。Googleは公式ガイドで、AI OverviewsやAI Modeに表示されるために新しい機械可読ファイル・AI用テキストファイル・特別なマークアップを作る必要はなく、生成AI機能はコア検索のランキング・品質システムに根ざしているため従来のSEOベストプラクティスが引き続き有効だと明言しています。"}},{"@type":"Question","name":"検索でトップ10に入ればAI Overviewsに引用されますか？","acceptedAnswer":{"@type":"Answer","text":"引用の有力な入口ですが、それだけでは決まりません。Ahrefsの調査では、AIO引用に占めるトップ10ページの比率は2025年7月時点の約76%から2026年の再調査で38%に低下しました。元の検索を関連サブクエリに展開するクエリファンアウト経由の引用が増えており、トップ10外からの引用が拡大しています。"}},{"@type":"Question","name":"AI Overviews対策としてYouTube動画は有効ですか？","acceptedAnswer":{"@type":"Answer","text":"検討する価値があります。5WPRの2026年調査ではGoogle AIOの引用の約23%をYouTubeが占め最大の引用元と報告され、OtterlyAIの調査では再生数・高評価・登録者数と被引用頻度の相関はほぼゼロ、引用動画の約41%は再生数1,000回未満でした。人気よりも質問に明確に答える構成が選ばれる傾向です。ただし引用されるかどうかは保証されません。"}},{"@type":"Question","name":"AI Overviewsに自社サイトを表示させる方法はありますか？","acceptedAnswer":{"@type":"Answer","text":"表示や引用を確実にする方法はありません。Google公式も特定の施策による表示の確約を示していません。できるのは、インデックスと基礎SEOを整え、質問に正面から答える抽出しやすい構造とエンティティ情報の一貫性を保ち、引用の有無を継続的に観測して改善することです。"}}]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+<header class="tbh" id="tbh">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+      <img src="/images/hero/tb-logo-symbol.webp" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
+    </a>
+    <nav class="links" aria-label="グローバル">
+      <div class="mega">
+        <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
+        <div class="mega-panel" id="mega-biz">
+          <a href="/airreach/"><span class="mt">AirReach <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はHackⅡへ</span></a>
+          <a href="/trillionbank/business/hack2/"><span class="mt">HackⅡ <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+        </div>
+      </div>
+      <a href="/trillionbank/mission/">MISSION</a>
+      <a href="/trillionbank/insights/">INSIGHTS</a>
+      <a href="/trillionbank/company/">COMPANY</a>
+      <a href="/trillionbank/media/">MEDIA / NEWS</a>
+      <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="header" data-cta="header_contact_form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
+    </nav>
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+<section class="phero"><div class="wrap"><nav class="crumb" aria-label="パンくずリスト"><a href="/">HOME</a> ／ <a href="/trillionbank/insights/">Insights</a> ／ AI検索対策</nav><span class="en" style="font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:var(--gold)">2026.09.06　AI検索対策</span><h1 style="font-size:clamp(1.7rem,4vw,2.9rem);margin-top:14px">Google AI Overviews対策とは？従来SEOとの関係と実務チェックリスト</h1></div></section>
+<section class="sec"><div class="wrap"><article class="article">
+<div class="byline" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--hair,#e5e7eb);font-size:.86rem;color:var(--muted,#6b7280);"><span>執筆：井上 幹太</span><span>確認：株式会社Trillion Bank 編集部</span><span>公開：2026年09月06日</span><span>最終確認：2026-09-06</span></div>
+
+
+
+<section class="direct-answer" aria-label="結論">
+  <span class="da-label">ANSWER ── 結論</span>
+  <p>Google AI Overviews（AIO）対策の本筋は、AI専用の特別な施策ではなく、従来SEOの基礎（クロール可能性・質の高いコンテンツ・エンティティの一貫性）の上に、AIが抽出しやすい構造を整えることです。</p>
+</section>
+
+
+
+
+
+
+
+<nav class="tb-toc" aria-label="目次">
+  <span class="toc-label">CONTENTS ── 目次</span>
+  <ol><li class="lv2"><a href="#google公式ai最適化ガイドの要点">Google公式「AI最適化ガイド」の要点</a></li><li class="lv2"><a href="#検索順位とaio引用の関係76から38へ">検索順位とAIO引用の関係：76%から38%へ</a></li><li class="lv2"><a href="#youtubeの台頭再生数と被引用はほぼ無相関">YouTubeの台頭：再生数と被引用はほぼ無相関</a></li><li class="lv2"><a href="#構造化データは可視コンテンツとの一致が前提">構造化データは可視コンテンツとの一致が前提</a></li><li class="lv2"><a href="#実務チェックリスト">実務チェックリスト</a></li><li class="lv2"><a href="#できないこと限界">できないこと・限界</a></li></ol>
+</nav>
+
+
+<p>Google自身が公式ガイドで、AI機能のための特別なファイルやマークアップは不要だと明言しています。一方で観測データは、上位表示だけでは説明できない引用の構造変化も示しています。</p>
+<h2 id="google公式ai最適化ガイドの要点">Google公式「AI最適化ガイド」の要点</h2>
+
+<p>Googleが公開している公式ガイド「Optimizing your website for generative AI features on Google Search」は、生成AI機能への最適化について次の点を明言しています。</p>
+
+<ul>
+  <li>新しい機械可読ファイル・AI用テキストファイル・特別なマークアップを作る必要はない</li>
+  <li>検索の生成AI機能はコア検索のランキング・品質システムに根ざしており、SEOのベストプラクティスが引き続き有効</li>
+  <li>llms.txtの設置やコンテンツのチャンク化といった「AI向けの近道」を要件とはしていない</li>
+</ul>
+
+<p>同じくGoogle Search Centralの「AI features and your website」も、AI OverviewsやAI Modeに表示されるための追加要件や特別な最適化はないとしています。公式見解のレベルでは、AIO対策の土台は従来SEOそのものです。</p>
+
+<h2 id="検索順位とaio引用の関係76から38へ">検索順位とAIO引用の関係：76%から38%へ</h2>
+
+<p>一方でAhrefsの2つの大規模調査は、順位と引用の関係が短期間で大きく変わったことを示しています。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>調査</th>
+      <th>時期</th>
+      <th>規模</th>
+      <th>トップ10ページからの引用比率</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>初回調査</td>
+      <td>2025年7月</td>
+      <td>AIO 100万件・引用190万件</td>
+      <td>76.1%</td>
+    </tr>
+    <tr>
+      <td>再調査</td>
+      <td>2026年3月</td>
+      <td>86.3万SERP・400万URL</td>
+      <td>38%</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>再調査では、トップ10からの引用比率が約半分に低下しました。Ahrefsはこの要因として、元の検索を複数の関連サブクエリへ展開し、その結果側から引用を選ぶ「クエリファンアウト」への依存が強まったこと、2026年1月のGemini 3への切り替えを挙げています。</p>
+
+<p>実務上の含意は2つです。第一に、上位表示は依然として引用の有力な入口であり、基礎SEOを飛ばしてAIO対策だけを行う合理性はありません。第二に、トップ10外からの引用が拡大したため、想定質問から派生するサブクエリ（定義・比較・手順・判断基準）に正面から答えるページを持つ価値が高まっています。</p>
+
+<h2 id="youtubeの台頭再生数と被引用はほぼ無相関">YouTubeの台頭：再生数と被引用はほぼ無相関</h2>
+
+<p>もう1つの構造変化がYouTubeです。5WPRの2026年5月のレポートは、Google AIOの引用の約23.3%をYouTubeが占め、Wikipedia（18.4%）を上回る最大の引用元になったと報告しています。Ahrefsの再調査でも、YouTubeはAIOで最も引用されるドメインになったとされています。</p>
+
+<p>注目すべきはOtterlyAIの調査（2026年3月、6プラットフォーム・1億件超の引用インスタンス）です。再生数・高評価・登録者数と被引用頻度の相関はいずれもほぼゼロ（r=−0.02〜−0.03）で、引用された動画の約41%は再生数1,000回未満でした。AIが選んでいるのは「人気の動画」ではなく「質問に明確に答える動画」であり、チャンネル規模の小さい企業にも現実的な選択肢になっています。</p>
+
+<h2 id="構造化データは可視コンテンツとの一致が前提">構造化データは可視コンテンツとの一致が前提</h2>
+
+<p>Googleは、AI機能のための特別なschema.org構造化データは存在しないとしつつ、構造化データがページの可視テキストと一致していることを求めています。本文にない主張を構造化データ側にだけ足す運用は避けるべきです。JSON-LDの設計とE-E-A-Tの示し方は<a href="/trillionbank/news/json-ld-eeat-ai-search/">JSON-LDとE-E-A-TのAI検索対応</a>で詳しく解説しています。</p>
+
+<h2 id="実務チェックリスト">実務チェックリスト</h2>
+
+<ol>
+  <li>対象ページがインデックスされ、通常検索でスニペット表示可能な状態にした（AI機能に表示される前提条件）</li>
+  <li>主要な想定質問に対し、見出し直下で結論を先に述べる抽出しやすい構造にした</li>
+  <li>クエリファンアウトを想定し、派生サブクエリを個別のページまたはセクションで直接カバーした</li>
+  <li>構造化データが可視テキストと一致していることを確認した</li>
+  <li>会社名・所在地・サービス名などのエンティティ情報を、サイト内と外部プロフィールで統一した</li>
+  <li>テキストで手応えのある論点について、同じ質問に答えるYouTube動画での補完を検討した</li>
+  <li>AIOでの自社引用の有無を質問単位で記録し、施策前後の変化を観測している</li>
+</ol>
+
+<p>当社（株式会社Trillion Bank）では、この観測部分をHackⅡ（限定商用検証・導入相談受付）として質問単位で記録・分析しています。</p>
+
+<h2 id="できないこと限界">できないこと・限界</h2>
+
+<ul>
+  <li>AIOに自社サイトが表示・引用されることを確実にする手段はありません。Google公式も特定の施策による表示の確約を示していません</li>
+  <li>76%・38%・23.3%といった数値は各調査時点のスナップショットです。モデル更新（例：Gemini 3）で短期間に大きく変動するため、数値そのものではなく変化の方向で判断すべきです</li>
+  <li>調査ごとに対象クエリ・地域・集計方法が異なり、異なる調査間の数値の単純比較には限界があります</li>
+  <li>YouTube動画も、公開しただけで引用に結びつくわけではありません</li>
+</ul>
+
+<p>AIOと従来SEO・AEO・GEO・LLMOの位置づけの整理は、<a href="/trillionbank/news/seo-aeo-geo-aio-llmo-difference/">SEO・AEO・GEO・AIO・LLMOの違い</a>を参照してください。</p>
+
+<section aria-labelledby="article-faq" style="margin-top:48px"><h2 id="article-faq">よくある質問</h2><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">Google AI Overviews対策に特別なAI用ファイルやマークアップは必要ですか？</h3><p>不要です。Googleは公式ガイドで、AI OverviewsやAI Modeに表示されるために新しい機械可読ファイル・AI用テキストファイル・特別なマークアップを作る必要はなく、生成AI機能はコア検索のランキング・品質システムに根ざしているため従来のSEOベストプラクティスが引き続き有効だと明言しています。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">検索でトップ10に入ればAI Overviewsに引用されますか？</h3><p>引用の有力な入口ですが、それだけでは決まりません。Ahrefsの調査では、AIO引用に占めるトップ10ページの比率は2025年7月時点の約76%から2026年の再調査で38%に低下しました。元の検索を関連サブクエリに展開するクエリファンアウト経由の引用が増えており、トップ10外からの引用が拡大しています。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">AI Overviews対策としてYouTube動画は有効ですか？</h3><p>検討する価値があります。5WPRの2026年調査ではGoogle AIOの引用の約23%をYouTubeが占め最大の引用元と報告され、OtterlyAIの調査では再生数・高評価・登録者数と被引用頻度の相関はほぼゼロ、引用動画の約41%は再生数1,000回未満でした。人気よりも質問に明確に答える構成が選ばれる傾向です。ただし引用されるかどうかは保証されません。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">AI Overviewsに自社サイトを表示させる方法はありますか？</h3><p>表示や引用を確実にする方法はありません。Google公式も特定の施策による表示の確約を示していません。できるのは、インデックスと基礎SEOを整え、質問に正面から答える抽出しやすい構造とエンティティ情報の一貫性を保ち、引用の有無を継続的に観測して改善することです。</p></div></section>
+<div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);"><h2 style="font-size:1rem;margin-bottom:12px">参考文献・一次情報</h2><ol style="font-size:.86rem;color:var(--muted,#6b7280);padding-left:20px"><li style="margin-bottom:8px"><a href="https://developers.google.com/search/docs/fundamentals/ai-optimization-guide" target="_blank" rel="noopener noreferrer">Google Search Central — Optimizing your website for generative AI features on Google Search</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://developers.google.com/search/docs/appearance/ai-features" target="_blank" rel="noopener noreferrer">Google Search Central — AI features and your website</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://ahrefs.com/blog/search-rankings-ai-citations/" target="_blank" rel="noopener noreferrer">Ahrefs — 76% of AI Overview Citations Pull From the Top 10（2025年7月）</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://ahrefs.com/blog/ai-overview-citations-top-10/" target="_blank" rel="noopener noreferrer">Ahrefs — Update: 38% of AI Overview Citations Pull From The Top 10（2026年3月）</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://5wpr.com/research/youtube-ai-citation-share-report-2026/" target="_blank" rel="noopener noreferrer">5WPR — Citation Share Report: YouTube Now Owns 23% of Every Google AI Answer（2026年5月）</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://otterly.ai/blog/youtube-ai-citation-study-2026/" target="_blank" rel="noopener noreferrer">OtterlyAI — YouTube AI Citation Study 2026（2026年3月）</a>（確認日：2026-09-06）</li></ol></div>
+<div style="margin-top:40px;padding:20px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);font-size:.8rem;color:var(--muted,#6b7280)"><p style="margin:0">本記事は公開時点の一次情報と当社の分析に基づきます。用語や各サービスの仕様は変わる可能性があります。誤りを確認した場合は、お問い合わせ窓口からお知らせください。</p></div>
+
+
+
+<aside class="author-box" aria-label="この記事の著者">
+  
+  <img src="/images/ceo-kanta.webp" alt="井上 幹太" width="72" height="72" loading="lazy">
+  <div class="ab-body">
+    <span class="ab-label">AUTHOR ── この記事の著者</span>
+    <p class="ab-name">井上 幹太<span class="ab-role">株式会社Trillion Bank 代表取締役</span></p>
+    <p class="ab-bio">AI検索計測「HackⅡ」とAIコンテンツ利用管理「Adctor / Pay per Crawl」の研究開発・事業化に取り組む。令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL。ソフトバンクアカデミア17期／J-StarX第1期／ZEN大学1期特別奨学生。</p>
+    <a class="ab-link" href="/trillionbank/ceo/">プロフィールと実績を見る <span aria-hidden="true">→</span></a>
+  </div>
+  
+</aside>
+
+<div class="article-cta" style="margin-top:56px;padding-top:36px;border-top:2px solid var(--blue-600)"><h2 style="font-size:clamp(1.2rem,2.4vw,1.55rem)">この記事のテーマを、自社・競合で確認する</h2><p>HackⅡは、選定した質問についてAI回答、引用URL、自社・競合の言及と測定条件を保存し、改善判断を支援します。</p><div style="display:flex;gap:14px;flex-wrap:wrap"><a class="btn btn-primary" href="/trillionbank/meeting/?type=company" data-event="meeting_form_open" data-service="hack2_company" data-cta="article_footer">AI検索の現在地を相談する <span class="a">→</span></a><a class="btn btn-line" href="/trillionbank/meeting/?type=agency" data-event="meeting_form_open" data-service="hack2_agency" data-cta="article_footer">共同提案を相談する <span class="a">→</span></a></div><p style="margin-top:14px;font-size:.78rem;color:var(--muted)">AI回答への掲載、順位、問い合わせ、売上を保証するサービスではありません。</p></div>
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<div style="margin-top:56px;padding-top:34px;border-top:1px solid var(--border,#DDE3EC)">
+  <h2 style="font-family:var(--mono);font-size:.78rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-bottom:18px">関連記事</h2>
+  <div class="nlist">
+    
+    <a class="nitem" href="/trillionbank/news/ai-crawler-list-control/"><span class="date">2026.09.06</span><span class="ncat">AI検索対策</span><span class="nt">AIクローラー一覧と制御方法｜robots.txtでの許可・拒否の考え方</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-monitoring-rfp-checklist/"><span class="date">2026.09.05</span><span class="ncat">AI検索対策</span><span class="nt">AI検索モニタリングツール選定チェックリスト｜RFPで確認する15項目</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-measurement-sov-gemini/"><span class="date">2026.08.30</span><span class="ncat">AI検索対策</span><span class="nt">AI検索の効果測定はGemini時代にどう変わるか｜引用率・言及率・SOVを高める企業サイト設計</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/llmo-company-selection/"><span class="date">2026.09.16</span><span class="ncat">解説</span><span class="nt">LLMO対策会社の選び方｜生成AI検索最適化の依頼範囲を決める</span><span class="go">→</span></a>
+    
+  </div>
+</div>
+
+
+<div style="margin-top:44px"><a class="btn btn-line" href="/trillionbank/insights/">← Insights一覧へ</a></div>
+</article></div></section>
+</main>
+
+<footer class="tbf">
+  <div class="wrap">
+    <div class="top">
+      <div><a class="brand" href="/" aria-label="Trillion Bank ホーム"><img src="/images/hero/tb-logo-color.webp" alt="TRILLION BANK" width="160" height="40" style="height:32px;width:auto;filter:brightness(10)"></a><p class="addr">株式会社Trillion Bank<br>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ<br>株式会社Trillion Bankは銀行業を営む会社ではありません。</p></div>
+      <div class="fcol"><h5>BUSINESS</h5><a href="/trillionbank/business/hack2/">HackⅡ</a><a href="/trillionbank/business/pay-per-crawl/">Adctor</a></div>
+      <div class="fcol"><h5>INSIGHTS</h5><a href="/trillionbank/insights/">実務解説</a><a href="/trillionbank/company/">会社概要</a><a href="/trillionbank/media/">お知らせ</a></div>
+      <div class="fcol"><h5>CONTACT</h5><a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a><a href="/trillionbank/contact/#form">お問い合わせ</a></div>
+    </div>
+    <div class="bottom"><span>© 2026 Trillion Bank Co., Ltd.</span><span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a></span></div>
+  </div>
+</footer>
+<script>
+(function(){var h=document.getElementById('tbh'),b=document.getElementById('tbBurger');if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});document.querySelectorAll('.mega-t').forEach(function(btn){btn.addEventListener('click',function(){btn.setAttribute('aria-expanded',String(btn.getAttribute('aria-expanded')!=='true'))})});})();
+</script>
+
+</body>
+</html>

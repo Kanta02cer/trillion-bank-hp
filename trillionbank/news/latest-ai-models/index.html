@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0XHQPCC4CF');
+</script>
+
+
+
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+<title>【2026年版】最新AIモデルまとめ｜主要LLMの特徴とAI検索への影響</title>
+<meta name="description" content="ChatGPT・Claude・Gemini・Perplexityは企業情報の取得方法も引用元の示し方も異なります。学習データ・Web検索・独自インデックスの3経路と、同じ質問でも推薦が変わる理由、優先して測るべきAIの考え方を解説。まず自社の見え方の確認から始めてください。">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<meta property="og:title" content="【2026年版】最新AIモデルまとめ｜主要LLMの特徴とAI検索への影響">
+<meta property="og:description" content="ChatGPT・Claude・Gemini・Perplexityは企業情報の取得方法も引用元の示し方も異なります。学習データ・Web検索・独自インデックスの3経路と、同じ質問でも推薦が変わる理由、優先して測るべきAIの考え方を解説。まず自社の見え方の確認から始めてください。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://trillion-bank.jp/trillionbank/news/latest-ai-models/">
+<meta property="og:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="株式会社Trillion Bank">
+
+<meta property="article:published_time" content="2026-07-20T00:00:00+09:00">
+<meta property="article:modified_time" content="2026-09-06T00:00:00+09:00">
+<meta property="article:author" content="井上 幹太">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="【2026年版】最新AIモデルまとめ｜主要LLMの特徴とAI検索への影響">
+<meta name="twitter:description" content="ChatGPT・Claude・Gemini・Perplexityは企業情報の取得方法も引用元の示し方も異なります。学習データ・Web検索・独自インデックスの3経路と、同じ質問でも推薦が変わる理由、優先して測るべきAIの考え方を解説。まず自社の見え方の確認から始めてください。">
+<meta name="twitter:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+
+<link rel="canonical" href="https://trillion-bank.jp/trillionbank/news/latest-ai-models/">
+<link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/trillionbank/news/latest-ai-models/">
+<link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/trillionbank/news/latest-ai-models/">
+<link rel="sitemap" type="application/xml" href="https://trillion-bank.jp/sitemap-index.xml">
+
+<!-- AI / LLM discovery -->
+<meta name="ai-summary" content="2026年時点の主要AIモデル（ChatGPT・Claude・Gemini・Perplexity）が企業情報を取得する仕組み（学習データのみ・Web検索併用・独自インデックス）と引用元の示し方の違いを整理し、同じ質問でもAIごとに推薦が変わる理由と、企業がどのAIを優先して測定すべきかの考え方を解説する。">
+<link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="https://trillion-bank.jp/feed.xml">
+<link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+<link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+<link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["Trillion Bank", "トリリオンバンク", "株式会社トリリオンバンク", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {"@type": "ImageObject", "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp"},
+      "description": "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。",
+      "foundingDate": "2025-12-23",
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": [
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+        {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+        {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI情報流通インフラ"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["株式会社トリリオンバンク", "トリリオンバンク", "Trillion Bank", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp",
+        "width": 414,
+        "height": 318
+      },
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "sameAs": ["https://www.instagram.com/trillionbank_jp/"]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役CEO",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"}
+    },
+    {
+      "@type": "LocalBusiness",
+      "@id": "https://trillion-bank.jp/#localbusiness",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "parentOrganization": {"@id": "https://trillion-bank.jp/#organization"},
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressLocality": "千代田区",
+        "addressRegion": "東京都",
+        "postalCode": "102-0083",
+        "addressCountry": "JP"
+      },
+      "areaServed": [
+        {"@type": "Place", "name": "麹町"},
+        {"@type": "AdministrativeArea", "name": "千代田区"},
+        {"@type": "AdministrativeArea", "name": "東京都"},
+        {"@type": "Country", "name": "JP"}
+      ]
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/latest-ai-models/#webpage",
+      "url": "https://trillion-bank.jp/trillionbank/news/latest-ai-models/",
+      "name": "【2026年版】最新AIモデルまとめ｜主要LLMの特徴とAI検索への影響",
+      "description": "ChatGPT・Claude・Gemini・Perplexityは企業情報の取得方法も引用元の示し方も異なります。学習データ・Web検索・独自インデックスの3経路と、同じ質問でも推薦が変わる理由、優先して測るべきAIの考え方を解説。まず自社の見え方の確認から始めてください。",
+      "inLanguage": "ja",
+      "about": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntity": {"@id": "https://trillion-bank.jp/trillionbank/news/latest-ai-models/#article"},
+      "breadcrumb": {"@id": "https://trillion-bank.jp/trillionbank/news/latest-ai-models/#breadcrumb"}
+    },
+    {
+      "@type": "Article",
+      "@id": "https://trillion-bank.jp/trillionbank/news/latest-ai-models/#article",
+      "headline": "【2026年版】最新AIモデルまとめ｜主要LLMの特徴とAI検索への影響",
+      "description": "ChatGPT・Claude・Gemini・Perplexityは企業情報の取得方法も引用元の示し方も異なります。学習データ・Web検索・独自インデックスの3経路と、同じ質問でも推薦が変わる理由、優先して測るべきAIの考え方を解説。まず自社の見え方の確認から始めてください。",
+      "image": "https://trillion-bank.jp/images/hero/tb-logo-color.webp",
+      "datePublished": "2026-07-20T00:00:00+09:00",
+      "dateModified": "2026-09-06T00:00:00+09:00",
+      "author": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntityOfPage": {"@id": "https://trillion-bank.jp/trillionbank/news/latest-ai-models/#webpage"},
+      "inLanguage": "ja",
+      "articleSection": "コラム",
+      "keywords": "最新AIモデル,LLM,Claude,GPT,Gemini,Perplexity,AI検索,LLMO,AEO,引用元,トリリオンバンク"
+    },
+
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://trillion-bank.jp/trillionbank/news/latest-ai-models/#breadcrumb",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "HOME", "item": "https://trillion-bank.jp/"},
+        {"@type": "ListItem", "position": 2, "name": "お知らせ", "item": "https://trillion-bank.jp/trillionbank/media/"},
+        {"@type": "ListItem", "position": 3, "name": "【2026年版】最新AIモデルまとめ｜主要LLMの特徴とAI検索への影響", "item": "https://trillion-bank.jp/trillionbank/news/latest-ai-models/"}
+      ]
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "AIモデルによって企業情報の取得方法は違いますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "はい、大きく異なります。AIが企業情報を得る経路は、(1)学習データのみ（学習時点までの情報で回答）、(2)リアルタイムWeb検索の併用（RAG。質問のたびに検索して回答に反映）、(3)独自インデックスの参照（サービス側が構築した検索基盤を使う）の3つに整理できます。同じAIサービスでも質問やモードによって経路が切り替わることがあり、どの経路で回答が生成されたかによって、企業側が影響を与えられる余地も変わります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "同じ質問でもAIごとに推薦される企業が変わるのはなぜですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "参照する情報源と回答生成の方針がAIごとに異なるためです。学習データの範囲、Web検索を使うかどうか、検索する場合にどのインデックスを参照するか、引用元をどう選ぶかがそれぞれ違うため、同じ質問でも候補に挙がる企業や推薦の結論が変わります。あるAIでは候補入りしているのに別のAIでは一切言及されない状態は頻繁に起こるため、単一のAIだけを見て自社の見え方を判断するのは危険です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "企業はどのAIモデルを優先して対策・測定すべきですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "一般論としては「自社の顧客が実際に使っているAI」から優先するのが合理的です。BtoBかBtoCか、顧客の年齢層や職種によって主に使われるAIサービスは異なります。その上で、AIごとに回答傾向が異なるため、主要なAIを横断して自社の候補入り・言及・引用の状況を測定し、どのAIで強く、どのAIで弱いかを把握してから優先順位を決めるアプローチが推奨されます。株式会社トリリオンバンクのHackⅡ（AI Recommendation Intelligence）は、こうした横断測定と競合Win/Loss分析を体系化しています。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "引用元リンクを表示しないAIには対策のしようがないのですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "そうではありません。引用リンクが表示されないAIでも、回答本文の中で社名や製品名が言及・推薦されるかどうかは変わらず重要であり、そこには学習データやWeb上の情報の充実度が影響します。引用リンクの有無は「効果を確認しやすいか」の違いであり、「対策できるか」の違いではありません。リンクを示さないAIについては、回答本文での言及・推薦の有無を記録する形で測定します。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "AIモデルの頻繁な更新に企業はどう対応すべきですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "個別モデルの仕様変更を追いかけるのではなく、どのモデルからも理解されやすい状態を維持することが基本です。具体的には、事実情報（会社概要・料金・実績）を明確な文章と構造化データで整備し、第三者サイトを含むWeb上の情報を充実させた上で、モデル更新の前後で自社の候補入り・言及・引用の状況を継続的に測定し、変化を検知したら対応する運用が現実的です。"
+      }
+    }
+  ]
+}
+</script>
+
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+<header class="tbh" id="tbh">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+      <img src="/images/hero/tb-logo-symbol.webp" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
+    </a>
+    <nav class="links" aria-label="グローバル">
+      <div class="mega">
+        <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
+        <div class="mega-panel" id="mega-biz">
+          <a href="/airreach/"><span class="mt">AirReach <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はHackⅡへ</span></a>
+          <a href="/trillionbank/business/hack2/"><span class="mt">HackⅡ <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+        </div>
+      </div>
+      <a href="/trillionbank/mission/">MISSION</a>
+      <a href="/trillionbank/insights/">INSIGHTS</a>
+      <a href="/trillionbank/company/">COMPANY</a>
+      <a href="/trillionbank/media/">MEDIA / NEWS</a>
+      <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="header" data-cta="header_contact_form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
+    </nav>
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<section class="phero">
+  <div class="wrap">
+    <nav class="crumb" aria-label="パンくずリスト"><a href="/">HOME</a> ／ <a href="/trillionbank/media/">お知らせ</a> ／ コラム</nav>
+    <span class="en" style="font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:var(--gold)">2026.07.20　コラム</span>
+    <h1 style="font-size:clamp(1.7rem,4vw,2.9rem);margin-top:14px">【2026年版】最新AIモデルまとめ｜主要LLMの特徴とAI検索への影響</h1>
+  </div>
+</section>
+<section class="sec">
+  <div class="wrap">
+    <article class="article">
+      <div class="byline" style="display:flex;gap:16px;align-items:center;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--hair,#e5e7eb);font-size:.86rem;color:var(--muted,#6b7280);">
+        <span>執筆：井上 幹太</span>
+        <span>公開：2026年07月20日</span>
+        <span>更新：2026-09-06</span>
+      </div>
+
+      
+
+
+<section class="direct-answer" aria-label="結論">
+  <span class="da-label">ANSWER ── 結論</span>
+  <p>2026年時点の主要AIモデル（ChatGPT・Claude・Gemini・Perplexity）が企業情報を取得する仕組み（学習データのみ・Web検索併用・独自インデックス）と引用元の示し方の違いを整理し、同じ質問でもAIごとに推薦が変わる理由と、企業がどのAIを優先して測定すべきかの考え方を解説する。</p>
+</section>
+
+
+      
+
+
+
+
+<nav class="tb-toc" aria-label="目次">
+  <span class="toc-label">CONTENTS ── 目次</span>
+  <ol><li class="lv2"><a href="#主要aiモデルの概観2026年時点">主要AIモデルの概観（2026年時点）</a></li><li class="lv2"><a href="#各aiは企業情報をどう取得するか--3つの経路">各AIは企業情報をどう取得するか — 3つの経路</a></li><li class="lv2"><a href="#引用元の示し方はaiサービスごとに違う">引用元の示し方はAIサービスごとに違う</a></li><li class="lv2"><a href="#同じ質問でもaiごとに推薦が変わる理由">同じ質問でもAIごとに推薦が変わる理由</a></li><li class="lv2"><a href="#マーケティング担当者への示唆どのaiを優先して測るか">マーケティング担当者への示唆：どのAIを優先して測るか</a></li><li class="lv2"><a href="#よくある質問faq">よくある質問（FAQ）</a></li><li class="lv2"><a href="#まとめ">まとめ</a></li></ol>
+</nav>
+
+
+
+      <p><strong>最新AIモデルとは、ChatGPT（GPT）・Claude・Gemini・PerplexityなどのAIサービスに搭載される大規模言語モデル（LLM）の最新世代を指し、それぞれ企業情報の取得方法（学習データのみ・Web検索併用・独自インデックス）と引用元の示し方が異なります。</strong> モデルの性能差そのものよりも、この「情報の取得と引用の仕組みの違い」こそが、AI検索時代の企業マーケティングに直結するポイントです。</p>
+
+<p><strong>この記事で分かること</strong></p>
+
+<ul>
+  <li>主要AIモデル（ChatGPT・Claude・Gemini・Perplexity）の位置づけ（2026年時点）</li>
+  <li>各AIが企業情報を取得する3つの経路：学習データのみ／Web検索併用（RAG）／独自インデックス</li>
+  <li>引用元の示し方（リンク明示か否か）がAIサービスごとにどう違うか</li>
+  <li>同じ質問でもAIごとに推薦が変わる理由</li>
+  <li>企業のマーケティング担当者が、どのAIを優先して測るべきかの考え方</li>
+</ul>
+
+<hr />
+
+<h2 id="主要aiモデルの概観2026年時点">主要AIモデルの概観（2026年時点）</h2>
+
+<p>まず主要プレイヤーを簡潔に整理します。いずれも更新が頻繁なため、個別の性能・仕様は各社の公式情報をご確認ください。</p>
+
+<ul>
+  <li><strong>OpenAI GPT（ChatGPT）</strong> — 汎用性が高く、ChatGPTを通じて最も広く使われるモデル群。</li>
+  <li><strong>Anthropic Claude</strong> — Opus / Sonnet / Haiku など用途別の複数ラインを展開。長文理解と安全性に強みがあるとされます。</li>
+  <li><strong>Google Gemini</strong> — Google検索やWorkspaceとの統合が進むマルチモーダルモデル。Google検索のAI回答（AI Overviews等）にもGoogleのモデルが使われています。</li>
+  <li><strong>Perplexity</strong> — 「回答エンジン」を掲げる検索特化型サービス。引用元を明示する回答体験が特徴です。</li>
+</ul>
+
+<p>ここまでは一般的な整理ですが、企業のマーケティング担当者にとって本当に重要なのは「どのモデルが賢いか」ではありません。<strong>それぞれのAIが、自社の企業情報をどこから取得し、どう引用するか</strong>です。以降はこの観点で解説します。</p>
+
+<hr />
+
+<h2 id="各aiは企業情報をどう取得するか--3つの経路">各AIは企業情報をどう取得するか — 3つの経路</h2>
+
+<p><strong>AIが企業情報を取得する経路は、「学習データのみ」「リアルタイムWeb検索の併用（RAG）」「独自インデックスの参照」の3つに整理できます。</strong> どの経路で回答が生成されるかによって、企業側が影響を与えられる余地と、効果が反映されるまでの時間が変わります。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>経路</th>
+      <th>仕組み</th>
+      <th>情報の鮮度</th>
+      <th>企業側が影響を与える手段</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>学習データのみ</strong></td>
+      <td>モデルの学習時点までにWeb等から収集された情報で回答</td>
+      <td>学習時点で固定（数ヶ月〜のラグ）</td>
+      <td>Web上の情報の蓄積（即効性はない）</td>
+    </tr>
+    <tr>
+      <td><strong>Web検索併用（RAG）</strong></td>
+      <td>質問のたびに検索を実行し、取得したページを根拠に回答</td>
+      <td>検索時点の最新情報を反映しうる</td>
+      <td>検索にヒットするコンテンツの整備（従来SEOと連続的）</td>
+    </tr>
+    <tr>
+      <td><strong>独自インデックス</strong></td>
+      <td>サービス側が独自に構築した検索基盤・データベースを参照</td>
+      <td>サービスのクロール頻度に依存</td>
+      <td>クロール可能性の確保と情報の構造化</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>押さえておきたいのは次の3点です。</p>
+
+<ol>
+  <li><strong>同じAIサービスでも経路は固定ではない</strong> — 質問の種類やモード（検索を使う設定か否か）によって、学習データだけで答える場合と検索を併用する場合が切り替わります。「このAIは検索型」と単純に分類できるわけではありません。</li>
+  <li><strong>検索併用型は従来SEOの延長線上にある</strong> — 検索にヒットしなければ回答の根拠に使われないため、クロール・インデックス可能性という従来SEOの基礎がそのまま効きます。Googleも公式の<a href="https://developers.google.com/search/docs/fundamentals/ai-optimization-guide">生成AI機能向け最適化ガイド</a>で、生成AI検索についても基礎的なSEOと人間向けの独自コンテンツが中心であり、Google向けにllms.txt等のAI専用対応は不要だと説明しています。</li>
+  <li><strong>学習データ経路には即効性のある打ち手がない</strong> — 学習データにどう入るかを直接操作することはできません。Web上（自社サイト・第三者メディア・レビュー等）に一貫した情報を蓄積し続けることが、遠回りに見えて唯一の経路です。</li>
+</ol>
+
+<hr />
+
+<h2 id="引用元の示し方はaiサービスごとに違う">引用元の示し方はAIサービスごとに違う</h2>
+
+<p>もう1つの重要な違いが、<strong>回答の根拠となったページを引用元（リンク）として明示するかどうか</strong>です。</p>
+
+<ul>
+  <li><strong>引用リンクを明示するタイプ</strong> — Perplexityのように出典を番号付きで示すサービスや、Google AI Overviewsのように参照リンクを表示する形式では、「自社URLが引用されたか」を直接確認できます。</li>
+  <li><strong>引用リンクが出ない・出にくいタイプ</strong> — 検索を使わずに回答した場合や、サービスの表示仕様によっては、根拠リンクが示されないまま社名だけが言及・推薦されることがあります。</li>
+</ul>
+
+<p>ここから導かれる実務上のポイントは、<strong>「引用リンクの有無」と「言及・推薦の有無」を別の指標として扱う</strong>ことです。リンクが出ないAIでも回答本文での言及・推薦は起こりますし、逆にリンクは出ているのに本文では競合が推薦されていることもあります。「引用されているのに選ばれていない」「引用は確認できないが言及されている」といった状態を区別して記録しないと、自社の見え方を誤認します。この測定設計の詳細は「<a href="/trillionbank/news/ai-search-effect-measurement/">AI検索の効果測定方法</a>」で体系的に解説しています。</p>
+
+<hr />
+
+<h2 id="同じ質問でもaiごとに推薦が変わる理由">同じ質問でもAIごとに推薦が変わる理由</h2>
+
+<p><strong>同じ質問をしても、AIサービスごとに候補に挙がる企業や推薦の結論が変わるのは、参照する情報源と回答生成の方針がそれぞれ異なるためです。</strong> 具体的には次の要因が重なります。</p>
+
+<ul>
+  <li><strong>学習データの範囲と時点が違う</strong> — 学習に使われた情報の範囲・カットオフ時点はモデルごとに異なります。</li>
+  <li><strong>検索を使うか、どのインデックスを使うかが違う</strong> — Web検索を併用するAIでも、参照する検索基盤やページの選び方はサービスごとに異なります。</li>
+  <li><strong>引用元の選好が違う</strong> — 比較サイトを重視するのか、公式サイトやレビューを重視するのかといった傾向はサービス・質問によって変わります。</li>
+  <li><strong>回答の生成方針が違う</strong> — 候補を何社挙げるか、断定的に推薦するか中立に併記するかといったスタイルが異なります。</li>
+  <li><strong>回答自体が確率的に揺らぐ</strong> — 同じAIに同じ質問をしても、実行ごとに結果が変わることは珍しくありません。</li>
+</ul>
+
+<p>その結果、「あるAIでは1位で推薦されるのに、別のAIでは候補にすら入らない」という状態が普通に起こります。イメージとしては次のような形です。</p>
+
+<div class="dmk">
+<div class="dmk-bar"><div class="dmk-dots"><span></span><span></span><span></span></div><div class="dmk-url">multi-engine-comparison — sample view</div></div>
+<div class="dmk-body">
+<div class="dmk-q"><span class="dmk-ai">AI ASSISTANT</span>おすすめの業務管理SaaSを3つ教えて（同一質問を3タイプのAIで実行）</div>
+<div class="dmk-sec">AI Decision Share — A社（自社）のAIエンジン別 候補入り率（質問20問中・架空）</div>
+<div class="dmk-share">
+<div class="row"><span>エンジン1（検索併用型・引用リンクあり）</span><div class="bar"><i style="width:65%"></i></div><span class="pct">65%</span></div>
+<div class="row rival"><span>エンジン2（独自インデックス型）</span><div class="bar"><i style="width:40%"></i></div><span class="pct">40%</span></div>
+<div class="row rival"><span>エンジン3（学習データ中心）</span><div class="bar"><i style="width:15%"></i></div><span class="pct">15%</span></div>
+</div>
+<div class="dmk-sec">Citations — エンジン1でA社が引用された経路の内訳（架空）</div>
+<div class="dmk-cites">
+<div class="dmk-cite"><span class="u">saas-hikaku-navi.example.com/gyomu-2026</span><span class="t">比較サイト</span></div>
+<div class="dmk-cite"><span class="u">a-sha.example.co.jp/case/</span><span class="t">自社サイト</span></div>
+<div class="dmk-cite"><span class="u">review-hub.example.net/reviews/a-sha</span><span class="t">レビュー</span></div>
+</div>
+</div>
+<div class="dmk-note">※ デモ画面（架空データによるサンプル表示）。実際の製品画面・出力・数値とは異なります。</div>
+</div>
+
+<p>このデモのように、AIのタイプごとに候補入り率が大きく異なる場合、「エンジン3で弱いのは学習データ経路での情報蓄積が薄いから」「エンジン1で強いのは比較サイト経由の引用が効いているから」といった仮説が立てられます。<strong>AIごとの差は、単なる結果のばらつきではなく、原因分析の入口になる</strong>わけです。そもそも言及されない場合の原因整理は「<a href="/trillionbank/news/not-cited-by-ai/">生成AIに引用されない原因と対策</a>」をご覧ください。</p>
+
+<hr />
+
+<h2 id="マーケティング担当者への示唆どのaiを優先して測るか">マーケティング担当者への示唆：どのAIを優先して測るか</h2>
+
+<p>すべてのAIに同時に対応するのは現実的ではありません。優先順位の付け方は、一般論として次の順で考えるのが合理的です。</p>
+
+<ol>
+  <li><strong>自社の顧客が使っているAIから</strong> — BtoBかBtoCか、顧客の職種・年齢層によって、主に使われるAIサービスは異なります。営業やカスタマーサポートに「お客様は何で調べて来たか」をヒアリングするだけでも手がかりになります。</li>
+  <li><strong>検索併用型・引用明示型から</strong> — 引用リンクが確認できるAIは効果の測定がしやすく、施策（コンテンツ整備）と結果の対応も追いやすいため、最初の定点観測の対象に向いています。</li>
+  <li><strong>その上で横断測定に広げる</strong> — AIごとに結果が違う以上、最終的には主要AIを横断して「どこで強く、どこで弱いか」を把握する必要があります。測定の具体的な設計（質問セットの固定・出現割合での記録・証拠保存）は「<a href="/trillionbank/news/ai-search-effect-measurement/">AI検索の効果測定方法</a>」にまとめています。</li>
+</ol>
+
+<p>なお、AI検索面への広告出稿という選択肢との使い分けは「<a href="/trillionbank/news/ai-ads-vs-aeo/">AI広告とAEOの違い</a>」で整理しています。広告は即効性がある一方、この記事で見てきた「学習データやWeb上の情報蓄積」はオーガニックな推薦の土台になるもので、両者は代替関係ではありません。</p>
+
+<p>株式会社Trillion Bankの <strong><a href="/trillionbank/business/hack2/">HackⅡ</a></strong>（AI Recommendation Intelligence）は、AI検索で「出たか」ではなく、なぜ選ばれ、なぜ外れたかまでを扱う測定基盤として、AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）の4フレームでこの横断測定を体系化しています。現在のステータスは限定商用検証・導入相談受付中で、対応するAIサービスは契約時点で本番検証済みの範囲をご案内しています。小規模であれば、この記事の考え方をもとに自社での簡易測定から始めることも十分可能です。</p>
+
+<hr />
+
+<h2 id="よくある質問faq">よくある質問（FAQ）</h2>
+
+<p><strong>Q. AIモデルによって企業情報の取得方法は違いますか？</strong></p>
+
+<p>A. 大きく異なります。学習データのみで回答する場合、リアルタイムWeb検索を併用する場合（RAG）、サービス独自のインデックスを参照する場合の3経路があり、同じAIでも質問やモードによって切り替わります。どの経路かによって、企業側が影響を与えられる手段と即効性が変わります。</p>
+
+<p><strong>Q. 同じ質問でもAIごとに推薦が変わるのはなぜですか？</strong></p>
+
+<p>A. 学習データの範囲、検索の有無と参照インデックス、引用元の選好、回答生成の方針がそれぞれ異なるためです。加えて回答自体が確率的に揺らぐため、単一のAIの1回の回答だけで自社の見え方を判断することはできません。</p>
+
+<p><strong>Q. 引用リンクを表示しないAIには対策のしようがないのですか？</strong></p>
+
+<p>A. そうではありません。リンクが出ないAIでも回答本文での言及・推薦は起こり、そこにはWeb上の情報の充実度が影響します。リンクの有無は「効果を確認しやすいか」の違いであり、そうしたAIについては本文での言及・推薦の有無を記録して測定します。</p>
+
+<p><strong>Q. どのAIから優先して測定・対策すべきですか？</strong></p>
+
+<p>A. 自社の顧客が実際に使っているAIから始めるのが一般論としての基本です。その上で、測定しやすい引用明示型のAIで定点観測を立ち上げ、主要AIの横断測定に広げていく順序が現実的です。</p>
+
+<p><strong>Q. モデルの更新が頻繁ですが、どう追随すべきですか？</strong></p>
+
+<p>A. 個別の仕様変更を追うのではなく、どのモデルからも理解されやすい状態（明確な事実情報・構造化データ・第三者サイトを含む情報の蓄積）を維持し、更新の前後で自社の候補入り・言及・引用を継続測定して変化を検知する運用が現実的です。</p>
+
+<hr />
+
+<h2 id="まとめ">まとめ</h2>
+
+<ol>
+  <li><strong>モデルの賢さよりも「情報の取得と引用の仕組み」を見る</strong> — 学習データのみ／Web検索併用／独自インデックスの3経路で、企業側の打ち手が変わる</li>
+  <li><strong>引用リンクの有無と言及・推薦の有無は別指標</strong> — AIサービスごとに引用元の示し方が違うため、分けて記録する</li>
+  <li><strong>AIごとの推薦の差は原因分析の入口</strong> — どのAIで強く、どのAIで弱いかから施策の仮説が立てられる</li>
+  <li><strong>優先順位は「自社顧客が使うAI」から</strong> — その上で主要AIの横断測定へ広げる</li>
+</ol>
+
+<p>AI検索最適化の全体像は「<a href="/trillionbank/news/llmo-towa/">【2026年最新】LLMOとは？</a>」、自社の引用状況を手動で確認する方法は「<a href="/trillionbank/news/prompt-collection/">AI検索最適化に使えるプロンプト集</a>」が参考になります。</p>
+
+
+      
+
+      
+      <div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);">
+        <h3 style="font-size:.92rem;font-weight:700;margin-bottom:12px;">参考文献・一次情報</h3>
+        <ul style="font-size:.82rem;color:var(--muted,#6b7280);list-style:decimal;padding-left:20px;">
+          
+          <li style="margin-bottom:6px;"><a href="https://developers.google.com/search/docs/fundamentals/ai-optimization-guide" target="_blank" rel="noopener">Google — Google検索の生成AI機能向け最適化ガイド</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="https://docs.anthropic.com/en/docs/about-claude/models" target="_blank" rel="noopener">Anthropic — Claude Models Overview</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="https://platform.openai.com/docs/models" target="_blank" rel="noopener">OpenAI — GPT Model Overview</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="" target="_blank" rel="noopener">Gartner — By 2026, traditional search engine volume will drop 25%</a></li>
+          
+        </ul>
+      </div>
+      
+
+      <div style="margin-top:48px;padding:20px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);font-size:.78rem;color:var(--muted,#6b7280);">
+        <p style="margin:0;">本記事は株式会社Trillion Bankが独自に作成したものです。記事内容は公開時点の情報に基づいており、最新の状況と異なる場合があります。記載内容は情報提供を目的としたものであり、特定のサービスの利用を推奨するものではありません。</p>
+      </div>
+
+      
+
+
+<aside class="author-box" aria-label="この記事の著者">
+  
+  <img src="/images/ceo-kanta.webp" alt="井上 幹太" width="72" height="72" loading="lazy">
+  <div class="ab-body">
+    <span class="ab-label">AUTHOR ── この記事の著者</span>
+    <p class="ab-name">井上 幹太<span class="ab-role">株式会社Trillion Bank 代表取締役</span></p>
+    <p class="ab-bio">AI検索計測「HackⅡ」とAIコンテンツ利用管理「Adctor / Pay per Crawl」の研究開発・事業化に取り組む。令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL。ソフトバンクアカデミア17期／J-StarX第1期／ZEN大学1期特別奨学生。</p>
+    <a class="ab-link" href="/trillionbank/ceo/">プロフィールと実績を見る <span aria-hidden="true">→</span></a>
+  </div>
+  
+</aside>
+
+
+      <div class="article-cta" style="margin-top:60px;padding-top:40px;border-top:2px solid var(--blue-600)">
+        <h2 style="font-size:clamp(1.2rem,2.4vw,1.55rem);font-weight:700;line-height:1.5;margin-bottom:12px">この記事のテーマを、自社・競合で実際に確認する</h2>
+        <p style="font-size:.92rem;color:var(--muted);max-width:44em;margin-bottom:24px">HackⅡは、AI回答内での候補入り・競合との勝敗・引用された情報源を証拠付きで測定し、次に改善すべき情報を特定するAI Recommendation Intelligenceです。詳細資料・実際の画面は30分のオンライン面談でご説明します。</p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+          <a class="btn btn-primary" href="/trillionbank/meeting/?type=company" data-event="meeting_form_open" data-service="hack2_company" data-cta="article_footer">事業会社向け｜HackⅡの詳細説明を予約する <span class="a">→</span></a>
+          <a class="btn btn-line" href="/trillionbank/meeting/?type=agency" data-event="meeting_form_open" data-service="hack2_agency" data-cta="article_footer">販売代理店向け｜共同提案を相談する <span class="a">→</span></a>
+        </div>
+        <p style="margin-top:16px;font-size:.78rem;color:var(--muted)"><a href="/trillionbank/business/hack2/" style="color:var(--blue-600);border-bottom:1px solid var(--blue-600)">HackⅡの測定の考え方を見る</a>　※ 成果（AIでの表示・問い合わせ・売上）を保証するものではありません。</p>
+      </div>
+
+      
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<div style="margin-top:56px;padding-top:34px;border-top:1px solid var(--border,#DDE3EC)">
+  <h2 style="font-family:var(--mono);font-size:.78rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-bottom:18px">関連記事</h2>
+  <div class="nlist">
+    
+    <a class="nitem" href="/trillionbank/news/google-ai-optimization-guide-kaisetsu/"><span class="date">2026.08.14</span><span class="ncat">コラム</span><span class="nt">AI Overview対策｜Google公式『生成AI向け最適化ガイド』の企業向け解説【2026年9月】</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-real-estate/"><span class="date">2026.08.14</span><span class="ncat">コラム</span><span class="nt">不動産会社のAI検索対策｜ポータル依存から「AIに推薦される」へ</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-professional-firms/"><span class="date">2026.08.14</span><span class="ncat">コラム</span><span class="nt">士業・コンサルティング会社のAI検索対策｜専門家選びでAIに名前が挙がる方法</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-competitor-wins/"><span class="date">2026.08.14</span><span class="ncat">コラム</span><span class="nt">AI検索で競合ばかり推薦される理由と逆転の手順【2026年版】</span><span class="go">→</span></a>
+    
+  </div>
+</div>
+
+
+
+      <div style="margin-top:48px;padding-top:30px;border-top:1px solid var(--border,#DDE3EC)">
+        <a class="btn btn-line" href="/trillionbank/media/">← お知らせ一覧へ</a>
+      </div>
+    </article>
+  </div>
+</section>
+<div class="glow-rails" id="glowRails" aria-hidden="true">
+  <div class="glow-line l"></div>
+  <div class="glow-line r"></div>
+</div>
+<footer class="tbf">
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+          <img src="/images/hero/tb-logo-color.webp" alt="TRILLION BANK" width="160" height="40" style="height:32px;width:auto;filter:brightness(10)">
+        </a>
+        <p class="addr">株式会社Trillion Bank（トリリオンバンク）<br>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ<br><span style="opacity:.7">※ 当社は銀行業を営む会社ではありません。</span></p>
+      </div>
+      <div class="fcol">
+        <h5>BUSINESS</h5>
+        <a href="/trillionbank/business/">事業概要</a>
+        <a href="/trillionbank/business/hack2/">HackⅡ</a>
+        <a href="/trillionbank/business/pay-per-crawl/">Pay per Crawl</a>
+      </div>
+      <div class="fcol">
+        <h5>COMPANY</h5>
+        <a href="/trillionbank/mission/">Mission</a>
+        <a href="/trillionbank/company/">会社概要</a>
+        <a href="/trillionbank/media/">Media / News</a>
+        <a href="/trillionbank/insights/">Insights</a>
+      </div>
+      <div class="fcol">
+        <h5>CONTACT</h5>
+        <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a>
+        <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="footer" data-cta="footer_contact_form">お問い合わせフォーム</a>
+        <a href="/trillionbank/contact/">お問い合わせ窓口</a>
+      </div>
+    </div>
+    <div class="bottom">
+      <span>© 2026 Trillion Bank</span>
+      <span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a> ／ <a href="/trillionbank/insights/editorial-policy/">編集方針</a></span>
+    </div>
+  </div>
+</footer>
+<script>
+(function(){
+  var h=document.getElementById('tbh'),last=0;
+  var rails=document.getElementById('glowRails');
+  var railGate=Math.min(innerHeight*.3,280);
+  addEventListener('scroll',function(){var y=scrollY;h.classList.toggle('solid',y>8);if(y>last&&y>140){h.classList.add('hide')}else{h.classList.remove('hide')}last=y;
+    if(rails)rails.classList.toggle('active',y>railGate);},{passive:true});
+  var b=document.getElementById('tbBurger');
+  if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+  document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});
+  // mega menu keyboard toggle
+  document.querySelectorAll('.mega-t').forEach(function(btn){
+    var panel=document.getElementById(btn.getAttribute('aria-controls'));
+    if(!panel)return;
+    btn.addEventListener('click',function(){var open=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',!open)});
+    btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();btn.click();if(btn.getAttribute('aria-expanded')==='true'){var first=panel.querySelector('a');if(first)first.focus()}}
+      if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+    panel.addEventListener('keydown',function(e){if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+  });
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(i%3)*70+'ms';io.observe(el)});
+  // GA4 tracking for CTAs
+  document.querySelectorAll('[data-event]').forEach(function(el){
+    el.addEventListener('click', function(){
+      if(typeof gtag==='function'){
+        gtag('event', el.dataset.event, {
+          source_page: location.pathname,
+          service: el.dataset.service || '',
+          inquiry_type: el.dataset.inquiry || '',
+          cta_label: el.textContent.trim()
+        });
+      }
+    });
+  });
+  // AI referral attribution for HackⅡ reports.
+  (function(){
+    var definitions=[
+      {source:'ChatGPT',hosts:['chatgpt.com','openai.com'],tokens:['chatgpt','openai']},
+      {source:'Perplexity',hosts:['perplexity.ai'],tokens:['perplexity']},
+      {source:'Claude',hosts:['claude.ai','anthropic.com'],tokens:['claude','anthropic']},
+      {source:'Gemini',hosts:['gemini.google.com'],tokens:['gemini','bard']},
+      {source:'Google AI',hosts:['google.com','google.co.jp'],tokens:['ai_overview','ai-mode','aimode','google_ai']},
+      {source:'Microsoft Copilot',hosts:['copilot.microsoft.com','bing.com'],tokens:['copilot','bing_ai']},
+      {source:'You.com',hosts:['you.com'],tokens:['you.com','youchat']},
+      {source:'Poe',hosts:['poe.com'],tokens:['poe']},
+      {source:'Phind',hosts:['phind.com'],tokens:['phind']}
+    ];
+    function normalizedHost(value){
+      try{return new URL(value).hostname.replace(/^www\./,'').toLowerCase()}catch(e){return ''}
+    }
+    function tokenMatch(text,tokens){
+      text=(text||'').toLowerCase();
+      return tokens.some(function(token){return text.indexOf(token)!==-1});
+    }
+    function findSource(referrer,paramsText){
+      var host=normalizedHost(referrer);
+      for(var i=0;i<definitions.length;i++){
+        var def=definitions[i];
+        var matchedHost=def.hosts.some(function(item){return host===item||host.endsWith('.'+item)});
+        if(matchedHost&&host.indexOf('google.')===-1&&host!=='bing.com')return {name:def.source,type:'referrer',host:host};
+        if((matchedHost||!host)&&tokenMatch(paramsText,def.tokens))return {name:def.source,type:matchedHost?'referrer_param':'utm',host:host};
+      }
+      return null;
+    }
+    function sendEvent(name,payload){
+      if(typeof gtag==='function')gtag('event',name,payload);
+    }
+    var params=new URLSearchParams(location.search);
+    var paramsText=[
+      params.get('utm_source'),
+      params.get('utm_medium'),
+      params.get('utm_campaign'),
+      params.get('ref'),
+      params.get('source'),
+      params.get('ai_source')
+    ].filter(Boolean).join(' ');
+    var detected=findSource(document.referrer,paramsText);
+    var stored=null;
+    if(detected){
+      stored={
+        ai_source:detected.name,
+        ai_referrer_host:detected.host||'direct_param',
+        ai_source_type:detected.type,
+        ai_landing_path:location.pathname,
+        traffic_channel:'ai_search'
+      };
+      try{sessionStorage.setItem('tb_ai_referral',JSON.stringify(stored))}catch(e){}
+      sendEvent('ai_referral_visit',stored);
+    }else{
+      try{stored=JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){stored=null}
+    }
+    document.querySelectorAll('a[href*="/trillionbank/contact/"],a[href*="/trillionbank/meeting/"]').forEach(function(link){
+      link.addEventListener('click',function(){
+        var attribution=stored;
+        try{attribution=attribution||JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){}
+        if(!attribution)return;
+        sendEvent('ai_assisted_cta_click',{
+          ai_source:attribution.ai_source,
+          ai_referrer_host:attribution.ai_referrer_host,
+          ai_landing_path:attribution.ai_landing_path,
+          cta_label:(link.dataset.cta||link.textContent||'').trim(),
+          destination:link.href,
+          source_page:location.pathname
+        });
+      });
+    });
+  })();
+  // tabs (WAI-ARIA Tabs pattern: arrow key navigation + roving tabindex)
+  document.querySelectorAll('[data-tabs]').forEach(function(g){
+    var tabs=g.querySelectorAll('[role="tab"]'),panels=g.querySelectorAll('[role="tabpanel"]');
+    function activate(idx){
+      tabs.forEach(function(x){x.setAttribute('aria-selected','false');x.setAttribute('tabindex','-1')});
+      tabs[idx].setAttribute('aria-selected','true');tabs[idx].setAttribute('tabindex','0');tabs[idx].focus();
+      panels.forEach(function(p){p.classList.remove('on')});if(panels[idx])panels[idx].classList.add('on');
+    }
+    tabs.forEach(function(t,i){
+      t.addEventListener('click',function(){activate(i)});
+      t.addEventListener('keydown',function(e){
+        var k=e.key,n=tabs.length;
+        if(k==='ArrowRight'){e.preventDefault();activate((i+1)%n)}
+        else if(k==='ArrowLeft'){e.preventDefault();activate((i-1+n)%n)}
+        else if(k==='Home'){e.preventDefault();activate(0)}
+        else if(k==='End'){e.preventDefault();activate(n-1)}
+      });
+    });
+  });
+  /* page transition — fade out on navigate, fade in on load */
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a');
+    var raw=a?a.getAttribute('href')||'':'';
+    if(!a||!a.href||a.target==='_blank'||raw.startsWith('#')||a.href.startsWith('mailto:')||a.href.startsWith('tel:'))return;
+    if(a.hostname!==location.hostname)return;
+    if(a.pathname===location.pathname&&a.hash)return;
+    e.preventDefault();
+    document.body.classList.add('page-leaving');
+    setTimeout(function(){location.href=a.href},300);
+  });
+  window.addEventListener('pageshow',function(e){
+    document.body.classList.remove('page-leaving');
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0XHQPCC4CF');
+</script>
+
+
+
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+<title>AIクローラー一覧と制御方法｜robots.txtでの許可・拒否の考え方</title>
+<meta name="description" content="GPTBot・ClaudeBot・PerplexityBotなど主要AIクローラーのUser-Agentを公式ドキュメントで確認できた範囲で一覧化し、学習は拒否しつつ検索引用は許可するrobots.txt設定例と、その限界・確認方法を解説します。">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<meta property="og:title" content="AIクローラー一覧と制御方法｜robots.txtでの許可・拒否の考え方">
+<meta property="og:description" content="GPTBot・ClaudeBot・PerplexityBotなど主要AIクローラーのUser-Agentを公式ドキュメントで確認できた範囲で一覧化し、学習は拒否しつつ検索引用は許可するrobots.txt設定例と、その限界・確認方法を解説します。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/">
+<meta property="og:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="株式会社Trillion Bank">
+
+<meta property="article:published_time" content="2026-09-06T00:00:00+09:00">
+<meta property="article:modified_time" content="2026-09-06T00:00:00+09:00">
+<meta property="article:author" content="井上 幹太">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AIクローラー一覧と制御方法｜robots.txtでの許可・拒否の考え方">
+<meta name="twitter:description" content="GPTBot・ClaudeBot・PerplexityBotなど主要AIクローラーのUser-Agentを公式ドキュメントで確認できた範囲で一覧化し、学習は拒否しつつ検索引用は許可するrobots.txt設定例と、その限界・確認方法を解説します。">
+<meta name="twitter:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+
+<link rel="canonical" href="https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/">
+<link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/">
+<link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/">
+<link rel="sitemap" type="application/xml" href="https://trillion-bank.jp/sitemap-index.xml">
+
+<!-- AI / LLM discovery -->
+<meta name="ai-summary" content="主要AIクローラーは学習用・検索用・ユーザー操作用に分かれ、robots.txtでUser-Agentトークン単位に許可・拒否を指定できる。ただしrobots.txtは強制力のない意思表示であり、未知Botやなりすましには効かないため、アクセスログでの確認を併用する。">
+<link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="https://trillion-bank.jp/feed.xml">
+<link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+<link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+<link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["Trillion Bank", "トリリオンバンク", "株式会社トリリオンバンク", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {"@type": "ImageObject", "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp"},
+      "description": "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。",
+      "foundingDate": "2025-12-23",
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": [
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+        {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+        {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI情報流通インフラ"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/#webpage",
+      "url": "https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/",
+      "name": "AIクローラー一覧と制御方法｜robots.txtでの許可・拒否の考え方",
+      "description": "GPTBot・ClaudeBot・PerplexityBotなど主要AIクローラーのUser-Agentを公式ドキュメントで確認できた範囲で一覧化し、学習は拒否しつつ検索引用は許可するrobots.txt設定例と、その限界・確認方法を解説します。",
+      "inLanguage": "ja",
+      "isPartOf": {"@id": "https://trillion-bank.jp/#website"},
+      "about": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntity": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/#article"},
+      "breadcrumb": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/#breadcrumb"}
+    },
+    {
+      "@type": "Article",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/#article",
+      "headline": "AIクローラー一覧と制御方法｜robots.txtでの許可・拒否の考え方",
+      "description": "GPTBot・ClaudeBot・PerplexityBotなど主要AIクローラーのUser-Agentを公式ドキュメントで確認できた範囲で一覧化し、学習は拒否しつつ検索引用は許可するrobots.txt設定例と、その限界・確認方法を解説します。",
+      "image": "https://trillion-bank.jp/images/hero/tb-logo-color.webp",
+      "datePublished": "2026-09-06T00:00:00+09:00",
+      "dateModified": "2026-09-06T00:00:00+09:00",
+      "author": {"@type": "Person", "name": "井上 幹太", "@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "editor": {"@type": "Organization", "name": "株式会社Trillion Bank 編集部"},
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntityOfPage": {"@id": "https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/#webpage"},
+      "inLanguage": "ja",
+      "articleSection": "AI検索対策"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/#breadcrumb",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "HOME", "item": "https://trillion-bank.jp/"},
+        {"@type": "ListItem", "position": 2, "name": "Insights", "item": "https://trillion-bank.jp/trillionbank/insights/"},
+        {"@type": "ListItem", "position": 3, "name": "AIクローラー一覧と制御方法｜robots.txtでの許可・拒否の考え方", "item": "https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/"}
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/#faq",
+      "mainEntity": [{"@type":"Question","name":"robots.txtでAIの学習だけを拒否し、検索引用は許可できますか？","acceptedAnswer":{"@type":"Answer","text":"できます。学習用途のGPTBot、ClaudeBot、Google-Extended、meta-externalagentなどをDisallowにし、検索用途のOAI-SearchBot、Claude-SearchBot、PerplexityBotを許可すれば、用途別の意思表示になります。"}},{"@type":"Question","name":"robots.txtで拒否すればAIには一切使われませんか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。robots.txtは技術的な強制力のない意思表示で、準拠を公表していないBotやUser-Agentのなりすましには効きません。過去に取得済みのデータが削除されるとも限りません。"}},{"@type":"Question","name":"ChatGPT-UserやPerplexity-Userも拒否できますか？","acceptedAnswer":{"@type":"Answer","text":"両社とも、ユーザー操作起点のアクセスにはrobots.txtが適用されない場合があると公表しています。確実に止めたい場合はWAFやレート制限などサーバー側の制御を検討します。"}},{"@type":"Question","name":"どのAIクローラーが来ているかを確認する方法はありますか？","acceptedAnswer":{"@type":"Answer","text":"WebサーバーのアクセスログをGPTBotやClaudeBotなどのUser-Agent文字列で集計し、来訪頻度と対象URLを確認します。UAは自己申告のため、なりすましの可能性も考慮します。"}}]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+<header class="tbh" id="tbh">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+      <img src="/images/hero/tb-logo-symbol.webp" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
+    </a>
+    <nav class="links" aria-label="グローバル">
+      <div class="mega">
+        <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
+        <div class="mega-panel" id="mega-biz">
+          <a href="/airreach/"><span class="mt">AirReach <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はHackⅡへ</span></a>
+          <a href="/trillionbank/business/hack2/"><span class="mt">HackⅡ <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+        </div>
+      </div>
+      <a href="/trillionbank/mission/">MISSION</a>
+      <a href="/trillionbank/insights/">INSIGHTS</a>
+      <a href="/trillionbank/company/">COMPANY</a>
+      <a href="/trillionbank/media/">MEDIA / NEWS</a>
+      <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="header" data-cta="header_contact_form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
+    </nav>
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+<section class="phero"><div class="wrap"><nav class="crumb" aria-label="パンくずリスト"><a href="/">HOME</a> ／ <a href="/trillionbank/insights/">Insights</a> ／ AI検索対策</nav><span class="en" style="font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:var(--gold)">2026.09.06　AI検索対策</span><h1 style="font-size:clamp(1.7rem,4vw,2.9rem);margin-top:14px">AIクローラー一覧と制御方法｜robots.txtでの許可・拒否の考え方</h1></div></section>
+<section class="sec"><div class="wrap"><article class="article">
+<div class="byline" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--hair,#e5e7eb);font-size:.86rem;color:var(--muted,#6b7280);"><span>執筆：井上 幹太</span><span>確認：株式会社Trillion Bank 編集部</span><span>公開：2026年09月06日</span><span>最終確認：2026-09-06</span></div>
+
+
+
+<section class="direct-answer" aria-label="結論">
+  <span class="da-label">ANSWER ── 結論</span>
+  <p>AIクローラーの制御は、各社が公式に公表するUser-Agentトークンをrobots.txtへ用途別（学習・検索・ユーザー操作）に記述して行い、学習用のGPTBotやClaudeBotを拒否しつつ、検索引用用のOAI-SearchBotやClaude-SearchBotを許可する、という切り分けが基本です。</p>
+</section>
+
+
+
+
+
+
+
+<nav class="tb-toc" aria-label="目次">
+  <span class="toc-label">CONTENTS ── 目次</span>
+  <ol><li class="lv2"><a href="#主要aiクローラーのuser-agent一覧">主要AIクローラーのUser-Agent一覧</a></li><li class="lv2"><a href="#学習は拒否検索引用は許可の設定例">「学習は拒否、検索引用は許可」の設定例</a></li><li class="lv2"><a href="#拒否と引用機会のトレードオフ">拒否と引用機会のトレードオフ</a></li><li class="lv2"><a href="#robotstxtのできないこと限界">robots.txtのできないこと・限界</a></li><li class="lv2"><a href="#アクセスログでの確認方法概要">アクセスログでの確認方法（概要）</a></li><li class="lv2"><a href="#実務チェックリスト">実務チェックリスト</a></li></ol>
+</nav>
+
+
+<p>ただし、robots.txtは強制力のない意思表示であり、設定してもAI検索での引用や表示、流入を保証するものではありません。本記事は各社公式ドキュメントで確認できた範囲のみを記載します。</p>
+
+<h2 id="主要aiクローラーのuser-agent一覧">主要AIクローラーのUser-Agent一覧</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>User-Agent</th>
+      <th>運営元</th>
+      <th>主な用途</th>
+      <th>robots.txt準拠の公表</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GPTBot</td>
+      <td>OpenAI</td>
+      <td>生成AI基盤モデルの学習</td>
+      <td>準拠を公表</td>
+    </tr>
+    <tr>
+      <td>OAI-SearchBot</td>
+      <td>OpenAI</td>
+      <td>ChatGPT検索での表示・リンク</td>
+      <td>準拠を公表</td>
+    </tr>
+    <tr>
+      <td>ChatGPT-User</td>
+      <td>OpenAI</td>
+      <td>ユーザー操作起点のアクセス</td>
+      <td>適用されない場合があると公表</td>
+    </tr>
+    <tr>
+      <td>ClaudeBot</td>
+      <td>Anthropic</td>
+      <td>モデルの学習・開発</td>
+      <td>準拠を公表</td>
+    </tr>
+    <tr>
+      <td>Claude-User</td>
+      <td>Anthropic</td>
+      <td>ユーザー起点のWebアクセス</td>
+      <td>準拠を公表</td>
+    </tr>
+    <tr>
+      <td>Claude-SearchBot</td>
+      <td>Anthropic</td>
+      <td>検索結果の品質向上</td>
+      <td>準拠を公表</td>
+    </tr>
+    <tr>
+      <td>PerplexityBot</td>
+      <td>Perplexity</td>
+      <td>検索結果での表示・リンク（基盤モデル学習には不使用と公表）</td>
+      <td>準拠を公表</td>
+    </tr>
+    <tr>
+      <td>Perplexity-User</td>
+      <td>Perplexity</td>
+      <td>ユーザー操作起点のアクセス</td>
+      <td>原則適用されないと公表</td>
+    </tr>
+    <tr>
+      <td>Google-Extended</td>
+      <td>Google</td>
+      <td>Geminiの学習・グラウンディング利用の制御（独自UAなしの制御用トークン）</td>
+      <td>準拠を公表</td>
+    </tr>
+    <tr>
+      <td>GoogleOther</td>
+      <td>Google</td>
+      <td>各製品チームによる汎用クロール</td>
+      <td>準拠を公表</td>
+    </tr>
+    <tr>
+      <td>CCBot</td>
+      <td>Common Crawl</td>
+      <td>公開クロールデータの収集・提供</td>
+      <td>準拠を公表</td>
+    </tr>
+    <tr>
+      <td>Amazonbot</td>
+      <td>Amazon</td>
+      <td>サービス改善（AIモデル学習に利用される場合あり）</td>
+      <td>準拠を公表</td>
+    </tr>
+    <tr>
+      <td>meta-externalagent</td>
+      <td>Meta</td>
+      <td>AIモデルの学習・製品のインデックス作成</td>
+      <td>準拠を公表</td>
+    </tr>
+    <tr>
+      <td>meta-externalfetcher</td>
+      <td>Meta</td>
+      <td>ユーザー要求起点の取得</td>
+      <td>適用されない場合があると公表</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Amazonbotの用途・準拠状況はAmazonの公式ページ（developer.amazon.com/amazonbot）で確認できます。Bytespider等、運営元の公式ドキュメントを確認できなかったUser-Agentは本表に掲載していません。</p>
+
+<h2 id="学習は拒否検索引用は許可の設定例">「学習は拒否、検索引用は許可」の設定例</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># 生成AIの学習用クローラーを拒否
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+# 検索・引用用クローラーは許可
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+</code></pre></div></div>
+
+<p>注意点は2つあります。第一に、Google-Extendedは独自のUser-Agent文字列を持たず、既存のGoogleのUAでクロールした内容の利用可否を制御するトークンです。アクセスログには現れません。第二に、OpenAIはOAI-SearchBotを拒否したサイトはChatGPT検索の回答に表示されなくなると明記しており、検索用トークンの拒否は引用機会の放棄を意味します。</p>
+
+<h2 id="拒否と引用機会のトレードオフ">拒否と引用機会のトレードオフ</h2>
+
+<p>学習用と検索用のトークンが分かれているため、「モデルの学習には使わせないが、検索経由の引用・リンクは受け入れる」という方針は設定として表現できます。一方で、次のトレードオフを理解しておく必要があります。</p>
+
+<ul>
+  <li>学習を拒否すると、将来のモデルが自社の情報を内部知識として持たない可能性があり、検索を伴わないAI回答での説明に影響しうる</li>
+  <li>CCBotの拒否は、Common Crawlの公開データセットを利用する多数の研究・開発主体への意思表示となり、影響範囲を個別に予測しにくい</li>
+  <li>許可・拒否のどちらを選んでも、AI回答での引用や表示が約束されるわけではない</li>
+</ul>
+
+<p>どの経路を許可するかは、コンテンツの性質（無料公開の集客記事か、有料・会員向け資産か）ごとに分けて判断するのが実務的です。</p>
+
+<h2 id="robotstxtのできないこと限界">robots.txtのできないこと・限界</h2>
+
+<ul>
+  <li><strong>強制力がない</strong>：robots.txtは慣行に基づく意思表示であり、準拠は各運営元の自主的な運用に依存する</li>
+  <li><strong>未知のBotに効かない</strong>：公表されていないUAや新規のBotは、トークンを書きようがない</li>
+  <li><strong>なりすましを防げない</strong>：UA文字列は自己申告のため、第三者がGPTBot等を名乗るアクセスは排除できない</li>
+  <li><strong>遡及しない</strong>：過去に取得済みのデータやアーカイブが削除されるとは限らない</li>
+  <li><strong>ユーザー操作型に適用されない場合がある</strong>：ChatGPT-User、Perplexity-User、meta-externalfetcherは適用外となる場合があると各社が公表している</li>
+</ul>
+
+<p>確実な遮断が必要な場合は、WAF、認証、レート制限などサーバー側の制御を併用します。</p>
+
+<h2 id="アクセスログでの確認方法概要">アクセスログでの確認方法（概要）</h2>
+
+<p>robots.txtの設定が実際にどう働いているかは、自社のアクセスログで確認できます。手順の概要は次の通りです。</p>
+
+<ol>
+  <li>アクセスログからGPTBot、ClaudeBot等のUA文字列を含む行を抽出する</li>
+  <li>期間別・パス別・ステータスコード別に件数を集計し、来訪頻度と対象コンテンツを把握する</li>
+  <li>robots.txt変更日を記録し、変更前後で各Botのアクセスが変化したかを比較する</li>
+  <li>UAは自己申告のため、運営元が確認手段を公開している場合はIP等で照合する</li>
+</ol>
+
+<h2 id="実務チェックリスト">実務チェックリスト</h2>
+
+<ol>
+  <li>現状のアクセスログで、AI系UAの来訪有無・頻度・対象パスを確認した</li>
+  <li>学習・検索・ユーザー操作の3用途に分けて、許可・拒否の方針を決めた</li>
+  <li>robots.txtへ用途別のUser-agentグループを記述し、文法を検証した</li>
+  <li>検索用トークンを拒否した場合の引用機会への影響を関係者へ共有した</li>
+  <li>変更日を記録し、変更前後のログで各Botの挙動変化を確認した</li>
+  <li>準拠しないBotへの対応（WAF・レート制限等）をサーバー側で別途検討した</li>
+  <li>各社の公式ドキュメントを定期的に再確認する体制を決めた（UAと用途は追加・変更される）</li>
+</ol>
+
+<p>なお、Googleは自社のAI機能への表示にあたり、新しい機械可読ファイルやAI用テキストファイルを作成する必要はないと公表しています（developers.google.com/search/docs/appearance/ai-features）。llms.txtのような試みは、AIによる利用や引用を約束するものではなく、現時点では効果が確立していない実験的な補助手段として扱うのが妥当です。</p>
+
+<p>株式会社Trillion Bank（トリリオンバンク）は、限定商用検証・導入相談受付中のHackⅡで、選定した質問に対するAI回答本文と引用URLの保存・比較を支援しています。robots.txt変更の前後で同一質問を再測定すれば、引用状況の変化を証跡付きで確認できます。ただし、測定はAI検索での引用や流入を保証するものではありません。</p>
+
+<section aria-labelledby="article-faq" style="margin-top:48px"><h2 id="article-faq">よくある質問</h2><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">robots.txtでAIの学習だけを拒否し、検索引用は許可できますか？</h3><p>できます。学習用途のGPTBot、ClaudeBot、Google-Extended、meta-externalagentなどをDisallowにし、検索用途のOAI-SearchBot、Claude-SearchBot、PerplexityBotを許可すれば、用途別の意思表示になります。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">robots.txtで拒否すればAIには一切使われませんか？</h3><p>いいえ。robots.txtは技術的な強制力のない意思表示で、準拠を公表していないBotやUser-Agentのなりすましには効きません。過去に取得済みのデータが削除されるとも限りません。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">ChatGPT-UserやPerplexity-Userも拒否できますか？</h3><p>両社とも、ユーザー操作起点のアクセスにはrobots.txtが適用されない場合があると公表しています。確実に止めたい場合はWAFやレート制限などサーバー側の制御を検討します。</p></div><div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">どのAIクローラーが来ているかを確認する方法はありますか？</h3><p>WebサーバーのアクセスログをGPTBotやClaudeBotなどのUser-Agent文字列で集計し、来訪頻度と対象URLを確認します。UAは自己申告のため、なりすましの可能性も考慮します。</p></div></section>
+<div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);"><h2 style="font-size:1rem;margin-bottom:12px">参考文献・一次情報</h2><ol style="font-size:.86rem;color:var(--muted,#6b7280);padding-left:20px"><li style="margin-bottom:8px"><a href="https://developers.openai.com/api/docs/bots" target="_blank" rel="noopener noreferrer">OpenAI — Overview of OpenAI Crawlers</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://support.claude.com/en/articles/8896518" target="_blank" rel="noopener noreferrer">Anthropic Help Center — Does Anthropic crawl data from the web, and how can site owners block the crawler?</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://docs.perplexity.ai/guides/bots" target="_blank" rel="noopener noreferrer">Perplexity Docs — Perplexity Crawlers</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://developers.google.com/search/docs/crawling-indexing/google-common-crawlers" target="_blank" rel="noopener noreferrer">Google Search Central — Google's common crawlers</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://commoncrawl.org/ccbot" target="_blank" rel="noopener noreferrer">Common Crawl — CCBot</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://developers.facebook.com/docs/sharing/webmasters/web-crawlers/" target="_blank" rel="noopener noreferrer">Meta for Developers — Meta Web Crawlers</a>（確認日：2026-09-06）</li><li style="margin-bottom:8px"><a href="https://developer.amazon.com/amazonbot" target="_blank" rel="noopener noreferrer">Amazon — Amazonbot</a>（確認日：2026-09-06）</li></ol></div>
+<div style="margin-top:40px;padding:20px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);font-size:.8rem;color:var(--muted,#6b7280)"><p style="margin:0">本記事は公開時点の一次情報と当社の分析に基づきます。用語や各サービスの仕様は変わる可能性があります。誤りを確認した場合は、お問い合わせ窓口からお知らせください。</p></div>
+
+
+
+<aside class="author-box" aria-label="この記事の著者">
+  
+  <img src="/images/ceo-kanta.webp" alt="井上 幹太" width="72" height="72" loading="lazy">
+  <div class="ab-body">
+    <span class="ab-label">AUTHOR ── この記事の著者</span>
+    <p class="ab-name">井上 幹太<span class="ab-role">株式会社Trillion Bank 代表取締役</span></p>
+    <p class="ab-bio">AI検索計測「HackⅡ」とAIコンテンツ利用管理「Adctor / Pay per Crawl」の研究開発・事業化に取り組む。令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL。ソフトバンクアカデミア17期／J-StarX第1期／ZEN大学1期特別奨学生。</p>
+    <a class="ab-link" href="/trillionbank/ceo/">プロフィールと実績を見る <span aria-hidden="true">→</span></a>
+  </div>
+  
+</aside>
+
+<div class="article-cta" style="margin-top:56px;padding-top:36px;border-top:2px solid var(--blue-600)"><h2 style="font-size:clamp(1.2rem,2.4vw,1.55rem)">この記事のテーマを、自社・競合で確認する</h2><p>HackⅡは、選定した質問についてAI回答、引用URL、自社・競合の言及と測定条件を保存し、改善判断を支援します。</p><div style="display:flex;gap:14px;flex-wrap:wrap"><a class="btn btn-primary" href="/trillionbank/meeting/?type=company" data-event="meeting_form_open" data-service="hack2_company" data-cta="article_footer">AI検索の現在地を相談する <span class="a">→</span></a><a class="btn btn-line" href="/trillionbank/meeting/?type=agency" data-event="meeting_form_open" data-service="hack2_agency" data-cta="article_footer">共同提案を相談する <span class="a">→</span></a></div><p style="margin-top:14px;font-size:.78rem;color:var(--muted)">AI回答への掲載、順位、問い合わせ、売上を保証するサービスではありません。</p></div>
+
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<div style="margin-top:56px;padding-top:34px;border-top:1px solid var(--border,#DDE3EC)">
+  <h2 style="font-family:var(--mono);font-size:.78rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-bottom:18px">関連記事</h2>
+  <div class="nlist">
+    
+    <a class="nitem" href="/trillionbank/news/ai-overviews-optimization/"><span class="date">2026.09.06</span><span class="ncat">AI検索対策</span><span class="nt">Google AI Overviews対策とは？従来SEOとの関係と実務チェックリスト</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-monitoring-rfp-checklist/"><span class="date">2026.09.05</span><span class="ncat">AI検索対策</span><span class="nt">AI検索モニタリングツール選定チェックリスト｜RFPで確認する15項目</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-measurement-sov-gemini/"><span class="date">2026.08.30</span><span class="ncat">AI検索対策</span><span class="nt">AI検索の効果測定はGemini時代にどう変わるか｜引用率・言及率・SOVを高める企業サイト設計</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/llmo-company-selection/"><span class="date">2026.09.16</span><span class="ncat">解説</span><span class="nt">LLMO対策会社の選び方｜生成AI検索最適化の依頼範囲を決める</span><span class="go">→</span></a>
+    
+  </div>
+</div>
+
+
+<div style="margin-top:44px"><a class="btn btn-line" href="/trillionbank/insights/">← Insights一覧へ</a></div>
+</article></div></section>
+</main>
+
+<footer class="tbf">
+  <div class="wrap">
+    <div class="top">
+      <div><a class="brand" href="/" aria-label="Trillion Bank ホーム"><img src="/images/hero/tb-logo-color.webp" alt="TRILLION BANK" width="160" height="40" style="height:32px;width:auto;filter:brightness(10)"></a><p class="addr">株式会社Trillion Bank<br>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ<br>株式会社Trillion Bankは銀行業を営む会社ではありません。</p></div>
+      <div class="fcol"><h5>BUSINESS</h5><a href="/trillionbank/business/hack2/">HackⅡ</a><a href="/trillionbank/business/pay-per-crawl/">Adctor</a></div>
+      <div class="fcol"><h5>INSIGHTS</h5><a href="/trillionbank/insights/">実務解説</a><a href="/trillionbank/company/">会社概要</a><a href="/trillionbank/media/">お知らせ</a></div>
+      <div class="fcol"><h5>CONTACT</h5><a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a><a href="/trillionbank/contact/#form">お問い合わせ</a></div>
+    </div>
+    <div class="bottom"><span>© 2026 Trillion Bank Co., Ltd.</span><span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a></span></div>
+  </div>
+</footer>
+<script>
+(function(){var h=document.getElementById('tbh'),b=document.getElementById('tbBurger');if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});document.querySelectorAll('.mega-t').forEach(function(btn){btn.addEventListener('click',function(){btn.setAttribute('aria-expanded',String(btn.getAttribute('aria-expanded')!=='true'))})});})();
+</script>
+
+</body>
+</html>

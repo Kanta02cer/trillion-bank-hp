@@ -1,0 +1,89 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /private/
+Disallow: /admin/
+Disallow: /tools/
+Disallow: /skill-collector/
+Disallow: /HackⅡ/
+Disallow: /ai-coupon-system/
+Disallow: /docs/
+Disallow: /airreach/result/
+Disallow: /airreach/sales/
+Disallow: /airreach/studio/
+Disallow: /airreach/platform/
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-AdsBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: meta-externalfetcher
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# 提出はインデックスのみ。子sitemapの重複登録を避ける。
+Sitemap: https://trillion-bank.jp/sitemap-index.xml

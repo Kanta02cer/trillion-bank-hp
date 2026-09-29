@@ -1,0 +1,119 @@
+/* AirReach tip — compact, collision-aware hover details */
+.ar-tip{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:.28em;
+  max-width:100%;
+  cursor:help;
+  color:inherit;
+  font:inherit;
+  font-weight:inherit;
+  background:transparent;
+  padding:0;
+  margin:0;
+  border:0;
+  text-align:inherit;
+  line-height:inherit;
+  vertical-align:baseline;
+}
+button.ar-tip,a.ar-tip{border-radius:0}
+.ar-tip-q{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  width:1.1rem;
+  height:1.1rem;
+  margin:0;
+  border-radius:999px;
+  border:1px solid #94a3b8;
+  background:#f8fafc;
+  color:#475569;
+  font-size:.65rem;
+  font-weight:700;
+  line-height:1;
+  box-sizing:border-box;
+}
+.ar-tip:hover .ar-tip-q,
+.ar-tip:focus .ar-tip-q,
+.ar-tip.is-on .ar-tip-q{
+  border-color:#2563eb;
+  background:#2563eb;
+  color:#fff;
+}
+.ar-tip-bubble{
+  position:absolute;
+  z-index:200;
+  left:0;
+  bottom:calc(100% + 8px);
+  width:min(280px,calc(100vw - 32px));
+  box-sizing:border-box;
+  padding:10px 12px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  background:#0f172a;
+  color:#f8fafc;
+  font-size:.875rem;
+  font-weight:500;
+  line-height:1.5;
+  letter-spacing:0;
+  text-transform:none;
+  white-space:normal;
+  text-align:left;
+  box-shadow:0 10px 28px rgba(15,23,42,.18);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transform:translateY(4px);
+}
+.ar-tip-bubble::after{
+  content:"";
+  position:absolute;
+  left:14px;
+  top:100%;
+  border:6px solid transparent;
+  border-top-color:#0f172a;
+}
+.ar-tip-bubble.is-below{
+  bottom:auto;
+  top:calc(100% + 8px);
+  transform:translateY(-4px);
+}
+.ar-tip-bubble.is-below::after{
+  top:auto;
+  bottom:100%;
+  border-top-color:transparent;
+  border-bottom-color:#0f172a;
+}
+.ar-tip-bubble.is-end{
+  left:auto;
+  right:0;
+}
+.ar-tip-bubble.is-end::after{
+  left:auto;
+  right:14px;
+}
+.ar-tip.is-on .ar-tip-bubble,
+.ar-tip:hover .ar-tip-bubble,
+.ar-tip:focus .ar-tip-bubble,
+.ar-tip:focus-within .ar-tip-bubble{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transform:translateY(0);
+}
+.ar-tip--block{display:inline-flex;max-width:100%}
+
+.ar-tip.is-on,
+.ar-tip:hover,
+.ar-tip:focus-within{
+  z-index:30;
+}
+@media (hover:none){
+  .ar-tip:hover .ar-tip-bubble{opacity:0;visibility:hidden}
+  .ar-tip.is-on .ar-tip-bubble{opacity:1;visibility:visible;pointer-events:auto}
+}
+@media (prefers-reduced-motion:reduce){
+  .ar-tip-bubble{transform:none}
+}

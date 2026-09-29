@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0XHQPCC4CF');
+</script>
+
+
+
+
+
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
+<title>生成AIに引用されない原因とGEO対策｜AI検索で候補に入る方法【2026年9月】</title>
+<meta name="description" content="ChatGPTやPerplexityなどの生成AIに自社が引用・推薦されない原因を6分類で整理。GEO対策・生成AI検索最適化として確認すべき技術、一次情報、エンティティ、第三者情報、鮮度、証拠を解説します。">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+<meta property="og:title" content="生成AIに引用されない原因とGEO対策｜AI検索で候補に入る方法【2026年9月】">
+<meta property="og:description" content="ChatGPTやPerplexityなどの生成AIに自社が引用・推薦されない原因を6分類で整理。GEO対策・生成AI検索最適化として確認すべき技術、一次情報、エンティティ、第三者情報、鮮度、証拠を解説します。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/">
+<meta property="og:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="株式会社Trillion Bank">
+
+<meta property="article:published_time" content="2026-07-26T00:00:00+09:00">
+<meta property="article:modified_time" content="2026-09-06T00:00:00+09:00">
+<meta property="article:author" content="井上 幹太">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="生成AIに引用されない原因とGEO対策｜AI検索で候補に入る方法【2026年9月】">
+<meta name="twitter:description" content="ChatGPTやPerplexityなどの生成AIに自社が引用・推薦されない原因を6分類で整理。GEO対策・生成AI検索最適化として確認すべき技術、一次情報、エンティティ、第三者情報、鮮度、証拠を解説します。">
+<meta name="twitter:image" content="https://trillion-bank.jp/images/hero/tb-logo-color.webp">
+
+<link rel="canonical" href="https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/">
+<link rel="alternate" hreflang="ja" href="https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/">
+<link rel="alternate" hreflang="x-default" href="https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/">
+<link rel="sitemap" type="application/xml" href="https://trillion-bank.jp/sitemap-index.xml">
+
+<!-- AI / LLM discovery -->
+<meta name="ai-summary" content="生成AIに引用されない原因は、①技術要因（クロール不可・noindex・レンダリング）②情報不足③エンティティ不整合④第三者情報の不足⑤鮮度⑥証拠不足の6つに分類できる。各原因は自分で確認する方法があり、原因の切り分け→対策→再測定の順で進めるのが基本となる。">
+<link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="https://trillion-bank.jp/feed.xml">
+<link rel="llms-txt" href="https://trillion-bank.jp/llms.txt">
+<link rel="llms-full" href="https://trillion-bank.jp/llms-full.txt">
+<link rel="knowledge-graph" type="application/json" href="https://trillion-bank.jp/knowledge.json">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["Trillion Bank", "トリリオンバンク", "株式会社トリリオンバンク", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {"@type": "ImageObject", "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp"},
+      "description": "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。",
+      "foundingDate": "2025-12-23",
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "102-0083",
+        "addressRegion": "東京都",
+        "addressLocality": "千代田区",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressCountry": "JP"
+      },
+      "areaServed": {"@type": "Country", "name": "JP"},
+      "knowsAbout": [
+        "AI検索最適化",
+        "AEO（Answer Engine Optimization）",
+        "GEO（Generative Engine Optimization）",
+        "LLMO（Large Language Model Optimization）",
+        "AIO（AI Optimization）",
+        "AI検索の効果測定",
+        "AI回答の引用元分析",
+        "生成AIによるコンテンツ利用の契約・利用証跡",
+        "Pay per Crawl",
+        "RAG",
+        "MCP"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/trillionbank_jp/"
+      ],
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "url": "https://trillion-bank.jp/trillionbank/contact/",
+        "availableLanguage": ["ja"]
+      }],
+      "subjectOf": [
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
+        {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
+        {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
+        {"@type": "VideoObject", "name": "SBI証券ビジネスドライブ出演回", "url": "https://youtu.be/F2hO--D6Hd0"}
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上 幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"},
+      "knowsAbout": ["AI検索最適化", "AEO", "GEO", "LLMO", "AI情報流通インフラ"],
+      "url": "https://trillion-bank.jp/trillionbank/ceo/"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trillion-bank.jp/#website",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "inLanguage": "ja"
+    }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trillion-bank.jp/#organization",
+      "name": "株式会社Trillion Bank",
+      "legalName": "株式会社Trillion Bank",
+      "alternateName": ["株式会社トリリオンバンク", "トリリオンバンク", "Trillion Bank", "TRILLION BANK"],
+      "url": "https://trillion-bank.jp/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp",
+        "width": 414,
+        "height": 318
+      },
+      "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "sameAs": ["https://www.instagram.com/trillionbank_jp/"]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://trillion-bank.jp/#kanta-inoue",
+      "name": "井上幹太",
+      "alternateName": ["Kanta Inoue", "かんちゃん"],
+      "jobTitle": "代表取締役CEO",
+      "worksFor": {"@id": "https://trillion-bank.jp/#organization"}
+    },
+    {
+      "@type": "LocalBusiness",
+      "@id": "https://trillion-bank.jp/#localbusiness",
+      "name": "株式会社Trillion Bank",
+      "url": "https://trillion-bank.jp/",
+      "parentOrganization": {"@id": "https://trillion-bank.jp/#organization"},
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
+        "addressLocality": "千代田区",
+        "addressRegion": "東京都",
+        "postalCode": "102-0083",
+        "addressCountry": "JP"
+      },
+      "areaServed": [
+        {"@type": "Place", "name": "麹町"},
+        {"@type": "AdministrativeArea", "name": "千代田区"},
+        {"@type": "AdministrativeArea", "name": "東京都"},
+        {"@type": "Country", "name": "JP"}
+      ]
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/#webpage",
+      "url": "https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/",
+      "name": "生成AIに引用されない原因とGEO対策｜AI検索で候補に入る方法【2026年9月】",
+      "description": "ChatGPTやPerplexityなどの生成AIに自社が引用・推薦されない原因を6分類で整理。GEO対策・生成AI検索最適化として確認すべき技術、一次情報、エンティティ、第三者情報、鮮度、証拠を解説します。",
+      "inLanguage": "ja",
+      "about": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntity": {"@id": "https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/#article"},
+      "breadcrumb": {"@id": "https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/#breadcrumb"}
+    },
+    {
+      "@type": "Article",
+      "@id": "https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/#article",
+      "headline": "生成AIに引用されない原因とGEO対策｜AI検索で候補に入る方法【2026年9月】",
+      "description": "ChatGPTやPerplexityなどの生成AIに自社が引用・推薦されない原因を6分類で整理。GEO対策・生成AI検索最適化として確認すべき技術、一次情報、エンティティ、第三者情報、鮮度、証拠を解説します。",
+      "image": "https://trillion-bank.jp/images/hero/tb-logo-color.webp",
+      "datePublished": "2026-07-26T00:00:00+09:00",
+      "dateModified": "2026-09-06T00:00:00+09:00",
+      "author": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
+      "publisher": {"@id": "https://trillion-bank.jp/#organization"},
+      "mainEntityOfPage": {"@id": "https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/#webpage"},
+      "inLanguage": "ja",
+      "articleSection": "コラム",
+      "keywords": "生成AI 引用されない,GEO対策,生成AI検索最適化,AI検索対策,LLMO,AEO,GEO,エンティティ,構造化データ,トリリオンバンク,HackⅡ"
+    },
+
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/#breadcrumb",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "HOME", "item": "https://trillion-bank.jp/"},
+        {"@type": "ListItem", "position": 2, "name": "お知らせ", "item": "https://trillion-bank.jp/trillionbank/media/"},
+        {"@type": "ListItem", "position": 3, "name": "生成AIに引用されない原因とGEO対策｜AI検索で候補に入る方法【2026年9月】", "item": "https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/"}
+      ]
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "生成AIに引用されない主な原因は何ですか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "主な原因は6つに分類できます。①技術要因（AIクローラーのブロック・noindex・JavaScriptレンダリング依存でページが読めない）、②情報不足（一次情報・独自データの欠如）、③エンティティ不整合（社名表記ゆれ・NAP不一致・構造化データ欠落）、④第三者情報の不足（比較サイト・レビュー・メディア掲載が薄い）、⑤鮮度（古い料金や会社情報が残っている）、⑥証拠不足（実績・数字・出典のない主張）です。複数が同時に該当することも多く、原因の切り分けが対策の第一歩になります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "SEOをやっていれば生成AIにも引用されますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "基礎は共通ですが、必ずしも一致しません。Google公式の生成AI機能向け最適化ガイドでも、基礎的なSEOとクロール・インデックス可能性、人間向けの独自コンテンツが中心とされています。一方でAI検索は「引用・推薦」を対象とするため、検索順位が高くても、エンティティの不整合や第三者情報の不足、証拠不足が原因で引用されないケースがあります。順位とは別に、引用・推薦の状態を確認する視点が必要です。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "自社が生成AIに引用されているかを自分で確認する方法はありますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "あります。自社の見込み客が聞きそうな質問を10〜20問固定し、ChatGPTやPerplexityなどの複数のAIに同じ質問を実行して、自社名の言及有無と引用URLを記録する方法です。AI回答は実行ごとに変動するため、1回の確認ではなく複数回実行して割合で見ること、回答本文と引用URLを保存しておくことが重要です。技術要因はrobots.txtやnoindexの確認、エンティティはAIに「自社名について教えて」と直接聞くことで確認できます。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "第三者サイトの情報も生成AIの引用に影響しますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "影響します。生成AIは自社サイトだけでなく、比較サイト・レビューサイト・ニュースメディアなどの第三者情報を引用して回答を作ることが多く、比較・推薦系の質問ではむしろ第三者サイトが引用の中心になる傾向があります。自社サイトをどれだけ整備しても、第三者チャネルに情報がなければ候補から外れることがあるため、AIが実際にどのチャネルを引用しているかを確認した上で、掲載先を検討する必要があります。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "生成AIへの対策はどのくらいで効果が出ますか？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "一律の期間は約束できません。AIの回答は確率的に変動し、参照するデータの更新タイミングもサービスごとに異なるためです。プリンストン大学等のGEO研究では、出典や統計の追加などのコンテンツ最適化によりAI可視性が最大30〜40%向上することが実証されていますが、効果の出方は原因や競合状況に依存します。単発の確認ではなく、同じ質問セットでの定点観測により、出現率・引用率のトレンドで変化を捉えることが前提になります。"
+      }
+    }
+  ]
+}
+</script>
+
+</head>
+<body>
+<a class="skip" href="#main">本文へスキップ</a>
+<header class="tbh" id="tbh">
+  <div class="wrap nav">
+    <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+      <img src="/images/hero/tb-logo-symbol.webp" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
+    </a>
+    <nav class="links" aria-label="グローバル">
+      <div class="mega">
+        <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
+        <div class="mega-panel" id="mega-biz">
+          <a href="/airreach/"><span class="mt">AirReach <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はHackⅡへ</span></a>
+          <a href="/trillionbank/business/hack2/"><span class="mt">HackⅡ <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+        </div>
+      </div>
+      <a href="/trillionbank/mission/">MISSION</a>
+      <a href="/trillionbank/insights/">INSIGHTS</a>
+      <a href="/trillionbank/company/">COMPANY</a>
+      <a href="/trillionbank/media/">MEDIA / NEWS</a>
+      <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="header" data-cta="header_contact_form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
+    </nav>
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<section class="phero">
+  <div class="wrap">
+    <nav class="crumb" aria-label="パンくずリスト"><a href="/">HOME</a> ／ <a href="/trillionbank/media/">お知らせ</a> ／ コラム</nav>
+    <span class="en" style="font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:var(--gold)">2026.07.26　コラム</span>
+    <h1 style="font-size:clamp(1.7rem,4vw,2.9rem);margin-top:14px">生成AIに引用されない原因とGEO対策｜AI検索で候補に入る方法【2026年9月】</h1>
+  </div>
+</section>
+<section class="sec">
+  <div class="wrap">
+    <article class="article">
+      <div class="byline" style="display:flex;gap:16px;align-items:center;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--hair,#e5e7eb);font-size:.86rem;color:var(--muted,#6b7280);">
+        <span>執筆：井上 幹太</span>
+        <span>公開：2026年07月26日</span>
+        <span>更新：2026-09-06</span>
+      </div>
+
+      
+
+
+<section class="direct-answer" aria-label="結論">
+  <span class="da-label">ANSWER ── 結論</span>
+  <p>生成AIに引用されない原因は、①技術要因（クロール不可・noindex・レンダリング）②情報不足③エンティティ不整合④第三者情報の不足⑤鮮度⑥証拠不足の6つに分類できる。各原因は自分で確認する方法があり、原因の切り分け→対策→再測定の順で進めるのが基本となる。</p>
+</section>
+
+
+      
+
+
+
+
+<nav class="tb-toc" aria-label="目次">
+  <span class="toc-label">CONTENTS ── 目次</span>
+  <ol><li class="lv2"><a href="#原因は6分類で切り分ける">原因は6分類で切り分ける</a></li><li class="lv2"><a href="#技術要因aiクローラーがページを読めていない">①技術要因：AIクローラーがページを読めていない</a></li><li class="lv2"><a href="#情報不足一次情報独自データの欠如">②情報不足：一次情報・独自データの欠如</a></li><li class="lv2"><a href="#エンティティ不整合aiが自社を正しく同定できていない">③エンティティ不整合：AIが自社を正しく同定できていない</a></li><li class="lv2"><a href="#第三者情報の不足aiは自社サイトだけを見ていない">④第三者情報の不足：AIは自社サイトだけを見ていない</a></li><li class="lv2"><a href="#鮮度古い情報が参照されている">⑤鮮度：古い情報が参照されている</a></li><li class="lv2"><a href="#証拠不足主張に数字出典実績がない">⑥証拠不足：主張に数字・出典・実績がない</a></li><li class="lv2"><a href="#まず現状を測るどの質問でなぜ外れているか">まず現状を測る：どの質問で、なぜ外れているか</a></li><li class="lv2"><a href="#よくある質問">よくある質問</a></li><li class="lv2"><a href="#まとめ">まとめ</a></li></ol>
+</nav>
+
+
+
+      <p><strong>「生成AIに引用されない」とは、ChatGPTやPerplexityなどのAI検索が回答を作るとき、自社の情報が参照・推薦されず、競合ばかりが候補に挙がる状態を指します。</strong> GEO対策（生成AI検索最適化）では、この状態を技術・情報・エンティティ・第三者評価・鮮度・証拠の6要因に分け、質問単位で改善します。</p>
+
+<p>対策の前に必要なのは、<strong>原因の切り分け</strong>です。この記事では、引用されない原因を6つに分類し、それぞれ「自分で確認する方法」と「対策」をセットで整理します。</p>
+
+<p><strong>この記事で分かること</strong></p>
+
+<ul>
+  <li>生成AIに引用されない原因の6分類（技術・情報不足・エンティティ・第三者情報・鮮度・証拠）</li>
+  <li>各原因を外部ツールなしで自分で確認する方法</li>
+  <li>原因別の対策と、優先順位のつけ方</li>
+  <li>AIが実際に何を引用しているか（引用元チャネル）の見方</li>
+  <li>対策後に効果をどう確認するか</li>
+</ul>
+
+<hr />
+
+<h2 id="原因は6分類で切り分ける">原因は6分類で切り分ける</h2>
+
+<p><strong>生成AIに引用されない原因は、①技術要因、②情報不足、③エンティティ不整合、④第三者情報の不足、⑤鮮度、⑥証拠不足の6つに分類できます。</strong> どれに該当するかで打つべき手がまったく変わるため、いきなり施策に入らず、まず該当箇所を特定します。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>分類</th>
+      <th>状態</th>
+      <th>典型的なサイン</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>①技術要因</td>
+      <td>AIクローラーがページを読めていない</td>
+      <td>どの質問でも一切引用されない</td>
+    </tr>
+    <tr>
+      <td>②情報不足</td>
+      <td>引用できる「事実の塊」がない</td>
+      <td>言及はされるが自社ページが引用されない</td>
+    </tr>
+    <tr>
+      <td>③エンティティ不整合</td>
+      <td>会社・サービスの同定に失敗している</td>
+      <td>AIが自社を誤認・混同して説明する</td>
+    </tr>
+    <tr>
+      <td>④第三者情報の不足</td>
+      <td>比較サイト・レビュー・メディアに情報がない</td>
+      <td>比較・推薦系の質問だけ外れる</td>
+    </tr>
+    <tr>
+      <td>⑤鮮度</td>
+      <td>古い情報が参照されている</td>
+      <td>旧料金・旧サービス名で説明される</td>
+    </tr>
+    <tr>
+      <td>⑥証拠不足</td>
+      <td>主張に数字・出典・実績がない</td>
+      <td>候補には入るが競合に負ける</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>複数が同時に該当していることも多いので、①から順に確認していくのが効率的です。</p>
+
+<hr />
+
+<h2 id="技術要因aiクローラーがページを読めていない">①技術要因：AIクローラーがページを読めていない</h2>
+
+<p>そもそもAI側が自社ページを取得・解釈できていなければ、内容以前の問題です。robots.txtでのAIクローラーのブロック、noindex指定、JavaScriptレンダリングに依存した本文表示などが典型です。Googleも公式の<a href="https://developers.google.com/search/docs/fundamentals/ai-optimization-guide">生成AI機能向け最適化ガイド</a>で、生成AI検索においても基礎はクロール・インデックス可能性だと明言しています。</p>
+
+<p><strong>自分で確認する方法</strong></p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">自社ドメイン/robots.txt</code> を開き、<code class="language-plaintext highlighter-rouge">GPTBot</code>・<code class="language-plaintext highlighter-rouge">PerplexityBot</code>・<code class="language-plaintext highlighter-rouge">ClaudeBot</code> などのAIクローラーを <code class="language-plaintext highlighter-rouge">Disallow</code> していないか確認する</li>
+  <li>引用されたいページのHTMLソースに <code class="language-plaintext highlighter-rouge">noindex</code> が入っていないか確認する</li>
+  <li>ブラウザでJavaScriptを無効にしてページを開き、本文が表示されるか確認する（表示されなければ、クローラーも本文を取得できていない可能性が高い）</li>
+</ul>
+
+<p><strong>対策</strong></p>
+
+<p>引用されたいページはAIクローラーに開放し、本文はHTMLとして返す構成にします。ただし「全ページを無条件に開放する」一択ではありません。学習に使われたくないコンテンツとのバランスを取る考え方は「<a href="/trillionbank/news/pay-per-crawl-towa/">Pay per Crawlとは</a>」で解説しています。意図せずWAFがAIクローラーを遮断しているケースもあるため、心当たりがあれば「<a href="/trillionbank/news/waf-towa/">WAFとは</a>」も参考にしてください。</p>
+
+<hr />
+
+<h2 id="情報不足一次情報独自データの欠如">②情報不足：一次情報・独自データの欠如</h2>
+
+<p>技術的に読める状態でも、ページに「引用する価値のある事実」がなければ引用されません。定義・数字・手順・独自の調査データといった、AIが回答の材料として切り出せる情報の塊が必要です。他サイトの要約や一般論だけのページは、AIにとって引用する理由がありません。Google公式ガイドも、生成AI検索で重要なのは人間向けの独自コンテンツだとしています。</p>
+
+<p><strong>自分で確認する方法</strong></p>
+
+<ul>
+  <li>引用されたいページを開き、「このページにしかない情報」を3つ挙げられるか自問する</li>
+  <li>「〜とは」の定義文、具体的な数字、手順、独自データのどれが含まれているかを数える</li>
+  <li>競合の同テーマページと並べて、情報の具体性を比較する</li>
+</ul>
+
+<p><strong>対策</strong></p>
+
+<p>各ページ冒頭に「〜とは〜です。」の定義文を1文置く、FAQを本文と構造化データの両方に設置する、自社しか持っていないデータ・手順・考え方を出す、が基本です。基礎的な設計は「<a href="/trillionbank/news/llmo-towa/">【2026年最新】LLMOとは？</a>」で詳しく解説しています。</p>
+
+<hr />
+
+<h2 id="エンティティ不整合aiが自社を正しく同定できていない">③エンティティ不整合：AIが自社を正しく同定できていない</h2>
+
+<p>エンティティとは、AIが「この会社名＝この事業・この所在地・このサービス」と結びつけて認識する単位のことです。社名の表記ゆれ（日本語・英語・略称の混在）、サイトやSNSごとに異なるNAP情報（名称・住所・電話番号）、構造化データの欠落があると、AIは自社を別々の存在として扱ったり、他社と混同したりします。この状態では、内容がどれだけ良くても正しく引用されません。</p>
+
+<p><strong>自分で確認する方法</strong></p>
+
+<ul>
+  <li>ChatGPTやPerplexityに「（自社名）はどんな会社ですか？」と直接聞き、事業内容・所在地・サービス名が正確に説明されるか確認する</li>
+  <li>自社サイト・Googleビジネスプロフィール・SNS・プレスリリースで、社名表記とNAP情報が一致しているか棚卸しする</li>
+  <li>自社サイトに <code class="language-plaintext highlighter-rouge">Organization</code> や <code class="language-plaintext highlighter-rouge">FAQPage</code> などの構造化データ（JSON-LD）が実装されているか、ソースを確認する</li>
+</ul>
+
+<p><strong>対策</strong></p>
+
+<p>表記の正式形を1つ決めて全チャネルで統一し、構造化データで社名・事業・所在地を機械可読な形で宣言します。なお、Google向けにはllms.txtやAI専用マークアップは不要だとGoogle自身が公式に説明しているため、まずは構造化データと表記統一という基礎を優先するのが堅実です。</p>
+
+<hr />
+
+<h2 id="第三者情報の不足aiは自社サイトだけを見ていない">④第三者情報の不足：AIは自社サイトだけを見ていない</h2>
+
+<p>見落とされやすいのがこの分類です。生成AIは、比較・推薦系の質問に答えるとき、自社サイトよりも比較サイト・レビューサイト・ニュースメディアといった第三者情報を引用する傾向があります。自社サイトをどれだけ磨いても、第三者チャネルに情報がなければ「客観的な裏付けのない選択肢」として候補から外れることがあります。</p>
+
+<p>対策の前に、<strong>AIが実際に何を引用しているか</strong>を見る必要があります。同じ質問群に対する回答の引用URLをドメイン別に分類すると、次のようなチャネル構成が見えてきます。</p>
+
+<div class="dmk">
+<div class="dmk-bar"><div class="dmk-dots"><span></span><span></span><span></span></div><div class="dmk-url">citation-channel-map — sample view</div></div>
+<div class="dmk-body">
+<div class="dmk-sec">Citation Channel Map — 「おすすめの〇〇は？」系20問でAIが引用したチャネルの内訳（架空）</div>
+<div class="dmk-share">
+<div class="row"><span>比較サイト</span><div class="bar"><i style="width:44%"></i></div><span class="pct">44%</span></div>
+<div class="row"><span>レビュー・口コミ</span><div class="bar"><i style="width:24%"></i></div><span class="pct">24%</span></div>
+<div class="row"><span>自社サイト（A社）</span><div class="bar"><i style="width:18%"></i></div><span class="pct">18%</span></div>
+<div class="row"><span>ニュース・PR</span><div class="bar"><i style="width:14%"></i></div><span class="pct">14%</span></div>
+</div>
+</div>
+<div class="dmk-note">※ デモ画面（架空データによるサンプル表示）。実際の製品画面・出力・数値とは異なります。</div>
+</div>
+
+<p>この例のように比較サイトとレビューが引用の7割近くを占めているなら、自社サイトの改善だけでは候補入りに限界がある、という診断になります。</p>
+
+<p><strong>自分で確認する方法</strong></p>
+
+<ul>
+  <li>比較・推薦系の質問（「おすすめの〇〇は？」「〇〇を比較して」）をAIに実行し、引用URLをすべて控える</li>
+  <li>引用URLのドメインを「比較サイト／レビュー／メディア／自社／競合サイト」に分類し、どこが引用の中心かを見る</li>
+  <li>引用されている比較サイト・レビューサイトに、自社の情報が掲載されているか（掲載内容が正確か）を確認する</li>
+</ul>
+
+<p><strong>対策</strong></p>
+
+<p>AIに引用されているチャネルを優先して、掲載・情報更新・レビュー獲得を進めます。やみくもに露出を増やすのではなく、「実際に引用されている場所」から埋めるのが費用対効果の高い順番です。ChatGPTがどのような情報を根拠にブランドを薦めるかの構造は「<a href="/trillionbank/news/chatgpt-recommend-brand/">ChatGPTに自社を薦めてもらうには</a>」で詳しく解説しています。</p>
+
+<hr />
+
+<h2 id="鮮度古い情報が参照されている">⑤鮮度：古い情報が参照されている</h2>
+
+<p>AIは学習時点の知識と、検索で取得した情報を組み合わせて回答します。旧料金・旧サービス名・移転前の住所などがWeb上に残っていると、AIはそれを現在の情報として引用することがあります。「引用はされるが内容が古くて間違っている」状態は、引用されないことと同じか、それ以上に商談の障害になります。</p>
+
+<p><strong>自分で確認する方法</strong></p>
+
+<ul>
+  <li>AIに「（自社サービス名）の料金・提供内容を教えて」と聞き、回答が現行の内容と一致するか確認する</li>
+  <li>回答が古い場合、引用URLを辿って「どのページの古い情報が参照されているか」を特定する</li>
+  <li>自社サイト内の旧ページ、外部の紹介記事、プレスリリースなどに旧情報が残っていないか棚卸しする</li>
+</ul>
+
+<p><strong>対策</strong></p>
+
+<p>自社サイト内の旧情報は更新または削除（リダイレクト）し、ページには最終更新日を明示します。外部サイトの古い掲載は、掲載元への更新依頼が基本です。すべては消せないため、少なくとも自社サイトが「最新の一次情報源」としてAIから参照される状態を作ることを優先します。</p>
+
+<hr />
+
+<h2 id="証拠不足主張に数字出典実績がない">⑥証拠不足：主張に数字・出典・実績がない</h2>
+
+<p>候補には入るのに最終的な推薦で競合に負ける場合、疑うべきはこの分類です。「高品質」「豊富な実績」といった形容詞だけの主張は、AIにとって引用・推薦の根拠になりません。プリンストン大学等のGEO研究（<a href="https://arxiv.org/abs/2311.09735">arXiv:2311.09735</a>）では、統計・引用・出典の追加といったコンテンツ最適化により、生成エンジンでのAI可視性が最大30〜40%向上することが定量的に実証されています。つまり「検証可能な証拠の量」は、引用されやすさに直結する変数です。</p>
+
+<p><strong>自分で確認する方法</strong></p>
+
+<ul>
+  <li>引用されたいページの主張を書き出し、それぞれに「数字・事例・出典」のいずれかが紐づいているか確認する</li>
+  <li>AIの回答で競合が推薦されたとき、その理由として挙げられている根拠（価格・実績・機能など）を控え、自社ページに同等の情報があるか照合する</li>
+</ul>
+
+<p><strong>対策</strong></p>
+
+<p>導入件数・数値実績・具体的な事例・第三者の出典など、検証可能な形の証拠をページに追加します。競合がどんな根拠で推薦されているかは、AI回答の本文にそのまま書かれていることが多く、負けている比較軸の特定に使えます。</p>
+
+<hr />
+
+<h2 id="まず現状を測るどの質問でなぜ外れているか">まず現状を測る：どの質問で、なぜ外れているか</h2>
+
+<p>6分類のどれに該当するかは、思い込みではなく測定で確定させるのが確実です。進め方は「測る→直す→再測定」の反復で、確認用の質問設計は「<a href="/trillionbank/news/prompt-collection/">AI検索最適化に使えるプロンプト集</a>」、測定の設計方法（出現割合での記録・証拠保存・競合Win/Loss）は「<a href="/trillionbank/news/ai-search-effect-measurement/">AI検索の効果測定方法</a>」で詳しく解説しています。質問数や競合数が少ないうちは、この記事の「自分で確認する方法」とスプレッドシートだけでも十分に始められます。</p>
+
+<p>株式会社Trillion BankのHackⅡ（AI Recommendation Intelligence）は、この切り分けを体系化したものです。AI検索で「出たか」ではなく、<strong>なぜ選ばれ、なぜ外れたかまで</strong>を、AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）の4つの測定フレームで扱います。現在のステータスは限定商用検証・導入相談受付中で、対応するAIサービスは契約時点で本番検証済みの範囲をご案内しています。なお、対策や測定によってAI検索での表示・問い合わせ・売上が保証されるわけではありません。詳細は<a href="/trillionbank/business/hack2/">HackⅡ製品ページ</a>をご覧ください。</p>
+
+<hr />
+
+<h2 id="よくある質問">よくある質問</h2>
+
+<p><strong>Q. 生成AIに引用されない主な原因は何ですか？</strong></p>
+
+<p>A. ①技術要因（クロール不可・noindex・レンダリング）、②情報不足（一次情報の欠如）、③エンティティ不整合（表記ゆれ・NAP不一致・構造化データ欠落）、④第三者情報の不足（比較サイト・レビュー・メディア）、⑤鮮度（古い情報）、⑥証拠不足（数字・出典のない主張）の6分類です。複数が同時に該当することも多く、①から順に確認するのが効率的です。</p>
+
+<p><strong>Q. SEOをやっていれば生成AIにも引用されますか？</strong></p>
+
+<p>A. 基礎は共通ですが、必ずしも一致しません。検索順位が高くても、エンティティ不整合や第三者情報の不足、証拠不足が原因で引用・推薦から外れるケースがあります。順位とは別に、引用・推薦の状態を確認する必要があります。</p>
+
+<p><strong>Q. 自分で確認するにはまず何をすればいいですか？</strong></p>
+
+<p>A. 見込み客が聞きそうな質問を10〜20問固定し、複数のAIに実行して、自社の言及有無と引用URLを記録することから始めてください。AI回答は変動するため、複数回実行して割合で見ること、回答本文と引用URLを保存しておくことが重要です。</p>
+
+<p><strong>Q. 第三者サイトの情報も影響しますか？</strong></p>
+
+<p>A. 影響します。比較・推薦系の質問では、比較サイトやレビューサイトが引用の中心になる傾向があり、自社サイトの改善だけでは候補入りに限界がある場合があります。AIが実際に引用しているチャネルを確認した上で、掲載先を決めてください。</p>
+
+<p><strong>Q. どのくらいで変化が出ますか？</strong></p>
+
+<p>A. 一律の期間は約束できません。AIの回答は確率的に変動するため、単発の確認ではなく、同じ質問セットでの定点観測により出現率・引用率のトレンドで捉えることが前提です。</p>
+
+<hr />
+
+<h2 id="まとめ">まとめ</h2>
+
+<p>生成AIに引用されない原因は、①技術要因、②情報不足、③エンティティ不整合、④第三者情報の不足、⑤鮮度、⑥証拠不足の6分類で切り分けられます。それぞれに自分で確認する方法があり、原因を特定してから対策に入ることで、施策の空振りを避けられます。</p>
+
+<p>測定の具体的な設計は「<a href="/trillionbank/news/ai-search-effect-measurement/">AI検索の効果測定方法</a>」、AIに推薦される側の構造は「<a href="/trillionbank/news/chatgpt-recommend-brand/">ChatGPTに自社を薦めてもらうには</a>」で、続けてご覧ください。</p>
+
+
+      
+
+      
+      <div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);">
+        <h3 style="font-size:.92rem;font-weight:700;margin-bottom:12px;">参考文献・一次情報</h3>
+        <ul style="font-size:.82rem;color:var(--muted,#6b7280);list-style:decimal;padding-left:20px;">
+          
+          <li style="margin-bottom:6px;"><a href="https://developers.google.com/search/docs/fundamentals/ai-optimization-guide" target="_blank" rel="noopener">Google — Google検索の生成AI機能向け最適化ガイド</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="" target="_blank" rel="noopener">Gartner — By 2026, traditional search engine volume will drop 25%</a></li>
+          
+          <li style="margin-bottom:6px;"><a href="https://arxiv.org/abs/2311.09735" target="_blank" rel="noopener">Generative Engine Optimization (GEO) — Princeton/Georgia Tech/IIT Delhi/Allen AI</a></li>
+          
+        </ul>
+      </div>
+      
+
+      <div style="margin-top:48px;padding:20px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);font-size:.78rem;color:var(--muted,#6b7280);">
+        <p style="margin:0;">本記事は株式会社Trillion Bankが独自に作成したものです。記事内容は公開時点の情報に基づいており、最新の状況と異なる場合があります。記載内容は情報提供を目的としたものであり、特定のサービスの利用を推奨するものではありません。</p>
+      </div>
+
+      
+
+
+<aside class="author-box" aria-label="この記事の著者">
+  
+  <img src="/images/ceo-kanta.webp" alt="井上 幹太" width="72" height="72" loading="lazy">
+  <div class="ab-body">
+    <span class="ab-label">AUTHOR ── この記事の著者</span>
+    <p class="ab-name">井上 幹太<span class="ab-role">株式会社Trillion Bank 代表取締役</span></p>
+    <p class="ab-bio">AI検索計測「HackⅡ」とAIコンテンツ利用管理「Adctor / Pay per Crawl」の研究開発・事業化に取り組む。令和の虎 Tiger Funding 累計1,600万円・2連続完全ALL。ソフトバンクアカデミア17期／J-StarX第1期／ZEN大学1期特別奨学生。</p>
+    <a class="ab-link" href="/trillionbank/ceo/">プロフィールと実績を見る <span aria-hidden="true">→</span></a>
+  </div>
+  
+</aside>
+
+
+      <div class="article-cta" style="margin-top:60px;padding-top:40px;border-top:2px solid var(--blue-600)">
+        <h2 style="font-size:clamp(1.2rem,2.4vw,1.55rem);font-weight:700;line-height:1.5;margin-bottom:12px">この記事のテーマを、自社・競合で実際に確認する</h2>
+        <p style="font-size:.92rem;color:var(--muted);max-width:44em;margin-bottom:24px">HackⅡは、AI回答内での候補入り・競合との勝敗・引用された情報源を証拠付きで測定し、次に改善すべき情報を特定するAI Recommendation Intelligenceです。詳細資料・実際の画面は30分のオンライン面談でご説明します。</p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+          <a class="btn btn-primary" href="/trillionbank/meeting/?type=company" data-event="meeting_form_open" data-service="hack2_company" data-cta="article_footer">事業会社向け｜HackⅡの詳細説明を予約する <span class="a">→</span></a>
+          <a class="btn btn-line" href="/trillionbank/meeting/?type=agency" data-event="meeting_form_open" data-service="hack2_agency" data-cta="article_footer">販売代理店向け｜共同提案を相談する <span class="a">→</span></a>
+        </div>
+        <p style="margin-top:16px;font-size:.78rem;color:var(--muted)"><a href="/trillionbank/business/hack2/" style="color:var(--blue-600);border-bottom:1px solid var(--blue-600)">HackⅡの測定の考え方を見る</a>　※ 成果（AIでの表示・問い合わせ・売上）を保証するものではありません。</p>
+      </div>
+
+      
+
+
+
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+
+
+<div style="margin-top:56px;padding-top:34px;border-top:1px solid var(--border,#DDE3EC)">
+  <h2 style="font-family:var(--mono);font-size:.78rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-bottom:18px">関連記事</h2>
+  <div class="nlist">
+    
+    <a class="nitem" href="/trillionbank/news/google-ai-optimization-guide-kaisetsu/"><span class="date">2026.08.14</span><span class="ncat">コラム</span><span class="nt">AI Overview対策｜Google公式『生成AI向け最適化ガイド』の企業向け解説【2026年9月】</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-real-estate/"><span class="date">2026.08.14</span><span class="ncat">コラム</span><span class="nt">不動産会社のAI検索対策｜ポータル依存から「AIに推薦される」へ</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-professional-firms/"><span class="date">2026.08.14</span><span class="ncat">コラム</span><span class="nt">士業・コンサルティング会社のAI検索対策｜専門家選びでAIに名前が挙がる方法</span><span class="go">→</span></a>
+    
+    <a class="nitem" href="/trillionbank/news/ai-search-competitor-wins/"><span class="date">2026.08.14</span><span class="ncat">コラム</span><span class="nt">AI検索で競合ばかり推薦される理由と逆転の手順【2026年版】</span><span class="go">→</span></a>
+    
+  </div>
+</div>
+
+
+
+      <div style="margin-top:48px;padding-top:30px;border-top:1px solid var(--border,#DDE3EC)">
+        <a class="btn btn-line" href="/trillionbank/media/">← お知らせ一覧へ</a>
+      </div>
+    </article>
+  </div>
+</section>
+<div class="glow-rails" id="glowRails" aria-hidden="true">
+  <div class="glow-line l"></div>
+  <div class="glow-line r"></div>
+</div>
+<footer class="tbf">
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <a class="brand" href="/" aria-label="Trillion Bank ホーム">
+          <img src="/images/hero/tb-logo-color.webp" alt="TRILLION BANK" width="160" height="40" style="height:32px;width:auto;filter:brightness(10)">
+        </a>
+        <p class="addr">株式会社Trillion Bank（トリリオンバンク）<br>〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ<br><span style="opacity:.7">※ 当社は銀行業を営む会社ではありません。</span></p>
+      </div>
+      <div class="fcol">
+        <h5>BUSINESS</h5>
+        <a href="/trillionbank/business/">事業概要</a>
+        <a href="/trillionbank/business/hack2/">HackⅡ</a>
+        <a href="/trillionbank/business/pay-per-crawl/">Pay per Crawl</a>
+      </div>
+      <div class="fcol">
+        <h5>COMPANY</h5>
+        <a href="/trillionbank/mission/">Mission</a>
+        <a href="/trillionbank/company/">会社概要</a>
+        <a href="/trillionbank/media/">Media / News</a>
+        <a href="/trillionbank/insights/">Insights</a>
+      </div>
+      <div class="fcol">
+        <h5>CONTACT</h5>
+        <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a>
+        <a href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="footer" data-cta="footer_contact_form">お問い合わせフォーム</a>
+        <a href="/trillionbank/contact/">お問い合わせ窓口</a>
+      </div>
+    </div>
+    <div class="bottom">
+      <span>© 2026 Trillion Bank</span>
+      <span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a> ／ <a href="/trillionbank/insights/editorial-policy/">編集方針</a></span>
+    </div>
+  </div>
+</footer>
+<script>
+(function(){
+  var h=document.getElementById('tbh'),last=0;
+  var rails=document.getElementById('glowRails');
+  var railGate=Math.min(innerHeight*.3,280);
+  addEventListener('scroll',function(){var y=scrollY;h.classList.toggle('solid',y>8);if(y>last&&y>140){h.classList.add('hide')}else{h.classList.remove('hide')}last=y;
+    if(rails)rails.classList.toggle('active',y>railGate);},{passive:true});
+  var b=document.getElementById('tbBurger');
+  if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+  document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});
+  // mega menu keyboard toggle
+  document.querySelectorAll('.mega-t').forEach(function(btn){
+    var panel=document.getElementById(btn.getAttribute('aria-controls'));
+    if(!panel)return;
+    btn.addEventListener('click',function(){var open=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',!open)});
+    btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();btn.click();if(btn.getAttribute('aria-expanded')==='true'){var first=panel.querySelector('a');if(first)first.focus()}}
+      if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+    panel.addEventListener('keydown',function(e){if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+  });
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+  document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(i%3)*70+'ms';io.observe(el)});
+  // GA4 tracking for CTAs
+  document.querySelectorAll('[data-event]').forEach(function(el){
+    el.addEventListener('click', function(){
+      if(typeof gtag==='function'){
+        gtag('event', el.dataset.event, {
+          source_page: location.pathname,
+          service: el.dataset.service || '',
+          inquiry_type: el.dataset.inquiry || '',
+          cta_label: el.textContent.trim()
+        });
+      }
+    });
+  });
+  // AI referral attribution for HackⅡ reports.
+  (function(){
+    var definitions=[
+      {source:'ChatGPT',hosts:['chatgpt.com','openai.com'],tokens:['chatgpt','openai']},
+      {source:'Perplexity',hosts:['perplexity.ai'],tokens:['perplexity']},
+      {source:'Claude',hosts:['claude.ai','anthropic.com'],tokens:['claude','anthropic']},
+      {source:'Gemini',hosts:['gemini.google.com'],tokens:['gemini','bard']},
+      {source:'Google AI',hosts:['google.com','google.co.jp'],tokens:['ai_overview','ai-mode','aimode','google_ai']},
+      {source:'Microsoft Copilot',hosts:['copilot.microsoft.com','bing.com'],tokens:['copilot','bing_ai']},
+      {source:'You.com',hosts:['you.com'],tokens:['you.com','youchat']},
+      {source:'Poe',hosts:['poe.com'],tokens:['poe']},
+      {source:'Phind',hosts:['phind.com'],tokens:['phind']}
+    ];
+    function normalizedHost(value){
+      try{return new URL(value).hostname.replace(/^www\./,'').toLowerCase()}catch(e){return ''}
+    }
+    function tokenMatch(text,tokens){
+      text=(text||'').toLowerCase();
+      return tokens.some(function(token){return text.indexOf(token)!==-1});
+    }
+    function findSource(referrer,paramsText){
+      var host=normalizedHost(referrer);
+      for(var i=0;i<definitions.length;i++){
+        var def=definitions[i];
+        var matchedHost=def.hosts.some(function(item){return host===item||host.endsWith('.'+item)});
+        if(matchedHost&&host.indexOf('google.')===-1&&host!=='bing.com')return {name:def.source,type:'referrer',host:host};
+        if((matchedHost||!host)&&tokenMatch(paramsText,def.tokens))return {name:def.source,type:matchedHost?'referrer_param':'utm',host:host};
+      }
+      return null;
+    }
+    function sendEvent(name,payload){
+      if(typeof gtag==='function')gtag('event',name,payload);
+    }
+    var params=new URLSearchParams(location.search);
+    var paramsText=[
+      params.get('utm_source'),
+      params.get('utm_medium'),
+      params.get('utm_campaign'),
+      params.get('ref'),
+      params.get('source'),
+      params.get('ai_source')
+    ].filter(Boolean).join(' ');
+    var detected=findSource(document.referrer,paramsText);
+    var stored=null;
+    if(detected){
+      stored={
+        ai_source:detected.name,
+        ai_referrer_host:detected.host||'direct_param',
+        ai_source_type:detected.type,
+        ai_landing_path:location.pathname,
+        traffic_channel:'ai_search'
+      };
+      try{sessionStorage.setItem('tb_ai_referral',JSON.stringify(stored))}catch(e){}
+      sendEvent('ai_referral_visit',stored);
+    }else{
+      try{stored=JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){stored=null}
+    }
+    document.querySelectorAll('a[href*="/trillionbank/contact/"],a[href*="/trillionbank/meeting/"]').forEach(function(link){
+      link.addEventListener('click',function(){
+        var attribution=stored;
+        try{attribution=attribution||JSON.parse(sessionStorage.getItem('tb_ai_referral')||'null')}catch(e){}
+        if(!attribution)return;
+        sendEvent('ai_assisted_cta_click',{
+          ai_source:attribution.ai_source,
+          ai_referrer_host:attribution.ai_referrer_host,
+          ai_landing_path:attribution.ai_landing_path,
+          cta_label:(link.dataset.cta||link.textContent||'').trim(),
+          destination:link.href,
+          source_page:location.pathname
+        });
+      });
+    });
+  })();
+  // tabs (WAI-ARIA Tabs pattern: arrow key navigation + roving tabindex)
+  document.querySelectorAll('[data-tabs]').forEach(function(g){
+    var tabs=g.querySelectorAll('[role="tab"]'),panels=g.querySelectorAll('[role="tabpanel"]');
+    function activate(idx){
+      tabs.forEach(function(x){x.setAttribute('aria-selected','false');x.setAttribute('tabindex','-1')});
+      tabs[idx].setAttribute('aria-selected','true');tabs[idx].setAttribute('tabindex','0');tabs[idx].focus();
+      panels.forEach(function(p){p.classList.remove('on')});if(panels[idx])panels[idx].classList.add('on');
+    }
+    tabs.forEach(function(t,i){
+      t.addEventListener('click',function(){activate(i)});
+      t.addEventListener('keydown',function(e){
+        var k=e.key,n=tabs.length;
+        if(k==='ArrowRight'){e.preventDefault();activate((i+1)%n)}
+        else if(k==='ArrowLeft'){e.preventDefault();activate((i-1+n)%n)}
+        else if(k==='Home'){e.preventDefault();activate(0)}
+        else if(k==='End'){e.preventDefault();activate(n-1)}
+      });
+    });
+  });
+  /* page transition — fade out on navigate, fade in on load */
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a');
+    var raw=a?a.getAttribute('href')||'':'';
+    if(!a||!a.href||a.target==='_blank'||raw.startsWith('#')||a.href.startsWith('mailto:')||a.href.startsWith('tel:'))return;
+    if(a.hostname!==location.hostname)return;
+    if(a.pathname===location.pathname&&a.hash)return;
+    e.preventDefault();
+    document.body.classList.add('page-leaving');
+    setTimeout(function(){location.href=a.href},300);
+  });
+  window.addEventListener('pageshow',function(e){
+    document.body.classList.remove('page-leaving');
+  });
+})();
+</script>
+
+</body>
+</html>

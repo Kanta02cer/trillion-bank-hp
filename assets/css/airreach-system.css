@@ -1,0 +1,184 @@
+/**
+ * AirReach system tokens — white / black / blue accent.
+ * Shared by diagnose app, Studio, Platform.
+ */
+:root {
+  --ar-ink: #0f172a;
+  --ar-muted: #64748b;
+  --ar-line: #e2e8f0;
+  --ar-soft: #f8fafc;
+  --ar-accent: #2563eb;
+  --ar-accent-deep: #1d4ed8;
+  --ar-accent-soft: #eff6ff;
+  --ar-accent-line: #bfdbfe;
+  --ar-white: #ffffff;
+  --ar-black: #0f172a;
+  /* Semantic states stay readable but stay in the B/W + blue family */
+  --ar-good: #1d4ed8;
+  --ar-good-bg: #eff6ff;
+  --ar-warn: #475569;
+  --ar-warn-bg: #f8fafc;
+  --ar-bad: #0f172a;
+  --ar-bad-bg: #f1f5f9;
+  --ar-obs: #1d4ed8;
+  --ar-obs-bg: #eff6ff;
+  --ar-est: #475569;
+  --ar-est-bg: #f8fafc;
+  --ar-inf: #2563eb;
+  --ar-inf-bg: #eff6ff;
+
+  --ars-blue: var(--ar-accent);
+  --ars-ink: var(--ar-ink);
+  --ars-muted: var(--ar-muted);
+  --ars-line: var(--ar-line);
+  --ars-bg: var(--ar-soft);
+  --ars-soft: var(--ar-accent-soft);
+  --ars-good: var(--ar-good);
+  --ars-warn: var(--ar-warn);
+  --ars-bad: var(--ar-bad);
+
+  --arp-blue: var(--ar-accent);
+  --arp-ink: var(--ar-ink);
+  --arp-muted: var(--ar-muted);
+  --arp-line: var(--ar-line);
+  --arp-bg: var(--ar-soft);
+  --arp-soft: var(--ar-accent-soft);
+  --arp-good: var(--ar-good);
+  --arp-warn: var(--ar-warn);
+  --arp-purple: var(--ar-accent-deep);
+}
+
+/* Metric card: number + plain-language meaning */
+.ar-metric-legend {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--ar-accent-line);
+  border-radius: 10px;
+  background: var(--ar-accent-soft);
+  font-size: .9rem;
+  line-height: 1.55;
+  color: var(--ar-ink);
+}
+.ar-metric-legend strong { color: var(--ar-accent-deep); }
+.ar-metric-legend span { color: var(--ar-muted); font-weight: 600; }
+
+.ar-stepn .meaning {
+  display: block !important;
+  margin-top: 6px;
+  font-size: .9rem !important;
+  font-weight: 600 !important;
+  line-height: 1.45 !important;
+  color: #334155 !important;
+}
+.ar-stepn .sub {
+  display: block !important;
+  margin-top: 2px;
+  font-size: .8rem !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  color: var(--ar-muted) !important;
+}
+.ar-stepn .val-wrap { min-width: 0; }
+.ar-stepn .what-is {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--ar-accent-deep);
+  background: var(--ar-white);
+  border: 1px solid var(--ar-accent-line);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.ar-factor-score-unit {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--ar-muted);
+  margin-left: 2px;
+}
+.ar-factor-plain {
+  margin: 0 0 8px;
+  font-size: .88rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #334155;
+}
+.ar-conf-plain {
+  margin: 4px 0 0;
+  font-size: .8rem;
+  font-weight: 500;
+  color: var(--ar-muted);
+  line-height: 1.4;
+}
+
+/* Force B/W + blue semantic surfaces */
+.ar-badge-e.is-obs,
+.ars-chip.good,
+.arp-source.official,
+.arp-source.observed,
+.arp-chip-official {
+  background: var(--ar-obs-bg) !important;
+  border-color: var(--ar-accent-line) !important;
+  color: var(--ar-obs) !important;
+}
+.ar-badge-e.is-est,
+.ars-chip.warn,
+.arp-source.inferred,
+.arp-chip {
+  background: var(--ar-est-bg) !important;
+  border-color: var(--ar-line) !important;
+  color: var(--ar-est) !important;
+}
+.ar-badge-e.is-inf,
+.arp-source.public {
+  background: var(--ar-inf-bg) !important;
+  border-color: var(--ar-accent-line) !important;
+  color: var(--ar-inf) !important;
+}
+.ar-badge-e.is-user,
+.arp-source.action {
+  background: var(--ar-soft) !important;
+  border-color: var(--ar-line) !important;
+  color: var(--ar-ink) !important;
+}
+.ar-factor-card.is-good,
+.ar-expert-col.is-good,
+.ars-list.good li {
+  border-color: var(--ar-accent-line) !important;
+  background: #fff !important;
+}
+.ar-factor-card.is-warn {
+  border-color: #cbd5e1 !important;
+  background: #fff !important;
+}
+.ar-factor-card.is-bad,
+.ar-expert-col.is-bad,
+.ars-list.bad li,
+.ar-gap-list li {
+  border-color: #94a3b8 !important;
+  background: #fff !important;
+  color: var(--ar-ink) !important;
+}
+.ar-factor-miss li {
+  color: var(--ar-ink) !important;
+  background: var(--ar-soft) !important;
+}
+.ar-factor-miss li.is-ok {
+  color: var(--ar-accent-deep) !important;
+  background: var(--ar-accent-soft) !important;
+}
+.ar-consent-card.is-on {
+  border-color: var(--ar-accent) !important;
+  background: var(--ar-accent-soft) !important;
+  color: var(--ar-ink) !important;
+}
+.ar-consent-card input { accent-color: var(--ar-accent) !important; }
+.ar-check-list .mark.ok { background: var(--ar-accent) !important; color: #fff !important; }
+.ar-check-list .mark.ng { background: #334155 !important; color: #fff !important; }
+.ars-note.warn { background: var(--ar-soft) !important; border-color: var(--ar-line) !important; color: var(--ar-ink) !important; }
+.ars-note.good { background: var(--ar-accent-soft) !important; border-color: var(--ar-accent-line) !important; color: var(--ar-accent-deep) !important; }
+.arp-source.observed { background: var(--ar-accent-soft) !important; color: var(--ar-accent-deep) !important; }

@@ -1,0 +1,56 @@
+# お問い合わせ・商談予約 — トリリオンバンク
+
+> 株式会社トリリオンバンクのお問い合わせ窓口です。通常のお問い合わせはフォームを優先し、メールとオンライン商談も目的に応じて選択できます。
+> 正規URL：https://trillion-bank.jp/trillionbank/contact/
+> 最終更新：2026-08-30
+
+---
+
+## お問い合わせフォーム
+
+通常のお問い合わせ、資料送付、採用、業務提携、取材のご相談は、form.runの問い合わせフォームから受け付けています。
+
+- **フォーム**：https://trillion-bank.jp/trillionbank/contact/#form
+- **フォームID**：@ka-inoue-rI22cTKYN9W7iffH1qpz
+- **メール選択肢**：https://trillion-bank.jp/trillionbank/contact/#email
+- **商談予約**：https://trillion-bank.jp/trillionbank/meeting/
+
+---
+
+## 対象カテゴリ
+
+| カテゴリ | 対象 |
+|---------|-----|
+| **HackⅡの詳細説明** | AI検索対策、AEO/GEO/SEO、llms.txt、JSON-LD、AI流入計測を相談したい企業 |
+| **販売代理店・共同提案相談** | 既存顧客へAI検索支援を提案したい販売代理店・運用パートナー |
+| **Pay per Crawl / Adctor PoC相談** | AIクローリング最適化・コンテンツ利用管理を検討している企業 |
+| **Web・システム開発相談** | コーポレートサイト、LP、システム開発の依頼 |
+| **取材・講演・採用** | メディア、講演、採用、カジュアル面談 |
+
+---
+
+## よくある質問
+
+**Q: 問い合わせはどこから送ればよいですか？**
+A: 通常のお問い合わせは https://trillion-bank.jp/trillionbank/contact/#form のフォームを優先しています。メールをご希望の場合は同じページ内のメール欄をご利用ください。
+
+**Q: HackⅡの説明を受けたい場合は？**
+A: 30分のオンライン面談を https://trillion-bank.jp/trillionbank/meeting/ から予約できます。事業会社向け、販売代理店向け、Pay per Crawl相談など目的別に選択できます。
+
+**Q: AI検索での表示や問い合わせは保証されますか？**
+A: 保証しません。HackⅡではAI回答、引用元、競合差、AI流入を同一条件で測定し、AEO/GEO/SEOの改善施策と再計測まで支援します。
+
+---
+
+## 関連キーワード
+
+トリリオンバンク 問い合わせ, HackⅡ 商談予約, AI検索対策 相談, AEO GEO SEO 相談, llms.txt JSON-LD 実装, AI流入 計測, 販売代理店 AI検索支援, Pay per Crawl PoC
+
+---
+
+## 関連ページ
+
+- [お問い合わせフォーム](https://trillion-bank.jp/trillionbank/contact/#form)
+- [商談予約](https://trillion-bank.jp/trillionbank/meeting/)
+- [HackⅡ事業ページ](https://trillion-bank.jp/trillionbank/business/hack2/)
+- [会社概要](https://trillion-bank.jp/trillionbank/company/)

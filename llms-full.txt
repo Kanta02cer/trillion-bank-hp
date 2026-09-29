@@ -1,0 +1,107 @@
+# Trillion Bank public reference
+
+Last reviewed: 2026-09-05
+Canonical website: https://trillion-bank.jp/
+
+## Company
+
+株式会社Trillion Bank is a Tokyo-based technology company. It works on how corporate and public information is described, compared, cited and used in AI-search and AI-agent environments. It is not a bank or financial institution.
+
+Official company information: https://trillion-bank.jp/trillionbank/company/
+
+## HackⅡ - current practical product
+
+Status: limited commercial validation / implementation consultation.
+
+HackⅡ can store and share the agreed question and measurement conditions, AI answer text, cited URLs, company and competitor mentions, measurement time and history, CSV or dashboard outputs according to the engagement, and analyst review and improvement-priority support.
+
+Operating model:
+1. Observe - design questions and store answers, citations and conditions.
+2. Diagnose - review competitor-only questions, source patterns and possible information gaps.
+3. Act - agree who will update which official or third-party information.
+4. Prove - remeasure using the same methodology and record observed changes.
+
+Limitations:
+- HackⅡ does not guarantee inclusion, ranking, traffic, leads, bookings or revenue.
+- AI answers can vary by service, model, date, region, account and context.
+- The service does not reproduce every AI surface or infer a model's internal reasoning.
+- AI-crawler control, payment and revenue distribution are not HackⅡ functions.
+
+Product page: https://trillion-bank.jp/trillionbank/business/hack2/
+
+## Adctor - research and PoC
+
+Adctor explores how content use by AI, RAG, MCP and agents can be connected to resources and rights holders, buyer identity, license terms, credentials, usage events, evidence strength and future billing workflows.
+
+Adctor is not a completed commercial clearing or autonomous payment system. PoC scope is defined case by case. It does not claim to identify all unknown bots or observe all external AI training/citation activity.
+
+Program page: https://trillion-bank.jp/trillionbank/business/pay-per-crawl/
+
+## Editorial principles
+
+- Use current primary sources for external technical claims.
+- Separate facts, customer-supplied information, estimates, interpretation and roadmap.
+- Show author, reviewer and review dates on authority articles.
+- Structured data must match visible content.
+- Correct material errors across HTML, metadata and machine-readable files together.
+
+## Reviewed insights
+
+- Terminology (SEO/AEO/GEO/AIO/LLMO): https://trillion-bank.jp/trillionbank/news/seo-aeo-geo-aio-llmo-difference/
+- Terminology (LLMO/GEO/AEO deep dive): https://trillion-bank.jp/trillionbank/news/llmo-geo-aeo/
+- What is LLMO: https://trillion-bank.jp/trillionbank/news/llmo-towa/
+- Measurement methodology: https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/
+- Citation-rate calculation: https://trillion-bank.jp/trillionbank/news/ai-citation-rate-calculation/
+- Monitoring-tool RFP checklist: https://trillion-bank.jp/trillionbank/news/ai-search-monitoring-rfp-checklist/
+- Why AI answers do not cite you: https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/
+- Prompts to check your own citations: https://trillion-bank.jp/trillionbank/news/prompt-collection/
+- Latest AI models and AI search: https://trillion-bank.jp/trillionbank/news/latest-ai-models/
+- How to choose AEO measurement tools: https://trillion-bank.jp/trillionbank/news/aeo-tools/
+- Data-use models (Pay per Crawl vs Pay per Use): https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/
+- What is Pay per Crawl: https://trillion-bank.jp/trillionbank/news/pay-per-crawl-towa/
+- What is llms.txt: https://trillion-bank.jp/trillionbank/news/llms-txt-guide/
+- AI crawler list and robots.txt control: https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/
+- Machine-readable E-E-A-T with JSON-LD: https://trillion-bank.jp/trillionbank/news/json-ld-eeat-ai-search/
+- Comparing AI-search measurement tools and vendors: https://trillion-bank.jp/trillionbank/news/ai-search-tools-vendors/
+- AI search statistics roundup: https://trillion-bank.jp/trillionbank/news/ai-search-statistics/
+- ChatGPT search optimization: https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/
+- Google AI Overviews optimization: https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/
+
+## Contact
+
+Business consultation: https://trillion-bank.jp/trillionbank/meeting/
+General inquiries: https://trillion-bank.jp/trillionbank/contact/
+
+The HTML pages are canonical. This file is an optional discovery index, not a ranking signal or a guarantee.
+
+## Additional SME / Partner guides
+- https://trillion-bank.jp/trillionbank/news/partner-ad-agency-pitch/
+- https://trillion-bank.jp/trillionbank/news/partner-co-sell-process/
+- https://trillion-bank.jp/trillionbank/news/partner-faq-scope-roles/
+- https://trillion-bank.jp/trillionbank/news/partner-first-client-playbook/
+- https://trillion-bank.jp/trillionbank/news/partner-meeting-prep-checklist/
+- https://trillion-bank.jp/trillionbank/news/partner-not-becoming-your-agent/
+- https://trillion-bank.jp/trillionbank/news/partner-program-overview/
+- https://trillion-bank.jp/trillionbank/news/partner-seo-firm-add-on/
+- https://trillion-bank.jp/trillionbank/news/partner-web-production-add-on/
+- https://trillion-bank.jp/trillionbank/news/partner-who-fits/
+- https://trillion-bank.jp/trillionbank/news/sme-ai-search-budget-justification/
+- https://trillion-bank.jp/trillionbank/news/sme-ai-search-common-first-mistakes/
+- https://trillion-bank.jp/trillionbank/news/sme-ai-search-first-30-days/
+- https://trillion-bank.jp/trillionbank/news/sme-ai-seo-myths/
+- https://trillion-bank.jp/trillionbank/news/sme-board-proposal-template/
+- https://trillion-bank.jp/trillionbank/news/sme-btob-services-ai-recommend/
+- https://trillion-bank.jp/trillionbank/news/sme-chatgpt-not-mentioned/
+- https://trillion-bank.jp/trillionbank/news/sme-contact-ready-checklist/
+- https://trillion-bank.jp/trillionbank/news/sme-content-inventory-for-ai/
+- https://trillion-bank.jp/trillionbank/news/sme-education-school-ai-search/
+- https://trillion-bank.jp/trillionbank/news/sme-entity-consistency-checklist/
+- https://trillion-bank.jp/trillionbank/news/sme-faq-schema-starter/
+- https://trillion-bank.jp/trillionbank/news/sme-franchise-hq-ai-search/
+- https://trillion-bank.jp/trillionbank/news/sme-local-brand-ai-and-maps/
+- https://trillion-bank.jp/trillionbank/news/sme-manufacturing-ai-search/
+- https://trillion-bank.jp/trillionbank/news/sme-measure-before-tools/
+- https://trillion-bank.jp/trillionbank/news/sme-owner-ceo-ai-search-decision/
+- https://trillion-bank.jp/trillionbank/news/sme-seo-vendor-questions/
+- https://trillion-bank.jp/trillionbank/news/sme-vs-competitor-ai-visibility/
+- https://trillion-bank.jp/trillionbank/news/sme-when-not-to-outsource/
