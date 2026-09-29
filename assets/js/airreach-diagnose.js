@@ -1,7 +1,7 @@
 /**
  * AirReach — client-side AI search readiness diagnosis (no API keys).
  * Scores public HTML / llms.txt / robots signals only.
- * Pages are fetched directly, or via the same-origin fetch API (/api/airreach/fetch/) when the browser is blocked.
+ * Pages are always fetched via the same-origin fetch API (/api/airreach/fetch/); the browser never contacts the target site.
  * No Cloudflare / third-party proxy.
  * Does NOT claim live ChatGPT / Gemini / Claude / AI Overviews citation rates.
  *
@@ -66,18 +66,14 @@
   function fetchText(url, timeoutMs, via, requestedUrl) {
     var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, timeoutMs || 15000);
-    var opts = { signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', mode: 'cors' };
+    // same-origin API only. Never sends cookies / credentials to the target site (the browser never contacts it).
+    var opts = { signal: ctrl ? ctrl.signal : undefined, credentials: 'same-origin', cache: 'no-store' };
     return fetch(url, opts).then(function (res) {
       var len = res.headers && res.headers.get ? res.headers.get('content-length') : null;
       if (len && parseInt(len, 10) > MAX_BYTES) throw new Error('応答が大きすぎます');
       var finalUrl = requestedUrl;
-      if (via === 'direct') {
-        finalUrl = res.url || requestedUrl;
-      } else if (via === 'first_party_proxy') {
-        // Needs Access-Control-Expose-Headers on the Worker; falls back to the requested URL.
-        var h = res.headers && res.headers.get ? res.headers.get(FINAL_URL_HEADER) : null;
-        if (h) finalUrl = h;
-      }
+      var h = res.headers && res.headers.get ? res.headers.get(FINAL_URL_HEADER) : null;
+      if (h) finalUrl = h;
       // 5xx and non-404/410 4xx are failures (a 400/403 body is not the page). 404/410 stay "fetched but absent".
       if (res.status >= 500 || (res.status >= 400 && res.status !== 404 && res.status !== 410)) throw new Error('HTTP ' + res.status);
       return res.text().then(function (text) {
@@ -91,18 +87,17 @@
     });
   }
 
+  /**
+   * Target pages (HTML / llms.txt / robots.txt) are always fetched through the same-origin API.
+   * The browser never fetches the target site directly (no CORS attempts, no third-party proxy).
+   */
   function fetchWithFallbacks(targetUrl, allowProxy) {
-    return fetchText(targetUrl, 10000, 'direct', targetUrl).catch(function (directErr) {
-      if (!allowProxy) {
-        throw new Error('このサイトはブラウザから直接取得できません。サイト情報の取得（取得代行）への同意にチェックするか、フォームからURLを送ってください。');
-      }
-      var chain = Promise.reject(directErr);
-      PROXY_BUILDERS.forEach(function (p) {
-        chain = chain.catch(function () { return fetchText(p.build(targetUrl), 16000, p.via, targetUrl); });
-      });
-      return chain.catch(function () {
-        throw new Error('ページを取得できませんでした。サイト側の制限か、取得代行の一時的な不通の可能性があります。フォームからご相談ください。');
-      });
+    if (!allowProxy) {
+      return Promise.reject(new Error('サイト情報の取得（取得代行）への同意が必要です。同意にチェックして診断してください。'));
+    }
+    var p = PROXY_BUILDERS[0];
+    return fetchText(p.build(targetUrl), 16000, p.via, targetUrl).catch(function () {
+      throw new Error('ページを取得できませんでした。サイト側の制限か、取得代行の一時的な不通の可能性があります。フォームからご相談ください。');
     });
   }
 

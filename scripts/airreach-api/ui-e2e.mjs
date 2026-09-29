@@ -203,6 +203,9 @@ try {
   await mock('/__mock/mode', { mode: 'ok' });
 
   // ---- ネットワーク: Cloudflare / allorigins への通信 0 件 -------------------------------------------
+  const targetHost = new URL(SITE_URL).host;
+  const direct = allRequests.filter((r) => { try { return new URL(r.url).host === targetHost; } catch { return false; } });
+  expect('network: browser never fetches the target site directly (all via /api/airreach/fetch/)', direct.length === 0, JSON.stringify(direct.slice(0, 3).map((r) => r.url)));
   const external = allRequests.filter((r) => /workers\.dev|allorigins/i.test(r.url));
   expect('network: zero requests to workers.dev / allorigins', external.length === 0, JSON.stringify(external.slice(0, 3)));
   const apiHosts = new Set(allRequests.filter((r) => r.url.includes('/api/airreach/')).map((r) => new URL(r.url).host));
