@@ -1554,7 +1554,7 @@ document.addEventListener('DOMContentLoaded', function () {
       tb.innerHTML = '';
       report.brand.sources.forEach(function (s) {
         var tr = document.createElement('tr');
-        tr.innerHTML = '<td>' + s.name + '</td><td><b>' + s.share + '%</b></td><td>' + (s.used ? '使われやすい' : '弱い／未充足') + '</td>';
+        tr.innerHTML = '<td>' + s.name + '</td><td><b>' + s.share + '%</b></td><td>' + (s.used ? '使われやすい' : '使われにくい') + '</td>';
         tb.appendChild(tr);
       });
       $('brand-cite-note').textContent = report.brand.citationNote || '';
@@ -1937,14 +1937,17 @@ document.addEventListener('DOMContentLoaded', function () {
       checks.forEach(function (c) {
         var state = c.state || (c.ok ? 'ok' : 'ng');
         var mark = state === 'ok' ? '✓' : (state === 'ng' ? '!' : '?');
-        var label = String(c.label || '').replace(/がある$/, '');
+        var hasCrit = !!(window.AirReach && AirReach.checkCriteria);
+        var label = (hasCrit && state !== 'unknown')
+          ? AirReach.checkCriteria(c.label, state === 'ok')
+          : String(c.label || '').replace(/がある$/, '');
         var ev = c.evidence || {};
         var href = state !== 'unknown' && ev.finalUrl ? ev.finalUrl + (ev.anchor ? '#' + ev.anchor : '') : '';
         var li = document.createElement('li');
         li.className = 'ar-dchk is-' + state;
         li.innerHTML =
           '<span class="ar-dchk-mark" aria-hidden="true">' + mark + '</span>' +
-          '<span class="ar-dchk-lab">' + tipAttr(label) + '<span class="ar-dchk-state">' + (state === 'ok' ? 'あり' : (state === 'ng' ? 'なし' : '未確認')) + '</span></span>' +
+          '<span class="ar-dchk-lab">' + tipAttr(label) + (hasCrit ? (state === 'unknown' ? '<span class="ar-dchk-state">未確認</span>' : '') : '<span class="ar-dchk-state">' + (state === 'ok' ? 'あり' : (state === 'ng' ? 'なし' : '未確認')) + '</span>') + '</span>' +
           (href ? '<a class="ar-dchk-link" href="' + tipAttr(href) + '" target="_blank" rel="noopener noreferrer" title="確認したページを開く" aria-label="' + tipAttr(label) + ' の確認したページを開く">›</a>' : '<span class="ar-dchk-link is-off" aria-hidden="true">›</span>');
         detailChecks.appendChild(li);
       });
