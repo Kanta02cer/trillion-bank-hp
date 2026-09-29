@@ -117,6 +117,8 @@ function corsHeaders(corsOrigin: string | null, extra: Record<string, string> = 
   if (corsOrigin) {
     headers.set('Access-Control-Allow-Origin', corsOrigin);
     headers.set('Vary', 'Origin');
+    // Let the browser read the resolved URL so diagnosis evidence links point at the page actually fetched.
+    headers.set('Access-Control-Expose-Headers', 'X-AirReach-Final-URL');
   }
   headers.set('X-Content-Type-Options', 'nosniff');
   return headers;
@@ -262,6 +264,16 @@ async function fetchPublicDocument(start: URL): Promise<{
       const next = new URL(location, current);
       current = sanitizeTargetUrl(next.toString());
       continue;
+    }
+
+    if (response.status === 404 || response.status === 410) {
+      // Pass "fetched, but absent" through as-is so the diagnosis can mark the item なし instead of 未確認.
+      return {
+        status: response.status,
+        body: '',
+        contentType: 'text/plain; charset=utf-8',
+        finalUrl: current.toString(),
+      };
     }
 
     if (!response.ok) {

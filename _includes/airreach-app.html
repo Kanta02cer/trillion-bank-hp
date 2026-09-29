@@ -13,7 +13,7 @@
 .ar-badge,.ar-kicker,.ar-gate-kicker,.ar-gate-prog{font-family:var(--mono,'Space Grotesk','Inter',ui-monospace,monospace)}
 .ar-wrap{width:min(880px,calc(100% - 36px));margin:0 auto}
 body.ar-gated{overflow:hidden}
-body[data-industry]:not([data-industry=""]) #gate-industry{display:none}
+body[data-industry]:not([data-industry=""]) #gate-industry-wrap{display:none}
 body[data-industry]:not([data-industry=""]) .ar-gate-step[data-step="1"] .lead::after{content:"";display:block}
 
 body.ar-gated #main,body.ar-gated .site-header,body.ar-gated .site-footer,
@@ -57,6 +57,44 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-btn-primary{background:#2563eb;border-color:#1d4ed8;color:#fff;box-shadow:0 8px 20px rgba(37,99,235,.25)}
 .ar-btn-primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 .ar-btn-line{border-color:#93c5fd;color:#1d4ed8;background:#fff;font-weight:800}
+/* —— 入力画面（1）と診断中（2） —— */
+.ar-gate-card{width:min(560px,100%)}
+.ar-gate-lead{margin:0 0 22px;font-size:1rem;line-height:1.7;color:#334155;font-weight:500}
+.ar-gate-lead-center{text-align:center}
+.ar-gate-h1-center{text-align:center}
+.ar-gate label.ar-field-big{display:block;font-size:.95rem;font-weight:700;color:#0f172a;margin:0 0 6px}
+.ar-field-opt{font-weight:500;color:#64748b;font-size:.85rem}
+.ar-gate input[type=url]{width:100%;box-sizing:border-box;margin:0 0 16px;border:1.5px solid #cbd5e1;border-radius:10px;padding:14px 16px;font-size:1.05rem;min-height:52px;background:#fff}
+.ar-gate input[type=url]:focus{outline:3px solid rgba(37,99,235,.2);border-color:#2563eb}
+.ar-select-wrap{position:relative;margin:0 0 16px}
+.ar-select-wrap::after{content:"⌄";position:absolute;right:14px;top:50%;transform:translateY(-60%);color:#64748b;pointer-events:none;font-size:1.1rem}
+.ar-gate select{width:100%;box-sizing:border-box;appearance:none;-webkit-appearance:none;border:1.5px solid #cbd5e1;border-radius:10px;padding:14px 40px 14px 16px;font:inherit;font-size:1.05rem;min-height:52px;background:#fff;color:#0f172a}
+.ar-gate select:focus{outline:3px solid rgba(37,99,235,.2);border-color:#2563eb}
+.ar-gate label.ar-consent-line{display:flex;grid-template-columns:none;gap:10px;align-items:flex-start;margin:4px 0 18px;font-size:.92rem;font-weight:600;color:#0f172a;cursor:pointer}
+.ar-consent-line input{width:20px;height:20px;margin-top:2px;accent-color:#2563eb;flex:0 0 auto}
+.ar-consent-line small{display:block;margin-top:3px;font-size:.78rem;font-weight:500;color:#64748b;line-height:1.55}
+.ar-gate-cta{width:100%;justify-content:center;font-size:1.05rem;min-height:54px}
+.ar-gate-badges{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:14px 0 0;font-size:.85rem;color:#475569;font-weight:600}
+.ar-gate-badges span{display:inline-flex;align-items:center;gap:6px}
+.ar-gate-badges svg{width:16px;height:16px;color:#475569}
+.ar-gate-loading{text-align:center;padding:8px 0 4px}
+.ar-spinner{width:64px;height:64px;margin:22px auto 26px;border-radius:999px;border:6px solid #e2e8f0;border-top-color:#2563eb;animation:ar-spin 1s linear infinite}
+.ar-spinner.is-stopped{animation:none;border-top-color:#cbd5e1}
+@keyframes ar-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.ar-spinner{animation:none;border-top-color:#2563eb}}
+.ar-progress{list-style:none;margin:0 auto;padding:0;display:grid;gap:12px;max-width:340px;text-align:left}
+.ar-progress li{display:flex;gap:10px;align-items:center;font-size:.92rem;font-weight:600;color:#94a3b8}
+.ar-progress-mark{width:20px;height:20px;border-radius:999px;border:2px solid #cbd5e1;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff}
+.ar-progress li.is-active{color:#0f172a}
+.ar-progress li.is-active .ar-progress-mark{border-color:#2563eb;background:#eff6ff}
+.ar-progress li.is-done{color:#334155}
+.ar-progress li.is-done .ar-progress-mark{border-color:#2563eb;background:#2563eb}
+.ar-progress li.is-done .ar-progress-mark::after{content:"✓"}
+.ar-progress li.is-failed{color:#b91c1c}
+.ar-progress li.is-failed .ar-progress-mark{border-color:#dc2626;background:#dc2626}
+.ar-progress li.is-failed .ar-progress-mark::after{content:"!"}
+.ar-gate-loading .ar-gate-actions{margin-top:22px}
+.ar-gate-actions[hidden]{display:none !important}
 .ar-consent-card{display:flex;gap:14px;align-items:center;border:3px solid #93c5fd;border-radius:16px;padding:18px 20px;margin:8px 0 20px;background:#eff6ff;cursor:pointer;font-size:1.2rem;font-weight:800;color:#0f172a}
 .ar-consent-card.is-on{border-color:#16a34a;background:#ecfdf5;color:#14532d}
 .ar-consent-card input{width:26px;height:26px;accent-color:#16a34a;flex:0 0 auto}
@@ -80,6 +118,16 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-factor-formula{margin-top:10px;padding:14px 16px;border:3px solid #93c5fd;border-radius:14px;background:#eff6ff;font-size:1.05rem;font-weight:800;color:#1e3a8a;line-height:1.5}
 .ar-gap-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
 .ar-gap-list li{border:3px solid #fecaca;background:#fff1f2;border-radius:12px;padding:12px 14px;font-weight:800;color:#9f1239;font-size:1.05rem}
+.ar-gap-list li.is-unknown{border-color:#cbd5e1;background:#f8fafc;color:#475569}
+/* 区分ラベル: 色だけに頼らず、常に文字を併記する（_data/airreach_display.yml） */
+.ar-band{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:2px solid #cbd5e1;background:#f8fafc;color:#334155;font-size:.9rem;font-weight:800;line-height:1.2;vertical-align:middle;white-space:nowrap}
+.ar-band::before{content:"";width:.6em;height:.6em;border-radius:999px;background:currentColor;opacity:.85}
+.ar-band.is-bad{border-color:#fca5a5;background:#fef2f2;color:#b91c1c}
+.ar-band.is-warn{border-color:#fcd34d;background:#fffbeb;color:#b45309}
+.ar-band.is-good{border-color:#86efac;background:#ecfdf5;color:#15803d}
+.ar-band.is-muted{border-color:#cbd5e1;background:#f8fafc;color:#475569}
+.ar-band-legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:10px;font-size:.95rem;font-weight:700;color:#334155}
+.ar-band-scope{margin:8px 0 0;font-size:.95rem;font-weight:700;color:#475569;line-height:1.5}
 @media (max-width:640px){.ar-factor-grid{grid-template-columns:1fr}}
 
 .ar-hero{padding:clamp(56px,8vw,88px) 0 28px;border-bottom:1px solid #e5e7eb;background:#f8fbff}
@@ -156,6 +204,215 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-act h3{margin:0 0 8px;font-size:1.35rem;line-height:1.4}
 .ar-act p{margin:0;color:#334155;font-size:1.08rem;line-height:1.6}
 .ar-act .effect{margin-top:10px;color:#475569;font-size:1rem;line-height:1.55}
+.ar-act-evidence{display:inline-block;margin-top:10px;font-size:.98rem;font-weight:800;color:#1d4ed8;text-decoration:underline;text-underline-offset:3px}
+/* —— 改善内容（対策カード） —— */
+.ar-fix-lead{margin:0 0 14px;font-size:.95rem;color:#334155;line-height:1.6}
+.ar-fixes{display:grid;gap:14px}
+.ar-fix{border:1px solid var(--ar-line,#e2e8f0);border-radius:14px;background:#fff;padding:18px 18px 14px}
+.ar-fix-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:8px}
+.ar-fix-num{flex:0 0 auto;width:34px;height:34px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem}
+.ar-fix-num.is-1{background:#fee2e2;color:#b91c1c}
+.ar-fix-num.is-2{background:#fef3c7;color:#b45309}
+.ar-fix-headtext{min-width:0}
+.ar-fix-title{margin:0 0 6px;font-size:1.08rem;font-weight:700;line-height:1.4;color:var(--ar-ink,#0f172a)}
+.ar-fix-pri{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.78rem;font-weight:700}
+.ar-fix-pri.is-high{background:#fee2e2;color:#b91c1c}
+.ar-fix-pri.is-mid{background:#fef3c7;color:#b45309}
+.ar-fix-desc{margin:0 0 14px 46px;font-size:.95rem;line-height:1.65;color:#334155}
+.ar-fix-how{width:100%;justify-content:center;gap:6px}
+.ar-btn-primary{transition:transform .16s ease,box-shadow .16s ease,background-color .16s ease}
+.ar-btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(37,99,235,.28)}
+.ar-btn-primary:active{transform:translateY(0) scale(.985);box-shadow:0 2px 6px rgba(37,99,235,.22);transition-duration:.08s}
+.ar-fix-how .ar-arrow{display:inline-block;transition:transform .2s ease}
+.ar-fix-how:hover .ar-arrow{transform:translateX(3px)}
+.ar-fix-how[aria-expanded="true"] .ar-arrow{transform:rotate(90deg)}
+.ar-fix-how[aria-expanded="true"]:hover .ar-arrow{transform:rotate(90deg) translateX(2px)}
+.ar-fix-panel:not([hidden]){animation:ar-fade-up .22s ease-out}
+@keyframes ar-fade-up{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.ar-fix-panel{margin-top:12px;padding:14px 16px;border-radius:10px;background:var(--ar-soft,#f8fafc);border:1px solid var(--ar-line,#e2e8f0)}
+.ar-fix-what{margin:0 0 10px;font-size:.95rem;font-weight:700;color:var(--ar-ink,#0f172a);line-height:1.5}
+.ar-fix-steps{margin:0 0 10px;padding-left:1.4em;font-size:.92rem;line-height:1.65;color:#334155}
+.ar-fix-steps li{margin-bottom:4px}
+.ar-fix-panel .ar-act-evidence{margin-top:4px}
+.ar-fix-example{margin-top:10px;border-top:1px dashed var(--ar-line,#e2e8f0);padding-top:8px}
+.ar-fix-example summary{cursor:pointer;font-size:.9rem;font-weight:600;color:#475569;text-align:center;list-style:none}
+.ar-fix-example summary::-webkit-details-marker{display:none}
+.ar-fix-example summary::after{content:" ⌄"}
+.ar-fix-example[open] summary::after{content:" ⌃"}
+.ar-fix-example p{margin:8px 0 0;font-size:.9rem;line-height:1.65;color:#334155;background:#fff;border:1px solid var(--ar-line,#e2e8f0);border-radius:8px;padding:10px 12px}
+.ar-panel-exit{margin-top:18px}
+/* —— 計算式モーダルへの導線（補助機能なので横長のシンプルなボタン） —— */
+.ar-logic{margin:16px 0 0}
+.ar-logic + .ar-more-tools{margin-top:24px}
+.ar-formula-entry{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:0 16px;box-sizing:border-box;background:#fff;border:1px solid #cbd5e1;border-radius:10px;color:var(--ar-ink,#0f172a);font:inherit;font-size:.95rem;font-weight:700;text-align:left;cursor:pointer;transition:background-color .16s ease,border-color .16s ease}
+.ar-formula-entry:hover,.ar-formula-entry:focus-visible{background:var(--ar-accent-soft,#eff6ff);border-color:#bfdbfe}
+.ar-formula-entry:focus-visible{outline:2px solid var(--ar-accent,#1d4ed8);outline-offset:2px}
+.ar-formula-entry-ico{width:18px;height:18px;flex:none;color:var(--ar-accent,#1d4ed8)}
+.ar-formula-entry-label{flex:1;min-width:0}
+.ar-formula-entry .ar-arrow{display:inline-block;flex:none;color:#64748b;transition:transform .2s ease}
+.ar-formula-entry:hover .ar-arrow{transform:translateX(3px);color:var(--ar-accent,#1d4ed8)}
+/* —— フローティングボタン（改善内容に戻る） —— */
+.ar-fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:70;display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;padding:0;box-sizing:border-box;background:#fff;border:1px solid #bfdbfe;border-radius:999px;color:var(--ar-accent,#1d4ed8);text-decoration:none;box-shadow:0 8px 24px rgba(15,23,42,.14);transition:opacity .2s ease,transform .2s ease,background-color .16s ease,border-color .16s ease,box-shadow .16s ease}
+.ar-fab[hidden]{display:none}
+.ar-fab.is-out{opacity:0;transform:translateY(12px);pointer-events:none}
+.ar-fab:hover,.ar-fab:focus-visible{background:var(--ar-accent-soft,#eff6ff);border-color:var(--ar-accent,#1d4ed8);box-shadow:0 10px 28px rgba(37,99,235,.2);text-decoration:none}
+.ar-fab:active{transform:translateY(1px)}
+.ar-fab svg{width:20px;height:20px;flex:none}
+body.ar-modal-open .ar-fab,body.ar-gated .ar-fab{display:none}
+@media (max-width:520px){.ar-fab{right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:46px;height:46px}}
+/* —— 計算式モーダル —— */
+.ar-modal{position:fixed;inset:0;z-index:90;display:none}
+.ar-modal.is-on{display:block}
+.ar-modal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.ar-modal-card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(680px,calc(100% - 32px));max-height:calc(100vh - 48px);overflow:auto;box-sizing:border-box;background:#fff;border:1px solid var(--ar-line,#e2e8f0);border-radius:14px;box-shadow:0 12px 40px rgba(15,23,42,.14);padding:clamp(20px,3vw,28px);animation:ar-fade-up .22s ease-out;outline:none}
+.ar-modal-card::before{content:"";display:none;width:40px;height:4px;border-radius:999px;background:#cbd5e1;margin:0 auto 12px}
+@media (max-width:640px){
+  .ar-modal-card{left:0;right:0;top:auto;bottom:0;transform:none;width:100%;max-height:88vh;border-radius:16px 16px 0 0;border-bottom:0;padding:14px 16px calc(20px + env(safe-area-inset-bottom));animation:ar-sheet-up .26s ease-out}
+  .ar-modal-card::before{display:block}
+}
+@keyframes ar-sheet-up{from{transform:translateY(28px);opacity:0}to{transform:none;opacity:1}}
+body.ar-modal-open{overflow:hidden}
+.ar-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.ar-modal-title{margin:0 0 4px;font-size:1.35rem;font-weight:800;color:var(--ar-ink,#0f172a);line-height:1.3}
+.ar-modal-lead{margin:0;font-size:.9rem;color:var(--ar-muted,#64748b);line-height:1.6}
+.ar-modal-close{flex:none;width:36px;height:36px;border-radius:8px;border:1px solid transparent;background:transparent;color:#475569;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.ar-modal-close:hover,.ar-modal-close:focus-visible{border-color:var(--ar-line,#e2e8f0);background:var(--ar-soft,#f8fafc);color:var(--ar-ink,#0f172a)}
+.ar-modal-close svg{width:20px;height:20px}
+.ar-fx-h{margin:0;font-size:1rem;font-weight:800;color:var(--ar-ink,#0f172a)}
+.ar-fx-formula{border:1px solid #bfdbfe;background:var(--ar-accent-soft,#eff6ff);border-radius:12px;padding:16px 18px;margin:0 0 14px}
+.ar-fx-formula-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.ar-fx-copy{width:36px;height:36px;border-radius:8px;border:1px solid #bfdbfe;background:#fff;color:var(--ar-accent,#1d4ed8);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:border-color .16s ease,color .16s ease,background-color .16s ease}
+.ar-fx-copy:hover,.ar-fx-copy:focus-visible{border-color:var(--ar-accent,#1d4ed8)}
+.ar-fx-copy.is-done{border-color:#86efac;background:#ecfdf5;color:#15803d}
+.ar-fx-copy svg{width:18px;height:18px}
+.ar-fx-eq{margin:0 0 10px;font-size:1.12rem;font-weight:800;color:var(--ar-ink,#0f172a);line-height:1.55;word-break:break-word;font-variant-numeric:tabular-nums}
+.ar-fx-legend{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;font-size:.84rem;color:var(--ar-muted,#64748b);line-height:1.7}
+@media (max-width:520px){.ar-fx-legend{grid-template-columns:1fr}}
+.ar-fx-calc{border:1px solid var(--ar-line,#e2e8f0);border-radius:12px;padding:16px 18px;margin:0 0 14px;background:#fff}
+.ar-fx-calc .ar-fx-h{margin-bottom:10px}
+.ar-fx-table{width:100%;border-collapse:collapse;font-size:.95rem}
+.ar-fx-table th{font-size:.78rem;font-weight:600;color:var(--ar-muted,#64748b);text-align:left;padding:8px 10px;background:var(--ar-soft,#f8fafc);border-bottom:1px solid var(--ar-line,#e2e8f0)}
+.ar-fx-table td{padding:10px;border-bottom:1px solid var(--ar-line,#e2e8f0);vertical-align:middle;color:var(--ar-ink,#0f172a)}
+.ar-fx-table th:not(:first-child),.ar-fx-table td:not(:first-child){text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ar-fx-table th:first-child{border-radius:8px 0 0 8px}.ar-fx-table th:last-child{border-radius:0 8px 8px 0}
+.ar-fx-item{display:flex;align-items:center;gap:10px;font-weight:600}
+.ar-fx-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none;background:var(--ar-accent-soft,#eff6ff);color:var(--ar-accent,#1d4ed8)}
+.ar-fx-ico svg{width:18px;height:18px}
+.ar-fx-ico.is-entity{background:#ecfdf5;color:#15803d}
+.ar-fx-ico.is-faq{background:#f5f3ff;color:#6d28d9}
+.ar-fx-ico.is-discover{background:#fff7ed;color:#c2410c}
+.ar-fx-score b{font-size:1.05rem;font-weight:800}
+.ar-fx-score span{color:var(--ar-muted,#64748b);font-size:.85rem;margin-left:2px}
+.ar-fx-weight{color:var(--ar-muted,#64748b)}
+.ar-fx-add{font-weight:800}
+.ar-fx-unk{color:var(--ar-muted,#64748b);font-weight:600}
+.ar-fx-table tfoot td{border-bottom:0;padding-top:12px;font-weight:800}
+.ar-fx-total{font-size:1.4rem;font-weight:800}
+.ar-fx-total span{font-size:.95rem;color:var(--ar-muted,#64748b);font-weight:700}
+.ar-fx-raw{color:var(--ar-muted,#64748b);font-weight:600;font-size:.95rem;margin-right:8px}
+.ar-fx-note{margin:10px 0 0;font-size:.82rem;color:var(--ar-muted,#64748b);line-height:1.6}
+.ar-fx-acc{border:1px solid var(--ar-line,#e2e8f0);border-radius:12px;background:#fff;margin:0 0 10px}
+.ar-fx-acc summary{display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;list-style:none;border-radius:12px}
+.ar-fx-acc summary::-webkit-details-marker{display:none}
+.ar-fx-acc summary:hover{background:var(--ar-soft,#f8fafc)}
+.ar-fx-acc-ico{width:40px;height:40px;border-radius:10px;background:var(--ar-soft,#f8fafc);border:1px solid var(--ar-line,#e2e8f0);display:flex;align-items:center;justify-content:center;color:var(--ar-accent,#1d4ed8);flex:none}
+.ar-fx-acc-ico svg{width:20px;height:20px}
+.ar-fx-acc-text{display:flex;flex-direction:column;min-width:0}
+.ar-fx-acc-t{font-weight:800;color:var(--ar-ink,#0f172a);font-size:.98rem;line-height:1.35}
+.ar-fx-acc-d{font-size:.84rem;color:var(--ar-muted,#64748b);margin-top:2px;line-height:1.5}
+.ar-fx-acc-chev{width:20px;height:20px;margin-left:auto;color:#64748b;flex:none;transition:transform .2s ease}
+.ar-fx-acc[open] .ar-fx-acc-chev{transform:rotate(180deg)}
+.ar-fx-acc-body{padding:12px 16px 16px;border-top:1px solid var(--ar-line,#e2e8f0);font-size:.9rem}
+.ar-fx-fac{margin:0 0 14px}
+.ar-fx-fac:last-child{margin-bottom:0}
+.ar-fx-fac h4{margin:0 0 2px;font-size:.95rem;font-weight:800;color:var(--ar-ink,#0f172a);display:flex;align-items:center;gap:8px}
+.ar-fx-fac h4 small{font-weight:600;color:var(--ar-muted,#64748b);font-size:.82rem}
+.ar-fx-fac p{margin:0 0 6px;font-size:.84rem;color:var(--ar-muted,#64748b);line-height:1.6}
+.ar-fx-chk{list-style:none;margin:0;padding:0}
+.ar-fx-chk li{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--ar-line,#e2e8f0);font-size:.88rem;color:var(--ar-ink,#0f172a)}
+.ar-fx-chk li:last-child{border-bottom:0}
+.ar-fx-mark{width:20px;height:20px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex:none}
+.ar-fx-chk .is-ok .ar-fx-mark{background:#ecfdf5;color:#15803d}
+.ar-fx-chk .is-ng .ar-fx-mark{background:#fef2f2;color:#b91c1c}
+.ar-fx-chk .is-unknown .ar-fx-mark{background:var(--ar-soft,#f8fafc);color:#64748b;border:1px solid var(--ar-line,#e2e8f0)}
+.ar-fx-pts{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ar-muted,#64748b);font-size:.84rem;white-space:nowrap}
+.ar-fx-chk .is-ng .ar-fx-pts{color:#b91c1c}
+.ar-fx-scope{margin:6px 0 0;font-size:.8rem;color:var(--ar-muted,#64748b);line-height:1.6}
+.ar-fx-acc-body .ar-factor-formula{font-size:.9rem;color:var(--ar-ink,#0f172a);line-height:1.6;margin:0 0 12px}
+.ar-fx-acc-body .ar-expert-block{margin:0 0 10px}
+.ar-fx-acc-body .ar-expert-block h3{font-size:1rem}
+.ar-fx-acc-body .ar-expert-table{font-size:.88rem}
+.ar-fx-acc-body .ar-expert-table th,.ar-fx-acc-body .ar-expert-table td{padding:8px}
+.ar-btn-ghost{width:100%;justify-content:center;gap:6px;background:#fff;border:1px solid var(--ar-line,#e2e8f0);color:#475569;font-weight:700;font-size:.95rem;min-height:48px;transition:border-color .16s ease,color .16s ease,background-color .16s ease}
+.ar-btn-ghost .ar-arrow{display:inline-block;transition:transform .2s ease}
+.ar-btn-ghost:hover,.ar-btn-ghost:focus-visible{border-color:#94a3b8;color:var(--ar-ink,#0f172a);background:#f8fafc}
+.ar-btn-ghost:hover .ar-arrow{transform:translateX(3px)}
+@media(max-width:520px){.ar-fix-desc{margin-left:0}}
+/* —— 詳細データ —— */
+.ar-detail-list{display:grid;gap:10px;margin:4px 0 22px}
+.ar-drow{border:1px solid var(--ar-line,#e2e8f0);border-radius:12px;background:#fff;overflow:hidden}
+.ar-drow-btn{display:grid;grid-template-columns:44px 1fr auto 20px;gap:12px;align-items:center;width:100%;padding:14px 14px;border:0;background:transparent;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.ar-drow-btn:hover{background:var(--ar-soft,#f8fafc)}
+.ar-drow-ico{width:44px;height:44px;border-radius:10px;background:var(--ar-accent-soft,#eff6ff);color:var(--ar-accent,#1d4ed8);display:flex;align-items:center;justify-content:center}
+.ar-drow-ico svg{width:22px;height:22px}
+.ar-drow-main{min-width:0}
+.ar-drow-lab{display:block;font-size:.85rem;font-weight:600;color:#334155;margin-bottom:2px}
+.ar-drow-score{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;color:var(--ar-ink,#0f172a);line-height:1.1}
+.ar-drow-score b{font-size:1.6rem}
+.ar-drow-unk{font-size:1rem;font-weight:700;color:var(--ar-muted,#64748b)}
+.ar-drow-chev{color:#94a3b8;font-size:1.4rem;line-height:1;transition:transform .15s}
+.ar-drow.is-open .ar-drow-chev{transform:rotate(90deg)}
+.ar-drow-panel{padding:0 14px 14px 70px;border-top:1px solid var(--ar-line,#e2e8f0);background:var(--ar-soft,#f8fafc)}
+.ar-drow-meta{margin:12px 0 8px;font-size:.88rem;color:#334155;line-height:1.6}
+.ar-drow-items{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.ar-drow-items li{font-size:.9rem;font-weight:600;padding:8px 10px;border-radius:8px;background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
+.ar-drow-items li.is-unknown{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
+.ar-drow-ok{margin:0;font-size:.9rem;font-weight:600;color:#047857}
+.ar-detail-h3{margin:0 0 10px;font-size:1rem;font-weight:700;color:var(--ar-ink,#0f172a)}
+.ar-detail-checks{list-style:none;margin:0 0 6px;padding:0;border:1px solid var(--ar-line,#e2e8f0);border-radius:12px;background:#fff;overflow:hidden}
+.ar-dchk{display:grid;grid-template-columns:28px 1fr 24px;gap:10px;align-items:center;padding:11px 14px;border-top:1px solid var(--ar-line,#e2e8f0)}
+.ar-dchk:first-child{border-top:0}
+.ar-dchk-mark{width:22px;height:22px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff}
+.ar-dchk.is-ok .ar-dchk-mark{background:#16a34a}
+.ar-dchk.is-ng .ar-dchk-mark{background:#dc2626}
+.ar-dchk.is-unknown .ar-dchk-mark{background:#64748b}
+.ar-dchk-lab{font-size:.92rem;font-weight:600;color:var(--ar-ink,#0f172a);min-width:0}
+.ar-dchk-state{margin-left:8px;font-size:.75rem;font-weight:600;color:var(--ar-muted,#64748b)}
+.ar-dchk.is-ng .ar-dchk-state{color:#b91c1c}
+.ar-dchk-link{color:#94a3b8;font-size:1.3rem;line-height:1;text-decoration:none;text-align:center}
+.ar-dchk-link:hover{color:var(--ar-accent,#1d4ed8)}
+.ar-dchk-link.is-off{opacity:.35}
+.ar-logic summary{font-size:.95rem}
+@media(max-width:520px){.ar-drow-btn{grid-template-columns:40px 1fr auto 16px;gap:8px}.ar-drow-panel{padding-left:14px}}
+/* HackⅡ 案内は対策と視覚的に分ける（別サービス）。控えめな二次カード */
+.ar-referral{margin-top:18px;padding:20px 18px;border:1px solid #bfdbfe;border-radius:14px;background:linear-gradient(180deg,#eff6ff 0%,#f8fbff 100%);color:#334155}
+.ar-referral-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #bfdbfe;color:var(--ar-accent,#1d4ed8);margin-bottom:12px}
+.ar-referral-ico svg{width:22px;height:22px}
+.ar-referral-kicker{font-size:.72rem;font-weight:700;letter-spacing:.04em;color:var(--ar-muted,#64748b);margin-bottom:4px}
+.ar-referral-title{margin:0 0 8px;font-size:1.08rem;font-weight:800;color:var(--ar-ink,#0f172a);line-height:1.4}
+.ar-referral-body{margin:0 0 14px;font-size:.9rem;line-height:1.65}
+.ar-referral-cta{display:flex;align-items:center;justify-content:center;min-height:48px;padding:10px 16px;border-radius:10px;background:#fff;border:1px solid #bfdbfe;font-size:.95rem;font-weight:700;color:var(--ar-accent,#1d4ed8);text-decoration:none;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
+.ar-referral-cta:hover,.ar-referral-cta:focus-visible{border-color:var(--ar-accent,#1d4ed8);box-shadow:0 4px 12px rgba(37,99,235,.15);text-decoration:none}
+.ar-referral-note{margin:10px 0 0;font-size:.76rem;color:var(--ar-muted,#64748b);line-height:1.5;text-align:center}
+/* その他のツール（担当者向け） */
+.ar-more-tools{margin-top:18px;border:1px solid var(--ar-line,#e2e8f0);border-radius:12px;background:#fff;padding:0}
+.ar-more-tools summary{cursor:pointer;padding:12px 14px;font-size:.92rem;font-weight:700;color:#475569;list-style:none;display:flex;align-items:center;justify-content:space-between}
+.ar-more-tools summary::-webkit-details-marker{display:none}
+.ar-more-tools summary::after{content:"⌄";color:#94a3b8;font-size:1rem}
+.ar-more-tools[open] summary{border-bottom:1px solid var(--ar-line,#e2e8f0)}
+.ar-more-tools[open] summary::after{content:"⌃"}
+.ar-tool-list{display:grid}
+.ar-tool{display:grid;grid-template-columns:36px 1fr 20px;gap:12px;align-items:center;width:100%;padding:12px 14px;border:0;border-top:1px solid var(--ar-line,#e2e8f0);background:transparent;text-align:left;text-decoration:none;color:inherit;font:inherit;cursor:pointer}
+.ar-tool:first-child{border-top:0}
+.ar-tool:hover{background:var(--ar-soft,#f8fafc)}
+.ar-tool[hidden]{display:none}
+.ar-tool-ico{width:36px;height:36px;border-radius:9px;background:var(--ar-soft,#f8fafc);border:1px solid var(--ar-line,#e2e8f0);color:#475569;display:flex;align-items:center;justify-content:center}
+.ar-tool-ico svg{width:18px;height:18px}
+.ar-tool-body{min-width:0}
+.ar-tool-title{display:block;font-size:.92rem;font-weight:700;color:var(--ar-ink,#0f172a)}
+.ar-tool-desc{display:block;font-size:.8rem;color:var(--ar-muted,#64748b);line-height:1.5;margin-top:2px}
+.ar-tool-chev{color:#94a3b8;font-size:1.3rem;line-height:1}
+.ar-tool-note{margin:0;padding:10px 14px;font-size:.82rem;color:#334155;border-top:1px solid var(--ar-line,#e2e8f0)}
 .ar-source{width:100%;border-collapse:collapse;font-size:1.05rem;margin-top:10px}
 .ar-source th,.ar-source td{text-align:left;padding:12px 8px;border-bottom:1px solid #e5e7eb}
 .ar-disc{font-size:.95rem;color:#64748b;line-height:1.65;margin-top:14px}
@@ -249,7 +506,8 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 }
 .ar-wrap{width:min(720px,calc(100% - 32px))}
 .ar-hero{
-  padding:clamp(36px,5vw,56px) 0 20px;
+  /* ヘッダーは position:fixed（高さ --hdr）なので、その分だけ上に余白を取る */
+  padding:calc(var(--hdr,80px) + 20px) 0 20px;
   border-bottom:1px solid var(--ar-line);
   background:#fff;
 }
@@ -280,6 +538,36 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 .ar-summary p{margin:0 0 4px;font-size:.9rem;color:#334155;font-weight:500}
 .ar-summary b{font-weight:700;color:var(--ar-ink)}
 .ar-sec{padding:clamp(20px,4vw,36px) 0 48px}
+/* —— Summary card (診断結果サマリー) —— */
+.ar-h2 em{font-style:normal;color:var(--ar-accent)}
+.ar-sumcard{border:1px solid var(--ar-line);border-radius:14px;background:#fff;padding:18px 18px 6px;margin:6px 0 4px}
+.ar-gauge-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.ar-gauge{position:relative;width:128px;height:128px;flex:0 0 auto}
+.ar-gauge svg{display:block;width:128px;height:128px}
+.ar-gauge-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ar-gauge-num b{font-size:2.35rem;font-weight:800;letter-spacing:-.04em;color:var(--ar-ink)}
+.ar-gauge-num span{font-size:.8rem;font-weight:600;color:var(--ar-muted);margin-top:4px}
+.ar-gauge-unknown{font-size:.95rem;font-weight:700;color:var(--ar-muted)}
+.ar-gauge-side{flex:1 1 200px;min-width:0}
+.ar-gauge-title{font-size:1rem;font-weight:700;color:var(--ar-ink);margin-bottom:8px}
+.ar-gauge-band{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.ar-gauge-band .ar-band{font-size:.95rem;padding:5px 12px}
+.ar-gauge-note{margin:0;font-size:.8rem;line-height:1.55;color:var(--ar-muted)}
+.ar-sum-verdict{margin:16px 0 4px;font-size:1.08rem;font-weight:700;color:var(--ar-ink);line-height:1.5}
+.ar-sum-verdict-sub{margin:0 0 6px;font-size:.92rem;color:#334155;line-height:1.6}
+.ar-sum-rows{display:grid;margin-top:8px}
+.ar-sum-row{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:14px 0;border-top:1px solid var(--ar-line)}
+.ar-sum-ico{width:40px;height:40px;border-radius:10px;background:var(--ar-accent-soft);color:var(--ar-accent);display:flex;align-items:center;justify-content:center}
+.ar-sum-ico svg{width:22px;height:22px}
+.ar-sum-body{min-width:0}
+.ar-sum-lab{font-size:.85rem;font-weight:600;color:#334155;margin-bottom:2px}
+.ar-sum-val{font-size:1.45rem;font-weight:800;letter-spacing:-.02em;color:var(--ar-ink);line-height:1.15}
+.ar-sum-val .unit{font-size:.85rem;font-weight:600;color:var(--ar-muted);margin-left:5px}
+.ar-sum-row.is-accent .ar-sum-val{color:var(--ar-accent)}
+.ar-sum-note{font-size:.8rem;color:var(--ar-muted);margin-top:3px;line-height:1.5}
+.ar-ind a{color:var(--ar-accent);text-decoration:none;font-weight:600;word-break:break-all}
+.ar-ind a:hover{text-decoration:underline}
+@media(max-width:520px){.ar-sum-row{grid-template-columns:36px 1fr;grid-template-rows:auto auto}.ar-sum-row .ar-badge-e{grid-column:2;justify-self:start}.ar-gauge-row{justify-content:center;text-align:center}.ar-gauge-band{justify-content:center}}
 .ar-steps{gap:6px;margin:0 0 16px}
 .ar-steps span{
   padding:6px 12px;
@@ -295,9 +583,18 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
   color:var(--ar-accent);
   background:var(--ar-accent-soft);
 }
+.ar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;margin:0 0 16px}
+.ar-toolbar .ar-steps{margin:0}
+.ar-toolbar-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+.ar-toolbar-actions[hidden]{display:none}
+.ar-btn-sm{min-height:36px;padding:6px 12px;font-size:.85rem;gap:6px;border-radius:8px}
+.ar-btn-sm svg{width:15px;height:15px;flex:none}
+.ar-toolbar-link{font-size:.85rem;font-weight:600;color:var(--ar-muted);text-decoration:none;white-space:nowrap}
+.ar-toolbar-link:hover,.ar-toolbar-link:focus-visible{color:var(--ar-accent);text-decoration:underline}
 .ar-ind{margin:0 0 8px;font-size:.875rem;color:var(--ar-muted)}
 .ar-ind b{color:var(--ar-ink);font-weight:600}
 .ar-h2{font-size:clamp(1.15rem,2.4vw,1.4rem);margin:0 0 14px;font-weight:700;letter-spacing:-.01em}
+.ar-chain[hidden],.ar-metric-legend[hidden]{display:none}
 .ar-chain{
   display:grid;
   gap:0;
@@ -488,77 +785,76 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 .ar-first-fix{border:1px solid #bfdbfe;border-radius:12px;padding:14px 16px;background:#eff6ff;margin:16px 0 8px}
 .ar-first-fix-kicker{margin:0 0 6px;font-size:.8rem;font-weight:700;color:#1d4ed8}
 .ar-first-fix-body{margin:0;font-size:1.05rem;font-weight:700;line-height:1.5;color:#0f172a}
-.ar-more-link{margin:8px 0 0;font-size:.9rem}
-.ar-more-link a{color:#64748b;font-weight:600}
-.ar-more-tools{margin-top:12px;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;background:#fff}
+
 .ar-more-tools summary{cursor:pointer;font-weight:700;color:#475569}
-.ar-next-bar{position:sticky;bottom:12px;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;padding:12px 14px;border:1px solid #bfdbfe;border-radius:12px;background:rgba(255,255,255,.96);box-shadow:0 8px 24px rgba(15,23,42,.12)}
-.ar-next-bar .ar-btn{min-width:120px;min-height:44px}
 .ar-gate-note{font-size:.9rem;color:#64748b;margin-top:12px}
 @media (prefers-reduced-motion: reduce){
+  .ar-btn-primary,.ar-fix-how .ar-arrow,.ar-formula-entry .ar-arrow{transition:none;transform:none}
+  .ar-modal-card{animation:none}
+  .ar-fab{transition:none}
+  .ar-btn-primary:hover,.ar-btn-primary:active{transform:none}
+  .ar-fix-panel:not([hidden]){animation:none}
   body.ar-gated #main,body.ar-gated .site-header,body.ar-gated .site-footer,
   body.ar-gated header,body.ar-gated footer{filter:none;opacity:.35}
   .ar-gate{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(15,23,42,.72)}
 }
 </style>
 </head>
-<body class="ar-page ar-gated" data-industry="{{ page.airreach_industry | default: '' }}">
+<body class="ar-page ar-gated" data-industry="{{ page.airreach_industry | default: '' }}" data-tip-mode="minimal">
 {% include tb-header.html %}
 
-<!-- Frosted glass survey: blocks page until answered -->
+<!-- Frosted glass gate: 1 入力 → 2 診断中 → 結果へ遷移 -->
 <div id="ar-gate" class="ar-gate is-on" role="dialog" aria-modal="true" aria-labelledby="gate-title">
   <div class="ar-gate-card">
-    <div class="ar-gate-prog" aria-hidden="true">
-      <span class="is-on" data-g="1"></span>
-      <span data-g="2"></span>
-      <span data-g="3"></span>
-    </div>
 
     <div class="ar-gate-step is-on" data-step="1">
-      <p class="ar-gate-kicker">STEP 1 / 3 ・ ホームページ</p>
-      <h1 id="gate-title">あなたのお店を調べます</h1>
-      <label class="ar-field-big"><span data-tip="お店や会社の公式サイトのURLです。">ホームページのURL</span>
-        <input id="gate-url" type="url" inputmode="url" placeholder="https://example.com/" autocomplete="url" required>
-      </label>
-      <label class="ar-consent-card" id="gate-consent-card" for="gate-proxy">
+      <p class="ar-gate-kicker">AirReach</p>
+      <h1 id="gate-title">検索から、<br>お客様を増やせるか<br>診断します。</h1>
+      <p class="ar-gate-lead">あなたのサイトを解析し、検索から増やせる問い合わせ数の目安と改善ポイントをお伝えします。</p>
+
+      <label class="ar-field-big" for="gate-url">ホームページのURL</label>
+      <input id="gate-url" type="url" inputmode="url" placeholder="https://example.com/" autocomplete="url" required>
+
+      <label class="ar-field-big" for="gate-outcome-select">増やしたいこと</label>
+      <div class="ar-select-wrap"><select id="gate-outcome-select" required></select></div>
+
+      <div id="gate-industry-wrap">
+        <label class="ar-field-big" for="gate-industry-select">お店・会社の種類 <span class="ar-field-opt">（任意）</span></label>
+        <div class="ar-select-wrap"><select id="gate-industry-select">
+          <option value="">自動で判定する</option>
+          <option value="restaurant">飲食店</option>
+          <option value="clinic">美容・クリニック</option>
+          <option value="b2b">会社向けサービス</option>
+          <option value="media">メディア・広報</option>
+          <option value="other">その他</option>
+        </select></div>
+      </div>
+
+      <label class="ar-consent-line" for="gate-proxy">
         <input id="gate-proxy" type="checkbox" required aria-required="true">
-        <span class="ar-consent-title" data-tip="サイト情報を調べるために必要な同意です。直接取れないときだけ、ログイン情報を除いたURLを取得します。成果や掲載は保証しません。">サイト情報の取得に同意する</span>
+        <span>サイト情報の取得に同意する<small>診断のために公開ページを読み取ります。直接取れないときだけ、ログイン情報を除いたURLを当社の取得サーバー経由で取得します。成果や掲載は保証しません。</small></span>
       </label>
-      <div class="ar-gate-actions">
-        <button type="button" class="ar-btn ar-btn-primary" id="gate-next-1" disabled>30秒で無料診断する</button>
-      </div>
-      <p class="ar-gate-note" id="gate-step1-hint">業種や店名は、サイトから自動で読み取ります。</p>
+
+      <button type="button" class="ar-btn ar-btn-primary ar-gate-cta" id="gate-next-1" disabled>診断をはじめる →</button>
+      <p class="ar-gate-badges" aria-label="補足">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>無料で診断できます</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>登録不要です</span>
+      </p>
     </div>
 
-    <div class="ar-gate-step" data-step="2">
-      <p class="ar-gate-kicker">STEP 2 / 3 ・ 確認</p>
-      <h1>このお店で合っていますか？</h1>
-      <div class="ar-confirm-card" id="gate-confirm-card">
-        <p class="ar-confirm-name" id="gate-confirm-name">—</p>
-        <p class="ar-confirm-meta" id="gate-confirm-meta">—</p>
-        <p class="ar-confirm-url" id="gate-confirm-url">—</p>
-      </div>
-      <p class="ar-gate-kicker" style="margin-top:16px">違う場合は種類だけ直す</p>
-      <div class="ar-pick" id="gate-industry">
-        <button type="button" data-industry="restaurant"><div class="t">飲食店</div></button>
-        <button type="button" data-industry="clinic"><div class="t">美容・クリニック</div></button>
-        <button type="button" data-industry="b2b"><div class="t">会社向けサービス</div></button>
-        <button type="button" data-industry="media"><div class="t">メディア・広報</div></button>
-        <button type="button" data-industry="other"><div class="t">その他</div></button>
-      </div>
-      <div class="ar-gate-actions">
-        <button type="button" class="ar-btn ar-btn-line" id="gate-back-2">戻る</button>
-        <button type="button" class="ar-btn ar-btn-primary" id="gate-next-2">はい、このお店です</button>
-      </div>
-    </div>
-
-    <div class="ar-gate-step" data-step="3">
-      <p class="ar-gate-kicker">STEP 3 / 3 ・ 増やしたいこと</p>
-      <h1>何を増やしたいですか？</h1>
-      <div class="ar-pick" id="gate-outcome"></div>
-      <div class="ar-gate-actions">
-        <button type="button" class="ar-btn ar-btn-line" id="gate-back-3">戻る</button>
-        <button type="button" class="ar-btn ar-btn-primary" id="gate-submit" disabled>この条件で診断する</button>
+    <div class="ar-gate-step ar-gate-loading" data-step="2" aria-live="polite">
+      <p class="ar-gate-kicker">AirReach</p>
+      <h1 class="ar-gate-h1-center">診断中です。</h1>
+      <p class="ar-gate-lead ar-gate-lead-center">ホームページを解析しています。<br>しばらくお待ちください。</p>
+      <div class="ar-spinner" id="gate-spinner" aria-hidden="true"></div>
+      <ul class="ar-progress" id="gate-progress">
+        <li data-p="1"><span class="ar-progress-mark" aria-hidden="true"></span><span>サイトの情報を取得しています</span></li>
+        <li data-p="2"><span class="ar-progress-mark" aria-hidden="true"></span><span>検索エンジンでの見つけやすさを分析</span></li>
+        <li data-p="3"><span class="ar-progress-mark" aria-hidden="true"></span><span>改善ポイントを算出しています</span></li>
+      </ul>
+      <div class="ar-gate-actions" id="gate-fail-actions" hidden>
+        <button type="button" class="ar-btn ar-btn-line" id="gate-retry">入力に戻る</button>
+        <button type="button" class="ar-btn ar-btn-primary" id="gate-continue">推定のまま結果を見る</button>
       </div>
     </div>
 
@@ -566,11 +862,72 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
   </div>
 </div>
 
+<!-- 計算式モーダル。PCは中央、スマホは下からのシート -->
+<div class="ar-modal" id="ar-formula-modal" role="dialog" aria-modal="true" aria-labelledby="ar-formula-title" hidden>
+  <div class="ar-modal-backdrop" data-modal-close></div>
+  <div class="ar-modal-card" tabindex="-1">
+    <div class="ar-modal-head">
+      <div>
+        <h2 class="ar-modal-title" id="ar-formula-title">詳しい計算式</h2>
+        <p class="ar-modal-lead">ホームページの情報整備の点数は、以下の式で計算しています。</p>
+      </div>
+      <button type="button" class="ar-modal-close" id="ar-formula-close" aria-label="閉じる" data-modal-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+
+    <section class="ar-fx-formula" aria-labelledby="ar-fx-formula-h">
+      <div class="ar-fx-formula-head">
+        <h3 class="ar-fx-h" id="ar-fx-formula-h">計算式</h3>
+        <button type="button" class="ar-fx-copy" id="ar-formula-copy" aria-label="計算式をコピー" title="計算式をコピー"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+      </div>
+      <p class="ar-fx-eq" id="ar-formula-eq"></p>
+      <div class="ar-fx-legend" id="ar-formula-legend"></div>
+    </section>
+
+    <section class="ar-fx-calc" aria-labelledby="ar-fx-calc-h">
+      <h3 class="ar-fx-h" id="ar-fx-calc-h">今回の計算</h3>
+      <table class="ar-fx-table">
+        <thead><tr><th scope="col">項目</th><th scope="col">スコア</th><th scope="col">重み</th><th scope="col">加点</th></tr></thead>
+        <tbody id="ar-formula-rows"></tbody>
+        <tfoot><tr id="ar-formula-total"></tr></tfoot>
+      </table>
+      <p class="ar-fx-note" id="ar-formula-note" hidden></p>
+    </section>
+
+    <details class="ar-fx-acc" id="ar-formula-acc-method">
+      <summary>
+        <span class="ar-fx-acc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>
+        <span class="ar-fx-acc-text"><span class="ar-fx-acc-t">各項目の詳細な算出方法</span><span class="ar-fx-acc-d">各項目のスコアをどのように算出しているかを説明します。</span></span>
+        <svg class="ar-fx-acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <div class="ar-fx-acc-body" id="ar-formula-method"></div>
+    </details>
+
+    <details class="ar-fx-acc" id="ar-formula-acc-dev">
+      <summary>
+        <span class="ar-fx-acc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/></svg></span>
+        <span class="ar-fx-acc-text"><span class="ar-fx-acc-t">開発者向けロジック（関数・パラメータ）</span><span class="ar-fx-acc-d">実際の計算に使用しているロジックやパラメータの詳細です。</span></span>
+        <svg class="ar-fx-acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <div class="ar-fx-acc-body">
+        <div class="ar-factor-formula" id="ar-factor-formula"></div>
+        <div id="ar-expert-meters" hidden></div>
+        <div id="ar-expert-method"></div>
+      </div>
+    </details>
+
+    <p class="ar-fx-scope">点数は「ホームページの情報整備」の区分です。AI掲載率・検索順位・予約数・他店との比較ではありません。</p>
+  </div>
+</div>
+
+<!-- ある程度スクロールしたら出る「ページの先頭へ」ボタン -->
+<a class="ar-fab" id="ar-fab-top" href="#main" hidden aria-label="ページの先頭へ戻る" title="ページの先頭へ戻る">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</a>
+
 <main id="main">
   <section class="ar-hero">
     <div class="ar-wrap">
       <p class="ar-crumb"><a href="/">HOME</a> ／ AirReach</p>
-      {% include tb-page-summary.html %}
       <div class="ar-badge" data-tip="URLを入れるだけで、見つかりやすさと最初に直すことを返す無料診断です。">AirReach</div>
       <h1 id="ar-hero-title">{% if page.airreach_industry and page.airreach_industry != '' %}検索から、<em>あと何件</em>増やせるか。{% else %}URLを入れるだけ。AI検索・SEOの改善余地を30秒診断。{% endif %}</h1>
       <p class="ar-lead" id="ar-hero-lead" hidden></p>
@@ -580,11 +937,6 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         <p>ホームページ：<b id="sum-url">—</b></p>
         <p>増やしたいこと：<b id="sum-goal">—</b></p>
         <p>調べる言葉（自動）：<b id="sum-keyword">—</b></p>
-      </div>
-
-      <div class="ar-cta-row" id="ar-restart-row" hidden>
-        <button type="button" class="ar-btn ar-btn-line" id="ar-restart">最初からやり直す</button>
-        <a class="ar-btn ar-btn-line" href="/airreach/sales/">営業の履歴</a>
       </div>
 
       <form id="ar-form" class="ar-form" action="#" method="get" hidden>
@@ -606,23 +958,42 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
       <div id="ar-empty" class="ar-empty">上の質問に答えると、結論の4つが出ます。</div>
 
       <div id="ar-dash" class="ar-dash" aria-live="polite">
-        <div class="ar-steps" id="ar-steps" aria-label="進捗">
-          <span class="is-on" data-step="1">1 いま</span>
-          <span data-step="2">2 くわしく見る</span>
-          <span data-step="3">3 やること</span>
+        <div class="ar-toolbar">
+          <div class="ar-steps" id="ar-steps" aria-label="進捗">
+            <span class="is-on" data-step="1">1 いま</span>
+            <span data-step="2">2 改善内容</span>
+            <span data-step="3">3 詳細データ</span>
+          </div>
+          <!-- 結果に対する操作。ステップと同じ行の右端に置く -->
+          <div class="ar-toolbar-actions" id="ar-restart-row" hidden>
+            <a class="ar-toolbar-link" href="/airreach/sales/">営業の履歴</a>
+            <button type="button" class="ar-btn ar-btn-line ar-btn-sm" id="ar-restart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>最初からやり直す</button>
+          </div>
         </div>
         <div class="ar-kicker" id="ar-analyzing" data-tip="お店・会社の担当者向けに、結論だけを先に出しています。">結論</div>
         <p class="ar-ind" id="ar-industry-line"></p>
         <h2 class="ar-h2" id="ar-title">診断結果</h2>
         <p class="ar-sub" id="ar-subtitle" hidden></p>
 
-        <div class="ar-metric-legend" id="ar-metric-legend">
-          <strong>数字の見方</strong>
-          <span>①探している人＝需要の目安　②いまの位置＝公開ページの準備度（100点満点）　③直したあと＝改善した場合の参考レンジ　④増える件数＝結果の目安（保証なし）</span>
+        <!-- サマリー: 円ゲージ（情報整備の点数）＋ 3行（需要・改善後・増える件数）。数値は report.headline4 から -->
+        <div class="ar-sumcard" id="ar-sumcard">
+          <div class="ar-gauge-row">
+            <div class="ar-gauge" id="ar-gauge" role="img" aria-label="ホームページの情報整備の点数"></div>
+            <div class="ar-gauge-side">
+              <div class="ar-gauge-title" id="ar-gauge-title">ホームページの情報整備</div>
+              <div class="ar-gauge-band" id="ar-gauge-band"></div>
+              <p class="ar-gauge-note" id="ar-gauge-note"></p>
+            </div>
+          </div>
+          <p class="ar-sum-verdict" id="ar-sum-verdict"></p>
+          <p class="ar-sum-verdict-sub" id="ar-sum-verdict-sub"></p>
+          <div class="ar-sum-rows" id="ar-sum-rows"></div>
         </div>
-        <div class="ar-chain" id="ar-chain"></div>
-        <p class="ar-conf"><span data-tip="入力や実測が増えるほど上がる参考指標です。統計的な信頼区間ではありません。">この結果の確かさ</span> <b id="ar-confidence">—</b>%</p>
-        <p class="ar-conf-plain" id="ar-confidence-plain">入力・実測が増えるほど上がります。統計的な信頼区間ではありません。</p>
+        <div class="ar-chain" id="ar-chain" hidden></div>
+        <div class="ar-metric-legend" id="ar-metric-legend" hidden></div>
+        <!-- 確かさ（confidence）は診断画面では出さない。営業画面用に値だけ保持 -->
+        <span id="ar-confidence" hidden></span>
+        <span id="ar-confidence-plain" hidden></span>
         <p class="ar-disc" id="ar-disc" hidden></p>
         <span id="ar-confidence-note" hidden></span>
 
@@ -630,7 +1001,6 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <div class="ar-factors-head">
             <h3><span data-tip="公開ページの準備度を4つの要素に分けた内訳です。AI掲載率そのものではありません。">点数の内訳（各100点）</span></h3>
           </div>
-          <div class="ar-factor-formula" id="ar-factor-formula"></div>
           <div class="ar-factor-grid" id="ar-factor-cards"></div>
           <h3 style="margin:8px 0 0;font-size:1.2rem;font-weight:800"><span data-tip="点数が低い主な不足です。ここから直すと総合点が上がりやすいです。">足りないもの</span></h3>
           <ul class="ar-gap-list" id="ar-factor-gaps"></ul>
@@ -642,11 +1012,6 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         </div>
         <div class="ar-cta-row">
           <a class="ar-btn ar-btn-primary" href="#actions" id="ar-cta-main">この改善方法を見る</a>
-        </div>
-        <p class="ar-more-link"><a href="#expert-view" id="ar-cta-more">詳しいデータを見る</a></p>
-        <div class="ar-next-bar" id="ar-next-bar" hidden>
-          <span id="ar-next-label">次：いちばん直すことを見る</span>
-          <a class="ar-btn ar-btn-primary" href="#actions" id="ar-next-btn">進む</a>
         </div>
 
         <div class="ar-panel is-hidden" id="brand-panel">
@@ -681,41 +1046,52 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <a id="ar-cta-to-actions" href="#actions" hidden></a>
         </div>
 
+        <div class="ar-panel is-hidden" id="actions">
+          <div class="ar-kicker">改善内容</div>
+          <h2 class="ar-h2" id="ar-actions-title">まずやるべき改善</h2>
+          <p class="ar-fix-lead" id="ar-actions-lead"></p>
+          <!-- 対策カード（2件）。「改善方法を見る」はその場で手順を開く。根拠リンクは取得した実URLだけ -->
+          <div class="ar-fixes" id="ar-actions3"></div>
+          <!-- HackⅡ は別サービス。対策・根拠リンクには混ぜず、ここだけで案内する -->
+          <aside class="ar-referral" id="ar-referral" hidden aria-label="別のサービスの案内">
+            <div class="ar-referral-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+            <div class="ar-referral-kicker" id="ar-referral-kicker">別のサービスの案内</div>
+            <h3 class="ar-referral-title" id="ar-referral-title"></h3>
+            <p class="ar-referral-body" id="ar-referral-body"></p>
+            <a class="ar-referral-cta" id="ar-cta-meet" href="/trillionbank/meeting/?type=company&from=airreach-referral">HackⅡについて相談する →</a>
+            <p class="ar-referral-note" id="ar-referral-note"></p>
+          </aside>
+          <!-- この画面の出口。ステップ3（詳細データ）は任意なので控えめな枠ボタンにする -->
+          <div class="ar-panel-exit">
+            <a class="ar-btn ar-btn-ghost" href="#expert-view" id="ar-cta-details">詳しいデータを見る<span class="ar-arrow" aria-hidden="true">→</span></a>
+          </div>
+        </div>
         <div class="ar-panel is-hidden" id="expert-view">
-          <div class="ar-kicker" data-tip="ホームページの内容から、良い点・足りない点・次にやることを整理します。">くわしく見る</div>
-          <h2 class="ar-h2">なにがあって、なにが足りないか</h2>
-          <div class="ar-expert-shell" id="ar-expert-shell"></div>
+          <div class="ar-kicker">詳細データ</div>
+          <h2 class="ar-h2">詳細データ</h2>
+          <p class="ar-fix-lead" id="ar-detail-lead">各項目の点数と、検出した項目の詳細です。点数は「ホームページの情報整備」の区分で、AI掲載率・順位・成果ではありません。</p>
+          <!-- 項目別の点数（押すと不足・未確認の内訳が開く） -->
+          <div class="ar-detail-list" id="ar-detail-factors"></div>
+          <h3 class="ar-detail-h3">検出されたその他の項目</h3>
+          <ul class="ar-detail-checks" id="ar-detail-checks"></ul>
+          <!-- 計算式はモーダルで見せる（初期表示は「計算式」「今回の計算」だけ） -->
           <div class="ar-logic" id="ar-logic-wrap">
-            <details id="ar-logic">
-              <summary><span data-tip="点数の式・代入値・エビデンス区分です。必要な人だけ開いてください。">算出ロジックの根拠を見る</span></summary>
-              <div id="ar-expert-meters" style="margin-top:16px"></div>
-              <div id="ar-expert-method" style="margin-top:12px" aria-live="polite"></div>
-            </details>
+            <button type="button" class="ar-formula-entry" id="ar-formula-open" aria-haspopup="dialog" aria-controls="ar-formula-modal"><svg class="ar-formula-entry-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/></svg><span class="ar-formula-entry-label">詳しい計算式を見る</span><span class="ar-arrow" aria-hidden="true">→</span></button>
           </div>
-          <div class="ar-cta-row">
-            <a class="ar-btn ar-btn-primary" href="#actions" id="ar-cta-to-actions-main">次にやることへ</a>
-          </div>
+          <!-- 担当者向けのツール。結果の流れの最後に置き、説明付きのリストにする -->
+          <details class="ar-more-tools" id="ar-more-tools">
+            <summary>その他のツール（担当者向け）</summary>
+            <div class="ar-tool-list">
+              <a class="ar-tool" href="/airreach/platform/"><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">くわしい分析</span><span class="ar-tool-desc">Search Console・GA4 の実数とつないで、訪問や問い合わせの余地を試算する</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
+              <button type="button" class="ar-tool" id="ar-google-connect"><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 12h8M12 8v8"/><circle cx="12" cy="12" r="9"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">Googleと連携（実測）</span><span class="ar-tool-desc">検索の実数を取り込む。準備中の環境では CSV の取り込みを案内する</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></button>
+              <a class="ar-tool" href="/airreach/studio/" id="ar-cta-actions"><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6M9 13h7M9 17h7"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">直す材料を作る</span><span class="ar-tool-desc">対策ファイルの下書きを生成する。自動では公開しない</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
+              <a class="ar-tool" id="ar-cta-sales-deal" href="/airreach/sales/" hidden><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">営業用に開く</span><span class="ar-tool-desc">履歴・営業トーク・提案書の下書き（端末内に保存）</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
+              <a class="ar-tool" id="ar-cta-sales-present" href="/airreach/sales/" hidden><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">商談モード</span><span class="ar-tool-desc">お客様に見せる用の画面で開く</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
+            </div>
+            <p class="ar-tool-note" id="ar-google-note" hidden></p>
+          </details>
         </div>
 
-        <div class="ar-panel is-hidden" id="actions">
-          <div class="ar-kicker" data-tip="診断結果から、いま手を付けるべき3つです。">次にやること</div>
-          <h2 class="ar-h2">最優先の対策3つ</h2>
-          <div class="ar-actions3" id="ar-actions3"></div>
-          <div class="ar-cta-row">
-            <a class="ar-btn ar-btn-primary" id="ar-cta-meet" href="/trillionbank/meeting/?type=company&from=airreach-teams" data-tip="優先順位の設計から継続改善まで一緒に進めます。">この店の対策を相談する</a>
-          </div>
-          <details class="ar-more-tools">
-            <summary>その他のツール</summary>
-            <div class="ar-cta-row">
-              <a class="ar-btn ar-btn-line" href="/airreach/studio/" id="ar-cta-actions" data-tip="対策ファイルをディレクトリごと生成します。">直す材料を作る</a>
-              <a class="ar-btn ar-btn-line" href="/airreach/platform/" data-tip="Googleの実数とつなぐ詳細分析です。">くわしい分析</a>
-              <button type="button" class="ar-btn ar-btn-line" id="ar-google-connect">Googleと連携（実測）</button>
-              <a class="ar-btn ar-btn-line" id="ar-cta-sales-deal" href="/airreach/sales/" hidden>営業用に開く</a>
-              <a class="ar-btn ar-btn-line" id="ar-cta-sales-present" href="/airreach/sales/" hidden>商談モード</a>
-            </div>
-          </details>
-          <p class="ar-note" id="ar-google-note" hidden></p>
-        </div>
       </div>
     </div>
   </section>
@@ -725,6 +1101,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 <script src="{{ '/assets/js/airreach-think.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-tip.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-handoff.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/airreach-display.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-diagnose.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-industry.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-sales.js' | relative_url }}" defer></script>
@@ -800,16 +1177,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function updateGateStep1() {
     var url = ($('gate-url').value || '').trim();
-    var ok = !!$('gate-proxy').checked && !!url;
+    var sel = $('gate-outcome-select');
+    var ok = !!$('gate-proxy').checked && !!url && !!(sel && sel.value);
     var btn = $('gate-next-1');
     if (btn) btn.disabled = !ok;
-    var card = $('gate-consent-card');
-    if (card) card.classList.toggle('is-on', !!$('gate-proxy').checked);
-  }
-
-  function updateGateSubmit() {
-    var btn = $('gate-submit');
-    if (btn) btn.disabled = !surveyState.outcomeGoal;
   }
 
   function industryLabel(id) {
@@ -826,34 +1197,21 @@ document.addEventListener('DOMContentLoaded', function () {
     return defaults[industry] || defaults.other;
   }
 
-  function fillConfirmCard() {
-    $('gate-confirm-name').textContent = surveyState.siteTitle || '（店名を読み取り中）';
-    $('gate-confirm-meta').textContent = industryLabel(surveyState.industryId);
-    $('gate-confirm-url').textContent = surveyState.url || '—';
-    document.querySelectorAll('#gate-industry button').forEach(function (b) {
-      b.classList.toggle('is-on', b.getAttribute('data-industry') === surveyState.industryId);
-    });
-  }
-
-  function renderOutcomes() {
-    var wrap = $('gate-outcome');
-    if (!wrap) return;
-    var list = OUTCOMES[surveyState.industryId] || OUTCOMES.other;
-    wrap.innerHTML = list.map(function (o) {
-      return '<button type="button" data-outcome="' + o.id + '" data-goal="' + o.goal + '"><div class="t">' + o.label + '</div></button>';
-    }).join('');
-    wrap.querySelectorAll('button').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        wrap.querySelectorAll('button').forEach(function (b) { b.classList.remove('is-on'); });
-        btn.classList.add('is-on');
-        surveyState.outcomeGoal = btn.getAttribute('data-outcome');
-        surveyState.goal = btn.getAttribute('data-goal');
-        updateGateSubmit();
+  // 「増やしたいこと」: 業種ページではその業種の選択肢、柱ページでは全選択肢
+  function renderOutcomeSelect() {
+    var sel = $('gate-outcome-select');
+    if (!sel) return;
+    var list;
+    if (pageIndustry) {
+      list = OUTCOMES[pageIndustry] || OUTCOMES.other;
+    } else {
+      list = Object.keys(OUTCOME_LABELS).map(function (id) {
+        return { id: id, label: OUTCOME_LABELS[id], goal: (id === 'awareness' || id === 'citation') ? 'visibility' : 'acquisition' };
       });
-    });
-    surveyState.outcomeGoal = '';
-    surveyState.goal = '';
-    updateGateSubmit();
+    }
+    sel.innerHTML = '<option value="">選んでください</option>' + list.map(function (o) {
+      return '<option value="' + o.id + '" data-goal="' + o.goal + '">' + o.label + '</option>';
+    }).join('');
   }
 
   function openGate() {
@@ -878,40 +1236,51 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.ar-gate-step').forEach(function (el) {
       el.classList.toggle('is-on', Number(el.getAttribute('data-step')) === n);
     });
-    document.querySelectorAll('.ar-gate-prog span').forEach(function (el) {
-      el.classList.toggle('is-on', Number(el.getAttribute('data-g')) <= n);
-    });
     gateErr('');
-    if (n === 3) renderOutcomes();
   }
 
-  function startPreviewDiagnose() {
+  // 診断中の進行表示。done = 完了した行数、failed = 失敗した行番号
+  function setProgress(done, failed) {
+    document.querySelectorAll('#gate-progress li').forEach(function (li) {
+      var p = Number(li.getAttribute('data-p'));
+      li.classList.toggle('is-done', p <= done);
+      li.classList.toggle('is-active', p === done + 1 && !failed);
+      li.classList.toggle('is-failed', !!failed && p === failed);
+    });
+    var sp = $('gate-spinner');
+    if (sp) sp.classList.toggle('is-stopped', !!failed || done >= 3);
+  }
+
+  function startDiagnoseFlow() {
     var url = ($('gate-url').value || '').trim();
     if (!url) { gateErr('ホームページのURLを入力してください。'); return; }
-    var normalized = url.indexOf('http') === 0 ? url : ('https://' + url);
-    try { new URL(normalized); } catch (e) { gateErr('正しいURL形式で入力してください（https://…）。'); return; }
-    if (!$('gate-proxy').checked) { gateErr('サイト情報の取得に同意してください。'); updateGateStep1(); return; }
-    var btn = $('gate-next-1');
-    btn.disabled = true;
-    btn.textContent = '調べています…';
-    gateErr('');
-    surveyState.url = url;
+    if (!$('gate-proxy').checked) { gateErr('サイト情報の取得に同意してください。'); return; }
+    var sel = $('gate-outcome-select');
+    var opt = sel && sel.options[sel.selectedIndex];
+    if (!sel || !sel.value) { gateErr('増やしたいことを選んでください。'); return; }
+    if (!window.AirReach) { gateErr('診断スクリプトの読み込みに失敗しました。'); return; }
+    surveyState.outcomeGoal = sel.value;
+    surveyState.goal = (opt && opt.getAttribute('data-goal')) || 'acquisition';
     surveyState.proxyConsent = true;
-    if (!window.AirReach) {
-      gateErr('診断スクリプトの読み込みに失敗しました。');
-      btn.disabled = false;
-      btn.textContent = '30秒で無料診断する';
-      return;
-    }
+    var chosen = pageIndustry || (($('gate-industry-select') && $('gate-industry-select').value) || '');
+    var normalized = url.indexOf('http') === 0 ? url : ('https://' + url);
+    var started = Date.now();
+    setGateStep(2);
+    $('gate-fail-actions').hidden = true;
+    setProgress(0);
+    var t1 = setTimeout(function () { setProgress(1); }, 700);
+
     window.AirReach.diagnose(url, { allowProxy: true }).then(function (result) {
+      clearTimeout(t1);
       surveyState.previewDiagnose = result;
       lastDiagnose = result;
-      try { lastUrl = window.AirReach.normalizeUrl(url).href; surveyState.url = lastUrl; } catch (e) { lastUrl = normalized; surveyState.url = lastUrl; }
+      try { lastUrl = window.AirReach.normalizeUrl(url).href; } catch (e) { lastUrl = normalized; }
+      surveyState.url = lastUrl;
       var det = window.AirReachIndustry
         ? AirReachIndustry.detectIndustry({ url: lastUrl, diagnose: result })
         : { id: 'other', label: 'その他', confidence: 40 };
-      if (pageIndustry) {
-        surveyState.industryId = pageIndustry;
+      if (chosen) {
+        surveyState.industryId = chosen;
       } else {
         var id = det.id || 'other';
         if (id === 'saas' || id === 'hr') id = 'b2b';
@@ -921,52 +1290,38 @@ document.addEventListener('DOMContentLoaded', function () {
       industryDetect = det;
       surveyState.siteTitle = (result.page && (result.page.h1 || result.page.title)) || lastUrl;
       surveyState.keyword = autoKeyword(result, surveyState.industryId);
-      fillConfirmCard();
-      setGateStep(2);
-      btn.textContent = '30秒で無料診断する';
-      updateGateStep1();
+      setProgress(2);
+      setTimeout(function () {
+        setProgress(3);
+        var wait = Math.max(300, 1400 - (Date.now() - started));
+        setTimeout(finishSurvey, wait);
+      }, 350);
     }).catch(function (ex) {
+      clearTimeout(t1);
       surveyState.previewDiagnose = null;
-      try { lastUrl = window.AirReach.normalizeUrl(url).href; surveyState.url = lastUrl; } catch (e) { lastUrl = normalized; surveyState.url = lastUrl; }
-      surveyState.industryId = pageIndustry || 'other';
+      try { lastUrl = window.AirReach.normalizeUrl(url).href; } catch (e) { lastUrl = normalized; }
+      surveyState.url = lastUrl;
+      surveyState.industryId = chosen || 'other';
       surveyState.siteTitle = String(lastUrl).replace(/^https?:\/\//, '').split('/')[0];
       surveyState.keyword = autoKeyword(null, surveyState.industryId);
-      fillConfirmCard();
-      setGateStep(2);
-      gateErr((ex && ex.message ? ex.message + ' ' : '') + '取得に失敗したため、推定で進めます。');
-      btn.textContent = '30秒で無料診断する';
-      updateGateStep1();
+      setProgress(0, 1);
+      gateErr((ex && ex.message ? ex.message + ' ' : '') + 'サイトを取得できなかったため、このまま進むと推定だけの結果になります。');
+      $('gate-fail-actions').hidden = false;
     });
   }
 
-  document.querySelectorAll('#gate-industry button').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('#gate-industry button').forEach(function (b) { b.classList.remove('is-on'); });
-      btn.classList.add('is-on');
-      surveyState.industryId = btn.getAttribute('data-industry');
-      fillConfirmCard();
-    });
-  });
-
-  $('gate-next-1').addEventListener('click', startPreviewDiagnose);
-  $('gate-back-2').addEventListener('click', function () { setGateStep(1); });
-  $('gate-next-2').addEventListener('click', function () {
-    if (!surveyState.industryId) { gateErr('お店・会社の種類を確認してください。'); return; }
-    setGateStep(3);
-  });
-  $('gate-back-3').addEventListener('click', function () { setGateStep(2); });
-
+  $('gate-next-1').addEventListener('click', startDiagnoseFlow);
+  $('gate-retry').addEventListener('click', function () { setGateStep(1); });
+  $('gate-continue').addEventListener('click', function () { finishSurvey(); });
   ['input', 'change'].forEach(function (ev) {
     $('gate-url').addEventListener(ev, updateGateStep1);
     $('gate-proxy').addEventListener(ev, updateGateStep1);
-  });
-  $('gate-consent-card').addEventListener('click', function (e) {
-    if (e.target && e.target.id === 'gate-proxy') return;
-    setTimeout(updateGateStep1, 0);
+    $('gate-outcome-select').addEventListener(ev, updateGateStep1);
   });
   $('gate-url').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') { e.preventDefault(); if (!$('gate-next-1').disabled) startPreviewDiagnose(); }
+    if (e.key === 'Enter') { e.preventDefault(); if (!$('gate-next-1').disabled) startDiagnoseFlow(); }
   });
+  renderOutcomeSelect();
   updateGateStep1();
 
   function applySurveyToPage(survey, route) {
@@ -1043,12 +1398,24 @@ document.addEventListener('DOMContentLoaded', function () {
     if ($('expert-view')) $('expert-view').classList.add('is-hidden');
     if ($('actions')) $('actions').classList.add('is-hidden');
 
-    $('ar-analyzing').textContent = report.modeLabel + ' · ' + (report.industryLabel || '');
-    $('ar-industry-line').innerHTML = 'お店・会社：<b>' + (report.industryLabel || '—') + '</b> · ホームページ：<b>' + (report.url || lastUrl || '—') + '</b>';
-    $('ar-title').textContent = report.keyword
-      ? ('「' + report.keyword + '」で調べました')
-      : (report.heroTitle || '診断結果');
-    $('ar-subtitle').textContent = 'まずはこの4つだけ。';
+    $('ar-analyzing').textContent = 'AirReach';
+    // Headline: the outcome range as a 目安 (never a promise). Branded/media mode falls back to the hero title.
+    (function () {
+      var t = $('ar-title');
+      var inq = report.inquiries || {};
+      var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+      if (report.mode !== 'branded_search' && inq.addLow != null && inq.addHigh != null) {
+        t.innerHTML = 'このサイトは、<em>あと' + esc(inq.addLow) + '〜' + esc(inq.addHigh) + '件</em>、' + esc(report.displayLabel || '問い合わせ') + 'が増える目安です。';
+      } else if (report.brand && report.brand.citationCurrent != null) {
+        t.innerHTML = '会社名で調べられたとき、この情報が使われる割合は <em>' + esc(report.brand.citationCurrent) + '%</em> が目安です。';
+      } else {
+        t.textContent = report.heroTitle || '診断結果';
+      }
+    })();
+    var urlShown = report.url || lastUrl || '';
+    $('ar-industry-line').innerHTML = (urlShown ? '<a href="' + urlShown.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener noreferrer">' + urlShown.replace(/</g, '&lt;') + ' ↗</a> · ' : '') +
+      'お店・会社：<b>' + (report.industryLabel || '—') + '</b>' + (report.keyword ? ' · 調べた言葉：<b>「' + report.keyword.replace(/</g, '&lt;') + '」</b>' : '');
+    $('ar-subtitle').textContent = '件数・点数は参考の目安で、掲載・順位・成果を保証するものではありません。';
     $('ar-disc').textContent = report.disclaimer;
     $('ar-confidence').textContent = String(report.confidence);
     $('ar-confidence-note').textContent = '実測データが増えるほど上がります（参考）';
@@ -1065,12 +1432,6 @@ document.addEventListener('DOMContentLoaded', function () {
       $('ar-cta-main').textContent = 'この改善方法を見る';
       $('ar-cta-main').setAttribute('href', '#actions');
     }
-    if ($('ar-next-bar')) {
-      $('ar-next-bar').hidden = false;
-      $('ar-next-label').textContent = '次：いちばん直すことを見る';
-      $('ar-next-btn').setAttribute('href', '#actions');
-      $('ar-next-btn').textContent = '進む';
-    }
 
     try {
       var paramsScan = new URLSearchParams(location.search).get('scan');
@@ -1081,7 +1442,12 @@ document.addEventListener('DOMContentLoaded', function () {
           url: report.url || prev.url || lastUrl,
           industryId: report.industryId || prev.industryId,
           keyword: report.keyword || prev.keyword,
-          scoreOverall: (report.acquisition && report.acquisition.score != null) ? report.acquisition.score : (prev.scoreOverall != null ? prev.scoreOverall : report.confidence),
+          // Never store a guessed score: diagnosed-but-unknown stays null (not confidence, not 0).
+          scoreOverall: (report.acquisition && report.acquisition.score != null) ? report.acquisition.score : (prev.scoreOverall != null ? prev.scoreOverall : null),
+          diagnoseState: lastDiagnose ? (lastDiagnose.state || 'verified') : (prev.diagnoseState || 'not_diagnosed'),
+          ruleVersion: (lastDiagnose && lastDiagnose.ruleVersion) || prev.ruleVersion || null,
+          displayVersion: (lastDiagnose && lastDiagnose.displayVersion) || prev.displayVersion || (window.AirReachDisplay ? AirReachDisplay.version : null),
+          evidencePageUrl: (lastDiagnose && lastDiagnose.page && (lastDiagnose.page.finalUrl || lastDiagnose.page.baseHref)) || prev.evidencePageUrl || null,
           firstFix: firstFix,
           displayName: prev.displayName || report.keyword || report.url,
           reportLite: {
@@ -1141,39 +1507,81 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     var whatIsMap = {
       demand: '需要の目安',
-      now: '準備度スコア',
+      now: '情報整備の点数',
       after: '改善後の目安',
       cite_now: '使われ方の目安',
       cite_after: '改善後の目安',
       outcome: '結果の目安'
     };
-    report.headline4.forEach(function (h, i) {
-      var row = document.createElement('div');
-      row.className = 'ar-stepn' + (i === report.headline4.length - 1 ? ' is-accent' : '');
-      var detail = [h.meaning, h.sub].filter(Boolean).join(' ');
-      var badge = AirReachSales.badgeLabel ? AirReachSales.badgeLabel(h.badge) : h.badge;
-      var what = whatIsMap[h.id] || '参考指標';
-      row.innerHTML =
-        '<div class="ix">' + (i + 1) + '</div>' +
-        '<div class="val-wrap">' +
-        '<div class="lab"><span data-tip="' + tipAttr(detail) + '">' + tipAttr(h.label) + '</span></div>' +
-        '<div class="val">' + tipAttr(h.value) + '<span class="unit">' + tipAttr(h.unit || '') + '</span></div>' +
-        '<span class="what-is">' + tipAttr(what) + '</span>' +
-        (h.meaning ? '<div class="meaning">' + tipAttr(h.meaning) + '</div>' : '') +
-        (h.sub ? '<div class="sub">' + tipAttr(h.sub) + '</div>' : '') +
-        '</div>' +
-        '<span class="ar-badge-e ' + badgeClass(h.badge) + '" data-tip="' + tipAttr(evidenceTip(h.badge)) + '">' + tipAttr(badge) + '</span>';
-      chain.appendChild(row);
-    });
-    var legend = $('ar-metric-legend');
-    if (legend && report.headline4 && report.headline4.length) {
-      legend.innerHTML = '<strong>数字の見方</strong><span>' +
-        report.headline4.map(function (h, i) {
-          var marks=['①','②','③','④']; return (marks[i]||String(i+1)) + tipAttr(h.label) + '＝' + tipAttr(whatIsMap[h.id] || '参考指標');
-        }).join('　') +
-        '</span>';
+    // ---- Summary card: gauge (now) + three rows (the other headline items) ----
+    var ICONS = {
+      demand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+      after: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+      outcome: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.5a5 5 0 0 1 6 5"/></svg>',
+      cite_now: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6M9 13h7M9 17h7"/></svg>',
+      cite_after: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'
+    };
+    var nowRow = null, otherRows = [];
+    (report.headline4 || []).forEach(function (h) { if (h.id === 'now') nowRow = h; else otherRows.push(h); });
+    var band = (nowRow && nowRow.band) || (window.AirReachDisplay ? AirReachDisplay.band(null) : { label: '未確認', tone: 'muted', color: '#64748b', meaning: '' });
+    var scoreNum = nowRow && nowRow.value !== '—' ? Number(nowRow.value) : null;
+    var gauge = $('ar-gauge');
+    if (gauge) {
+      var r = 52, c = 2 * Math.PI * r;
+      var pct = scoreNum == null ? 0 : Math.max(0, Math.min(100, scoreNum)) / 100;
+      var color = band.color || '#2563eb';
+      gauge.innerHTML =
+        '<svg viewBox="0 0 128 128" width="128" height="128" aria-hidden="true">' +
+        '<circle cx="64" cy="64" r="' + r + '" fill="none" stroke="#e2e8f0" stroke-width="12"/>' +
+        '<circle cx="64" cy="64" r="' + r + '" fill="none" stroke="' + tipAttr(color) + '" stroke-width="12" stroke-linecap="round" transform="rotate(-90 64 64)" stroke-dasharray="' + (c * pct).toFixed(1) + ' ' + c.toFixed(1) + '"/>' +
+        '</svg>' +
+        '<div class="ar-gauge-num">' + (scoreNum == null ? '<span class="ar-gauge-unknown">未確認</span>' : '<b>' + scoreNum + '</b><span>/ 100</span>') + '</div>';
+      gauge.setAttribute('aria-label', 'ホームページの情報整備 ' + (scoreNum == null ? '未確認' : scoreNum + '点、区分 ' + band.label));
     }
-    if (window.AirReachTip) window.AirReachTip.enhance(chain);
+    if ($('ar-gauge-title')) $('ar-gauge-title').textContent = (nowRow && nowRow.label) || 'ホームページの情報整備';
+    if ($('ar-gauge-band')) {
+      $('ar-gauge-band').innerHTML = '<span class="ar-band is-' + tipAttr(band.tone || 'muted') + '">' + tipAttr(band.label || '未確認') + '</span>' +
+        (nowRow && nowRow.badge ? ' <span class="ar-badge-e ' + badgeClass(nowRow.badge) + '" data-tip="' + tipAttr(evidenceTip(nowRow.badge)) + '" data-tip-icon>' + tipAttr(AirReachSales.badgeLabel ? AirReachSales.badgeLabel(nowRow.badge) : nowRow.badge) + '</span>' : '');
+    }
+    if ($('ar-gauge-note')) $('ar-gauge-note').textContent = window.AirReachDisplay ? AirReachDisplay.scopeSentence() : '点数はホームページの情報整備の区分です。';
+    // verdict: band + number of items that were fetched and found missing (never counts 未確認)
+    var gapCount = (lastDiagnose && lastDiagnose.gaps) ? lastDiagnose.gaps.length : 0;
+    var goalWord = report.displayLabel || 'お客様';
+    var verdict = '', verdictSub = '';
+    if (scoreNum == null) {
+      verdict = '一部の情報が取得できなかったため、総合点は出していません。';
+      verdictSub = '取得できた項目だけを下の内訳に表示しています（0点ではありません）。';
+    } else if (band.key === 'high') {
+      verdict = '情報はかなり整っています。';
+      verdictSub = gapCount ? ('あと' + gapCount + '項目を整えると、' + goalWord + 'の前に知りたい情報がさらに見つけやすくなります。') : '大きな不足は見当たりません。';
+    } else if (band.key === 'mid') {
+      verdict = '基本的な情報は載っています。';
+      verdictSub = '足りない' + (gapCount || '') + '項目を整えると、' + goalWord + 'の前に知りたい情報が見つけやすくなります。';
+    } else {
+      verdict = '知りたい情報が、ホームページで見つけにくい状態です。';
+      verdictSub = 'まず下の' + (gapCount ? gapCount + '項目' : '不足項目') + 'から整えるのが先です。';
+    }
+    if ($('ar-sum-verdict')) $('ar-sum-verdict').textContent = verdict;
+    if ($('ar-sum-verdict-sub')) $('ar-sum-verdict-sub').textContent = verdictSub;
+    var rowsEl = $('ar-sum-rows');
+    if (rowsEl) {
+      rowsEl.innerHTML = '';
+      otherRows.forEach(function (h) {
+        var badge = AirReachSales.badgeLabel ? AirReachSales.badgeLabel(h.badge) : h.badge;
+        var row = document.createElement('div');
+        row.className = 'ar-sum-row' + (h.id === 'outcome' || h.id === 'cite_after' ? ' is-accent' : '');
+        row.innerHTML =
+          '<div class="ar-sum-ico">' + (ICONS[h.id] || ICONS.demand) + '</div>' +
+          '<div class="ar-sum-body">' +
+          '<div class="ar-sum-lab">' + tipAttr(h.id === 'outcome' ? '増やせる' + h.label : h.label) + '</div>' +
+          '<div class="ar-sum-val">' + tipAttr(h.value) + '<span class="unit">' + tipAttr(h.unit || '') + '</span></div>' +
+          (h.meaning ? '<div class="ar-sum-note">' + tipAttr(h.meaning) + '</div>' : '') +
+          '</div>' +
+          '<span class="ar-badge-e ' + badgeClass(h.badge) + '" data-tip="' + tipAttr(evidenceTip(h.badge)) + '" data-tip-icon>' + tipAttr(badge) + '</span>';
+        rowsEl.appendChild(row);
+      });
+    }
+    if (window.AirReachTip) { window.AirReachTip.enhance($('ar-sumcard')); }
 
     var factorsWrap = $('ar-factors');
     var factorCards = $('ar-factor-cards');
@@ -1182,11 +1590,24 @@ document.addEventListener('DOMContentLoaded', function () {
     var fb = report.factors || (window.AirReachSales && AirReachSales.buildFactorBreakdown
       ? AirReachSales.buildFactorBreakdown(lastDiagnose) : null);
     if (factorsWrap && factorCards && fb) {
-      factorsWrap.hidden = false;
+      factorsWrap.hidden = true; // 内訳は「詳細データ」で表示する
       if (factorFormula) {
-        factorFormula.innerHTML = '<span data-tip="' + tipAttr(fb.formulaTip || '') + '">計算式</span>　' + tipAttr(fb.formula || '');
+        factorFormula.innerHTML = '<span data-tip="' + tipAttr(fb.formulaTip || '') + '" data-tip-icon>計算式</span>　' + tipAttr(fb.formula || '');
         if (fb.overall != null) {
-          factorFormula.innerHTML += '　→　<span data-tip="4要素の加重平均です。">総合 ' + tipAttr(String(fb.overall)) + ' / 100</span>';
+          factorFormula.innerHTML += '　→　<span data-tip="4要素の加重平均です。">総合 ' + tipAttr(String(fb.overall)) + ' / 100</span>' +
+            (fb.band ? ' <span class="ar-band is-' + tipAttr(fb.band.tone || 'muted') + '">' + tipAttr(fb.band.label || '') + '</span>' : '');
+        } else if (fb.state === 'partial') {
+          factorFormula.innerHTML += '　→　<span data-tip="必須項目が取得できなかったため、総合点は出していません。0点ではありません。" data-tip-icon>総合 未確認</span>';
+        }
+        // 区分の凡例と、点数が意味する範囲（表示契約から）
+        if (fb.legend && fb.legend.length) {
+          factorFormula.innerHTML += '<div class="ar-band-legend">' + fb.legend.map(function (b) {
+            return '<span class="ar-band is-' + tipAttr(b.tone) + '" data-tip="' + tipAttr(b.meaning || '') + '">' + tipAttr(b.label) + ' ' + tipAttr(b.range) + '点</span>';
+          }).join('') + '<span class="ar-band is-muted">未確認 = 取得できず（0点ではない）</span></div>';
+        }
+        if (fb.scopeSentence) {
+          factorFormula.innerHTML += '<p class="ar-band-scope">' + tipAttr(fb.scopeSentence) +
+            (fb.displayVersion ? ' <span style="color:#64748b;font-weight:600">（表示区分 ' + tipAttr(fb.displayVersion) + (fb.ruleVersion ? ' / 判定ルール ' + tipAttr(fb.ruleVersion) : '') + '）</span>' : '') + '</p>';
         }
       }
       factorCards.innerHTML = '';
@@ -1195,18 +1616,24 @@ document.addEventListener('DOMContentLoaded', function () {
         card.className = 'ar-factor-card is-' + ((f.level && f.level.tone) || 'muted');
         var miss = (f.missing && f.missing.length)
           ? '<ul class="ar-factor-miss">' + f.missing.map(function (m) {
-              return '<li>' + tipAttr(m) + '</li>';
+              var isUnknown = /未確認/.test(String(m));
+              return '<li' + (isUnknown ? ' style="color:#475569;background:#f1f5f9"' : '') + '>' + tipAttr(m) + '</li>';
             }).join('') + '</ul>'
           : '<ul class="ar-factor-miss"><li class="is-ok">大きな不足は見当たりません</li></ul>';
-        var scoreTxt = f.score == null ? '—' : String(f.score);
+        var unknownFactor = f.score == null;
+        var scoreTxt = unknownFactor ? '—' : String(f.score);
+        var bandLabel = (f.level && f.level.label) ? f.level.label : '未確認';
         var plain = f.tip || '';
-        if (f.score != null) {
-          plain = tipAttr(f.label) + 'は ' + tipAttr(scoreTxt) + ' / 100。総合点への重みは ' + tipAttr(String(f.weightPct)) + '%。' + tipAttr((f.level && f.level.label) ? ('いまの評価：' + f.level.label) : '');
+        if (!unknownFactor) {
+          plain = tipAttr(f.label) + 'は ' + tipAttr(scoreTxt) + ' / 100。総合点への重みは ' + tipAttr(String(f.weightPct)) + '%。いまの区分：' + tipAttr(bandLabel) + (f.state === 'partial' ? '（一部の項目は未確認）' : '');
+        } else {
+          plain = tipAttr(f.label) + 'は未確認です。取得できなかったため点数を出していません（0点ではありません）。';
         }
         card.innerHTML =
           '<div class="ar-factor-top">' +
           '<div class="ar-factor-label"><span data-tip="' + tipAttr(f.tip) + '">' + tipAttr(f.label) + '</span></div>' +
-          '<div class="ar-factor-score">' + tipAttr(scoreTxt) + '<span class="ar-factor-score-unit">/ 100</span></div></div>' +
+          '<div class="ar-factor-score">' + tipAttr(scoreTxt) + (unknownFactor ? '' : '<span class="ar-factor-score-unit">/ 100</span>') +
+          ' <span class="ar-band is-' + tipAttr((f.level && f.level.tone) || 'muted') + '" data-tip="' + tipAttr((f.level && f.level.meaning) || '') + '">' + tipAttr(bandLabel) + '</span></div></div>' +
           '<p class="ar-factor-plain">' + plain + '</p>' +
           '<div class="ar-factor-meta"><span data-tip="' + tipAttr(f.formula) + '">総合への重み ' + tipAttr(String(f.weightPct)) + '%</span>' +
           (f.contribution != null ? ' · 寄与約 ' + tipAttr(String(f.contribution)) + '点' : '') +
@@ -1215,11 +1642,14 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       if (factorGaps) {
         var gaps = (fb.gaps && fb.gaps.length) ? fb.gaps : (fb.weakFactors || []).map(function (w) {
-          return w.label + 'が弱い（' + w.score + '点）';
+          return w.label + 'が' + ((w.level && w.level.label) || '低い') + '区分（' + w.score + '点）';
         });
-        factorGaps.innerHTML = gaps.length
+        var unknownsHtml = (fb.unknowns || []).map(function (u) {
+          return '<li class="is-unknown" data-tip="取得できなかった項目です。不足と断定していません。">' + tipAttr(u) + '</li>';
+        }).join('');
+        factorGaps.innerHTML = (gaps.length
           ? gaps.map(function (g) { return '<li>' + tipAttr(g) + '</li>'; }).join('')
-          : '<li style="border-color:#86efac;background:#ecfdf5;color:#047857">大きな不足は検出されませんでした</li>';
+          : '<li style="border-color:#86efac;background:#ecfdf5;color:#047857">大きな不足は検出されませんでした</li>') + unknownsHtml;
       }
       if (window.AirReachTip) window.AirReachTip.enhance(factorsWrap);
     } else if (factorsWrap) {
@@ -1239,23 +1669,67 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var box = $('ar-actions3');
     box.innerHTML = '';
-    report.actions.forEach(function (a) {
-      var el = document.createElement('div');
-      el.className = 'ar-act';
-      var effect = a.effect || (a.slot === 'PARTNER'
-        ? '測定と改善をまとめて任せられます'
-        : '情報が伝わりやすくなり、選ばれやすさが上がる可能性');
-      el.innerHTML = '<div class="tag"></div><h3></h3>';
-      el.querySelector('.tag').textContent = a.title;
-      var h3 = el.querySelector('h3');
-      h3.textContent = a.action;
-      h3.setAttribute('data-tip', effect);
+    var fixes = (report.actions || []).slice(0, 2);
+    var PRI = [{ key: 'high', label: '優先度：高' }, { key: 'mid', label: '優先度：中' }];
+    if ($('ar-actions-title')) $('ar-actions-title').textContent = fixes.length ? ('まずやるべき改善（あと' + fixes.length + '件）') : 'まずやるべき改善';
+    if ($('ar-actions-lead')) {
+      $('ar-actions-lead').textContent = fixes.length
+        ? ('この' + fixes.length + 'つを整えると、' + (report.displayLabel || 'お客様') + 'の前に知りたい情報が見つけやすくなる可能性があります。成果は保証しません。')
+        : '診断で取得できた範囲では、大きな不足は見当たりませんでした。';
+    }
+    fixes.forEach(function (a, i) {
+      var pri = PRI[i] || PRI[1];
+      var g = a.guide || {};
+      var el = document.createElement('article');
+      el.className = 'ar-fix';
+      var stepsHtml = (g.steps || []).map(function (s) { return '<li>' + tipAttr(s) + '</li>'; }).join('');
+      var evHtml = (a.evidence && a.evidence.href)
+        ? '<a class="ar-act-evidence" href="' + tipAttr(a.evidence.href) + '" target="_blank" rel="noopener noreferrer" title="' + tipAttr(a.evidence.note || '') + '">' + tipAttr(a.evidence.label) + ' ↗</a>'
+        : '';
+      el.innerHTML =
+        '<div class="ar-fix-head">' +
+        '<span class="ar-fix-num is-' + (i + 1) + '">' + (i + 1) + '</span>' +
+        '<div class="ar-fix-headtext"><h3 class="ar-fix-title">' + tipAttr(a.title) + '</h3>' +
+        '<span class="ar-fix-pri is-' + pri.key + '">' + pri.label + '</span></div></div>' +
+        '<p class="ar-fix-desc">' + tipAttr(g.why || a.action) + '</p>' +
+        '<button type="button" class="ar-btn ar-btn-primary ar-fix-how" aria-expanded="false"><span class="ar-fix-how-label">改善方法を見る</span><span class="ar-arrow" aria-hidden="true">→</span></button>' +
+        '<div class="ar-fix-panel" hidden>' +
+        '<p class="ar-fix-what">' + tipAttr(a.action) + '</p>' +
+        (stepsHtml ? '<ol class="ar-fix-steps">' + stepsHtml + '</ol>' : '') +
+        evHtml +
+        '</div>' +
+        (g.example ? '<details class="ar-fix-example"><summary>具体例を見る</summary><p>' + tipAttr(g.example) + '</p></details>' : '');
+      var how = el.querySelector('.ar-fix-how');
+      var panel = el.querySelector('.ar-fix-panel');
+      how.addEventListener('click', function () {
+        var open = panel.hidden;
+        panel.hidden = !open;
+        how.setAttribute('aria-expanded', open ? 'true' : 'false');
+        how.querySelector('.ar-fix-how-label').textContent = open ? '改善方法を閉じる' : '改善方法を見る';
+      });
       box.appendChild(el);
     });
-    var actCta = $('ar-cta-actions');
-    if (actCta && report.actionsCta) {
-      actCta.textContent = report.actionsCta.label || actCta.textContent;
-      if (report.actionsCta.href) actCta.href = report.actionsCta.href;
+    // HackⅡ referral: separate frame under the actions, never inside them.
+    var ref = $('ar-referral');
+    if (ref && report.referral) {
+      ref.hidden = false;
+      $('ar-referral-kicker').textContent = report.referral.kicker || '別のサービスの案内';
+      $('ar-referral-title').textContent = report.referral.title || '';
+      $('ar-referral-body').textContent = report.referral.body || '';
+      $('ar-referral-note').textContent = report.referral.note || '';
+      var meetBtn = $('ar-cta-meet');
+      if (meetBtn) {
+        meetBtn.textContent = (report.referral.cta || 'HackⅡについて相談する') + ' →';
+        if (report.referral.href) meetBtn.href = report.referral.href;
+      }
+    } else if (ref) {
+      ref.hidden = true;
+    }
+
+    function scoreCell(v) {
+      if (v == null || !isFinite(Number(v))) return '<span data-tip="取得できなかったため判定していません。0点ではありません。">未確認</span>';
+      var b = window.AirReachDisplay ? AirReachDisplay.band(v) : null;
+      return String(v) + ' / 100' + (b ? ' <span class="ar-band is-' + tipAttr(b.tone) + '">' + tipAttr(b.label) + '</span>' : '');
     }
 
     function renderCheckList(items, ok) {
@@ -1270,38 +1744,73 @@ document.addEventListener('DOMContentLoaded', function () {
       }).join('') + '</ul>';
     }
 
-    var shell = $('ar-expert-shell');
     var insight = report.expertInsight || (window.AirReachSales && AirReachSales.buildExpertInsight
       ? AirReachSales.buildExpertInsight(lastDiagnose, report.actions) : null);
-    if (shell && insight) {
-      var nextHtml = '';
-      (insight.nextNow || []).forEach(function (t) {
-        nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="今すぐ着手できる公開ページの修正です。">今すぐ</span></div><p class="what">' + tipAttr(t) + '</p></div>';
+
+    // ---- 詳細データ: 項目別の点数（開閉）＋ 検出された項目の一覧 ----
+    var DICONS = {
+      structure: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6M9 13h7M9 17h7"/></svg>',
+      entity: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6M3 21h18"/></svg>',
+      faq: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>',
+      discover: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>'
+    };
+    var DLABEL = { structure: 'ページ構造', entity: '会社・サービス情報', faq: 'よくある質問', discover: '見つけやすさ' };
+    var detailFactors = $('ar-detail-factors');
+    if (detailFactors) {
+      detailFactors.innerHTML = '';
+      (fb && fb.factors ? fb.factors : []).forEach(function (f) {
+        var unknown = f.score == null;
+        var lv = f.level || { label: '未確認', tone: 'muted' };
+        var row = document.createElement('div');
+        row.className = 'ar-drow';
+        var items = (f.missing || []).map(function (m) {
+          var isUnk = /未確認/.test(String(m));
+          return '<li class="' + (isUnk ? 'is-unknown' : 'is-ng') + '">' + tipAttr(m) + '</li>';
+        }).join('');
+        row.innerHTML =
+          '<button type="button" class="ar-drow-btn" aria-expanded="false">' +
+          '<span class="ar-drow-ico">' + (DICONS[f.id] || DICONS.structure) + '</span>' +
+          '<span class="ar-drow-main"><span class="ar-drow-lab">' + tipAttr(DLABEL[f.id] || f.label) + '</span>' +
+          '<span class="ar-drow-score">' + (unknown ? '<span class="ar-drow-unk">未確認</span>' : '<b>' + tipAttr(String(f.score)) + '</b> / 100') + '</span></span>' +
+          '<span class="ar-band is-' + tipAttr(lv.tone || 'muted') + '">' + tipAttr(lv.label || '未確認') + '</span>' +
+          '<span class="ar-drow-chev" aria-hidden="true">›</span>' +
+          '</button>' +
+          '<div class="ar-drow-panel" hidden>' +
+          '<p class="ar-drow-meta">' + tipAttr(f.tip || '') + (unknown ? ' 取得できなかったため点数を出していません（0点ではありません）。' : ' 総合への重み ' + tipAttr(String(f.weightPct)) + '%・寄与約 ' + tipAttr(String(f.contribution)) + '点。') + '</p>' +
+          (items ? '<ul class="ar-drow-items">' + items + '</ul>' : '<p class="ar-drow-ok">大きな不足は見当たりません。</p>') +
+          '</div>';
+        var btn = row.querySelector('.ar-drow-btn');
+        var panel = row.querySelector('.ar-drow-panel');
+        btn.addEventListener('click', function () {
+          var open = panel.hidden;
+          panel.hidden = !open;
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+          row.classList.toggle('is-open', open);
+        });
+        detailFactors.appendChild(row);
       });
-      (insight.nextWeeks || []).slice(0, 3).forEach(function (t) {
-        nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="1〜2週間で整えると効果が出やすい項目です。">次に</span></div><p class="what">' + tipAttr(t) + '</p></div>';
-      });
-      (insight.nextSales || []).forEach(function (a) {
-        nextHtml += '<div class="ar-next-card"><div class="when"><span data-tip="' + tipAttr(a.tip || '') + '">優先対策</span></div><p class="what">' + tipAttr(a.action || a.title) + '</p></div>';
-      });
-      if (!nextHtml) {
-        nextHtml = '<div class="ar-next-card"><div class="when">次に</div><p class="what">不足項目の確認後、HackⅡ Studioで実装パッケージを作成してください。</p></div>';
+    }
+    var detailChecks = $('ar-detail-checks');
+    if (detailChecks) {
+      detailChecks.innerHTML = '';
+      var checks = (lastDiagnose && lastDiagnose.checks) || [];
+      if (!checks.length) {
+        detailChecks.innerHTML = '<li class="ar-dchk is-unknown"><span class="ar-dchk-mark">?</span><span class="ar-dchk-lab">診断データがまだありません。</span></li>';
       }
-      var badgeTxt = (AirReachSales.badgeLabel ? AirReachSales.badgeLabel(insight.evidenceClass) : insight.evidenceClass) || '';
-      shell.innerHTML =
-        '<div class="ar-expert-hero">' +
-        '<div class="lbl"><span data-tip="' + tipAttr(insight.evidenceTip) + '">公開ページ準備度</span> <span class="ar-badge-e ' + badgeClass(insight.evidenceClass) + '">' + tipAttr(badgeTxt) + '</span></div>' +
-        '<div class="score">' + tipAttr(insight.overall != null ? String(insight.overall) : '—') + ' <span style="font-size:1.1rem;color:#334155">/ 100</span></div>' +
-        '<div style="margin-top:10px;font-weight:800;color:#1e293b;font-size:1.05rem"><span data-tip="' + tipAttr(insight.formula) + '">計算で出た点数</span></div>' +
-        '</div>' +
-        '<div class="ar-expert-cols">' +
-        '<div class="ar-expert-col is-good"><h3><span data-tip="公開ページで検出できた良い点です。">あるもの</span></h3>' + renderCheckList(insight.good, true) + '</div>' +
-        '<div class="ar-expert-col is-bad"><h3><span data-tip="足りない・弱い点です。総合点が下がる主因です。">ないもの</span></h3>' + renderCheckList(insight.bad, false) + '</div>' +
-        '</div>' +
-        '<div><h3 style="margin:0 0 12px;font-size:1.25rem;font-weight:900"><span data-tip="不足を埋めるための具体的な次の一手です。">次にやること</span></h3><div class="ar-next-grid">' + nextHtml + '</div></div>';
-      if (window.AirReachTip) window.AirReachTip.enhance(shell);
-    } else if (shell) {
-      shell.innerHTML = '<p class="ar-note">診断データがまだありません。</p>';
+      checks.forEach(function (c) {
+        var state = c.state || (c.ok ? 'ok' : 'ng');
+        var mark = state === 'ok' ? '✓' : (state === 'ng' ? '!' : '?');
+        var label = String(c.label || '').replace(/がある$/, '');
+        var ev = c.evidence || {};
+        var href = state !== 'unknown' && ev.finalUrl ? ev.finalUrl + (ev.anchor ? '#' + ev.anchor : '') : '';
+        var li = document.createElement('li');
+        li.className = 'ar-dchk is-' + state;
+        li.innerHTML =
+          '<span class="ar-dchk-mark" aria-hidden="true">' + mark + '</span>' +
+          '<span class="ar-dchk-lab">' + tipAttr(label) + '<span class="ar-dchk-state">' + (state === 'ok' ? 'あり' : (state === 'ng' ? 'なし' : '未確認')) + '</span></span>' +
+          (href ? '<a class="ar-dchk-link" href="' + tipAttr(href) + '" target="_blank" rel="noopener noreferrer" title="確認したページを開く" aria-label="' + tipAttr(label) + ' の確認したページを開く">›</a>' : '<span class="ar-dchk-link is-off" aria-hidden="true">›</span>');
+        detailChecks.appendChild(li);
+      });
     }
 
     var ex = $('ar-expert-meters');
@@ -1310,14 +1819,17 @@ document.addEventListener('DOMContentLoaded', function () {
         ex.innerHTML =
           '<div class="ar-expert-block">' +
           '<h3><span data-tip="4要素の加重平均です。AI掲載率ではありません。">総合点の内訳</span></h3>' +
-          '<p class="sum">' + tipAttr((insight && insight.formula) || '総合 = 骨格×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25') + '</p>' +
+          '<p class="sum">' + tipAttr((insight && insight.formula) || '総合 = ページ構造×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25') + '</p>' +
           '<table class="ar-expert-table"><tbody>' +
-          '<tr><th><span data-tip="title / H1 / meta / canonical 等">骨格</span></th><td class="val">' + lastDiagnose.structure + ' / 100</td><td class="formula">× 0.30</td></tr>' +
-          '<tr><th><span data-tip="Organization / Service 等">会社情報</span></th><td class="val">' + lastDiagnose.entity + ' / 100</td><td class="formula">× 0.25</td></tr>' +
-          '<tr><th><span data-tip="FAQPage・可視FAQ">FAQ</span></th><td class="val">' + lastDiagnose.faq + ' / 100</td><td class="formula">× 0.20</td></tr>' +
-          '<tr><th><span data-tip="llms.txt / robots 等">見つけやすさ</span></th><td class="val">' + lastDiagnose.discover + ' / 100</td><td class="formula">× 0.25</td></tr>' +
-          '<tr><th>総合</th><td class="val">' + lastDiagnose.overall + ' / 100</td><td class="formula">計算結果</td></tr>' +
-          '</tbody></table></div>';
+          '<tr><th><span data-tip="title / H1 / meta / canonical 等">ページ構造</span></th><td class="val">' + scoreCell(lastDiagnose.structure) + '</td><td class="formula">× 0.30</td></tr>' +
+          '<tr><th><span data-tip="Organization / Service 等">会社情報</span></th><td class="val">' + scoreCell(lastDiagnose.entity) + '</td><td class="formula">× 0.25</td></tr>' +
+          '<tr><th><span data-tip="FAQPage・可視FAQ">FAQ</span></th><td class="val">' + scoreCell(lastDiagnose.faq) + '</td><td class="formula">× 0.20</td></tr>' +
+          '<tr><th><span data-tip="llms.txt / robots 等">見つけやすさ</span></th><td class="val">' + scoreCell(lastDiagnose.discover) + '</td><td class="formula">× 0.25</td></tr>' +
+          '<tr><th>総合</th><td class="val">' + scoreCell(lastDiagnose.overall) + '</td><td class="formula">' + (lastDiagnose.overall == null ? '必須項目が未取得のため出さない' : '計算結果') + '</td></tr>' +
+          '</tbody></table>' +
+          '<p class="sum" style="margin-top:8px">確認したページ：' + tipAttr((lastDiagnose.page && (lastDiagnose.page.finalUrl || lastDiagnose.page.baseHref)) || lastUrl || '—') +
+          (lastDiagnose.ruleVersion ? ' · 判定ルール ' + tipAttr(lastDiagnose.ruleVersion) : '') +
+          (lastDiagnose.displayVersion ? ' · 表示区分 ' + tipAttr(lastDiagnose.displayVersion) : '') + '</p></div>';
       } else {
         ex.innerHTML = '<p class="ar-note">URL診断前のため、準備度は仮値です。</p>';
       }
@@ -1347,6 +1859,9 @@ document.addEventListener('DOMContentLoaded', function () {
       methodBox.innerHTML = '';
     }
 
+    // ---- 計算式モーダルの中身（計算式・今回の計算・各項目の算出方法）。判定ルールの重みをそのまま使う ----
+    renderFormulaModal(lastDiagnose, fb, DICONS, DLABEL);
+
     if (window.AirReachTip) window.AirReachTip.enhance(document.getElementById('ar-dash') || document);
         if (window.AirReachHandoff && lastDiagnose) {
       window.AirReachHandoff.saveDiagnoseHandoff(lastDiagnose, lastUrl);
@@ -1354,8 +1869,98 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     var meet = $('ar-cta-meet');
     if (meet) {
-      meet.href = '/trillionbank/meeting/?type=company&from=airreach&q=' +
+      meet.href = '/trillionbank/meeting/?type=company&from=airreach-referral&q=' +
         encodeURIComponent((report.keyword || '') + ' industry=' + report.industryId);
+    }
+  }
+
+  function renderFormulaModal(diag, fb, icons, labels) {
+    var eqEl = $('ar-formula-eq'), legendEl = $('ar-formula-legend'), rowsEl = $('ar-formula-rows'),
+        totalEl = $('ar-formula-total'), noteEl = $('ar-formula-note'), methodEl = $('ar-formula-method');
+    if (!eqEl || !rowsEl) return;
+    var FACT = (window.AirReach && window.AirReach.FACTORS) || [
+      { id: 'structure', weight: 0.30, required: true }, { id: 'entity', weight: 0.25, required: true },
+      { id: 'faq', weight: 0.20, required: true }, { id: 'discover', weight: 0.25, required: false }
+    ];
+    var LETTERS = ['A', 'B', 'C', 'D'];
+    function w2(w) { return Number(w).toFixed(2); }
+    function esc(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+    // 計算式（判定ルールの重みから組み立てる）
+    var eqText = '総合スコア = ' + FACT.map(function (f, i) { return '(' + LETTERS[i] + ' × ' + w2(f.weight) + ')'; }).join(' + ');
+    eqEl.textContent = eqText;
+    eqEl.setAttribute('data-copy', eqText);
+    legendEl.innerHTML = FACT.map(function (f, i) {
+      return '<span>' + LETTERS[i] + '：' + esc(labels[f.id] || f.id) + 'のスコア（0〜100）</span>';
+    }).join('');
+
+    // 今回の計算
+    rowsEl.innerHTML = '';
+    var facts = (diag && diag.factors) || {};
+    var sum = 0, wsum = 0, hasUnknown = false, requiredMissing = false;
+    FACT.forEach(function (f) {
+      var score = facts[f.id] ? facts[f.id].score : (diag ? diag[f.id] : null);
+      var unknown = score == null;
+      if (unknown) { hasUnknown = true; if (f.required) requiredMissing = true; }
+      else { sum += score * f.weight; wsum += f.weight; }
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><span class="ar-fx-item"><span class="ar-fx-ico is-' + esc(f.id) + '">' + (icons[f.id] || icons.structure || '') + '</span>' + esc(labels[f.id] || f.id) + '</span></td>' +
+        '<td class="ar-fx-score">' + (unknown ? '<span class="ar-fx-unk">未確認</span>' : '<b>' + esc(score) + '</b><span>/ 100</span>') + '</td>' +
+        '<td class="ar-fx-weight">× ' + w2(f.weight) + '</td>' +
+        '<td class="ar-fx-add">' + (unknown ? '<span class="ar-fx-unk">—</span>' : (score * f.weight).toFixed(1)) + '</td>';
+      rowsEl.appendChild(tr);
+    });
+    var overall = diag ? diag.overall : null;
+    var raw = wsum > 0 ? sum / wsum : null;
+    if (!diag) {
+      totalEl.innerHTML = '<td colspan="4"><span class="ar-fx-unk">診断データがまだありません。</span></td>';
+    } else if (overall == null || requiredMissing) {
+      totalEl.innerHTML = '<td>合計</td><td colspan="3"><span class="ar-fx-unk">未確認</span></td>';
+    } else {
+      totalEl.innerHTML = '<td>合計</td><td colspan="3"><span class="ar-fx-raw">' + esc(raw.toFixed(1)) + ' →</span><span class="ar-fx-total">' + esc(overall) + ' <span>/ 100</span></span></td>';
+    }
+    if (!diag) { noteEl.hidden = true; }
+    else if (requiredMissing) {
+      noteEl.hidden = false;
+      noteEl.textContent = '必須項目（ページ構造・会社情報・FAQ）のいずれかが取得できなかったため、総合点は出していません。0点ではありません。';
+    } else if (hasUnknown) {
+      noteEl.hidden = false;
+      noteEl.textContent = '未確認の項目は計算から除き、取得できた項目の重み（合計 ' + w2(wsum) + '）で割り直しています。合計は小数第1位を四捨五入した値です。';
+    } else {
+      noteEl.hidden = false;
+      noteEl.textContent = '合計は加点の和を小数第1位で四捨五入した値です。';
+    }
+
+    // 各項目の詳細な算出方法（チェックごとの配点。取得できなかったチェックは満点から除く）
+    if (methodEl) {
+      var checks = (diag && diag.checks) || [];
+      var adjustments = (diag && diag.adjustments) || [];
+      if (!checks.length) {
+        methodEl.innerHTML = '<p class="ar-fx-note">診断データがまだありません。</p>';
+      } else {
+        var html = '<p class="ar-fx-note" style="margin:0 0 12px">各項目のスコア = 取得できたチェックの得点の合計 ÷ その満点の合計 × 100（0〜100に丸め）。取得できなかったチェックは満点に含めません。</p>';
+        FACT.forEach(function (f) {
+          var cs = checks.filter(function (c) { return c.factor === f.id; });
+          var pts = 0, max = 0;
+          cs.forEach(function (c) { if (c.known) { pts += c.points || 0; max += c.max || 0; } });
+          adjustments.forEach(function (a) { if (a.factor === f.id && max > 0) pts += a.points || 0; });
+          var fscore = facts[f.id] ? facts[f.id].score : null;
+          html += '<div class="ar-fx-fac"><h4>' + esc(labels[f.id] || f.id) +
+            '<small>' + (fscore == null ? '未確認' : esc(Math.max(0, pts)) + ' ÷ ' + esc(max) + ' × 100 ＝ ' + esc(fscore)) + '</small></h4>' +
+            '<ul class="ar-fx-chk">' + cs.map(function (c) {
+              var st = c.state === 'ok' ? 'ok' : (c.state === 'ng' ? 'ng' : 'unknown');
+              var mark = st === 'ok' ? '✓' : (st === 'ng' ? '✕' : '?');
+              var ptsTxt = st === 'unknown' ? '未確認' : esc(c.points || 0) + ' / ' + esc(c.max);
+              return '<li class="is-' + st + '"><span class="ar-fx-mark" aria-hidden="true">' + mark + '</span><span>' + esc(c.label) + '</span><span class="ar-fx-pts">' + ptsTxt + '</span></li>';
+            }).join('') +
+            adjustments.filter(function (a) { return a.factor === f.id; }).map(function (a) {
+              return '<li class="is-ng"><span class="ar-fx-mark" aria-hidden="true">−</span><span>' + esc(a.label) + '（減点）</span><span class="ar-fx-pts">' + esc(a.points) + '</span></li>';
+            }).join('') +
+            '</ul></div>';
+        });
+        methodEl.innerHTML = html;
+      }
     }
   }
 
@@ -1451,6 +2056,10 @@ document.addEventListener('DOMContentLoaded', function () {
         displayName: survey.siteTitle || survey.url,
         siteTitle: survey.siteTitle || '',
         scoreOverall: surveyState.previewDiagnose ? surveyState.previewDiagnose.overall : null,
+        diagnoseState: surveyState.previewDiagnose ? (surveyState.previewDiagnose.state || 'verified') : 'not_diagnosed',
+        ruleVersion: surveyState.previewDiagnose ? surveyState.previewDiagnose.ruleVersion : null,
+        displayVersion: surveyState.previewDiagnose ? surveyState.previewDiagnose.displayVersion : (window.AirReachDisplay ? AirReachDisplay.version : null),
+        evidencePageUrl: surveyState.previewDiagnose && surveyState.previewDiagnose.page ? (surveyState.previewDiagnose.page.finalUrl || surveyState.previewDiagnose.page.baseHref) : null,
         previewDiagnose: surveyState.previewDiagnose,
         source: 'airreach_free'
       });
@@ -1462,7 +2071,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.location.assign(target);
   }
 
-  $('gate-submit').addEventListener('click', finishSurvey);
+  // 入力画面の「診断をはじめる」→ 診断中 → finishSurvey（gate-submit は廃止）
 
   $('ar-restart').addEventListener('click', function () {
     window.AirReachOnboard.clearSurvey();
@@ -1471,12 +2080,11 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     surveyState = { industryId: '', url: '', goal: '', keyword: '', mediaUrl: '', proxyConsent: false, outcomeGoal: '', siteTitle: '', previewDiagnose: null };
-    document.querySelectorAll('#gate-industry button').forEach(function (b) { b.classList.remove('is-on'); });
     $('gate-url').value = '';
     $('gate-proxy').checked = false;
-    var out = $('gate-outcome'); if (out) out.innerHTML = '';
+    if ($('gate-outcome-select')) $('gate-outcome-select').value = '';
+    if ($('gate-industry-select')) $('gate-industry-select').value = '';
     updateGateStep1();
-    updateGateSubmit();
     $('ar-dash').classList.remove('is-on');
     $('ar-empty').style.display = '';
     openGate();
@@ -1500,64 +2108,125 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (href.indexOf('expert-view') >= 0) {
       revealPanel('expert-view');
-      setStep(2);
+      setStep(3);
       $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if ($('ar-next-bar')) {
-        $('ar-next-label').textContent = '次：いちばん直すことを決める';
-        $('ar-next-btn').setAttribute('href', '#actions');
-        $('ar-next-btn').textContent = '進む';
-      }
       return;
     }
     goActions();
-    if ($('ar-next-bar')) {
-      $('ar-next-label').textContent = '次：この店の対策を相談する';
-      $('ar-next-btn').setAttribute('href', '#actions');
-      $('ar-next-btn').textContent = '相談へ';
-    }
   });
-  if ($('ar-cta-more')) {
-    $('ar-cta-more').addEventListener('click', function (e) {
-      e.preventDefault();
-      revealPanel('expert-view');
-      setStep(2);
-      $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }
-  if ($('ar-next-btn')) {
-    $('ar-next-btn').addEventListener('click', function (e) {
-      e.preventDefault();
-      var href = $('ar-next-btn').getAttribute('href') || '#actions';
-      if (href.indexOf('expert') >= 0) {
-        revealPanel('expert-view');
-        setStep(2);
-        $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return;
-      }
-      if (href.indexOf('meet') >= 0 || ($('ar-next-btn').textContent || '').indexOf('相談') >= 0) {
-        var meet = $('ar-cta-meet');
-        if (meet && meet.href) { location.href = meet.href; return; }
-      }
-      goActions();
-    });
-  }
   if ($('ar-cta-brand-next')) {
     $('ar-cta-brand-next').addEventListener('click', function (e) {
       e.preventDefault();
       revealPanel('expert-view');
-      setStep(2);
+      setStep(3);
       $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
   function goActions(e) {
     if (e) e.preventDefault();
     revealPanel('actions');
-    setStep(3);
+    setStep(2);
     $('actions').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   if ($('ar-cta-to-actions')) $('ar-cta-to-actions').addEventListener('click', goActions);
-  if ($('ar-cta-to-actions-main')) $('ar-cta-to-actions-main').addEventListener('click', goActions);
-  if ($('ar-cta-actions')) $('ar-cta-actions').addEventListener('click', function () { setStep(3); });
+  // FAB: 1画面分ほどスクロールしたら出る。押すとページの先頭へ戻る
+  (function () {
+    var fab = $('ar-fab-top');
+    if (!fab) return;
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var show = window.scrollY > Math.max(480, window.innerHeight * 0.8);
+      if (show) {
+        if (fab.hidden) { fab.hidden = false; fab.classList.add('is-out'); void fab.offsetWidth; }
+        fab.classList.remove('is-out');
+      } else if (!fab.hidden) {
+        fab.classList.add('is-out');
+      }
+    }
+    function request() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+    window.addEventListener('scroll', request, { passive: true });
+    window.addEventListener('resize', request);
+    fab.addEventListener('transitionend', function () { if (fab.classList.contains('is-out')) fab.hidden = true; });
+    fab.addEventListener('click', function (e) {
+      e.preventDefault();
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+    request();
+  })();
+  if ($('ar-cta-actions')) $('ar-cta-actions').addEventListener('click', function () { setStep(2); });
+  if ($('ar-cta-details')) {
+    $('ar-cta-details').addEventListener('click', function (e) {
+      e.preventDefault();
+      revealPanel('expert-view');
+      setStep(3);
+      $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  // 計算式モーダル：開閉・Esc・背景クリック・フォーカス維持・コピー
+  (function () {
+    var modal = $('ar-formula-modal'), openBtn = $('ar-formula-open'), copyBtn = $('ar-formula-copy');
+    if (!modal || !openBtn) return;
+    var card = modal.querySelector('.ar-modal-card');
+    var lastFocus = null;
+    function focusables() {
+      return Array.prototype.slice.call(card.querySelectorAll('button, [href], summary, input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+        .filter(function (el) { return !el.disabled && el.offsetParent !== null; });
+    }
+    function openModal() {
+      lastFocus = document.activeElement;
+      modal.hidden = false;
+      modal.classList.add('is-on');
+      document.body.classList.add('ar-modal-open');
+      // 初期表示は「計算式」「今回の計算」だけ。アコーディオンは毎回閉じる
+      modal.querySelectorAll('details').forEach(function (d) { d.open = false; });
+      card.scrollTop = 0;
+      card.focus({ preventScroll: true }); // 見出しから読み上げが始まる。閉じるボタンは Tab で届く
+      document.addEventListener('keydown', onKey);
+    }
+    function closeModal() {
+      modal.classList.remove('is-on');
+      modal.hidden = true;
+      document.body.classList.remove('ar-modal-open');
+      document.removeEventListener('keydown', onKey);
+      var back = (lastFocus && lastFocus !== document.body && lastFocus.focus) ? lastFocus : openBtn;
+      back.focus();
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); closeModal(); return; }
+      if (e.key !== 'Tab') return;
+      var els = focusables();
+      if (!els.length) return;
+      var first = els[0], last = els[els.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+    openBtn.addEventListener('click', openModal);
+    modal.querySelectorAll('[data-modal-close]').forEach(function (el) { el.addEventListener('click', closeModal); });
+    if (copyBtn) {
+      copyBtn.addEventListener('click', function () {
+        var eq = $('ar-formula-eq');
+        var text = (eq && (eq.getAttribute('data-copy') || eq.textContent)) || '';
+        function done() {
+          copyBtn.classList.add('is-done');
+          copyBtn.setAttribute('aria-label', 'コピーしました');
+          setTimeout(function () { copyBtn.classList.remove('is-done'); copyBtn.setAttribute('aria-label', '計算式をコピー'); }, 1600);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+        } else { fallback(); }
+        function fallback() {
+          try {
+            var ta = document.createElement('textarea');
+            ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
+          } catch (e) {}
+        }
+      });
+    }
+  })();
 
   $('ar-google-connect').addEventListener('click', function () {
     var __auth=(window.AirReachAPI&&window.AirReachAPI.apiUrl)?window.AirReachAPI.apiUrl('/api/google/auth'):'/api/google/auth/';

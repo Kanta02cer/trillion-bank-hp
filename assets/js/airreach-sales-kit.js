@@ -43,7 +43,12 @@
     var lines = [];
     lines.push(name + 'さんのホームページを拝見しました。');
     if (score != null) {
-      lines.push('いまの見つかりやすさは、参考で ' + score + ' / 100 です。（参考予測・成果保証なし）');
+      // Band label / meaning come from the shared display contract so the talk matches the screen.
+      var b = window.AirReachDisplay ? window.AirReachDisplay.band(score) : null;
+      lines.push('ホームページの情報整備は、参考で ' + score + ' / 100（区分：' + (b ? b.label : '—') + '）です。' + (b && b.meaning ? b.meaning + '。' : '') + '（参考予測・成果保証なし）');
+      lines.push('この点数はホームページの情報整備の区分で、AI掲載率・検索順位・予約数ではありません。');
+    } else if (scan.diagnoseState === 'partial') {
+      lines.push('一部の情報が取得できなかったため、総合点は出していません（0点ではありません）。');
     } else {
       lines.push('いまの見つかりやすさを診断しました。');
     }

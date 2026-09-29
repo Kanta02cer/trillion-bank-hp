@@ -1,0 +1,97 @@
+# AirReach 表示契約（区分・状態・文言の唯一の定義）
+#
+# 診断画面 (_includes/airreach-app.html)・営業画面 (assets/js/airreach-sales.js)・
+# 判定エンジン (assets/js/airreach-diagnose.js) は、区分の境界値・ラベル・色・状態表示を
+# ここからだけ読む。JS へは assets/js/airreach-display.js が Liquid で埋め込む。
+#
+# 境界値は 2026-09-25 画面設計案の「表示案」。採点式（ruleVersion）とは別に版管理し、
+# 公開前に境界値と「普通」の意味を承認してから approval.status を approved にする。
+last_reviewed: "2026-09-29"
+display_version: "band-v1"
+approval:
+  status: approved
+  note: "AirReach v1 の正式仕様として承認。区分 0-39 低い / 40-69 普通 / 70-100 高い、および airreach-common-v1 の4項目の配点・検出条件。"
+  approved_on: "2026-09-29"
+
+# 点数が意味するもの・意味しないもの（画面・営業トーク共通の説明文）
+score:
+  scope: "ホームページの情報整備"
+  scope_sentence: "点数と色は「ホームページの情報整備」の区分です。"
+  not_meaning:
+    - "AIに紹介される確率"
+    - "検索順位"
+    - "予約数"
+    - "他店との比較"
+  not_meaning_sentence: "AI掲載率・検索順位・予約数・他店との比較ではありません。"
+  unit: "/ 100点"
+
+# 3区分（0-100点）。min/max は含む。色は補助で、ラベルを常に併記する。
+bands:
+  - key: low
+    label: "低い"
+    min: 0
+    max: 39
+    tone: bad
+    color: "#dc2626"
+    meaning: "来店・相談の前に知りたい情報が、ホームページで見つけにくい"
+  - key: mid
+    label: "普通"
+    min: 40
+    max: 69
+    tone: warn
+    color: "#d97706"
+    meaning: "基本的な情報は載っているが、足りない項目がある"
+  - key: high
+    label: "高い"
+    min: 70
+    max: 100
+    tone: good
+    color: "#16a34a"
+    meaning: "知りたい情報が、ひととおり載っている"
+
+# 点数が無いときの表示
+unknown:
+  key: unknown
+  label: "未確認"
+  tone: muted
+  color: "#64748b"
+  meaning: "取得できなかったため判定していません。0点ではありません。"
+
+# 診断全体の状態と、数値・色・リンクの表示条件
+states:
+  verified:
+    label: "確認済み"
+    show_score: true
+    show_color: true
+    link: "evidence"
+    note: "数値・色・位置を表示。根拠リンクは取得時の最終URL（検証済みアンカーがあればそこへ）。"
+  partial:
+    label: "一部未取得"
+    show_score: true
+    show_color: true
+    link: "evidence_only"
+    note: "取得できた項目だけ表示。根拠のあるURLだけリンク。必須項目が欠けたときは総合点を出さない。"
+  failed:
+    label: "取得失敗"
+    show_score: false
+    show_color: false
+    link: "none"
+    note: "数値と色を表示しない。理由と再試行を示す。リンクを推測しない。"
+  no_site:
+    label: "ホームページなし"
+    show_score: false
+    show_color: false
+    link: "none"
+    note: "対象外。リンクを作らず、0点にしない。"
+
+# 各チェックの3値
+check_states:
+  ok:
+    label: "あり"
+    mark: "✓"
+  ng:
+    label: "なし"
+    mark: "×"
+  unknown:
+    label: "未確認"
+    mark: "?"

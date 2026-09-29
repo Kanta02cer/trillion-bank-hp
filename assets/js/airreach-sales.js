@@ -23,12 +23,17 @@
     return 'generic_search';
   }
 
+  // Band / wording come only from the display contract (_data/airreach_display.yml via airreach-display.js).
+  function display() { return window.AirReachDisplay || null; }
+  function band(score) {
+    var d = display();
+    if (d) return d.band(score);
+    return { key: 'unknown', label: '未確認', tone: 'muted', meaning: '' };
+  }
   function scoreMeaning(score) {
-    var s = num(score, 40);
-    if (s >= 75) return '準備度が高い（公開情報が揃っている）';
-    if (s >= 55) return '準備度は中程度（まだ伸ばせる）';
-    if (s >= 35) return '準備度は低め（改善余地が大きい）';
-    return '準備度が低い（情報が足りず取りこぼしやすい）';
+    var d = display();
+    if (d) return d.scoreMeaning(score);
+    return '未確認';
   }
 
   function estimateSearchVolume(keyword, mode) {
@@ -55,13 +60,29 @@
   }
 
   function acquisitionScoreFromDiagnose(result) {
-    if (!result || result.overall == null) {
+    if (!result) {
       return { score: 40, evidenceClass: 'Estimated', note: 'URL診断前の仮値' };
+    }
+    if (result.overall == null) {
+      // Diagnosed, but a required item could not be fetched: no overall score (never 0, never a guess).
+      return {
+        score: null,
+        evidenceClass: 'Observed',
+        note: '未取得の項目があるため総合点なし',
+        state: result.state || 'partial',
+        parts: {
+          structure: result.structure,
+          entity: result.entity,
+          faq: result.faq,
+          discover: result.discover
+        }
+      };
     }
     return {
       score: result.overall,
       evidenceClass: 'Observed',
       note: '公開ページ準備度（URL診断）',
+      state: result.state || 'verified',
       parts: {
         structure: result.structure,
         entity: result.entity,
@@ -82,6 +103,9 @@
     var gap = clamp(78 - s, 8, 45);
     var low = clamp(Math.round(s + gap * 0.55), s + 5, 92);
     var high = clamp(Math.round(s + gap * 0.95), low + 4, 96);
+    // Never show a range above the 100-point scale (high scores used to produce 98〜102).
+    low = Math.min(low, 100);
+    high = Math.min(Math.max(high, low), 100);
     var multLow = Math.round((low / Math.max(s, 1)) * 10) / 10;
     var multHigh = Math.round((high / Math.max(s, 1)) * 10) / 10;
     return {
@@ -250,6 +274,27 @@
         effect: '次に起きること：探している人に見つけてもらいやすくなる可能性'
       };
     }
+    if (/Service|Product/i.test(g)) {
+      return {
+        title: 'サービスの対象・対象外を明記する',
+        action: 'どんな人向けの何のサービスかを冒頭で1文で書き、同じ内容を Service の構造化データにも入れる',
+        effect: '次に起きること：何のサービスかが取り違えなく伝わる可能性'
+      };
+    }
+    if (/Breadcrumb|パンくず/i.test(g)) {
+      return {
+        title: 'ページの階層（パンくず）を示す',
+        action: '「トップ ＞ サービス ＞ 料金」のような現在地の表示を各ページに置き、BreadcrumbList の構造化データも入れる',
+        effect: '次に起きること：サイトのどこに何があるかが伝わりやすくなる可能性'
+      };
+    }
+    if (/og:title|共有/i.test(g)) {
+      return {
+        title: 'SNS共有用のタイトルを設定する',
+        action: 'ページを共有したときに表示されるタイトル（og:title）を、ページの主題が分かる文言で設定する',
+        effect: '次に起きること：共有されたときに何のページか伝わる可能性'
+      };
+    }
     if (/問い合わせ|相談|導線|contact/i.test(g)) {
       return {
         title: '次の一歩をはっきり書く',
@@ -264,64 +309,131 @@
     };
   }
 
+  /**
+   * Evidence link for an action: the page actually fetched during diagnosis.
+   * Uses a verified anchor only when the fetched HTML really had that id (never guesses "#faq").
+   */
+  function evidenceLinkFor(diagnose, kind) {
+    var page = (diagnose && diagnose.page) || {};
+    var base = page.finalUrl || page.baseHref || '';
+    if (!base) return null;
+    var anchor = '';
+    if (kind === 'faq' && page.faqAnchor) anchor = '#' + page.faqAnchor;
+    return {
+      label: anchor ? '確認した箇所を開く' : '確認したページを開く',
+      href: base + anchor,
+      note: anchor
+        ? '診断時に取得したページの、該当する見出し（id="' + page.faqAnchor + '"）へ移動します。'
+        : '診断時に取得したページを開きます。該当箇所が見つからなかったため、ページ先頭へ移動します。'
+    };
+  }
+
+  /**
+   * Plain-language guide for an action: why it matters, what to do, and an example.
+   * Copy is about ホームページの情報整備 only (no AI / ranking / outcome claims).
+   */
+  function actionGuide(kind, industryId) {
+    var shop = industryId === 'restaurant' ? 'お店' : industryId === 'clinic' ? '医院' : '会社';
+    var guides = {
+      faq: {
+        why: '来店・相談の前に気になる条件を、お客様がホームページ上で確認できるようにします。',
+        steps: ['よく聞かれる質問を3つ選ぶ', shop + 'の実際の対応内容を、そのまま短く書く', 'ホームページの分かりやすい場所に「よくある質問」として載せる'],
+        example: industryId === 'restaurant'
+          ? '例：「予約は必要ですか？」「子連れでも大丈夫ですか？」「アレルギー対応はできますか？」に、営業時間や席の案内と一緒に答える。'
+          : industryId === 'clinic'
+            ? '例：「初診に必要なものは？」「料金の目安は？」「予約の方法は？」に、診療時間と一緒に答える。'
+            : '例：「料金の目安は？」「導入までの流れは？」「対応エリアは？」に、問い合わせ方法と一緒に答える。'
+      },
+      entity: {
+        why: '誰の・何のサービスかが、検索エンジンにも人にも取り違えなく伝わるようにします。',
+        steps: ['正式名称・所在地・電話番号・営業時間を1か所にまとめる', 'サービス名と、どんな人向けかを1文で書く', '同じ内容を構造化データ（Organization / Service）にも入れる'],
+        example: '例：ページ下部に「' + shop + '名・住所・電話・営業時間」をまとめた欄を置き、トップの冒頭に「〇〇向けの△△サービスです」と1文添える。'
+      },
+      contact: {
+        why: '興味を持った人が、次に何をすればいいか迷わないようにします。',
+        steps: ['予約・問い合わせ・資料請求のうち、いちばん取りたい行動を1つ決める', 'そのボタンをページの上部と下部に置く', 'ボタンの近くに、対応時間と返信の目安を書く'],
+        example: '例：「予約する」ボタンをトップ上部と各ページ末尾に置き、「当日予約は電話で。メールは翌営業日までに返信」と添える。'
+      },
+      page: {
+        why: 'ページの主題と案内が整うと、探している人が目的の情報にたどり着きやすくなります。',
+        steps: ['トップページの見出し（H1）を「何の' + shop + 'か」が分かる1文にする', 'ページの説明文（meta description）を40文字以上で書く', '重要ページ（サービス・料金・アクセス・よくある質問）へのリンクをまとめる'],
+        example: '例：見出しを「渋谷駅3分・個室ありの焼肉店」のように具体化し、説明文に対象・場所・特徴を入れる。'
+      }
+    };
+    return guides[kind] || guides.page;
+  }
+
+  function actionKind(text) {
+    var t = String(text || '');
+    if (/FAQ|質問/.test(t)) return 'faq';
+    if (/Organization|LocalBusiness|会社|お店の基本情報|組織|サービスの対象|Service/.test(t)) return 'entity';
+    if (/問い合わせ|相談|導線|次の一歩/.test(t)) return 'contact';
+    return 'page';
+  }
+
+  /**
+   * Up to 3 対策. HackⅡ / Teams is intentionally NOT an action here: it is a separate
+   * service and goes into the report's `referral` block, rendered in its own frame.
+   */
   function top3Actions(industry, mode, diagnose, brand) {
     var profile = industry || (window.AirReachIndustry && window.AirReachIndustry.getIndustry('other'));
     var industryId = (profile && profile.id) || 'other';
-    var defaults = (profile && profile.actions) ? profile.actions.slice(0, 3) : [];
+    var defaults = ((profile && profile.actions) ? profile.actions : []).filter(function (d) { return d.slot !== 'PARTNER'; });
     var actions = [];
 
-    // 個別課題：診断ギャップから最大2件を平易な対策に翻訳
+    function push(item) {
+      if (actions.length >= 3) return;
+      // Two gaps often map to the same plain action; show each action once.
+      if (actions.some(function (a) { return a.title === item.title; })) return;
+      var kind = actionKind(item.title + ' ' + item.action);
+      actions.push({
+        slot: actions.length === 0 ? 'NOW' : '2W',
+        priority: actions.length === 0 ? 'high' : 'mid',
+        title: item.title,
+        action: item.action,
+        effect: item.effect || '次に起きること：来店・相談の前に知りたい情報が、見つけやすくなる可能性',
+        kind: kind,
+        guide: actionGuide(kind, industryId),
+        evidence: evidenceLinkFor(diagnose, kind)
+      });
+    }
+
+    // 個別課題：診断ギャップ（取得できて「なし」だった項目）から最大2件を平易な対策に翻訳
     if (diagnose && diagnose.gaps && diagnose.gaps.length) {
-      diagnose.gaps.slice(0, 2).forEach(function (gap, i) {
-        var plain = gapToPlainAction(gap, industryId);
-        actions.push({
-          slot: i === 0 ? 'NOW' : '2W',
-          title: plain.title,
-          action: plain.action,
-          effect: plain.effect,
-          cta: 'HackⅡ Studioで作る',
-          href: '/airreach/studio/'
-        });
-      });
+      diagnose.gaps.slice(0, 4).forEach(function (gap) { if (actions.length < 2) push(gapToPlainAction(gap, industryId)); });
     }
-
-    // 足りない分は業種デフォルトで埋める（PARTNER以外）
+    // 足りない分は業種デフォルトで埋める
     defaults.forEach(function (d) {
-      if (actions.length >= 2) return;
-      if (d.slot === 'PARTNER') return;
-      actions.push({
-        slot: actions.length === 0 ? 'NOW' : '2W',
-        title: d.title,
-        action: d.action,
-        effect: '次に起きること：情報が伝わりやすくなり、選ばれやすさが上がる可能性',
-        cta: 'HackⅡ Studioで作る',
-        href: '/airreach/studio/'
-      });
+      if (actions.some(function (a) { return a.title === d.title; })) return;
+      push({ title: d.title, action: d.action });
     });
-
-    while (actions.length < 2) {
-      actions.push({
-        slot: actions.length === 0 ? 'NOW' : '2W',
-        title: 'よく聞かれる質問を追加する',
-        action: '購入・予約・相談の前に聞かれることを公式に置く',
-        effect: '次に起きること：迷いが減り、行動につながりやすくなる可能性',
-        cta: 'HackⅡ Studioで作る',
-        href: '/airreach/studio/'
-      });
+    while (actions.length < 3) {
+      var fallbacks = [
+        { title: 'よく聞かれる質問を追加する', action: '購入・予約・相談の前に聞かれることを公式に置く', effect: '次に起きること：迷いが減り、行動につながりやすくなる可能性' },
+        { title: '会社・お店の基本情報を揃える', action: '正式名称・所在地・連絡先・営業時間を、同じ内容で公式ページに載せる' },
+        { title: 'サイトの案内情報を整える', action: '重要ページへの案内と、ページの主題（見出し）を分かりやすくそろえる' }
+      ];
+      var next = fallbacks.filter(function (f) { return !actions.some(function (a) { return a.title === f.title; }); })[0];
+      if (!next) break;
+      push(next);
     }
 
-    // 3つ目は常に Teams（コンサル）
-    actions = actions.slice(0, 2);
-    actions.push({
-      slot: 'PARTNER',
-      title: 'HackⅡ Teamsに任せる',
-      action: '優先順位の設計から、継続測定・改善伴走までコンサルティングとして一緒に進める',
-      effect: '測定と改善をまとめて任せられます',
-      cta: '相談する',
-      href: '/trillionbank/meeting/?type=company&from=airreach-teams'
-    });
+    return actions.slice(0, 3);
+  }
 
-    return actions;
+  /** HackⅡ referral: separate frame, never mixed into 対策 or evidence links. */
+  function buildReferral(profile, diagnose) {
+    var partner = ((profile && profile.actions) || []).filter(function (d) { return d.slot === 'PARTNER'; })[0] || null;
+    var base = (diagnose && diagnose.referral) || {};
+    return {
+      kicker: base.kicker || '別のサービスの案内',
+      title: base.title || 'AI回答で紹介されるか・引用元・他店との比較を調べたい場合',
+      body: base.body || 'この診断はホームページの情報整備を見るもので、AI回答の中身は測っていません。実際のAI回答での言及・引用・比較を同条件で測る場合は、別サービスのHackⅡで行います。',
+      partnerNote: partner ? partner.action : '',
+      cta: base.cta || 'HackⅡについて相談する',
+      href: base.href || '/trillionbank/meeting/?type=company&from=airreach-referral',
+      note: base.note || '対策の手順や根拠リンクとは別枠の案内です。診断の点数には影響しません。'
+    };
   }
 
 
@@ -330,19 +442,24 @@
   function buildExpertInsight(diagnose, actions) {
     var d = diagnose || {};
     var checks = d.checks || [];
-    var good = checks.filter(function (c) { return c.ok; });
-    var bad = checks.filter(function (c) { return !c.ok; });
+    // Three states: ok / ng / unknown. Older stored results only have `ok`; treat those as known.
+    function stateOf(c) { return c.state || (c.ok ? 'ok' : 'ng'); }
+    var good = checks.filter(function (c) { return stateOf(c) === 'ok'; });
+    var bad = checks.filter(function (c) { return stateOf(c) === 'ng'; });
+    var unknown = checks.filter(function (c) { return stateOf(c) === 'unknown'; });
     var factorNames = {
-      structure: 'ページの骨格',
+      structure: 'ページ構造',
       entity: '会社・サービス情報',
       faq: 'よくある質問',
       discover: '見つけやすさ'
     };
     var byFactor = {};
     checks.forEach(function (c) {
-      byFactor[c.factor] = byFactor[c.factor] || { id: c.factor, label: factorNames[c.factor] || c.factor, good: [], bad: [], score: d[c.factor] };
-      if (c.ok) byFactor[c.factor].good.push(c);
-      else byFactor[c.factor].bad.push(c);
+      byFactor[c.factor] = byFactor[c.factor] || { id: c.factor, label: factorNames[c.factor] || c.factor, good: [], bad: [], unknown: [], score: d[c.factor], band: band(d[c.factor]) };
+      var s = stateOf(c);
+      if (s === 'ok') byFactor[c.factor].good.push(c);
+      else if (s === 'ng') byFactor[c.factor].bad.push(c);
+      else byFactor[c.factor].unknown.push(c);
     });
     var nextNow = (d.actions && d.actions.now) || [];
     var nextWeeks = (d.actions && d.actions.weeks) || [];
@@ -351,20 +468,24 @@
         title: a.title || a.n || '対策',
         action: a.action || '',
         tip: a.effect || '優先して直す項目です。',
-        href: a.href || '/airreach/studio/'
+        evidence: a.evidence || null
       };
     });
+    var diagnosed = !!(d.checks && d.checks.length);
     return {
-      summary: (d.review && d.review.summary) || (d.overall != null ? ('準備度 ' + d.overall + ' / 100') : '診断前の仮評価'),
-      evidenceClass: d.overall != null ? 'Observed' : 'Estimated',
+      summary: (d.review && d.review.summary) || (d.overall != null ? ('準備度 ' + d.overall + ' / 100') : (diagnosed ? '未取得の項目があるため総合点なし' : '診断前の仮評価')),
+      evidenceClass: diagnosed ? 'Observed' : 'Estimated',
       evidenceTip: '公開HTML等から観測した準備度です。AI回答の掲載率・予約増を保証しません。',
+      state: d.state || (diagnosed ? 'verified' : null),
+      band: band(d.overall),
       good: good,
       bad: bad,
+      unknown: unknown,
       byFactor: Object.keys(byFactor).map(function (k) { return byFactor[k]; }),
       nextNow: nextNow,
       nextWeeks: nextWeeks,
       nextSales: salesActions,
-      formula: '総合 = 骨格×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25',
+      formula: '総合 = ページ構造×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25',
       overall: d.overall
     };
   }
@@ -374,7 +495,7 @@
     var parts = [
       {
         id: 'structure',
-        label: 'ページの骨格',
+        label: 'ページ構造',
         tip: 'タイトル・H1・説明文など、ページの基本骨格です。主題が伝わるかを見ます。',
         score: d.structure,
         weight: 0.30,
@@ -426,24 +547,28 @@
         missingWhen: function (diag) {
           var out = [];
           if (!diag) return ['診断前のため未確認'];
-          if (!diag.page || !diag.page.hasLlms) out.push('llms.txtが無い／薄い');
-          if (!diag.page || !diag.page.hasRobots) out.push('robots.txtを確認できなかった');
+          var page = diag.page || {};
+          // hasLlms / hasRobots: true = あり, false = なし, null = 取得できず（未確認）
+          if (page.hasLlms === null) out.push('llms.txtは未確認（取得できませんでした）');
+          else if (!page.hasLlms) out.push('llms.txtが無い／薄い');
+          if (page.hasRobots === null) out.push('robots.txtは未確認（取得できませんでした）');
+          else if (!page.hasRobots) out.push('robots.txtが無い');
           return out;
         }
       }
     ];
 
+    // Band comes from the display contract only (no thresholds in this file).
     function level(score) {
-      score = Number(score);
-      if (!isFinite(score)) return { key: 'unknown', label: '未計測', tone: 'muted' };
-      if (score < 45) return { key: 'low', label: '弱い', tone: 'bad' };
-      if (score < 70) return { key: 'mid', label: '普通', tone: 'warn' };
-      return { key: 'high', label: '良い', tone: 'good' };
+      var b = band(score);
+      return { key: b.key, label: b.label, tone: b.tone, color: b.color, meaning: b.meaning };
     }
 
+    var factorStates = d.factors || {};
     var factors = parts.map(function (p) {
       var score = p.score == null ? null : Number(p.score);
       var lv = level(score);
+      var fstate = factorStates[p.id] && factorStates[p.id].state ? factorStates[p.id].state : (score == null ? 'unknown' : 'verified');
       var missing = p.missingWhen(d);
       // also pull matching gaps text
       (d.gaps || []).forEach(function (g) {
@@ -463,24 +588,34 @@
         weightPct: Math.round(p.weight * 100),
         contribution: contrib,
         level: lv,
+        state: fstate,
         missing: missing.slice(0, 3),
         formula: p.label + ' × ' + p.weight
       };
     });
 
     var overall = d.overall != null ? Number(d.overall) : null;
-    var weak = factors.filter(function (f) { return f.score != null && f.score < 60; })
+    var weak = factors.filter(function (f) { return f.score != null && f.level.key !== 'high'; })
       .sort(function (a, b) { return (a.score || 0) - (b.score || 0); });
+    var diagnosed = !!(d.checks && d.checks.length);
+    var disp = display();
 
     return {
       overall: overall,
-      formula: '総合 = 骨格×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25',
+      band: band(overall),
+      state: d.state || (diagnosed ? 'verified' : null),
+      ruleVersion: d.ruleVersion || null,
+      displayVersion: d.displayVersion || (disp ? disp.version : null),
+      scopeSentence: disp ? disp.scopeSentence() : '',
+      legend: disp ? disp.legend() : [],
+      formula: '総合 = ページ構造×0.30 + 会社情報×0.25 + FAQ×0.20 + 見つけやすさ×0.25',
       formulaTip: '公開HTMLの準備度です。AI回答の掲載率や予約増を保証しません。',
       factors: factors,
       weakFactors: weak,
       gaps: (d.gaps || []).slice(0, 5),
+      unknowns: (d.unknowns || []).slice(0, 5),
       strengths: (d.strengths || []).slice(0, 4),
-      evidenceClass: d.overall != null ? 'Observed' : 'Estimated'
+      evidenceClass: diagnosed ? 'Observed' : 'Estimated'
     };
   }
 
@@ -512,11 +647,24 @@
         { key: 'faq', label: 'FAQ（FAQPage・可視FAQ）', weight: 0.20, maxPts: '8点満点→100換算' },
         { key: 'discover', label: '発見性（robots/llms/内部リンク等）', weight: 0.25, maxPts: '発見系チェック→100換算' }
       ];
-      var recon = 0;
+      var recon = 0, reconW = 0;
       weights.forEach(function (row) {
-        var v = num(parts[row.key], 0);
+        var raw = parts[row.key];
+        if (raw == null || !isFinite(Number(raw))) {
+          // Not fetched: shown as 未確認, excluded from the sum (never counted as 0).
+          readinessRows.push({
+            label: row.label,
+            formula: 'score(' + row.key + ') × ' + row.weight,
+            value: '未確認（取得できず・計算から除外）',
+            note: row.maxPts,
+            evidence: acq.evidenceClass || 'Observed'
+          });
+          return;
+        }
+        var v = Number(raw);
         var contrib = Math.round(v * row.weight * 10) / 10;
         recon += v * row.weight;
+        reconW += row.weight;
         readinessRows.push({
           label: row.label,
           formula: 'score(' + row.key + ') × ' + row.weight,
@@ -525,11 +673,13 @@
           evidence: acq.evidenceClass || 'Observed'
         });
       });
+      var overallShown = acq.score == null ? '未確認（必須項目が未取得）' : String(acq.score);
+      var reconShown = reconW > 0 ? Math.round(recon / reconW) : null;
       readinessRows.push({
         label: '総合準備度（overall）',
-        formula: '0.30·S + 0.25·E + 0.20·F + 0.25·D',
-        value: Math.round(recon) + ' / 100（表示値 ' + score + '）',
-        note: '公開HTMLの観測に基づく。AI実回答の引用率ではない。',
+        formula: '0.30·S + 0.25·E + 0.20·F + 0.25·D（未確認の要素は重みを再配分）',
+        value: (reconShown == null ? '—' : reconShown + ' / 100') + '（表示値 ' + overallShown + '）',
+        note: '公開HTMLの観測に基づく。AI実回答の引用率ではない。判定ルール ' + ((diagnose && diagnose.ruleVersion) || '—') + ' / 表示区分 ' + ((diagnose && diagnose.displayVersion) || '—'),
         evidence: acq.evidenceClass || 'Observed'
       });
     } else {
@@ -728,7 +878,7 @@
     var industryId = opts.industryId || 'other';
     var industryDetect = opts.industryDetect || null;
     var profile = (window.AirReachIndustry && window.AirReachIndustry.getIndustry(industryId))
-      || { id: 'other', label: 'その他', display_label: '問い合わせ', demand_label: 'この言葉で探している人', now_label: '今、選ばれそうな度合い', after_label: '直したあとの目安', outcome_label: '問い合わせ', demand_meaning: '', now_meaning: '', after_meaning: '', outcome_meaning: '', hero_generic: '診断結果', hero_branded: '診断結果', cta_generic: 'まず何を直すか見る', cta_branded: 'まず何を直すか見る', impact_current_label: 'いま' };
+      || { id: 'other', label: 'その他', display_label: '問い合わせ', demand_label: 'この言葉で探している人', now_label: 'ホームページの情報整備', after_label: '直したあとの目安', outcome_label: '問い合わせ', demand_meaning: '', now_meaning: '', after_meaning: '', outcome_meaning: '', hero_generic: '診断結果', hero_branded: '診断結果', cta_generic: 'まず何を直すか見る', cta_branded: 'まず何を直すか見る', impact_current_label: 'いま' };
 
     var baseline = (window.AirReachHandoff && window.AirReachHandoff.loadOfficialBaseline)
       ? window.AirReachHandoff.loadOfficialBaseline()
@@ -773,6 +923,7 @@
     };
     var confidence = confidenceScore(confidenceBreakdown);
     var actions = top3Actions(profile, mode, diagnose, brand);
+    var referral = buildReferral(profile, diagnose);
     var expertInsight = buildExpertInsight(diagnose, actions);
 
     var headline4;
@@ -796,11 +947,12 @@
         {
           id: 'now',
           label: profile.now_label,
-          value: String(bScore),
-          unit: '/ 100',
+          value: bScore == null ? '—' : String(bScore),
+          unit: bScore == null ? '' : '/ 100',
           badge: brand ? brand.evidenceClass : 'Observed',
+          band: band(bScore),
           meaning: profile.now_meaning + ' · ' + scoreMeaning(bScore),
-          sub: scoreMeaning(bScore)
+          sub: bScore == null ? (acq.note || '未確認') : scoreMeaning(bScore)
         },
         {
           id: 'cite_now',
@@ -836,11 +988,12 @@
         {
           id: 'now',
           label: profile.now_label,
-          value: String(acq.score),
-          unit: '/ 100',
+          value: acq.score == null ? '—' : String(acq.score),
+          unit: acq.score == null ? '' : '/ 100',
           badge: acq.evidenceClass === 'Observed' ? 'Observed' : 'Estimated',
+          band: band(acq.score),
           meaning: profile.now_meaning + ' · ' + scoreMeaning(acq.score),
-          sub: scoreMeaning(acq.score)
+          sub: acq.score == null ? (acq.note || '未確認') : scoreMeaning(acq.score)
         },
         {
           id: 'after',
@@ -903,10 +1056,10 @@
       }),
       headline4: headline4,
       actions: actions,
+      referral: referral,
       displayLabel: profile.display_label,
       impactCurrentLabel: profile.impact_current_label || ('いまの' + profile.display_label),
       cta: { label: primaryCta, hash: ctaHash },
-      actionsCta: { label: '最優先の対策をHackⅡ Studioで進める', href: '/airreach/studio/' },
       disclaimer: '表示は参考シミュレーションです。検索順位・AI掲載・予約・問い合わせ・売上を保証しません。',
       steps: ['いま', '直したあと', 'やること']
     };
@@ -935,6 +1088,7 @@
     yen: yen,
     cnt: cnt,
     badgeLabel: badgeLabel,
-    scoreMeaning: scoreMeaning
+    scoreMeaning: scoreMeaning,
+    band: band
   };
 })();

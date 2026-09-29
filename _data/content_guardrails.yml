@@ -71,6 +71,37 @@ private_patterns:
     regex: "(現預金|銀行残高|ランウェイ)"
     reason: "財務情報は個別承認なしに公開しない"
 
+# AirReach の結果画面・営業文言は「ホームページの情報整備」に限定する。
+# AI掲載率・検索順位・予約数を断定する表現、HackⅡ を対策として混ぜる表現を検出する。
+# 否定形（〜ではありません／保証しません）は許容するため、断定形だけを正規表現で拾う。
+scoped_claim_patterns:
+  - name: "airreach: AI掲載・順位・予約の断定"
+    roots:
+      - "assets/js/airreach-diagnose.js"
+      - "assets/js/airreach-sales.js"
+      - "assets/js/airreach-sales-kit.js"
+      - "assets/js/airreach-industry.js"
+      - "assets/js/airreach-display.js"
+      - "_includes/airreach-app.html"
+      - "_includes/airreach-industry-seo.html"
+      - "_data/airreach_display.yml"
+      - "_data/airreach_industries.yml"
+    patterns:
+      - regex: "(AI検索で|AIに)候補に入(り|る)(にくい|やすい)"
+        reason: "点数はホームページの情報整備であり、AI回答での候補入りを示さない"
+      - regex: "AIに紹介され(やすく|る確率が上が)"
+        reason: "AI掲載率は本ツールで測っていない"
+      - regex: "(検索)?順位が(上が|改善し)"
+        reason: "検索順位は本ツールで測っていない"
+      - regex: "(予約|問い合わせ|来店|売上)が増え(ます|る。)"
+        reason: "成果を断定しない（「可能性」「目安」までに留める）"
+      - regex: "必ず(引用|掲載|紹介)され(ます|る)(?![か保こ])"
+        reason: "掲載・引用の保証はできない"
+      - regex: "slot: 'PARTNER'[^\\n]*\\n[^\\n]*actions\\.push"
+        reason: "HackⅡ / Teams は対策（actions）に混ぜず referral として別枠で出す"
+      - regex: "cta: 'HackⅡ Studioで作る'"
+        reason: "対策カードから HackⅡ Studio への誘導は削除済み（根拠リンクのみ残す）"
+
 allowed_paths_for_restricted_terms:
   - "PUBLICATION_POLICY.md"
   - "_data/content_guardrails.yml"

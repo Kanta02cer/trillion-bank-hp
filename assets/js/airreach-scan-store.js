@@ -37,6 +37,10 @@
     scan.savedAt = nowIso();
     scan.evidenceClass = scan.evidenceClass || 'User Input';
     if (!scan.status) scan.status = 'diagnosed';
+    // Version stamps so old scans stay comparable when scoring or band boundaries change.
+    if (scan.ruleVersion === undefined) scan.ruleVersion = null;
+    if (scan.displayVersion === undefined) scan.displayVersion = (window.AirReachDisplay && window.AirReachDisplay.version) || null;
+    if (!scan.diagnoseState) scan.diagnoseState = scan.scoreOverall != null ? 'verified' : 'not_diagnosed';
     try { localStorage.setItem(PREFIX + scan.id, JSON.stringify(scan)); } catch (e) {}
     var idx = readIndex().filter(function (x) { return x && x.id !== scan.id; });
     idx.unshift({
@@ -47,6 +51,9 @@
       industryId: scan.industryId || '',
       outcomeGoal: scan.outcomeGoal || '',
       scoreOverall: scan.scoreOverall != null ? scan.scoreOverall : null,
+      diagnoseState: scan.diagnoseState,
+      ruleVersion: scan.ruleVersion,
+      displayVersion: scan.displayVersion,
       status: scan.status || 'diagnosed'
     });
     writeIndex(idx);
