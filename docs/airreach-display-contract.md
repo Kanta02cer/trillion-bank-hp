@@ -1,7 +1,7 @@
 # AirReach 表示契約（区分・状態・根拠リンク）
 
 Date: 2026-09-27
-Status: ACTIVE — 境界値は **provisional（未承認）**
+Status: ACTIVE — 境界値・配点は **approved（2026-09-29、AirReach v1 の正式仕様）**
 Source: 画面設計案「色分けと根拠リンク」2026-09-25、業種展開設計 2026-09-26
 
 ## 目的
@@ -68,10 +68,10 @@ Source: 画面設計案「色分けと根拠リンク」2026-09-25、業種展�
 - 現行のデプロイ済みWorkerは上流 404 を 502 に変換して返すため、Worker経由では「無い」と「取れない」を区別できず **未確認** になる。`src/index.ts` で 404/410 をそのまま返すよう修正済み。再デプロイ後に区別が有効になる。
 - デプロイはエンジニアの PR と Cloudflare 権限で行う（`deploy/index.js` は再ビルドが必要）。
 
-## 公開前に承認が必要なこと
+## 承認状況（2026-09-29）
 
-1. 境界値 39 / 69 と「普通」の意味 → 承認後 `approval.status: approved`、`approved_on` を記録
-2. 4項目の配点・検出条件（現行 ruleVersion `airreach-common-v1` は旧採点式と同値）
+1. 境界値 39 / 69 と「普通」の意味 → **承認済み**（`approval.status: approved`、`approved_on: 2026-09-29`）
+2. 4項目の配点・検出条件（ruleVersion `airreach-common-v1`）→ **承認済み**（AirReach v1 の正式仕様）
 3. 旧結果への適用方針（端末内の保存済み診断は `displayVersion` で判別できる）
 4. 色覚に依存しないラベルの目視確認
 

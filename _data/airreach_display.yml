@@ -6,12 +6,12 @@
 #
 # 境界値は 2026-09-25 画面設計案の「表示案」。採点式（ruleVersion）とは別に版管理し、
 # 公開前に境界値と「普通」の意味を承認してから approval.status を approved にする。
-last_reviewed: "2026-09-27"
+last_reviewed: "2026-09-29"
 display_version: "band-v1"
 approval:
-  status: provisional
-  note: "境界値39/69と「普通」の意味は未承認。承認後に approved へ変更し、approved_on を記録する。"
-  approved_on: null
+  status: approved
+  note: "AirReach v1 の正式仕様として承認。区分 0-39 低い / 40-69 普通 / 70-100 高い、および airreach-common-v1 の4項目の配点・検出条件。"
+  approved_on: "2026-09-29"
 
 # 点数が意味するもの・意味しないもの（画面・営業トーク共通の説明文）
 score:
