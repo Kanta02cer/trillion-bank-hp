@@ -50,7 +50,7 @@ expect('multi-store flag',
   K.derive({ title: '焼肉レストラン テスト', text: '栃木県佐野市1-1 群馬県太田市2-2 埼玉県熊谷市3-3' }).multiStore, true);
 // 根拠の表示
 expect('source label', K.derive({ title: '炭火焼肉 さくら 神楽坂店', ldAddress: ['東京都新宿区神楽坂3-1-2'] }).sourceLabel,
-  '地域は住所（構造化データ）、業態はタイトルから');
+  '地域は構造化データの住所、業態はタイトルから');
 
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);

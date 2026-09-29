@@ -160,7 +160,7 @@
 
     var keyword = area.value && genre ? area.value + ' ' + genre : '';
     var LABEL = { structured: '構造化データ', title: 'タイトル', body: '本文' };
-    var sourceLabel = keyword ? ('地域は' + (areaSource === 'structured' ? '住所（構造化データ）' : areaSource === 'title' ? 'タイトル' : '本文の住所') +
+    var sourceLabel = keyword ? ('地域は' + (areaSource === 'structured' ? '構造化データの住所' : areaSource === 'title' ? 'タイトル' : '本文の住所') +
       '、業態は' + LABEL[genreSource] + 'から') : '';
     return {
       keyword: keyword,

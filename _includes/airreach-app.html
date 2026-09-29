@@ -1365,7 +1365,8 @@ document.addEventListener('DOMContentLoaded', function () {
     $('sum-industry').textContent = labels[industryId] || industryId;
     $('sum-url').textContent = survey.url || '—';
     $('sum-goal').textContent = OUTCOME_LABELS[survey.outcomeGoal] || (survey.goal === 'visibility' ? '認知を広げたい' : '新しいお客さん向け');
-    var kwSrc = survey.previewDiagnose && survey.previewDiagnose.page && survey.previewDiagnose.page.keywordAuto;
+    var kwDiag = survey.previewDiagnose || lastDiagnose;
+    var kwSrc = kwDiag && kwDiag.page && kwDiag.page.keywordAuto;
     $('sum-keyword').textContent = survey.keyword
       ? survey.keyword + (kwSrc && kwSrc.keyword === survey.keyword && kwSrc.sourceLabel ? '（' + kwSrc.sourceLabel + '）' : '')
       : '未設定（住所や業態がサイトから読み取れませんでした）';
