@@ -145,6 +145,8 @@
     var ldNodes = Array.prototype.slice.call(doc.querySelectorAll('script[type="application/ld+json"]'));
     var types = {};
     var faqCount = 0;
+    var ldAddress = [];
+    var ldCuisine = [];
     ldNodes.forEach(function (node) {
       try {
         var data = JSON.parse(node.textContent);
@@ -154,6 +156,11 @@
           var t = it['@type'];
           if (Array.isArray(t)) t.forEach(function (x) { types[x] = true; });
           else if (typeof t === 'string') types[t] = true;
+          var ad = it.address;
+          if (ad && typeof ad === 'object' && !Array.isArray(ad)) {
+            ['addressRegion', 'addressLocality', 'streetAddress'].forEach(function (k) { if (ad[k]) ldAddress.push(String(ad[k])); });
+          } else if (typeof ad === 'string') ldAddress.push(ad);
+          if (it.servesCuisine) ldCuisine = ldCuisine.concat(Array.isArray(it.servesCuisine) ? it.servesCuisine.map(String) : [String(it.servesCuisine)]);
           if (t === 'FAQPage' || (Array.isArray(t) && t.indexOf('FAQPage') >= 0)) {
             var ents = it.mainEntity || [];
             faqCount += Array.isArray(ents) ? ents.length : 0;
@@ -172,6 +179,22 @@
       if (idEl && idEl.id) { faqAnchor = idEl.id; break; }
     }
     var ids = Array.prototype.slice.call(doc.querySelectorAll('[id]'), 0, 300).map(function (n) { return n.id; }).filter(Boolean);
+    // 「調べた言葉」の自動候補（地域＋業態）。script/style を除いた本文から作る
+    var keywordAuto = null;
+    if (typeof window !== 'undefined' && window.AirReachKeyword) {
+      var cleanText = '';
+      if (doc.body) {
+        var bodyClone = doc.body.cloneNode(true);
+        Array.prototype.forEach.call(bodyClone.querySelectorAll('script,style,noscript,template'), function (n) { n.remove(); });
+        cleanText = (bodyClone.textContent || '').replace(/\s+/g, ' ').trim();
+      }
+      try {
+        keywordAuto = window.AirReachKeyword.derive({
+          title: title.trim(), ogTitle: ogTitle, metaDesc: metaDesc.trim(), text: cleanText,
+          ldAddress: ldAddress, ldCuisine: ldCuisine, types: Object.keys(types)
+        });
+      } catch (e) { keywordAuto = null; }
+    }
     var hasContact = /お問い合わせ|contact|inquiry|相談|予約/i.test(text) || !!doc.querySelector('a[href*="contact"], a[href*="meeting"], form');
     return {
       title: title.trim(),
@@ -187,7 +210,8 @@
       ids: ids,
       hasContact: hasContact,
       textLen: text.length,
-      htmlLen: html.length
+      htmlLen: html.length,
+      keywordAuto: keywordAuto
     };
   }
 
@@ -380,7 +404,8 @@
         hasLlms: llmsKnown ? !!(llmsText && llmsText.length > 80) : null,
         hasRobots: robotsKnown ? !!robotsText : null,
         baseHref: baseHref,
-        finalUrl: pageRes.finalUrl || baseHref
+        finalUrl: pageRes.finalUrl || baseHref,
+        keywordAuto: page.keywordAuto || null
       },
       modelPlaceholders: [
         { name: 'Google AI Overviews', status: '要AirReach Consulting測定', note: '実回答の引用率は本ツールでは取得しません' },

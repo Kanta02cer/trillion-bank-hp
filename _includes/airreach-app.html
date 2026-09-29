@@ -1119,6 +1119,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 <script src="{{ '/assets/js/airreach-tip.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-handoff.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-display.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/airreach-keyword.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-diagnose.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-industry.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-sales.js' | relative_url }}" defer></script>
@@ -1209,8 +1210,13 @@ document.addEventListener('DOMContentLoaded', function () {
     return map[id] || id || '—';
   }
 
+  // 「調べた言葉」の自動候補。飲食店はサイトの住所と業態から「地域＋業態」を作り（airreach-keyword.js）、
+  // 作れなければ空（未設定）にする。業種ごとの固定語では埋めない。店の方の入力は呼び出し側で優先する。
   function autoKeyword(diagnose, industry) {
     var page = (diagnose && diagnose.page) || {};
+    if (industry === 'restaurant') {
+      return (page.keywordAuto && page.keywordAuto.keyword) || '';
+    }
     var raw = String(page.h1 || page.title || '').trim();
     raw = raw.replace(/\s*[|｜\-–—].*$/, '').replace(/\s+/g, ' ').trim();
     if (raw && raw.length >= 2 && raw.length <= 40) return raw;
@@ -1359,7 +1365,10 @@ document.addEventListener('DOMContentLoaded', function () {
     $('sum-industry').textContent = labels[industryId] || industryId;
     $('sum-url').textContent = survey.url || '—';
     $('sum-goal').textContent = OUTCOME_LABELS[survey.outcomeGoal] || (survey.goal === 'visibility' ? '認知を広げたい' : '新しいお客さん向け');
-    $('sum-keyword').textContent = survey.keyword || '—';
+    var kwSrc = survey.previewDiagnose && survey.previewDiagnose.page && survey.previewDiagnose.page.keywordAuto;
+    $('sum-keyword').textContent = survey.keyword
+      ? survey.keyword + (kwSrc && kwSrc.keyword === survey.keyword && kwSrc.sourceLabel ? '（' + kwSrc.sourceLabel + '）' : '')
+      : '未設定（住所や業態がサイトから読み取れませんでした）';
     $('ar-summary').classList.add('is-on');
 
     $('ar-hero-title').innerHTML = route.copy.indexOf('記事') >= 0
