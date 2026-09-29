@@ -163,6 +163,9 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-h2{font-size:clamp(1.45rem,3vw,2rem);margin:0 0 10px;line-height:1.3}
 .ar-sub{color:#475569;line-height:1.7;margin:0 0 18px;font-size:1.05rem}
 .ar-ind{margin:0 0 14px;font-size:1rem;color:#334155}
+/* 共有 / 保存済み結果の注記（.ar-sub は非表示指定のため別クラス） */
+.ar-shared-note{margin:0 0 14px;padding:10px 12px;border:1px solid #bfdbfe;border-radius:10px;background:#eff6ff;color:#1e3a8a;font-size:.9rem;line-height:1.6}
+.ar-shared-note[hidden]{display:none}
 .ar-ind b{color:#0f172a}
 .ar-chain{display:grid;gap:0;border:2px solid #e2e8f0;border-radius:16px;overflow:hidden;background:#fff}
 .ar-stepn{padding:20px 22px;border-bottom:1px solid #eef2f7;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start}
@@ -974,7 +977,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         <p class="ar-ind" id="ar-industry-line"></p>
         <h2 class="ar-h2" id="ar-title">診断結果</h2>
         <p class="ar-sub" id="ar-subtitle" hidden></p>
-        <p class="ar-sub" id="ar-shared-note" hidden></p>
+        <p class="ar-shared-note" id="ar-shared-note" hidden></p>
 
         <!-- サマリー: 円ゲージ（情報整備の点数）＋ 3行（需要・改善後・増える件数）。数値は report.headline4 から -->
         <div class="ar-sumcard" id="ar-sumcard">
@@ -2357,12 +2360,22 @@ document.addEventListener('DOMContentLoaded', function () {
         note.hidden = false;
         note.textContent = '共有リンクをコピーしました。リンクを知っている人だけがこの結果を開けます。';
       }
+      // コピーできない環境では、リンク文字列をその場に表示して手動コピーできるようにする（ページ遷移はしない）
+      function showUrl() {
+        if (!note) return;
+        note.hidden = false;
+        note.textContent = '共有リンク（コピーして共有）: ' + url;
+      }
       function fallback() {
+        var copied = false;
         try {
           var ta = document.createElement('textarea');
           ta.value = url; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
-          document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
-        } catch (err) { window.open(url, '_blank', 'noopener'); }
+          document.body.appendChild(ta); ta.select();
+          copied = document.execCommand('copy') === true;
+          document.body.removeChild(ta);
+        } catch (err) { copied = false; }
+        if (copied) done(); else showUrl();
       }
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, fallback);
       else fallback();
