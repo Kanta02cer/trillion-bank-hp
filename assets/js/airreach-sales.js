@@ -570,9 +570,14 @@
       var lv = level(score);
       var fstate = factorStates[p.id] && factorStates[p.id].state ? factorStates[p.id].state : (score == null ? 'unknown' : 'verified');
       var missing = p.missingWhen(d);
+      // 同じ内容の重複を出さない（例:「FAQが少ない／無い」と「FAQが3問以上」を満たしていない）
+      var TOPICS = [/H1|主見出し/, /タイトル/, /meta|説明文/, /FAQPage/, /3問|FAQが少ない/, /llms/, /robots/, /Organization|会社情報/, /Service|Product|サービス定義/];
+      function topicOf(t) { for (var i = 0; i < TOPICS.length; i++) if (TOPICS[i].test(t)) return i; return -1; }
+      function covered(t) { var k = topicOf(t); return k >= 0 && missing.some(function (m) { return topicOf(m) === k; }); }
       // also pull matching gaps text
       (d.gaps || []).forEach(function (g) {
         var t = String(g || '');
+        if (covered(t)) return;
         if (p.id === 'structure' && /H1|タイトル|meta/i.test(t) && missing.indexOf(t) < 0) missing.push(t);
         if (p.id === 'entity' && /Organization|エンティティ|構造化|問い合わせ導線/i.test(t) && missing.indexOf(t) < 0) missing.push(t);
         if (p.id === 'faq' && /FAQ/i.test(t) && missing.indexOf(t) < 0) missing.push(t);

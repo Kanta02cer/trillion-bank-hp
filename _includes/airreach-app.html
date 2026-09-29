@@ -369,6 +369,8 @@ body.ar-modal-open{overflow:hidden}
 .ar-drow-meta{margin:12px 0 8px;font-size:.88rem;color:#334155;line-height:1.6}
 .ar-drow-items{margin:0;padding:0;list-style:none;display:grid;gap:6px}
 .ar-drow-items li{font-size:.9rem;font-weight:600;padding:8px 10px;border-radius:8px;background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
+.ar-drow-items li.is-minor{background:#fffbeb;color:#92400e;border-color:#fde68a}
+.ar-drow-sub{margin:0 0 6px;font-size:.8rem;font-weight:700;color:var(--ar-muted,#64748b)}
 .ar-drow-items li.is-unknown{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
 .ar-drow-ok{margin:0;font-size:.9rem;font-weight:600;color:#047857}
 .ar-detail-h3{margin:0 0 10px;font-size:1rem;font-weight:700;color:var(--ar-ink,#0f172a)}
@@ -1862,9 +1864,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var lv = f.level || { label: '未確認', tone: 'muted' };
         var row = document.createElement('div');
         row.className = 'ar-drow';
+        // 区分が「良好」のときの不足は、赤ではなく「あと少し」の色で出す（区分の色と食い違わないように）
+        var minor = lv.tone === 'good';
         var items = (f.missing || []).map(function (m) {
           var isUnk = /未確認/.test(String(m));
-          return '<li class="' + (isUnk ? 'is-unknown' : 'is-ng') + '">' + tipAttr(m) + '</li>';
+          return '<li class="' + (isUnk ? 'is-unknown' : (minor ? 'is-minor' : 'is-ng')) + '">' + tipAttr(m) + '</li>';
         }).join('');
         row.innerHTML =
           '<button type="button" class="ar-drow-btn" aria-expanded="false">' +
@@ -1876,7 +1880,7 @@ document.addEventListener('DOMContentLoaded', function () {
           '</button>' +
           '<div class="ar-drow-panel" hidden>' +
           '<p class="ar-drow-meta">' + tipAttr(f.tip || '') + (unknown ? ' 取得できなかったため点数を出していません（0点ではありません）。' : ' 総合への重み ' + tipAttr(String(f.weightPct)) + '%・寄与約 ' + tipAttr(String(f.contribution)) + '点。') + '</p>' +
-          (items ? '<ul class="ar-drow-items">' + items + '</ul>' : '<p class="ar-drow-ok">大きな不足は見当たりません。</p>') +
+          (items ? (minor ? '<p class="ar-drow-sub">満点まであと少しの点</p>' : '') + '<ul class="ar-drow-items">' + items + '</ul>' : '<p class="ar-drow-ok">大きな不足は見当たりません。</p>') +
           '</div>';
         var btn = row.querySelector('.ar-drow-btn');
         var panel = row.querySelector('.ar-drow-panel');

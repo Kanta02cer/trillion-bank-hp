@@ -336,7 +336,7 @@
     var unknowns = [];
     checks.forEach(function (c) {
       if (c.state === 'ok') strengths.push(c.label);
-      else if (c.state === 'ng') gaps.push(c.label + 'がない／弱い');
+      else if (c.state === 'ng') gaps.push('「' + c.label + '」を満たしていない');
       else unknowns.push(c.label + '（未確認）');
     });
 

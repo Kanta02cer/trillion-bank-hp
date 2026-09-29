@@ -91,7 +91,7 @@ export function buildScanPayload(opts = {}) {
   }
   const state = checks.some((c) => !c.known) ? 'partial' : 'verified';
   const strengths = checks.filter((c) => c.state === 'ok').map((c) => c.label);
-  const gaps = checks.filter((c) => c.state === 'ng').map((c) => c.label + 'がない／弱い');
+  const gaps = checks.filter((c) => c.state === 'ng').map((c) => '「' + c.label + '」を満たしていない');
   const unknowns = checks.filter((c) => c.state === 'unknown').map((c) => c.label + '（未確認）');
 
   const result = {
