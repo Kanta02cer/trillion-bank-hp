@@ -12,6 +12,7 @@ approval:
   status: approved
   note: "AirReach Tools v1 の正式仕様として承認。区分 0-39 低い / 40-69 要改善 / 70-100 高い、および airreach-common-v1 の4項目の配点・検出条件。"
   approved_on: "2026-09-29"
+  label_change: "2026-09-29 区分 mid のラベルを「普通」→「要改善」に変更（増山 承認）。境界値・配点は変更なし。"
 
 # 点数が意味するもの・意味しないもの（画面・営業トーク共通の説明文）
 score:
