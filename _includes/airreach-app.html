@@ -1556,6 +1556,12 @@ document.addEventListener('DOMContentLoaded', function () {
         '<svg viewBox="0 0 128 128" width="128" height="128" aria-hidden="true">' +
         '<circle cx="64" cy="64" r="' + r + '" fill="none" stroke="#e2e8f0" stroke-width="12"/>' +
         '<circle cx="64" cy="64" r="' + r + '" fill="none" stroke="' + tipAttr(color) + '" stroke-width="12" stroke-linecap="butt" transform="rotate(-90 64 64)" stroke-dasharray="' + (c * pct).toFixed(1) + ' ' + c.toFixed(1) + '"/>' +
+        (window.AirReachDisplay && AirReachDisplay.bands ? AirReachDisplay.bands.slice(1).map(function (b) {
+          // white tick at each band boundary (e.g. 40 / 70) so the ring shows the same ranges as the scale
+          var a = (Number(b.min) / 100) * 2 * Math.PI - Math.PI / 2;
+          var x1 = 64 + (r - 8) * Math.cos(a), y1 = 64 + (r - 8) * Math.sin(a), x2 = 64 + (r + 8) * Math.cos(a), y2 = 64 + (r + 8) * Math.sin(a);
+          return '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#fff" stroke-width="2"/>';
+        }).join('') : '') +
         '</svg>' +
         '<div class="ar-gauge-num">' + (scoreNum == null ? '<span class="ar-gauge-unknown">未確認</span>' : '<b>' + scoreNum + '</b><span>/ 100</span>') + '</div>';
       gauge.setAttribute('aria-label', 'ホームページの情報整備 ' + (scoreNum == null ? '未確認' : scoreNum + '点、区分 ' + band.label));
@@ -1563,7 +1569,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Band scale: shows which range 低い / 要改善 / 高い covers, with the score marked on the same 0-100 axis.
     var scaleEl = $('ar-scale');
     if (scaleEl) {
-      var legend = window.AirReachDisplay ? AirReachDisplay.legend() : [];
+      var legend = (window.AirReachDisplay && AirReachDisplay.bands) ? AirReachDisplay.bands.slice() : [];
       if (!legend.length) { scaleEl.hidden = true; }
       else {
         var segs = '', labels = '';
