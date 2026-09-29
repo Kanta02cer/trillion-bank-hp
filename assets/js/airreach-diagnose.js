@@ -1,6 +1,8 @@
 /**
  * AirReach — client-side AI search readiness diagnosis (no API keys).
  * Scores public HTML / llms.txt / robots signals only.
+ * Pages are fetched directly, or via the same-origin fetch API (/api/airreach/fetch/) when the browser is blocked.
+ * No Cloudflare / third-party proxy.
  * Does NOT claim live ChatGPT / Gemini / Claude / AI Overviews citation rates.
  *
  * Result contract (v2):
@@ -17,13 +19,12 @@
   var MAX_BYTES = 900000;
   var RULE_VERSION = 'airreach-common-v1';
 
-  // First-party Cloudflare Worker (ops/airreach-fetch). Prefer this over third-party proxies.
-  var FIRST_PARTY_PROXY = 'https://trillion-bank-airreach-fetch.trillion-bank.workers.dev/';
+  // First-party fetch API (same-origin Vercel Function: api/airreach/fetch.js). No third-party proxy.
+  var FIRST_PARTY_PROXY = '/api/airreach/fetch/';
   var FINAL_URL_HEADER = 'X-AirReach-Final-URL';
 
   var PROXY_BUILDERS = [
-    { via: 'first_party_proxy', build: function (u) { return FIRST_PARTY_PROXY + '?url=' + encodeURIComponent(u); } },
-    { via: 'third_party_proxy', build: function (u) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); } }
+    { via: 'first_party_proxy', build: function (u) { return FIRST_PARTY_PROXY + '?url=' + encodeURIComponent(u); } }
   ];
 
   // Factor definitions. required=true: overall cannot be computed without it.
@@ -77,7 +78,8 @@
         var h = res.headers && res.headers.get ? res.headers.get(FINAL_URL_HEADER) : null;
         if (h) finalUrl = h;
       }
-      if (res.status >= 500) throw new Error('HTTP ' + res.status);
+      // 5xx and non-404/410 4xx are failures (a 400/403 body is not the page). 404/410 stay "fetched but absent".
+      if (res.status >= 500 || (res.status >= 400 && res.status !== 404 && res.status !== 410)) throw new Error('HTTP ' + res.status);
       return res.text().then(function (text) {
         clearTimeout(timer);
         if (text && text.length > MAX_BYTES) throw new Error('応答が大きすぎます');
@@ -92,14 +94,14 @@
   function fetchWithFallbacks(targetUrl, allowProxy) {
     return fetchText(targetUrl, 10000, 'direct', targetUrl).catch(function (directErr) {
       if (!allowProxy) {
-        throw new Error('このサイトはブラウザから直接取得できません。取得代行（外部プロキシ）への同意にチェックするか、フォームからURLを送ってください。');
+        throw new Error('このサイトはブラウザから直接取得できません。サイト情報の取得（取得代行）への同意にチェックするか、フォームからURLを送ってください。');
       }
       var chain = Promise.reject(directErr);
       PROXY_BUILDERS.forEach(function (p) {
         chain = chain.catch(function () { return fetchText(p.build(targetUrl), 16000, p.via, targetUrl); });
       });
       return chain.catch(function () {
-        throw new Error('ページを取得できませんでした。サイト側の制限か、プロキシ不通の可能性があります。フォームからご相談ください。');
+        throw new Error('ページを取得できませんでした。サイト側の制限か、取得代行の一時的な不通の可能性があります。フォームからご相談ください。');
       });
     });
   }
