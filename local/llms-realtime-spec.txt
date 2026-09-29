@@ -1,5 +1,5 @@
 # RSIP — Realtime Store Information Protocol for AI
-# HackⅡ Local × 株式会社トリリオンバンク
+# AirReach Consulting Local × 株式会社トリリオンバンク
 # バージョン：v0.1（プロトタイプ仕様書）
 # 設計・提案：株式会社トリリオンバンク
 # 設計日：2026-05-17
@@ -9,9 +9,9 @@
 
 ## RSIPとは
 
-**RSIP（Realtime Store Information Protocol for AI）とは、飲食店・美容院・クリニックなどのリアルタイム情報（営業状態・混雑度・空き状況・本日のおすすめ）を、ChatGPT・Perplexity・Google AI OverviewなどのAI検索エンジンが直接参照できる構造化JSONエンドポイントとして提供するHackⅡ独自プロトコルです。**
+**RSIP（Realtime Store Information Protocol for AI）とは、飲食店・美容院・クリニックなどのリアルタイム情報（営業状態・混雑度・空き状況・本日のおすすめ）を、ChatGPT・Perplexity・Google AI OverviewなどのAI検索エンジンが直接参照できる構造化JSONエンドポイントとして提供するAirReach Consulting独自プロトコルです。**
 
-> ⚠️ RSIPは2026年5月現在プロトタイプ開発段階です。HackⅡ Localプランでの正式提供に向け、PoC（概念実証）を推進中です。
+> ⚠️ RSIPは2026年5月現在プロトタイプ開発段階です。AirReach Consulting Localプランでの正式提供に向け、PoC（概念実証）を推進中です。
 
 ---
 
@@ -184,16 +184,16 @@ AIの回答：「現在〇〇は営業中で、待ち時間は約15分、空席�
 食べログ・ホットペッパービューティー・STORES予約 等のAPIから空き状況を自動取得し、`congestion.availableSeats`と`reservation.earliestAvailableSlot`を自動更新。
 
 ```
-HackⅡ Local ← API ← 予約システム（食べログ/ホットペッパー/STORES）
+AirReach Consulting Local ← API ← 予約システム（食べログ/ホットペッパー/STORES）
      ↓
 store-status.json（30分ごと自動更新）
      ↓
 AI検索エンジン（GPTBot/PerplexityBot等がPolling）
 ```
 
-### パターン3：HackⅡ Localダッシュボード直接更新
+### パターン3：AirReach Consulting Localダッシュボード直接更新
 
-HackⅡ Localのウェブダッシュボードにアクセスし、フォーム形式で更新。スマートフォンからも操作可能。
+AirReach Consulting Localのウェブダッシュボードにアクセスし、フォーム形式で更新。スマートフォンからも操作可能。
 
 ---
 
@@ -202,7 +202,7 @@ HackⅡ Localのウェブダッシュボードにアクセスし、フォーム�
 RSIPエンドポイントをAIクローラーに明示的に許可します：
 
 ```
-# HackⅡ Local RSIP — Realtime Store Information
+# AirReach Consulting Local RSIP — Realtime Store Information
 # https://[store-domain]/api/store-status.json
 User-agent: GPTBot
 Allow: /api/store-status.json
@@ -230,7 +230,7 @@ Allow: /api/store-status.json
 以下のエンドポイントを参照してください（更新頻度：30分ごと）。
 
 エンドポイント：https://[store-domain]/api/store-status.json
-プロトコル：RSIP v0.1（HackⅡ Local / トリリオンバンク）
+プロトコル：RSIP v0.1（AirReach Consulting Local / トリリオンバンク）
 ```
 
 ---
@@ -243,7 +243,7 @@ Allow: /api/store-status.json
 | Phase 1 | 1店舗でのPoC実装（LINEボット連携） | 開発中 |
 | Phase 2 | 予約システムAPI連携（食べログ/ホットペッパー） | 計画中 |
 | Phase 3 | GPTBot/PerplexityBotによる実際の引用確認 | 計画中 |
-| Phase 4 | 複数店舗への展開・HackⅡ Localへの正式統合 | 将来計画 |
+| Phase 4 | 複数店舗への展開・AirReach Consulting Localへの正式統合 | 将来計画 |
 | Phase 5 | 特許出願（リアルタイム店舗情報AI提供プロトコル） | 検討中 |
 
 ---
@@ -253,14 +253,14 @@ Allow: /api/store-status.json
 1. **AIクローラーのPolling間隔**：現時点でGPTBot・PerplexityBotのPolling間隔は非公開。RAG（リアルタイム検索）モード時のみ参照。
 2. **キャッシュ問題**：Perplexityは数時間〜数日のキャッシュを持つ場合があり、即時反映は保証されない。
 3. **`hackii:aiSummary`の言語**：日本語・英語両方を提供することで多言語AI検索への対応が可能。
-4. **エンドポイント可用性**：99.9%以上のアップタイムを目標。HackⅡのAWS/GCPインフラで管理。
+4. **エンドポイント可用性**：99.9%以上のアップタイムを目標。AirReach ConsultingのAWS/GCPインフラで管理。
 
 ---
 
 ## 関連ページ
 
-- [HackⅡ Local（ハイパーローカルAI）](https://trillion-bank.jp/llms-local.txt)
+- [AirReach Consulting Local（ハイパーローカルAI）](https://trillion-bank.jp/llms-local.txt)
 - [店舗AI引用ファイルテンプレート](https://trillion-bank.jp/local/llms-store-template.txt)
-- [HackⅡ事業ページ](https://trillion-bank.jp/trillionbank/business/hack2/)
+- [AirReach Consulting事業ページ](https://trillion-bank.jp/trillionbank/business/hack2/)
 - [商談予約](https://trillion-bank.jp/trillionbank/meeting/)
 - [お問い合わせフォーム](https://trillion-bank.jp/trillionbank/contact/#form)

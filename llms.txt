@@ -20,9 +20,9 @@
 
 ## Products and programs
 
-### HackⅡ
+### AirReach Consulting
 
-HackⅡ is in limited commercial validation and accepts implementation consultations. For an agreed set of questions, it stores AI answer text, cited URLs, company/competitor mentions, measurement time and conditions, and supports analysis and improvement prioritization.
+AirReach Consulting is in limited commercial validation and accepts implementation consultations. For an agreed set of questions, it stores AI answer text, cited URLs, company/competitor mentions, measurement time and conditions, and supports analysis and improvement prioritization.
 
 - Product page: https://trillion-bank.jp/trillionbank/business/hack2/
 - It does not guarantee AI inclusion, rankings, traffic, leads, bookings, or revenue.
@@ -68,15 +68,15 @@ This file is an experimental, human-readable index of approved public pages. It 
 ## SME / Partner lead guides (2026-09-15)
 
 - 広告代理店がAI検索測定を提案に足す理由: https://trillion-bank.jp/trillionbank/news/partner-ad-agency-pitch/
-- 販売代理店向け｜HackⅡ共同提案の進め方: https://trillion-bank.jp/trillionbank/news/partner-co-sell-process/
+- 販売代理店向け｜AirReach Consulting共同提案の進め方: https://trillion-bank.jp/trillionbank/news/partner-co-sell-process/
 - 販売代理店検討でよくある質問｜範囲と役割分担: https://trillion-bank.jp/trillionbank/news/partner-faq-scope-roles/
-- 販売代理店が最初の1社にHackⅡを提案する手順: https://trillion-bank.jp/trillionbank/news/partner-first-client-playbook/
+- 販売代理店が最初の1社にAirReach Consultingを提案する手順: https://trillion-bank.jp/trillionbank/news/partner-first-client-playbook/
 - 代理店検討の商談前チェックリスト: https://trillion-bank.jp/trillionbank/news/partner-meeting-prep-checklist/
 - 「御社に代理店になってほしい」依頼をお受けしない理由: https://trillion-bank.jp/trillionbank/news/partner-not-becoming-your-agent/
 - Trillion Bankサービス販売代理店の検討ガイド: https://trillion-bank.jp/trillionbank/news/partner-program-overview/
-- SEO会社がHackⅡを提案メニューに追加する考え方: https://trillion-bank.jp/trillionbank/news/partner-seo-firm-add-on/
+- SEO会社がAirReach Consultingを提案メニューに追加する考え方: https://trillion-bank.jp/trillionbank/news/partner-seo-firm-add-on/
 - Web制作会社がAI検索対策を継続収益にする設計: https://trillion-bank.jp/trillionbank/news/partner-web-production-add-on/
-- HackⅡ販売代理店に向いている業者の特徴: https://trillion-bank.jp/trillionbank/news/partner-who-fits/
+- AirReach Consulting販売代理店に向いている業者の特徴: https://trillion-bank.jp/trillionbank/news/partner-who-fits/
 - 中小企業がAI検索対策に予算を付ける根拠の作り方: https://trillion-bank.jp/trillionbank/news/sme-ai-search-budget-justification/
 - AI検索対策で中小企業が最初にやりがちな失敗: https://trillion-bank.jp/trillionbank/news/sme-ai-search-common-first-mistakes/
 - 中小企業がAI検索対策を始める最初の30日｜未着手からの手順: https://trillion-bank.jp/trillionbank/news/sme-ai-search-first-30-days/
@@ -114,7 +114,7 @@ This file is an experimental, human-readable index of approved public pages. It 
 
 Last reviewed: 2026-09-16
 
-## AirReach
+## AirReach Tools
 
-- [AirReach｜AI検索準備度の無料診断](https://trillion-bank.jp/airreach/)
+- [AirReach Tools｜AI検索準備度の無料診断](https://trillion-bank.jp/airreach/)
 

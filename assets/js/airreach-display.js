@@ -2,7 +2,7 @@
 # Liquid で _data/airreach_display.yml を埋め込む。区分・状態の定義はここに書かない。
 ---
 /**
- * AirReach display contract — single read point for score bands / states / wording.
+ * AirReach Tools display contract — single read point for score bands / states / wording.
  * Source of truth: _data/airreach_display.yml (embedded at build time).
  * Load before airreach-diagnose.js / airreach-sales.js.
  */
@@ -57,7 +57,7 @@
     return [s.scope_sentence, s.not_meaning_sentence].filter(Boolean).join('');
   }
 
-  /** "赤 0-39 低い / 黄 40-69 普通 / 緑 70-100 高い" style legend items. */
+  /** "赤 0-39 低い / 黄 40-69 要改善 / 緑 70-100 高い" style legend items. */
   function legend() {
     return BANDS.map(function (b) {
       return { key: b.key, label: b.label, range: b.min + '〜' + b.max, tone: b.tone, color: b.color, meaning: b.meaning };

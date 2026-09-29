@@ -1,5 +1,5 @@
 /**
- * AirReach Sales View — industry-aware 4-number engine.
+ * AirReach Tools Sales View — industry-aware 4-number engine.
  * Modes (internal): generic_search | branded_search
  * User labels: 新しいお客さん向け | 名前で調べられたとき
  * Evidence: 実測 / 推定 / 参考予測 / ユーザー入力 / 診断
@@ -372,7 +372,7 @@
   }
 
   /**
-   * Up to 3 対策. HackⅡ / Teams is intentionally NOT an action here: it is a separate
+   * Up to 3 対策. AirReach Consulting / Teams is intentionally NOT an action here: it is a separate
    * service and goes into the report's `referral` block, rendered in its own frame.
    */
   function top3Actions(industry, mode, diagnose, brand) {
@@ -421,16 +421,16 @@
     return actions.slice(0, 3);
   }
 
-  /** HackⅡ referral: separate frame, never mixed into 対策 or evidence links. */
+  /** AirReach Consulting referral: separate frame, never mixed into 対策 or evidence links. */
   function buildReferral(profile, diagnose) {
     var partner = ((profile && profile.actions) || []).filter(function (d) { return d.slot === 'PARTNER'; })[0] || null;
     var base = (diagnose && diagnose.referral) || {};
     return {
       kicker: base.kicker || '別のサービスの案内',
       title: base.title || 'AI回答で紹介されるか・引用元・他店との比較を調べたい場合',
-      body: base.body || 'この診断はホームページの情報整備を見るもので、AI回答の中身は測っていません。実際のAI回答での言及・引用・比較を同条件で測る場合は、別サービスのHackⅡで行います。',
+      body: base.body || 'この診断はホームページの情報整備を見るもので、AI回答の中身は測っていません。実際のAI回答での言及・引用・比較を同条件で測る場合は、別サービスのAirReach Consultingで行います。',
       partnerNote: partner ? partner.action : '',
-      cta: base.cta || 'HackⅡについて相談する',
+      cta: base.cta || 'AirReach Consultingについて相談する',
       href: base.href || '/trillionbank/meeting/?type=company&from=airreach-referral',
       note: base.note || '対策の手順や根拠リンクとは別枠の案内です。診断の点数には影響しません。'
     };
@@ -1068,8 +1068,8 @@
   function badgeLabel(b) {
     var s = String(b || '');
     if (s.indexOf('Official') >= 0 || s.indexOf('Google実測') >= 0) return 'Google実測';
-    if (s.indexOf('Observed') >= 0 || s.indexOf('AirReach実測') >= 0 || s.indexOf('HackⅡ実測') >= 0) return 'AirReach実測';
-    if (s.indexOf('実測') >= 0) return 'AirReach実測';
+    if (s.indexOf('Observed') >= 0 || s.indexOf('AirReach Tools実測') >= 0 || s.indexOf('AirReach Consulting実測') >= 0) return 'AirReach Tools実測';
+    if (s.indexOf('実測') >= 0) return 'AirReach Tools実測';
     if (s.indexOf('User') >= 0 || s.indexOf('入力') >= 0 || s.indexOf('お客様') >= 0) return 'お客様入力';
     if (s.indexOf('Estimated') >= 0 || s.indexOf('推定') >= 0 || s.indexOf('Inferred') >= 0 || s.indexOf('予測') >= 0 || s.indexOf('参考') >= 0) return '参考予測';
     if (s.indexOf('診断') >= 0) return '参考予測';

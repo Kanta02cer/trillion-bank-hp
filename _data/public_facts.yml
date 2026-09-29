@@ -1,4 +1,4 @@
-last_reviewed: "2026-09-05"
+last_reviewed: "2026-09-29"
 company:
   legal_name: "株式会社Trillion Bank"
   display_name: "Trillion Bank"
@@ -19,13 +19,15 @@ company:
   bank_disclaimer: "株式会社Trillion Bankは銀行業を営む会社ではありません。"
 positioning:
   short: "AI検索集客とAI情報利用管理に取り組むテクノロジー企業。"
-  long: "AirReach / HackⅡでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。"
+  long: "AirReach Tools / AirReach ConsultingでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。"
 products:
   hack2:
-    name: "HackⅡ"
+    name: "AirReach Consulting"
+    former_names: ["HackⅡ", "HackⅡ Teams"]
     aliases: ["ハックツ", "Hack2", "HackII"]
+    renamed_on: "2026-09-29"
     status: "限定商用検証・導入相談受付"
-    public_definition: "選定した質問について、AI回答本文、引用URL、自社・競合の言及、測定日時・条件を保存し、AI検索上の現在地と改善判断を支援するサービス。伴走コンサルティングはHackⅡ Teamsとして提供する。"
+    public_definition: "選定した質問について、AI回答本文、引用URL、自社・競合の言及、測定日時・条件を保存し、AI検索上の現在地と改善判断を支援し、測定設計から優先順位整理・継続改善までを伴走するコンサルティングサービス（旧称 HackⅡ / HackⅡ Teams）。"
     verified_scope:
       - "質問・競合の測定設計"
       - "AI回答本文と引用URLの保存"
@@ -40,9 +42,11 @@ products:
       - "対応AI・測定頻度・質問数は契約時点の検証範囲で確定する"
 
   airreach:
-    name: "AirReach"
+    name: "AirReach Tools"
+    former_names: ["AirReach"]
+    renamed_on: "2026-09-29"
     status: "店舗・営業向け無料診断。URL入力から店情報を確認し、増やしたいことを選んで診断する。"
-    public_definition: "ホームページのURLを起点に、お店の確認と「何を増やしたいか」を聞いて診断する無料入口。業種・店名・調べる言葉はサイト情報から自動取得し、必要なら入力画面で業種を選べる。結果は見つかりやすさの点数といちばん最初に直すこと、主ボタン1つを中心に返す。診断は端末内に保存し、診断完了時にサーバーにも保存して共有リンクを発行する（発行できなかった場合は端末内のみ）。/airreach/result/ と /airreach/sales/ から開き直せる。くわしい分析や直す材料は結果の「その他のツール」から。数字はGoogle実測 / AirReach実測 / お客様入力 / 参考予測を区別する。"
+    public_definition: "ホームページのURLを起点に、お店の確認と「何を増やしたいか」を聞いて診断する無料入口。業種・店名・調べる言葉はサイト情報から自動取得し、必要なら入力画面で業種を選べる。結果は見つかりやすさの点数といちばん最初に直すこと、主ボタン1つを中心に返す。診断は端末内に保存し、診断完了時にサーバーにも保存して共有リンクを発行する（発行できなかった場合は端末内のみ）。/airreach/result/ と /airreach/sales/ から開き直せる。くわしい分析や直す材料は結果の「その他のツール」から。数字はGoogle実測 / AirReach Tools実測 / お客様入力 / 参考予測を区別する。"
     limitations:
       - "ChatGPT・Gemini・Claude・AI Overviewsなどの実回答引用率を本ツール単体では取得しない"
       - "診断結果は端末内（localStorage）に保存し、診断完了時にサーバーへも保存して共有リンクを発行する。共有リンクを知っている人だけが結果を開ける。ログインと顧客DBは後続"
@@ -54,27 +58,24 @@ products:
       - "生成ファイルは下書きであり自動公開しない"
       - "Sales Modeは端末内の履歴・営業トーク・提案書下書き・商談モードまで。ログインとサーバー顧客DBは未接続"
   hack2_studio:
-    name: "HackⅡ Studio"
-    aliases: ["ハックツ・スタジオ", "Hack2 Studio", "AirReach Studio"]
+    name: "AirReach Tools Studio"
+    former_names: ["HackⅡ Studio", "AirReach Studio"]
+    aliases: ["ハックツ・スタジオ", "Hack2 Studio"]
     status: "ブラウザ内実行OS（Overview司令塔）。分析→キーワード→施策→ZIP／下書きPRまで。"
-    public_definition: "URL・目的・対策キーワード件数を入力すると、サイト理解・キーワード選定・AI向け質問・Gap・優先施策・実装パッケージ（ZIP）までを一連のジョブとして進める実行画面。市場検索需要は推定が既定で、Keyword Planner CSV取込時のみ公式ボリュームを行単位で上書き表示する。GSC ImpressionsとHackⅡ言及・引用は実測として分離する。公開や順位・引用・売上を保証しない。GitHubへの下書きPRはユーザーPATと人間承認前提。本番自動Deployはしない。"
+    public_definition: "URL・目的・対策キーワード件数を入力すると、サイト理解・キーワード選定・AI向け質問・Gap・優先施策・実装パッケージ（ZIP）までを一連のジョブとして進める実行画面。市場検索需要は推定が既定で、Keyword Planner CSV取込時のみ公式ボリュームを行単位で上書き表示する。GSC ImpressionsとAirReach Consulting言及・引用は実測として分離する。公開や順位・引用・売上を保証しない。GitHubへの下書きPRはユーザーPATと人間承認前提。本番自動Deployはしない。"
     limitations:
       - "生成ファイルは下書きであり自動公開しない"
       - "市場の検索ボリュームは推定が既定。Keyword Planner CSV取込時のみ当該行を公式ボリュームとして扱う"
       - "GSC Impressionsと市場需要を同一の「検索回数」として混ぜない"
       - "GitHub PRは下書き作成まで。マージと本番Deployは人間が行う（自動Deployなし）"
-      - "HackⅡライブAPI未接続時はJSON手動取込。競合SERP自動取得は未接続時は推定・手動に留める"
+      - "AirReach ConsultingライブAPI未接続時はJSON手動取込。競合SERP自動取得は未接続時は推定・手動に留める"
       - "GitHub Personal Access TokenはブラウザのsessionStorageにのみ保持し、リポジトリへ保存しない"
   hack2_platform:
-    name: "HackⅡ Platform"
-    aliases: ["ハックツ・プラットフォーム", "Hack2 Platform", "AirReach Platform"]
+    name: "AirReach Tools Platform"
+    former_names: ["HackⅡ Platform", "AirReach Platform"]
+    aliases: ["ハックツ・プラットフォーム", "Hack2 Platform"]
     status: "詳細分析・シミュレーション（参考値）"
     public_definition: "GSC/GA4等の実数と診断結果をつなぎ、訪問・問い合わせなどの改善余地をより詳細に分析・試算する画面。成果を保証しない。"
-  hack2_teams:
-    name: "HackⅡ Teams"
-    aliases: ["ハックツ・チームス", "Hack2 Teams"]
-    status: "導入相談・伴走コンサルティング"
-    public_definition: "HackⅡ本体の測定設計から優先順位整理・継続改善までを、コンサルティングとして一緒に進める伴走枠。"
   adctor:
     name: "Adctor"
     status: "研究開発・PoC相談"

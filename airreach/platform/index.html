@@ -1,8 +1,8 @@
 ---
-title: "HackⅡ Platform｜詳細分析 - Trillion Bank"
-tbdesc: "HackⅡ Platform（ハックツ・プラットフォーム）は、GSC/GA4等の実数と診断結果をつなぎ、訪問・問い合わせなどの改善余地をより詳細に分析・試算する画面です。"
-keywords: "HackⅡ Platform,ハックツ・プラットフォーム,AI検索,詳細分析,Search Console,GA4"
-ai_summary: "HackⅡ Platformは詳細分析・試算の画面。対策ファイル生成はHackⅡ Studio、伴走コンサルはHackⅡ Teams。"
+title: "AirReach Tools Platform｜詳細分析 - Trillion Bank"
+tbdesc: "AirReach Tools Platform（AirReach Tools Platform）は、GSC/GA4等の実数と診断結果をつなぎ、訪問・問い合わせなどの改善余地をより詳細に分析・試算する画面です。"
+keywords: "AirReach Tools Platform,AirReach Tools Platform,AI検索,詳細分析,Search Console,GA4"
+ai_summary: "AirReach Tools Platformは詳細分析・試算の画面。対策ファイル生成はAirReach Tools Studio、伴走コンサルはAirReach Consulting。"
 robots: "noindex, follow"
 ---
 <!DOCTYPE html>
@@ -19,11 +19,11 @@ robots: "noindex, follow"
 <main id="main">
 <section class="arp-hero">
   <div class="arp-wrap">
-    <div class="arp-eyebrow" data-tip="ハックツ・プラットフォーム。詳細な分析・試算の画面です。">HackⅡ Platform</div>
+    <div class="arp-eyebrow" data-tip="AirReach Tools Platform。詳細な分析・試算の画面です。">AirReach Tools Platform</div>
     <div class="arp-hero-grid">
       <div>
         <h1>詳細分析で、<br><em>集客の変化</em>まで。</h1>
-        <p class="arp-lead"><span data-tip="AI検索・Google検索・サイト課題・GA4をつなぎ、改善余地を詳細に分析・試算します。成果は保証しません。">詳細分析</span>の画面です。対策生成は<span data-tip="AI特化の学習データ・構造化データをディレクトリごと生成します。">HackⅡ Studio</span>、伴走は<span data-tip="コンサルティングです。">HackⅡ Teams</span>。</p>
+        <p class="arp-lead"><span data-tip="AI検索・Google検索・サイト課題・GA4をつなぎ、改善余地を詳細に分析・試算します。成果は保証しません。">詳細分析</span>の画面です。対策生成は<span data-tip="AI特化の学習データ・構造化データをディレクトリごと生成します。">AirReach Tools Studio</span>、伴走は<span data-tip="コンサルティングです。">AirReach Consulting</span>。</p>
         <div class="arp-cta-row"><a href="#simulator" class="arp-btn arp-primary">試算する</a><a href="/airreach/studio/" class="arp-btn arp-secondary">Studioで作る</a></div>
       </div>
       <div class="arp-hero-card">
@@ -63,7 +63,7 @@ robots: "noindex, follow"
         <label>CSVの期間（日）<input id="arp-period-days" type="number" min="1" max="366" value="28"></label>
         <label>GSC Performance CSV<input id="arp-gsc-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values"></label>
         <label>GA4 CSV（任意）<input id="arp-ga4-file" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values"></label>
-        <label>&nbsp;<button id="arp-load-studio" class="arp-btn arp-secondary" type="button" style="width:100%">HackⅡ Studio計測を読み込む</button></label>
+        <label>&nbsp;<button id="arp-load-studio" class="arp-btn arp-secondary" type="button" style="width:100%">AirReach Tools Studio計測を読み込む</button></label>
       </div>
       <p class="arp-import-status" id="arp-import-status">未取込。手入力でも試算できます（その場合は User Input）。</p>
       <p class="arp-help" id="arp-baseline-badge">基準値: User Input（手入力）</p>
@@ -83,7 +83,7 @@ robots: "noindex, follow"
         </div>
         <div class="arp-sep"></div>
         <h3>改善仮定</h3>
-        <p class="arp-help">AirReachのスコアから自動的に成果を断定せず、営業時に顧客と合意した仮定で試算します。</p>
+        <p class="arp-help">AirReach Toolsのスコアから自動的に成果を断定せず、営業時に顧客と合意した仮定で試算します。</p>
         <div class="arp-form-grid">
           <label>訪問者数の改善率（基準）<div class="arp-input-unit"><input id="arp-traffic-uplift" type="number" min="0" max="300" step="1" value="15"><span>%</span></div></label>
           <label>CVRの改善率（相対・基準）<div class="arp-input-unit"><input id="arp-cvr-uplift" type="number" min="0" max="300" step="1" value="10"><span>%</span></div></label>
@@ -143,7 +143,7 @@ robots: "noindex, follow"
       <article class="arp-data-card"><div class="arp-source official">OFFICIAL</div><h3>GA4</h3><p>Sessions / Active Users / Landing Page / Key Events / Revenue</p><small>問い合わせ・LINE等をKey Eventとして結合。</small></article>
       <article class="arp-data-card"><div class="arp-source official">OFFICIAL</div><h3>URL Inspection</h3><p>Index status / canonical / crawl / rich result information</p><small>Search Console OAuthで対象プロパティのみ。</small></article>
       <article class="arp-data-card"><div class="arp-source public">PUBLIC</div><h3>PageSpeed / CrUX</h3><p>Performance / Lighthouse / LCP / INP / CLS / field UX</p><small>PageSpeedはキーなし利用可。CrUXは無料APIキー。</small></article>
-      <article class="arp-data-card"><div class="arp-source observed">OBSERVED</div><h3>HackⅡ AI Measurement</h3><p>Mention / Citation / SOV / Rank / Response / Cited URL / Engine</p><small>実測したPrompt・モデル・日時・Localeを保存。</small></article>
+      <article class="arp-data-card"><div class="arp-source observed">OBSERVED</div><h3>AirReach Consulting AI Measurement</h3><p>Mention / Citation / SOV / Rank / Response / Cited URL / Engine</p><small>実測したPrompt・モデル・日時・Localeを保存。</small></article>
       <article class="arp-data-card"><div class="arp-source inferred">INFERRED</div><h3>Opportunity</h3><p>追加訪問 / 追加問い合わせ / 機会損失 / ROI scenario</p><small>入力値・実測値・仮定を明示したシミュレーション。</small></article>
       <article class="arp-data-card"><div class="arp-source action">ACTION</div><h3>AI Search Patch</h3><p>FAQ / JSON-LD / Meta / Internal link / llms / implementation guide</p><small>診断から修正ファイルとPR生成へ接続。</small></article>
     </div>
@@ -168,11 +168,11 @@ robots: "noindex, follow"
   <div class="arp-wrap">
     <div class="arp-section-head"><div><div class="arp-eyebrow">違い</div><h2 data-tip="測定項目の多さより、問題解決までの距離を短くします。">問題解決までの距離</h2></div></div>
     <div class="arp-compare">
-      <div class="arp-compare-row head"><div>顧客の問い</div><div>一般的なAIO計測</div><div>AirReach + HackⅡ</div></div>
+      <div class="arp-compare-row head"><div>顧客の問い</div><div>一般的なAIO計測</div><div>AirReach Tools + AirReach Consulting</div></div>
       <div class="arp-compare-row"><div>AIに出ている？</div><div>計測・可視化</div><div>計測・可視化</div></div>
       <div class="arp-compare-row"><div>なぜ出ない？</div><div>Gap / 改善提案</div><div><strong>ページ・FAQ・根拠・技術原因まで特定</strong></div></div>
       <div class="arp-compare-row"><div>何を直す？</div><div>提案・生成</div><div><strong>修正ファイル・実装手順を生成</strong></div></div>
-      <div class="arp-compare-row"><div>誰が直す？</div><div>顧客・代理店側</div><div><strong>PR / Deploy / HackⅡ伴走まで</strong></div></div>
+      <div class="arp-compare-row"><div>誰が直す？</div><div>顧客・代理店側</div><div><strong>PR / Deploy / AirReach Consulting伴走まで</strong></div></div>
       <div class="arp-compare-row"><div>意味があった？</div><div>引用・言及の変化</div><div><strong>訪問・問い合わせ・CVまでBefore/After</strong></div></div>
     </div>
   </div>

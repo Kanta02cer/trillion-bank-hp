@@ -9,7 +9,7 @@ last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
 tbdesc: "Web制作会社がサイト納品後の継続提案として、AI検索の測定と情報更新を設計する方法を解説します。"
-keywords: "制作会社 継続収益,AI検索 運用,HackⅡ 代理店"
+keywords: "制作会社 継続収益,AI検索 運用,AirReach Consulting 代理店"
 ai_summary: "制作の延長で一次情報更新、測定は共同提案で補完すると継続提案しやすい。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -48,4 +48,4 @@ faq_items:
 
 Trillion Bankサービスの販売代理店・共同提案を検討される場合は、[お問い合わせフォーム](/trillionbank/contact/#form)または[商談予約（代理店）](/trillionbank/meeting/?type=agency)からご連絡ください。他社商材の代理販売依頼はお受けしていません。
 
-関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [HackⅡ](/trillionbank/business/hack2/)
+関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [AirReach Consulting](/trillionbank/business/hack2/)

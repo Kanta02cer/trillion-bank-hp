@@ -16,7 +16,7 @@ The authoritative repository instructions are in `AGENTS.md`. Read that file bef
 - Use a feature branch and a pull request.
 - Do not revive Regalis-era names, prices, claims, routes, or product definitions.
 - Do not publish customer, investor, fundraising, cap-table, patent, partner-discussion, or private media information without an explicit approval marker.
-- Keep HackⅡ (limited commercial validation) separate from Adctor (research / PoC).
+- Keep AirReach Consulting (limited commercial validation) separate from Adctor (research / PoC).
 - Treat structured data as a faithful description of visible content, not as a place to hide extra claims.
 - Run `python3 scripts/content_guard.py` before every commit touching public content.
 - Build Jekyll and visually inspect desktop/mobile pages before requesting review.

@@ -28,7 +28,7 @@ faq_items:
   - question: "SEOと同時に頼めますか？"
     answer: "可能です。ただしAI回答面の指標を別に持つ必要があります。"
   - question: "Trillion Bankの役割は？"
-    answer: "HackⅡによる測定と優先度整理の導入相談です。"
+    answer: "AirReach Consultingによる測定と優先度整理の導入相談です。"
 ---
 
 ## LLMOで依頼しがちな過剰範囲
@@ -53,6 +53,6 @@ faq_items:
 
 ## 次の一歩
 
-選定前に自社の現在地を確認したい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+選定前に自社の現在地を確認したい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。AirReach Consulting（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
 
 関連: [内製／外注判断ガイド](/trillionbank/guide/inhouse-or-outsource/) / [測定方法](/trillionbank/news/ai-search-measurement-method/) / [ツール比較の考え方](/trillionbank/news/ai-search-tools-vendors/)

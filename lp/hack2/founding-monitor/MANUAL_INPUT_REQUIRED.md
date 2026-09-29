@@ -6,10 +6,10 @@
 
 | 項目 | 現在 | 必要な対応 |
 |---|---|---|
-| HackⅡロゴ（Primary） | 未設置（ナビにTBロゴのみ） | HackⅡロゴをHero付近またはプログラム欄に追加 |
-| HackⅡロゴ（White） | 未使用 | ダーク背景CTAセクションに使用可 |
+| AirReach Consultingロゴ（Primary） | 未設置（ナビにTBロゴのみ） | AirReach ConsultingロゴをHero付近またはプログラム欄に追加 |
+| AirReach Consultingロゴ（White） | 未使用 | ダーク背景CTAセクションに使用可 |
 | Trillion Bankロゴ | `/images/hero/tb-logo-color.webp` 使用中 | 正式版に差し替え不要か確認 |
-| HackⅡ実画面スクリーンショット | イメージ画像（09_dashboard_mockup）表示中 | 公開許可済みの実画面が用意でき次第差し替え |
+| AirReach Consulting実画面スクリーンショット | イメージ画像（09_dashboard_mockup）表示中 | 公開許可済みの実画面が用意でき次第差し替え |
 
 ## フォーム送信先
 

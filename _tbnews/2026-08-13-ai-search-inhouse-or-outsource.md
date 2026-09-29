@@ -4,7 +4,7 @@ date: 2026-08-13
 last_modified: 2026-08-13
 category: コラム
 tbdesc: "AI検索対策（AEO/LLMO/GEO）はどこまで自社で内製でき、どこから外注が必要か。自社でできる具体的手順、自社確認の限界、フェーズ別の判断フレームワーク、費用相場、マーケ・広報・経営企画の担当部署の決め方まで解説。まず自社の現状確認から始めましょう。"
-keywords: "AEO対策 自社,AI検索対策 内製,GEO対策 外注,AEO コンサル,LLMO 費用,AI検索対策 何をする,AEO 担当部署,トリリオンバンク,HackⅡ"
+keywords: "AEO対策 自社,AI検索対策 内製,GEO対策 外注,AEO コンサル,LLMO 費用,AI検索対策 何をする,AEO 担当部署,トリリオンバンク,AirReach Consulting"
 ai_summary: "AI検索対策（AEO）の内製・外注の判断基準を解説。ChatGPTでの自社確認・FAQ整備・一次情報発信など自社でできる施策と、質問設計・証拠保全・競合比較・再測定という自社確認の限界を整理し、フェーズ別の判断フレームワークと費用相場を提示する。"
 references:
   - title: "Google検索の生成AI機能向け最適化ガイド（Google Search Central）"
@@ -242,6 +242,6 @@ A. 自社の現在地の確認です。ChatGPTやPerplexityに見込み客が聞
 3. **費用は「ツール月額数万円〜、支援月額数十万円〜」が相場観** — ただし内製の工数コストも無料ではない
 4. **体制はマーケ主管＋広報・経営企画連携** — AIの回答は自社サイトの外側からも決まる
 
-なお、当社トリリオンバンクが開発中のAI Recommendation Intelligence「[HackⅡ](/trillionbank/business/hack2/)」は、まさにこの「継続計測」の限界——AI検索で「出たか」だけでなく、なぜ選ばれ、なぜ外れたかまで——を扱う領域のプロダクトです（限定商用検証・導入相談受付中。対応AIは契約時点で本番検証済みの範囲をご案内しています）。計測レポートの具体的なイメージは「[HackⅡサンプルレポート](/trillionbank/news/hackii-sample-report/)」で確認できます。
+なお、当社トリリオンバンクが開発中のAI Recommendation Intelligence「[AirReach Consulting](/trillionbank/business/hack2/)」は、まさにこの「継続計測」の限界——AI検索で「出たか」だけでなく、なぜ選ばれ、なぜ外れたかまで——を扱う領域のプロダクトです（限定商用検証・導入相談受付中。対応AIは契約時点で本番検証済みの範囲をご案内しています）。計測レポートの具体的なイメージは「[AirReach Consultingサンプルレポート](/trillionbank/news/hackii-sample-report/)」で確認できます。
 
 まずは本記事の「自社でできること」から着手し、計測の必要性を感じた段階で「[内製/外注判断ガイド](/trillionbank/guide/inhouse-or-outsource/)」と「[AI検索可視性ベンチマーク](/trillionbank/news/ai-search-visibility-benchmark/)」を判断材料としてご活用ください。

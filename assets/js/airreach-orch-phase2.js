@@ -1,5 +1,5 @@
 /**
- * HackⅡ Studio Phase 2 — draft GitHub PR, Keyword Planner CSV, HackⅡ JSON, publish checklist.
+ * AirReach Tools Studio Phase 2 — draft GitHub PR, Keyword Planner CSV, AirReach Consulting JSON, publish checklist.
  * No auto-merge and no production deploy from the browser.
  */
 (function () {
@@ -316,7 +316,7 @@
     var commit = await gh('/repos/' + owner + '/' + repo + '/git/commits', token, {
       method: 'POST',
       body: {
-        message: 'chore(airreach): draft implementation package from HackⅡ Studio\n\nDraft only. Do not merge without human review.',
+        message: 'chore(airreach): draft implementation package from AirReach Tools Studio\n\nDraft only. Do not merge without human review.',
         tree: newTree.sha,
         parents: [baseSha]
       }
@@ -337,8 +337,8 @@
 
     var prBody = [
       '## Summary',
-      '- HackⅡ Studio が生成した実装パッケージ下書きです。',
-      '- 市場需要の推定と GSC / Keyword Planner / HackⅡ 実測を混同しないでください。',
+      '- AirReach Tools Studio が生成した実装パッケージ下書きです。',
+      '- 市場需要の推定と GSC / Keyword Planner / AirReach Consulting 実測を混同しないでください。',
       '- **自動マージ・本番Deployは行いません。** 人間レビュー後にマージしてください。',
       '',
       '## Checklist',
@@ -355,7 +355,7 @@
       pr = await gh('/repos/' + owner + '/' + repo + '/pulls', token, {
         method: 'POST',
         body: {
-          title: 'draft: AirReach / HackⅡ Studio implementation package',
+          title: 'draft: AirReach Tools / AirReach Tools Studio implementation package',
           head: branch,
           base: base,
           body: prBody,
@@ -367,7 +367,7 @@
       pr = await gh('/repos/' + owner + '/' + repo + '/pulls', token, {
         method: 'POST',
         body: {
-          title: '[NEEDS HUMAN REVIEW] AirReach implementation package',
+          title: '[NEEDS HUMAN REVIEW] AirReach Tools implementation package',
           head: branch,
           base: base,
           body: prBody + '\n\n> Draft PRs are disabled on this repo; treat this as review-only.'
@@ -534,9 +534,9 @@
         rd.onload = function () {
           try {
             var r = applyHack2Json(rd.result);
-            setStatus(dataStatus, 'HackⅡ取込: ' + r.imported + ' 件 / キーワード反映 ' + r.applied + '（言及・引用は実測）', true);
+            setStatus(dataStatus, 'AirReach Consulting取込: ' + r.imported + ' 件 / キーワード反映 ' + r.applied + '（言及・引用は実測）', true);
           } catch (err) {
-            setStatus(dataStatus, 'HackⅡ JSON失敗: ' + (err && err.message ? err.message : err), false);
+            setStatus(dataStatus, 'AirReach Consulting JSON失敗: ' + (err && err.message ? err.message : err), false);
           }
         };
         rd.readAsText(f, 'utf-8');

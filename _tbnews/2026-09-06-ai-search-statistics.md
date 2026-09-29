@@ -118,7 +118,7 @@ JS実行の証拠がないことは、クライアントサイドレンダリン
 2. **手法差**: 「引用」の定義（回答本文での言及か参照リンクか）、対象プラットフォーム、プロンプト設計が調査ごとに異なるため、異なる調査の数値は横比較できません。
 3. **統制実験の限界**: GEO論文はベンチマーク上の統制実験であり、実サービスの本番挙動での再現を保証しません。ベンダー調査は各社ツールの測定範囲に依存します。
 
-自社で測る方法は[AI検索の効果測定方法](/trillionbank/news/ai-search-measurement-method/)と[AI引用率の計算方法](/trillionbank/news/ai-citation-rate-calculation/)で解説しています。株式会社Trillion Bank（トリリオンバンク）では、HackⅡ（限定商用検証・導入相談受付）で質問単位の引用観測を継続し、公開統計と自社の観測記録を突き合わせています。
+自社で測る方法は[AI検索の効果測定方法](/trillionbank/news/ai-search-measurement-method/)と[AI引用率の計算方法](/trillionbank/news/ai-citation-rate-calculation/)で解説しています。株式会社Trillion Bank（トリリオンバンク）では、AirReach Consulting（限定商用検証・導入相談受付）で質問単位の引用観測を継続し、公開統計と自社の観測記録を突き合わせています。
 
 ## 実務チェックリスト
 

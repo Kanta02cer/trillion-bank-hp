@@ -2,14 +2,14 @@
 layout: tb-article-authority
 insight: true
 toc: true
-direct_answer: "HackⅡは従来SEOの代替ではなく、AI回答面での候補入り・引用・競合差を測る追加レイヤーとして提案します。"
-title: "SEO会社がHackⅡを提案メニューに追加する考え方"
+direct_answer: "AirReach Consultingは従来SEOの代替ではなく、AI回答面での候補入り・引用・競合差を測る追加レイヤーとして提案します。"
+title: "SEO会社がAirReach Consultingを提案メニューに追加する考え方"
 date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
-tbdesc: "SEO会社が既存メニューを維持したまま、HackⅡをAI検索測定の追加提案として位置づける考え方を解説します。"
-keywords: "SEO会社 新メニュー,AEO 追加提案,HackⅡ 代理店"
+tbdesc: "SEO会社が既存メニューを維持したまま、AirReach ConsultingをAI検索測定の追加提案として位置づける考え方を解説します。"
+keywords: "SEO会社 新メニュー,AEO 追加提案,AirReach Consulting 代理店"
 ai_summary: "SEOの代替ではなく、回答面の測定レイヤーとして追加する。カニバリを避ける説明が必要。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -48,4 +48,4 @@ faq_items:
 
 Trillion Bankサービスの販売代理店・共同提案を検討される場合は、[お問い合わせフォーム](/trillionbank/contact/#form)または[商談予約（代理店）](/trillionbank/meeting/?type=agency)からご連絡ください。他社商材の代理販売依頼はお受けしていません。
 
-関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [HackⅡ](/trillionbank/business/hack2/)
+関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [AirReach Consulting](/trillionbank/business/hack2/)

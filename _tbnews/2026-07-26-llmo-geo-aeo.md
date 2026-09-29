@@ -61,7 +61,7 @@ jsonld: |
         "name": "LLMO・AEO対策の効果はすぐ出ますか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "AIの回答は同じ質問でも実行ごとに変動するため、単発の確認では効果を判断できません。候補入り率・引用率などのトレンドで捉え、施策前後で同一条件の再測定を行う前提で進めることが重要です。株式会社トリリオンバンクのHackⅡ（限定商用検証・導入相談受付中）は、この定点観測と競合比較の体系化を支援します。"
+          "text": "AIの回答は同じ質問でも実行ごとに変動するため、単発の確認では効果を判断できません。候補入り率・引用率などのトレンドで捉え、施策前後で同一条件の再測定を行う前提で進めることが重要です。株式会社トリリオンバンクのAirReach Consulting（限定商用検証・導入相談受付中）は、この定点観測と競合比較の体系化を支援します。"
         }
       }
     ]
@@ -147,7 +147,7 @@ llms.txtの設置や構造化データの実装といった「AI向けの技術�
 
 この「測る」を自社でやるか外部に任せるかは、質問数・対象AI数・競合数の掛け算で工数が決まります。判断の分岐条件は「[AI検索対策は内製か外注か](/trillionbank/news/ai-search-inhouse-or-outsource/)」で整理しています。
 
-なお、株式会社トリリオンバンクのHackⅡ（AI Recommendation Intelligence）は、AI検索で「出たか」ではなく、**なぜ選ばれ、なぜ外れたかまで**を扱う測定基盤として、AI Decision Share／Recommendation Win・Loss／Citation Channel Map／Measure→Act→Remeasureの4フレームでこのサイクルを体系化しています。現在は限定商用検証・導入相談受付中で、対応AIは契約時点で本番検証済みの範囲をご案内しています。内製で始める場合の簡易的な方法でも定点観測は成立しますので、詳細は[HackⅡ製品ページ](/trillionbank/business/hack2/)と比較のうえご判断ください。
+なお、株式会社トリリオンバンクのAirReach Consulting（AI Recommendation Intelligence）は、AI検索で「出たか」ではなく、**なぜ選ばれ、なぜ外れたかまで**を扱う測定基盤として、AI Decision Share／Recommendation Win・Loss／Citation Channel Map／Measure→Act→Remeasureの4フレームでこのサイクルを体系化しています。現在は限定商用検証・導入相談受付中で、対応AIは契約時点で本番検証済みの範囲をご案内しています。内製で始める場合の簡易的な方法でも定点観測は成立しますので、詳細は[AirReach Consulting製品ページ](/trillionbank/business/hack2/)と比較のうえご判断ください。
 
 ## よくある質問
 

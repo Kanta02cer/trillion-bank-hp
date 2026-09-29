@@ -4,7 +4,7 @@ date: 2026-08-13
 last_modified: 2026-08-13
 category: コラム
 tbdesc: "ホテル・旅館・多店舗チェーンなど多拠点ビジネスのAI推薦対策を解説。NAP不一致や古い料金・改装前情報の残存、OTA・口コミがAIの引用元になる構造、Googleビジネスプロフィールの波及経路、情報整合性チェックリストまで。まず拠点情報の表記統一から始めてください。"
-keywords: "ホテル AI検索 対策,多店舗 AI推薦,NAP不一致 AI,AEO ホテル,MEO AI検索,OTA AI引用,多拠点 情報統一,トリリオンバンク,HackⅡ"
+keywords: "ホテル AI検索 対策,多店舗 AI推薦,NAP不一致 AI,AEO ホテル,MEO AI検索,OTA AI引用,多拠点 情報統一,トリリオンバンク,AirReach Consulting"
 ai_summary: "多拠点ビジネスのAI推薦対策は、自社サイト・Googleビジネスプロフィール・OTA・口コミサイトに散在する拠点情報の整合性を揃え、AIが安心して推薦できる状態を作る活動である。NAP不一致や古い料金・改装前情報の残存はAI回答の除外・誤案内の原因になるため、情報統一と競合Win/Loss分析を組み合わせた継続的な点検が必要になる。"
 references:
   - title: "Google — Google検索の生成AI機能向け最適化ガイド"
@@ -203,11 +203,11 @@ Googleビジネスプロフィール（GBP）の情報は、Googleマップや�
 
 ---
 
-## HackⅡが支援する範囲（誠実開示）
+## AirReach Consultingが支援する範囲（誠実開示）
 
-HackⅡは、AI検索で「出たか」ではなく、**なぜ選ばれ、なぜ外れたかまで**を扱うAI Recommendation Intelligenceです。多拠点ビジネスに対しては、拠点・エリア別の質問設計、AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析：OTA・口コミ・自社サイト等の内訳）／Measure→Act→Remeasure（施策前後の再測定）という4つの測定フレームでの継続観測を支援します。
+AirReach Consultingは、AI検索で「出たか」ではなく、**なぜ選ばれ、なぜ外れたかまで**を扱うAI Recommendation Intelligenceです。多拠点ビジネスに対しては、拠点・エリア別の質問設計、AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析：OTA・口コミ・自社サイト等の内訳）／Measure→Act→Remeasure（施策前後の再測定）という4つの測定フレームでの継続観測を支援します。
 
-現在のステータスは**限定商用検証・導入相談受付中**で、対応するAIサービスの範囲は契約時点で本番検証済みの範囲をご案内しています。AI検索での表示・問い合わせ・売上といった成果を保証するものではありません。また、この記事のチェックリストと簡易的なWin/Loss記録は自社運用でも十分に始められる内容です。製品の詳細は[HackⅡ製品ページ](/trillionbank/business/hack2/)をご覧ください。
+現在のステータスは**限定商用検証・導入相談受付中**で、対応するAIサービスの範囲は契約時点で本番検証済みの範囲をご案内しています。AI検索での表示・問い合わせ・売上といった成果を保証するものではありません。また、この記事のチェックリストと簡易的なWin/Loss記録は自社運用でも十分に始められる内容です。製品の詳細は[AirReach Consulting製品ページ](/trillionbank/business/hack2/)をご覧ください。
 
 ---
 

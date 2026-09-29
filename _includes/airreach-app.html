@@ -1,4 +1,4 @@
-{% comment %} AirReach shared sales app. Set page.airreach_industry for industry pages. {% endcomment %}
+{% comment %} AirReach Tools shared sales app. Set page.airreach_industry for industry pages. {% endcomment %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -387,7 +387,7 @@ body.ar-modal-open{overflow:hidden}
 .ar-dchk-link.is-off{opacity:.35}
 .ar-logic summary{font-size:.95rem}
 @media(max-width:520px){.ar-drow-btn{grid-template-columns:40px 1fr auto 16px;gap:8px}.ar-drow-panel{padding-left:14px}}
-/* HackⅡ 案内は対策と視覚的に分ける（別サービス）。控えめな二次カード */
+/* AirReach Consulting 案内は対策と視覚的に分ける（別サービス）。控えめな二次カード */
 .ar-referral{margin-top:18px;padding:20px 18px;border:1px solid #bfdbfe;border-radius:14px;background:linear-gradient(180deg,#eff6ff 0%,#f8fbff 100%);color:#334155}
 .ar-referral-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #bfdbfe;color:var(--ar-accent,#1d4ed8);margin-bottom:12px}
 .ar-referral-ico svg{width:22px;height:22px}
@@ -811,7 +811,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
   <div class="ar-gate-card">
 
     <div class="ar-gate-step is-on" data-step="1">
-      <p class="ar-gate-kicker">AirReach</p>
+      <p class="ar-gate-kicker">AirReach Tools</p>
       <h1 id="gate-title">検索から、<br>お客様を増やせるか<br>診断します。</h1>
       <p class="ar-gate-lead">あなたのサイトを解析し、検索から増やせる問い合わせ数の目安と改善ポイントをお伝えします。</p>
 
@@ -846,7 +846,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
     </div>
 
     <div class="ar-gate-step ar-gate-loading" data-step="2" aria-live="polite">
-      <p class="ar-gate-kicker">AirReach</p>
+      <p class="ar-gate-kicker">AirReach Tools</p>
       <h1 class="ar-gate-h1-center">診断中です。</h1>
       <p class="ar-gate-lead ar-gate-lead-center">ホームページを解析しています。<br>しばらくお待ちください。</p>
       <div class="ar-spinner" id="gate-spinner" aria-hidden="true"></div>
@@ -930,8 +930,8 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 <main id="main">
   <section class="ar-hero">
     <div class="ar-wrap">
-      <p class="ar-crumb"><a href="/">HOME</a> ／ AirReach</p>
-      <div class="ar-badge" data-tip="URLを入れるだけで、見つかりやすさと最初に直すことを返す無料診断です。">AirReach</div>
+      <p class="ar-crumb"><a href="/">HOME</a> ／ AirReach Tools</p>
+      <div class="ar-badge" data-tip="URLを入れるだけで、見つかりやすさと最初に直すことを返す無料診断です。">AirReach Tools</div>
       <h1 id="ar-hero-title">{% if page.airreach_industry and page.airreach_industry != '' %}検索から、<em>あと何件</em>増やせるか。{% else %}URLを入れるだけ。AI検索・SEOの改善余地を30秒診断。{% endif %}</h1>
       <p class="ar-lead" id="ar-hero-lead" hidden></p>
 
@@ -1056,13 +1056,13 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <p class="ar-fix-lead" id="ar-actions-lead"></p>
           <!-- 対策カード（2件）。「改善方法を見る」はその場で手順を開く。根拠リンクは取得した実URLだけ -->
           <div class="ar-fixes" id="ar-actions3"></div>
-          <!-- HackⅡ は別サービス。対策・根拠リンクには混ぜず、ここだけで案内する -->
+          <!-- AirReach Consulting は別サービス。対策・根拠リンクには混ぜず、ここだけで案内する -->
           <aside class="ar-referral" id="ar-referral" hidden aria-label="別のサービスの案内">
             <div class="ar-referral-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
             <div class="ar-referral-kicker" id="ar-referral-kicker">別のサービスの案内</div>
             <h3 class="ar-referral-title" id="ar-referral-title"></h3>
             <p class="ar-referral-body" id="ar-referral-body"></p>
-            <a class="ar-referral-cta" id="ar-cta-meet" href="/trillionbank/meeting/?type=company&from=airreach-referral">HackⅡについて相談する →</a>
+            <a class="ar-referral-cta" id="ar-cta-meet" href="/trillionbank/meeting/?type=company&from=airreach-referral">AirReach Consultingについて相談する →</a>
             <p class="ar-referral-note" id="ar-referral-note"></p>
           </aside>
           <!-- この画面の出口。ステップ3（詳細データ）は任意なので控えめな枠ボタンにする -->
@@ -1392,7 +1392,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function badgeClass(b) {
     if (!b) return '';
-    if (String(b).indexOf('Official') >= 0 || String(b).indexOf('Google実測') >= 0 || String(b).indexOf('Observed') >= 0 || String(b).indexOf('AirReach実測') >= 0 || b === '実測') return 'is-obs';
+    if (String(b).indexOf('Official') >= 0 || String(b).indexOf('Google実測') >= 0 || String(b).indexOf('Observed') >= 0 || String(b).indexOf('AirReach Tools実測') >= 0 || b === '実測') return 'is-obs';
     if (String(b).indexOf('Estimated') >= 0 || b === '推定' || String(b).indexOf('参考予測') >= 0) return 'is-est';
     if (String(b).indexOf('Inferred') >= 0 || String(b).indexOf('予測') >= 0) return 'is-inf';
     return 'is-user';
@@ -1409,7 +1409,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if ($('expert-view')) $('expert-view').classList.add('is-hidden');
     if ($('actions')) $('actions').classList.add('is-hidden');
 
-    $('ar-analyzing').textContent = 'AirReach';
+    $('ar-analyzing').textContent = 'AirReach Tools';
     // Headline: the outcome range as a 目安 (never a promise). Branded/media mode falls back to the hero title.
     (function () {
       var t = $('ar-title');
@@ -1510,8 +1510,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (s.indexOf('Official') >= 0 || s.indexOf('Google実測') >= 0) {
         return 'Google側の実測値です（Search Console等）。AI掲載率そのものではありません。';
       }
-      if (s.indexOf('Observed') >= 0 || s.indexOf('AirReach実測') >= 0 || s.indexOf('HackⅡ実測') >= 0 || s.indexOf('実測') >= 0) {
-        return 'AirReachが公開ページから観測した値です。AI掲載率そのものではありません。';
+      if (s.indexOf('Observed') >= 0 || s.indexOf('AirReach Tools実測') >= 0 || s.indexOf('AirReach Consulting実測') >= 0 || s.indexOf('実測') >= 0) {
+        return 'AirReach Toolsが公開ページから観測した値です。AI掲載率そのものではありません。';
       }
       if (s.indexOf('User') >= 0 || s.indexOf('入力') >= 0 || s.indexOf('お客様') >= 0) return 'お客様が入力した値です。';
       if (s.indexOf('Estimated') >= 0 || s.indexOf('推定') >= 0) return 'お客さんの言葉などからの目安です。公式の検索回数そのものではありません。';
@@ -1721,7 +1721,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       box.appendChild(el);
     });
-    // HackⅡ referral: separate frame under the actions, never inside them.
+    // AirReach Consulting referral: separate frame under the actions, never inside them.
     var ref = $('ar-referral');
     if (ref && report.referral) {
       ref.hidden = false;
@@ -1731,7 +1731,7 @@ document.addEventListener('DOMContentLoaded', function () {
       $('ar-referral-note').textContent = report.referral.note || '';
       var meetBtn = $('ar-cta-meet');
       if (meetBtn) {
-        meetBtn.textContent = (report.referral.cta || 'HackⅡについて相談する') + ' →';
+        meetBtn.textContent = (report.referral.cta || 'AirReach Consultingについて相談する') + ' →';
         if (report.referral.href) meetBtn.href = report.referral.href;
       }
     } else if (ref) {

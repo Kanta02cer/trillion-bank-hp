@@ -4,7 +4,7 @@ date: 2026-08-13
 last_modified: 2026-08-13
 category: コラム
 tbdesc: "AI広告とAEO（AI検索最適化）の違いを「広告表示・オーガニック推薦・引用」の3層に分けて整理。費用・持続性・測定方法を比較し、SEO・AEO・AI広告・PRの予算配分を判断する手順を解説します。2026年の広告導入動向も整理。投資判断の前にご一読ください。"
-keywords: "AI広告 AEO 違い,AI広告 効果測定,SEO AEO 違い,AEO 予算,AI検索 PR,AI検索対策 優先順位,AI検索 広告,トリリオンバンク,HackⅡ"
+keywords: "AI広告 AEO 違い,AI広告 効果測定,SEO AEO 違い,AEO 予算,AI検索 PR,AI検索対策 優先順位,AI検索 広告,トリリオンバンク,AirReach Consulting"
 ai_summary: "AI広告とAEOの違いを「広告表示・オーガニック推薦・引用」の3層モデルで整理した解説記事。広告出稿はオーガニック推薦を保証しないこと、予算配分はまず現状測定と引用元確認から判断すべきことを説明する。"
 references:
   - title: "Google — Google検索の生成AI機能向け最適化ガイド"
@@ -186,14 +186,14 @@ Step 1・2の結果をもとに、SEO/AEO・PR・AI広告への配分を決め�
 
 ### 測定を仕組み化する場合
 
-当社トリリオンバンクが開発中のAI Recommendation Intelligence「[HackⅡ](/trillionbank/business/hack2/)」は、まさにこのStep 1・2を継続的に回すためのツールです。AI検索で「出たか」ではなく、なぜ選ばれ、なぜ外れたかまでを、次の4つのフレームで測定します。
+当社トリリオンバンクが開発中のAI Recommendation Intelligence「[AirReach Consulting](/trillionbank/business/hack2/)」は、まさにこのStep 1・2を継続的に回すためのツールです。AI検索で「出たか」ではなく、なぜ選ばれ、なぜ外れたかまでを、次の4つのフレームで測定します。
 
 - **AI Decision Share** — 質問に対して自社が候補に入った率
 - **Recommendation Win・Loss** — 競合との推薦の勝ち負け
 - **Citation Channel Map** — 引用元がどのチャネル（自社・メディア・レビュー等）かの分析
 - **Measure→Act→Remeasure** — 施策前後の再測定による効果検証
 
-このうちCitation Channel Mapは、本記事で述べた「AEOかPRか広告か」の予算配分判断に直接使える分析です。HackⅡは限定商用検証・導入相談受付中の段階で、対応AIは契約時点で本番検証済みの範囲をご案内しています。実際の出力イメージは「[HackⅡサンプルレポート](/trillionbank/news/hackii-sample-report/)」をご覧ください。なお、測定・最適化はAI上での表示や問い合わせ・売上の増加を保証するものではありません。あくまで投資判断の精度を上げるための材料です。
+このうちCitation Channel Mapは、本記事で述べた「AEOかPRか広告か」の予算配分判断に直接使える分析です。AirReach Consultingは限定商用検証・導入相談受付中の段階で、対応AIは契約時点で本番検証済みの範囲をご案内しています。実際の出力イメージは「[AirReach Consultingサンプルレポート](/trillionbank/news/hackii-sample-report/)」をご覧ください。なお、測定・最適化はAI上での表示や問い合わせ・売上の増加を保証するものではありません。あくまで投資判断の精度を上げるための材料です。
 
 ---
 

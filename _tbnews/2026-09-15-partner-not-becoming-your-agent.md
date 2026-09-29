@@ -22,7 +22,7 @@ faq_items:
   - question: "提携は一切不可ですか？"
     answer: "データ提携や共同提案など、別形態は個別に検討します。"
   - question: "では何を相談できますか？"
-    answer: "HackⅡ等の販売パートナー検討と、共同提案設計です。"
+    answer: "AirReach Consulting等の販売パートナー検討と、共同提案設計です。"
 ---
 
 ## 方針の境界
@@ -30,7 +30,7 @@ faq_items:
 | 依頼内容 | 対応 |
 |---|---|
 | 当社サービスの販売代理店になりたい | 歓迎・相談可 |
-| 共同で顧客にHackⅡを提案したい | 歓迎・相談可 |
+| 共同で顧客にAirReach Consultingを提案したい | 歓迎・相談可 |
 | 当社に他社商材の代理店になってほしい | お断り |
 | 成果保証付きの再販条件を即決したい | 非公開・個別判断外の約束はしない |
 
@@ -46,4 +46,4 @@ faq_items:
 
 Trillion Bankサービスの販売代理店・共同提案を検討される場合は、[お問い合わせフォーム](/trillionbank/contact/#form)または[商談予約（代理店）](/trillionbank/meeting/?type=agency)からご連絡ください。他社商材の代理販売依頼はお受けしていません。
 
-関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [HackⅡ](/trillionbank/business/hack2/)
+関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [AirReach Consulting](/trillionbank/business/hack2/)

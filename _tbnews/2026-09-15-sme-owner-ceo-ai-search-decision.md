@@ -9,7 +9,7 @@ last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
 tbdesc: "中小企業の経営者がAI検索対策に投資するかを判断するための、現状把握・優先度・外注境界のフレームを解説します。"
-keywords: "経営者 AI検索,中小企業 意思決定,AEO 投資,HackⅡ"
+keywords: "経営者 AI検索,中小企業 意思決定,AEO 投資,AirReach Consulting"
 ai_summary: "経営判断は用語理解より、重要質問での現状、競合差、内製境界、測定計画の4点で行う。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -54,6 +54,6 @@ faq_items:
 
 ## 次の一歩
 
-現状の見える化から始めたい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+現状の見える化から始めたい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。AirReach Consulting（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
 
 関連: [AI検索の効果測定方法](/trillionbank/news/ai-search-measurement-method/) / [内製か外注かの判断ガイド](/trillionbank/guide/inhouse-or-outsource/)

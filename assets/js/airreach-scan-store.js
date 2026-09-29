@@ -1,5 +1,5 @@
 /**
- * AirReach scan store — P0 bridge until Client DB.
+ * AirReach Tools scan store — P0 bridge until Client DB.
  * Persists diagnosis snapshots by scanId in localStorage.
  */
 (function () {

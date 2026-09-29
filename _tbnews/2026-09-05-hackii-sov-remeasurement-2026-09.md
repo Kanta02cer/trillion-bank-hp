@@ -1,16 +1,16 @@
 ---
-title: "HackⅡで20キーワードを再計測した結果｜SOV 0.28%からの変化"
+title: "AirReach Consultingで20キーワードを再計測した結果｜SOV 0.28%からの変化"
 date: 2026-09-05
 last_modified: 2026-09-05
 published: false
 category: 調査レポート
 author: 井上 幹太
-tbdesc: "HackⅡの計測不具合修正後に、購買意図をそろえた20キーワードをPerplexity・Geminiで再計測し、引用率・言及率・SOV・失敗件数を初回値と比較する検証レポートです。"
-keywords: "AI検索 SOV,AI検索 引用率 計測,HackⅡ 再計測,GEO対策 効果,LLMO 効果測定,トリリオンバンク"
+tbdesc: "AirReach Consultingの計測不具合修正後に、購買意図をそろえた20キーワードをPerplexity・Geminiで再計測し、引用率・言及率・SOV・失敗件数を初回値と比較する検証レポートです。"
+keywords: "AI検索 SOV,AI検索 引用率 計測,AirReach Consulting 再計測,GEO対策 効果,LLMO 効果測定,トリリオンバンク"
 ai_summary: "2026年9月4日の初回値は、20キーワード・成功40計測で引用率2.5%、言及率5%、SOV 0.28%、4位。JWT時刻許容、欠損時表示、キーワード構成を修正し、同一条件の再計測結果を追記して公開する。"
 og_image: /images/hero/tb-logo-color.webp
 faq_items:
-  - question: "HackⅡの再計測では何を固定しますか？"
+  - question: "AirReach Consultingの再計測では何を固定しますか？"
     answer: "対象キーワード20件、質問文、対象AI、地域、言語、実行単位を固定し、実行日時、成功・失敗件数、回答本文、引用URLを保存します。"
   - question: "初回のSOVは何%でしたか？"
     answer: "2026年9月4日の単日観測では、成功40計測、引用率2.5%、言及率5%、自社SOV 0.28%、比較対象内4位でした。"
@@ -18,7 +18,7 @@ faq_items:
     answer: "計測不具合修正後の本番再計測値がまだ確定していないためです。実測値、実行時刻、成功・失敗件数、計算式を確認してから公開します。"
 ---
 
-**この記事は再計測結果の入力待ちです。数値を推測して公開せず、HackⅡの本番計測完了後に、実行条件と証拠を添えて公開します。**
+**この記事は再計測結果の入力待ちです。数値を推測して公開せず、AirReach Consultingの本番計測完了後に、実行条件と証拠を添えて公開します。**
 
 ## 改善開始時点の基準値
 

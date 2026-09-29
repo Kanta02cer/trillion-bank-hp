@@ -107,11 +107,11 @@
     {
       "@type": "Service",
       "@id": "https://trillion-bank.jp/trillionbank/business/hack2/#service",
-      "name": "HackⅡ",
+      "name": "AirReach Consulting",
       "alternateName": [
-        "ハックツ",
-        "Hack2",
-        "HackII"
+        "AirReach Consulting",
+        "AirReach Consulting",
+        "AirReach Consulting"
       ],
       "url": "https://trillion-bank.jp/trillionbank/business/hack2/",
       "provider": {

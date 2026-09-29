@@ -9,7 +9,7 @@ last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
 tbdesc: "AI検索対策の予算稟議で使える根拠の組み立て方を、測定可能な指標と保証しない範囲の切り分けで解説します。"
-keywords: "AI検索 予算,AEO 稟議,中小企業 投資判断,HackⅡ 根拠"
+keywords: "AI検索 予算,AEO 稟議,中小企業 投資判断,AirReach Consulting 根拠"
 ai_summary: "予算根拠は掲載保証ではなく、候補入り率・競合Win/Loss・引用チャネル・誤情報の有無など測定可能な指標で作る。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -57,6 +57,6 @@ faq_items:
 
 ## 次の一歩
 
-現状の見える化から始めたい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+現状の見える化から始めたい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。AirReach Consulting（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
 
 関連: [AI検索の効果測定方法](/trillionbank/news/ai-search-measurement-method/) / [内製か外注かの判断ガイド](/trillionbank/guide/inhouse-or-outsource/)

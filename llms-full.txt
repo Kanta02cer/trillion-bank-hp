@@ -9,11 +9,11 @@ Canonical website: https://trillion-bank.jp/
 
 Official company information: https://trillion-bank.jp/trillionbank/company/
 
-## HackⅡ - current practical product
+## AirReach Consulting - current practical product
 
 Status: limited commercial validation / implementation consultation.
 
-HackⅡ can store and share the agreed question and measurement conditions, AI answer text, cited URLs, company and competitor mentions, measurement time and history, CSV or dashboard outputs according to the engagement, and analyst review and improvement-priority support.
+AirReach Consulting can store and share the agreed question and measurement conditions, AI answer text, cited URLs, company and competitor mentions, measurement time and history, CSV or dashboard outputs according to the engagement, and analyst review and improvement-priority support.
 
 Operating model:
 1. Observe - design questions and store answers, citations and conditions.
@@ -22,10 +22,10 @@ Operating model:
 4. Prove - remeasure using the same methodology and record observed changes.
 
 Limitations:
-- HackⅡ does not guarantee inclusion, ranking, traffic, leads, bookings or revenue.
+- AirReach Consulting does not guarantee inclusion, ranking, traffic, leads, bookings or revenue.
 - AI answers can vary by service, model, date, region, account and context.
 - The service does not reproduce every AI surface or infer a model's internal reasoning.
-- AI-crawler control, payment and revenue distribution are not HackⅡ functions.
+- AI-crawler control, payment and revenue distribution are not AirReach Consulting functions.
 
 Product page: https://trillion-bank.jp/trillionbank/business/hack2/
 

@@ -4,7 +4,7 @@ date: 2026-08-14
 last_modified: 2026-08-14
 category: コラム
 tbdesc: "ChatGPTやPerplexityで競合ばかり推薦される5つの理由（比較サイトでの扱い・第三者情報・情報鮮度・表記ゆれ・引用構造）と、質問単位のWin/Loss整理から引用元特定・再測定までの逆転手順を解説。まず同じ質問を条件を変えて実行する自己診断から始めてください。"
-keywords: "AI検索 競合ばかり出る,ChatGPT 競合が推薦される,AI検索 自社が出ない 競合,Perplexity 競合,AI検索 競合分析,AEO 競合対策,Win/Loss分析,トリリオンバンク,HackⅡ"
+keywords: "AI検索 競合ばかり出る,ChatGPT 競合が推薦される,AI検索 自社が出ない 競合,Perplexity 競合,AI検索 競合分析,AEO 競合対策,Win/Loss分析,トリリオンバンク,AirReach Consulting"
 ai_summary: "AI検索で競合ばかり推薦される主因は、比較サイト・レビューでの扱われ方の差、第三者情報の量と質、古い情報の残存、エンティティ表記ゆれ、引用されやすい構造の差の5つに整理できる。逆転には質問単位のWin/Loss整理、負けた質問の引用元特定、チャネル別対策、同条件での再測定という手順が有効で、虚偽情報の流し込みやレビュー操作は逆効果になる。"
 references:
   - title: "Google — Google検索の生成AI機能向け最適化ガイド"
@@ -188,7 +188,7 @@ Lossになった質問について、AIが引用していたURLを一覧化し�
 
 この分岐の考え方は「[AI検索対策は内製か外注か](/trillionbank/news/ai-search-inhouse-or-outsource/)」で詳しく整理しています。
 
-なお、トリリオンバンクのHackⅡ（AI Recommendation Intelligence）は、この記事で説明した構造——AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）——を測定フレームとして体系化した製品で、AI検索で「出たか」ではなく、なぜ選ばれ、なぜ外れたかまでを扱います。現在は限定商用検証・導入相談受付中で、対応するAIサービスは契約時点で本番検証済みの範囲をご案内しています。AI検索での表示や問い合わせ・売上の成果を保証するものではなく、内製の簡易運用で足りるケースも多くあります。詳細は[HackⅡ製品ページ](/trillionbank/business/hack2/)をご覧ください。
+なお、トリリオンバンクのAirReach Consulting（AI Recommendation Intelligence）は、この記事で説明した構造——AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）——を測定フレームとして体系化した製品で、AI検索で「出たか」ではなく、なぜ選ばれ、なぜ外れたかまでを扱います。現在は限定商用検証・導入相談受付中で、対応するAIサービスは契約時点で本番検証済みの範囲をご案内しています。AI検索での表示や問い合わせ・売上の成果を保証するものではなく、内製の簡易運用で足りるケースも多くあります。詳細は[AirReach Consulting製品ページ](/trillionbank/business/hack2/)をご覧ください。
 
 ---
 

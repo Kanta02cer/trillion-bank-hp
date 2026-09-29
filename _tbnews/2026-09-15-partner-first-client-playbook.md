@@ -3,13 +3,13 @@ layout: tb-article-authority
 insight: true
 toc: true
 direct_answer: "最初の1社は、関係性が安定し、比較検討が発生し、公式情報を更新できる顧客を選ぶと提案が進みやすいです。"
-title: "販売代理店が最初の1社にHackⅡを提案する手順"
+title: "販売代理店が最初の1社にAirReach Consultingを提案する手順"
 date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
-tbdesc: "販売代理店が最初の1社へHackⅡを提案するときの、顧客選定から説明、次アクションまでの手順書です。"
-keywords: "代理店 初回提案,HackⅡ 最初の顧客,共同提案 プレイブック"
+tbdesc: "販売代理店が最初の1社へAirReach Consultingを提案するときの、顧客選定から説明、次アクションまでの手順書です。"
+keywords: "代理店 初回提案,AirReach Consulting 最初の顧客,共同提案 プレイブック"
 ai_summary: "最初の1社は関係性が良く、比較検討型商材で、一次情報を直せる顧客が向く。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -51,4 +51,4 @@ faq_items:
 
 Trillion Bankサービスの販売代理店・共同提案を検討される場合は、[お問い合わせフォーム](/trillionbank/contact/#form)または[商談予約（代理店）](/trillionbank/meeting/?type=agency)からご連絡ください。他社商材の代理販売依頼はお受けしていません。
 
-関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [HackⅡ](/trillionbank/business/hack2/)
+関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [AirReach Consulting](/trillionbank/business/hack2/)

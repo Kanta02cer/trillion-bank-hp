@@ -4,7 +4,7 @@ date: 2026-08-13
 last_modified: 2026-08-13
 category: コラム
 tbdesc: "EC・通販・D2CブランドのAI検索対策を解説。AIショッピングの潮流、実際に使われる質問例10個、Product/Offer/Reviewの構造化データ、レビューの量と質、モールと自社ECの引用のされ方の違い、対策の優先順位と測定方法まで。まず自社商品がAIにどう扱われているかの確認から始めてください。"
-keywords: "EC AI検索対策,D2C AEO,AI 商品推薦,ECサイト LLMO,AIショッピング,Product 構造化データ,レビュー AI引用,通販 AI検索,トリリオンバンク,HackⅡ"
+keywords: "EC AI検索対策,D2C AEO,AI 商品推薦,ECサイト LLMO,AIショッピング,Product 構造化データ,レビュー AI引用,通販 AI検索,トリリオンバンク,AirReach Consulting"
 ai_summary: "ECサイト・D2CブランドのAI検索対策は、Product/Offer/Reviewの構造化データ整備、商品ページの一次情報充実、レビュー・UGCの蓄積、比較文脈での候補入りの4点が中心となる。AIの商品推薦は比較サイトやレビューを引用元にすることが多く、モールと自社ECで引用のされ方が異なるため、自社がどの質問で候補入りしているかの測定が対策の起点になる。"
 references:
   - title: "Google — Google検索の生成AI機能向け最適化ガイド"
@@ -211,7 +211,7 @@ ECのAI検索対策には、BtoB SaaSやサービス業とは異なる論点が4
 
 このように「どの質問で候補に入ったか」「代わりに誰が選ばれたか」「何が引用されたか」を記録すると、対策の優先順位が具体化します。たとえば引用元が比較サイトに偏っていれば比較メディア掲載への投資が、自社サイトが一切引用されていなければ商品ページの一次情報強化が先、という判断ができます。
 
-測定の設計方法（候補入り・言及・推薦・引用の定義、反復測定、証拠保存、Measure→Act→Remeasureのサイクル）は「[AI検索の効果測定方法](/trillionbank/news/ai-search-effect-measurement/)」で体系的に解説しています。トリリオンバンクのHackⅡ（AI Recommendation Intelligence）は、この「AI検索で出たかではなく、なぜ選ばれ、なぜ外れたかまで」を、AI Decision Share／Recommendation Win・Loss／Citation Channel Map／Measure→Act→Remeasureの4つの測定フレームで扱う取り組みです（現在は限定商用検証・導入相談受付中。対応AIは契約時点で本番検証済みの範囲をご案内しており、AI検索での表示や売上等の成果を保証するものではありません）。小規模であれば、固定質問とスプレッドシートによる内製の定点観測でも十分に始められます。
+測定の設計方法（候補入り・言及・推薦・引用の定義、反復測定、証拠保存、Measure→Act→Remeasureのサイクル）は「[AI検索の効果測定方法](/trillionbank/news/ai-search-effect-measurement/)」で体系的に解説しています。トリリオンバンクのAirReach Consulting（AI Recommendation Intelligence）は、この「AI検索で出たかではなく、なぜ選ばれ、なぜ外れたかまで」を、AI Decision Share／Recommendation Win・Loss／Citation Channel Map／Measure→Act→Remeasureの4つの測定フレームで扱う取り組みです（現在は限定商用検証・導入相談受付中。対応AIは契約時点で本番検証済みの範囲をご案内しており、AI検索での表示や売上等の成果を保証するものではありません）。小規模であれば、固定質問とスプレッドシートによる内製の定点観測でも十分に始められます。
 
 ---
 

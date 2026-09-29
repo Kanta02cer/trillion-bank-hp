@@ -1,5 +1,5 @@
 /**
- * AirReach diagnose → Growth Simulator handoff.
+ * AirReach Tools diagnose → Growth Simulator handoff.
  * Persists readiness score + suggested uplifts; Platform applies Official GSC/GA4 when present.
  */
 (function () {

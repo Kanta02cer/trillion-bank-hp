@@ -1,5 +1,5 @@
 /**
- * AirReach scan sync — 診断結果を same-origin の API（/api/airreach/）へ保存し、共有リンクを扱う。
+ * AirReach Tools scan sync — 診断結果を same-origin の API（/api/airreach/）へ保存し、共有リンクを扱う。
  *
  *  - 保存は診断完了時に 1 回だけ（同じ scan は再送しない。サーバ側でも scan id 重複は 409）。
  *  - 保存に失敗しても診断結果の表示は止めない（端末内の保存はそのまま）。
@@ -101,12 +101,12 @@
       var code = (r.json && r.json.error && r.json.error.code) ? String(r.json.error.code) : null;
       if (r.status === 409) persist(scan.id, { syncedAt: nowIso(), syncState: 'conflict', syncError: 'conflict' });
       else persist(scan.id, { syncState: 'failed', syncError: code || ('http_' + r.status) });
-      try { console.warn('AirReach: 診断結果の保存に失敗しました (' + r.status + (code ? ' ' + code : '') + ')'); } catch (e) {}
+      try { console.warn('AirReach Tools: 診断結果の保存に失敗しました (' + r.status + (code ? ' ' + code : '') + ')'); } catch (e) {}
       return { ok: false, status: r.status, code: code, message: messageFor(r.status) };
     }).catch(function () {
       clearTimeout(timer);
       persist(scan.id, { syncState: 'failed', syncError: 'network' });
-      try { console.warn('AirReach: 診断結果の保存に失敗しました (通信エラー)'); } catch (e) {}
+      try { console.warn('AirReach Tools: 診断結果の保存に失敗しました (通信エラー)'); } catch (e) {}
       return { ok: false, status: 0, code: 'network', message: messageFor(0) };
     }).then(function (out) {
       delete inflight[scan.id];

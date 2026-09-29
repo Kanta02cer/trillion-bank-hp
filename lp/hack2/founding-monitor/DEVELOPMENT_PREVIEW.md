@@ -1,4 +1,4 @@
-# HackⅡ Founding Monitor LP 制作プレビュー
+# AirReach Consulting Founding Monitor LP 制作プレビュー
 
 このLPは、`main`へ反映する前に専用ブランチ上のGitHub Codespacesで確認します。
 
