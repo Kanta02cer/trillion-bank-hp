@@ -1,6 +1,6 @@
 ---
 title: "AirReach｜診断結果 - Trillion Bank"
-tbdesc: "診断結果の共有ページ。scan IDから結果を開き直します。成果は保証しません。"
+tbdesc: "診断結果の共有ページ。共有リンク（share）または端末内の scan ID から結果を開き直します。成果は保証しません。"
 keywords: "AirReach,診断結果,Trillion Bank"
 ai_summary: "AirReach診断結果の共有用ページ。"
 layout: null
@@ -30,33 +30,61 @@ robots: "noindex, follow"
 </div>
 <script src="{{ '/assets/js/airreach-display.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/airreach-scan-store.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/airreach-scan-sync.js' | relative_url }}"></script>
 <script>
 (function () {
   var params = new URLSearchParams(location.search);
-  var id = params.get('scan');
   var msg = document.getElementById('ar-share-msg');
   var card = document.getElementById('ar-share-card');
   var open = document.getElementById('ar-share-open');
+  var allowed = { restaurant:1, clinic:1, b2b:1, media:1, other:1 };
+
+  function showCard(name, meta) {
+    card.hidden = false;
+    document.getElementById('ar-share-name').textContent = name || '診断';
+    document.getElementById('ar-share-meta').textContent = meta || '';
+  }
+  function resultPath(industry, goal, query) {
+    if (!allowed[industry]) industry = 'other';
+    var mode = goal === 'visibility' || industry === 'media' ? 'branded_search' : 'generic_search';
+    return '/airreach/' + industry + '/?' + query + '&mode=' + encodeURIComponent(mode) + '#result';
+  }
+
+  // 1) 共有リンク（?share=<token>）: サーバから読む。トークンは端末に保存しない
+  var share = params.get('share');
+  if (share) {
+    if (!window.AirReachScanSync) { msg.textContent = '共有結果を読み込む機能を利用できません。'; return; }
+    if (!AirReachScanSync.isTokenFormat(share)) { msg.textContent = AirReachScanSync.sharedErrorMessage(404); return; }
+    msg.textContent = '共有された診断結果を読み込んでいます…';
+    AirReachScanSync.fetchShared(share).then(function (r) {
+      if (!r.ok) { msg.textContent = r.message || '共有結果を読み込めませんでした。'; return; }
+      var scan = AirReachScanSync.toScan(r.data);
+      var target = resultPath(scan.industryId, scan.goal, 'share=' + encodeURIComponent(share));
+      msg.textContent = '共有された診断結果が見つかりました。結果画面へ移動します。';
+      showCard(scan.displayName || scan.url, (scan.url || '') + (scan.scoreOverall != null ? (' · 参考スコア ' + scan.scoreOverall) : ''));
+      open.href = target;
+      open.textContent = '結果を見る';
+      setTimeout(function () { location.replace(target); }, 600);
+    });
+    return;
+  }
+
+  // 2) 端末内の保存済み診断（?scan=<id>）
+  var id = params.get('scan');
   if (!id || !window.AirReachScanStore) {
     msg.textContent = '共有IDがありません。新しく診断を始めてください。';
     return;
   }
-  var scan = AirReachScanStore.loadScan(id);
-  if (!scan) {
-    msg.textContent = 'この端末に診断データがありません。同じブラウザで診断した端末で開くか、新しく診断してください。（P0は端末保存です）';
+  var local = AirReachScanStore.loadScan(id);
+  if (!local) {
+    msg.textContent = 'この端末に診断データがありません。共有リンク（?share=）で開くか、同じブラウザで診断した端末で開いてください。';
     return;
   }
-  var industry = scan.industryId || 'other';
-  var allowed = { restaurant:1, clinic:1, b2b:1, media:1, other:1 };
-  if (!allowed[industry]) industry = 'other';
-  var mode = scan.goal === 'visibility' || industry === 'media' ? 'branded_search' : 'generic_search';
-  var target = '/airreach/' + industry + '/?scan=' + encodeURIComponent(id) + '&mode=' + encodeURIComponent(mode) + '&onboard=1#result';
+  var targetLocal = resultPath(local.industryId || 'other', local.goal, 'scan=' + encodeURIComponent(id) + '&onboard=1');
   msg.textContent = '診断が見つかりました。結果画面へ移動します。';
-  card.hidden = false;
-  document.getElementById('ar-share-name').textContent = scan.displayName || scan.siteTitle || scan.url || '診断';
-  document.getElementById('ar-share-meta').textContent = (scan.url || '') + (scan.scoreOverall != null ? (' · 参考スコア ' + scan.scoreOverall) : '');
-  open.href = target;
+  showCard(local.displayName || local.siteTitle || local.url, (local.url || '') + (local.scoreOverall != null ? (' · 参考スコア ' + local.scoreOverall) : ''));
+  open.href = targetLocal;
   open.textContent = '結果を見る';
-  setTimeout(function () { location.replace(target); }, 600);
+  setTimeout(function () { location.replace(targetLocal); }, 600);
 })();
 </script>

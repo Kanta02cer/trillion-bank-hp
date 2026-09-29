@@ -82,6 +82,7 @@ scoped_claim_patterns:
       - "assets/js/airreach-sales-kit.js"
       - "assets/js/airreach-industry.js"
       - "assets/js/airreach-display.js"
+      - "assets/js/airreach-scan-sync.js"
       - "_includes/airreach-app.html"
       - "_includes/airreach-industry-seo.html"
       - "_data/airreach_display.yml"

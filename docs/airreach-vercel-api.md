@@ -177,7 +177,7 @@ node scripts/airreach-api/e2e.mjs
 2. Vercel ダッシュボードで環境変数（§7）を設定し、再デプロイ。`https://trillion-bank-hp.vercel.app/api/airreach/health/` で疎通確認。
 3. Preview で実環境テスト（POST 201 → GET 200 → 409 → 404、fetch、ログ）。テストデータは削除。
 4. Vercel Firewall の Rate Limit（§6）を設定。
-5. **PR-3（フロント接続、別工程）**: `airreach-diagnose.js` の `FIRST_PARTY_PROXY` を `/api/airreach/fetch/?url=` に変更し allorigins を削除、`airreach-scan-sync.js` を追加、`airreach-app.html` の `finishSurvey()` / `boot()` を接続。`airreach-api.js` の API ベースは same-origin を優先する。
+5. **PR-3（フロント接続）**: 実装済み。`airreach-diagnose.js` は `/api/airreach/fetch/?url=` だけを使い allorigins を削除。`airreach-scan-sync.js`（保存 / 共有取得、相対 URL のみ）を追加し、`airreach-app.html` の `finishSurvey()`（1 回目の診断だけ保存、最長 2.5 秒待って遷移）と `boot()`（共有 → 端末内 snapshot → 通常診断の順に分岐）を接続。共有 URL は `/airreach/result/?share=<token>`。同一 origin 前提で CORS 設定は不要。
 6. `trillion-bank.jp` を Vercel で配信（DNS 切替）。これで AirReach → Cloudflare の通信が 0 件になる。
 7. 切替後に `ops/airreach-fetch` / `ops/airreach-api` を deprecated 化または削除（Worker も停止）。
 
