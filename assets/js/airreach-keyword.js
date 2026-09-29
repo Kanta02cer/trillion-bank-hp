@@ -215,7 +215,7 @@
     var m = rx.exec(text);
     if (!m) return '';
     var a = Math.max(0, m.index - 14), b = Math.min(text.length, m.index + m[0].length + 14);
-    return (a > 0 ? '…' : '') + text.slice(a, b) + (b < text.length ? '…' : '');
+    return (a > 0 ? '…' : '') + text.slice(a, b).replace(/\s+/g, ' ') + (b < text.length ? '…' : '');
   }
 
   /**

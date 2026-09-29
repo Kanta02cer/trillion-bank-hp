@@ -1288,7 +1288,8 @@
       var params = new URLSearchParams(location.search);
       url = params.get('url') || params.get('site') || '';
       service = params.get('service') || params.get('keyword') || '';
-      goal = mapGoal(params.get('goal') || params.get('mode') || '');
+      var goalParam = params.get('goal') || params.get('mode') || '';
+      goal = goalParam ? mapGoal(goalParam) : '';
       region = params.get('region') || '';
     } catch (e) {}
 
