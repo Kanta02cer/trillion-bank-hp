@@ -218,32 +218,22 @@
       score = Math.round(base * 0.45 + diagnose.entity * 0.25 + (diagnose.faq || 40) * 0.15 + (diagnose.discover || 40) * 0.15);
     }
     score = clamp(score, 15, 90);
-    var sources = [
-      { name: '公式サイト', share: clamp(28 + Math.round(score * 0.25), 20, 55), used: true },
-      { name: 'ニュース媒体', share: 18, used: score >= 50 },
-      { name: '口コミ・評判', share: 12, used: false },
-      { name: '比較サイト', share: 17, used: score < 60 },
-      { name: 'その他', share: 0, used: false }
-    ];
-    var sum = sources.reduce(function (s, x) { return s + x.share; }, 0);
-    sources[sources.length - 1].share = Math.max(5, 100 - (sum - sources[sources.length - 1].share));
-
-    var currentCite = mediaUrl ? clamp(2 + Math.round((100 - score) * 0.06), 2, 12) : clamp(3 + Math.round((100 - score) * 0.04), 2, 10);
-    var citeLow = clamp(currentCite * 2, currentCite + 3, 30);
-    var citeHigh = clamp(currentCite * 4, citeLow + 3, 40);
+    // 引用元の内訳・引用率は AI の回答を実際に聞かないと分からない。ここでは作らない（未計測）
+    var sources = [];
+    var currentCite = null, citeLow = null, citeHigh = null;
 
     return {
       score: score,
       evidenceClass: diagnose ? 'Observed' : 'Estimated',
       sources: sources,
-      thirdPartyTrust: clamp(Math.round(score * 0.55), 15, 70),
-      officialReflect: clamp(Math.round(score * 0.9), 20, 85),
+      thirdPartyTrust: null,
+      officialReflect: null,
       mediaUrl: mediaUrl || '',
       citationCurrent: currentCite,
       citationLow: citeLow,
       citationHigh: citeHigh,
-      citationEvidenceClass: mediaUrl ? 'Inferred' : 'Estimated',
-      citationNote: '指定記事が参照候補に入りやすい情報設計を行い、実際の引用状況を継続計測します。必ず引用されることを保証しません。'
+      citationEvidenceClass: 'Unmeasured',
+      citationNote: 'AIの回答での引用元と引用率は、この無料診断では測っていません。AirReach Consulting で質問ごとに計測します。必ず引用されることを保証しません。'
     };
   }
 
@@ -962,22 +952,23 @@
           sub: bScore == null ? (acq.note || '未確認') : scoreMeaning(bScore)
         },
         {
+          // AI の回答はこの無料診断では測っていない。計算で作った割合は出さない
           id: 'cite_now',
-          label: 'いま記事から見えている割合',
-          value: String(citeNow),
-          unit: '%',
-          badge: mediaUrl ? 'Observed' : 'Estimated',
-          meaning: mediaUrl ? '指定した記事が答えの中で使われた割合の目安' : '記事全体が使われている割合の目安（記事URL未指定）',
-          sub: mediaUrl ? '指定した記事あり' : '記事URLを入れると、その記事の使われ方に切り替わります'
+          label: 'AIの回答で記事が引用されている割合',
+          value: '未計測',
+          unit: '',
+          badge: 'Unmeasured',
+          meaning: 'この無料診断はホームページの情報整備だけを見ています。AIの回答での引用は、質問ごとに実際に聞いて数える必要があります',
+          sub: 'AirReach Consulting で質問ごとに計測できます'
         },
         {
           id: 'cite_after',
           label: profile.outcome_label,
-          value: citeNow + '% → ' + citeLow + '〜' + citeHigh + '%',
+          value: '—',
           unit: '',
-          badge: 'Inferred',
-          meaning: profile.outcome_meaning,
-          sub: '必ず使われる保証はありません'
+          badge: 'Unmeasured',
+          meaning: '計測する前なので、整えたあとの目安も出していません',
+          sub: '計測後に、改善前と比べて表示します'
         }
       ];
       heroTitle = profile.hero_branded;
@@ -1025,8 +1016,17 @@
 
     // 飲食店: 「探している人 ◯回/月」（文字列から作った推定値）の代わりに、
     // 調べそうな言葉のうち、サイトに答えが書いてある数を出す（HTMLから判定した実測）。入力された検索数があればそちらを使う。
-    var kwSet = industryId === 'restaurant' && diagnose && diagnose.page && diagnose.page.keywordAuto && diagnose.page.keywordAuto.candidates;
+    var kwAuto = diagnose && diagnose.page && diagnose.page.keywordAuto;
+    var kwSet = kwAuto ? ((kwAuto.industries && kwAuto.industries[industryId] && kwAuto.industries[industryId].candidates) || (industryId === 'restaurant' ? kwAuto.candidates : null)) : null;
     var hasVolumeInput = opts.volumeOverride != null && String(opts.volumeOverride).trim() !== '' && isFinite(Number(opts.volumeOverride));
+    if (!hasVolumeInput && headline4 && headline4[0] && headline4[0].id === 'demand' && !(kwSet && kwSet.length)) {
+      // 言葉を作れなかったとき: 文字列から作った推定回数は出さない
+      headline4[0] = {
+        id: 'demand', label: 'お客さんが調べそうな言葉', value: '—', unit: '', badge: 'Unmeasured',
+        meaning: 'サイトから住所・業種・名前を読み取れなかったため、言葉を作れませんでした。検索回数は Search Console を接続したときだけ出します',
+        sub: '調べる言葉を入力すると判定できます'
+      };
+    }
     if (kwSet && kwSet.length && !hasVolumeInput && headline4 && headline4[0] && headline4[0].id === 'demand') {
       var judged = kwSet.filter(function (c) { return c.answered !== null; });
       var answered = judged.filter(function (c) { return c.answered; });
@@ -1093,12 +1093,14 @@
 
   function badgeLabel(b) {
     var s = String(b || '');
+    if (s.indexOf('Unmeasured') >= 0 || s.indexOf('未計測') >= 0) return '未計測';
     if (s.indexOf('Official') >= 0 || s.indexOf('Google実測') >= 0) return 'Google実測';
     if (s.indexOf('Observed') >= 0 || s.indexOf('AirReach Tools実測') >= 0 || s.indexOf('AirReach Consulting実測') >= 0) return 'AirReach Tools実測';
     if (s.indexOf('実測') >= 0) return 'AirReach Tools実測';
     if (s.indexOf('User') >= 0 || s.indexOf('入力') >= 0 || s.indexOf('お客様') >= 0) return 'お客様入力';
     if (s.indexOf('Estimated') >= 0 || s.indexOf('推定') >= 0 || s.indexOf('Inferred') >= 0 || s.indexOf('予測') >= 0 || s.indexOf('参考') >= 0) return '参考予測';
     if (s.indexOf('診断') >= 0) return '参考予測';
+    if (s.indexOf('Unmeasured') >= 0 || s.indexOf('未計測') >= 0) return '未計測';
     return s || '参考予測';
   }
 

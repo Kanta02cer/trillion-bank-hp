@@ -39,7 +39,22 @@
   };
   var SCHEMA_GENRE = { CafeOrCoffeeShop: 'カフェ', BarOrPub: 'バー', Bakery: 'パン', IceCreamShop: 'アイス' };
 
-  function norm(g) { return GENRE_NORM[g] || g; }
+  // 業種ごとの「業態」の言葉。地域と組み合わせて調べる言葉を作る（会社向け・メディアは名前で作る）
+  var LEX = {
+    restaurant: GENRES,
+    clinic: ['美容皮膚科', '美容外科', '美容整形', '美容クリニック', '形成外科', '皮膚科', '矯正歯科', '小児歯科', '審美歯科', '歯医者', '歯科',
+      '医療脱毛', '脱毛', 'ホワイトニング', '心療内科', '内科', '小児科', '眼科', '耳鼻咽喉科', '耳鼻科', '婦人科', '整形外科', '泌尿器科',
+      '整骨院', '接骨院', '整体', '鍼灸', 'クリニック'],
+    other: ['パーソナルジム', 'フィットネス', 'ジム', 'ピラティス', 'ヨガ', 'ヘアサロン', '美容室', '美容院', '理容室', 'ネイルサロン', 'ネイル',
+      'まつげエクステ', 'エステ', 'リラクゼーション', 'マッサージ', '旅館', 'ホテル', '民泊', 'ゲストハウス', '写真館', 'フォトスタジオ',
+      '学習塾', '英会話', 'スクール', '不動産', '工務店', 'リフォーム', '葬儀', '保育園', 'ペットサロン', '動物病院', 'クリーニング', '車検', '整備工場']
+  };
+  var GENERIC_GENRE = { 'クリニック': true, '美容クリニック': true, 'スクール': true };
+  var LEX_NORM = { '美容院': '美容室', '歯医者': '歯科', '耳鼻科': '耳鼻咽喉科', 'ネイル': 'ネイルサロン', 'フィットネス': 'ジム' };
+  // 地域＋業態で作らない業種（名前で調べる言葉だけを作る）
+  var BRAND_ONLY = { b2b: true, media: true };
+
+  function norm(g) { return GENRE_NORM[g] || LEX_NORM[g] || g; }
 
   // 語の一部として出てきたものは業態にしない（サーバー・ジャパン・アドバイス・「駅のそば」など）
   var KATA = /[ァ-ヶー]/;
@@ -63,20 +78,25 @@
   }
 
   /** 文字列の中で最初に出てくる業態語（辞書順ではなく出現位置で選ぶ） */
-  function genreIn(s) {
+  function genreIn(s, lex) {
     s = String(s || '');
+    lex = lex || GENRES;
     var best = null;
-    GENRES.forEach(function (g) {
+    var bestSpecific = null;
+    lex.forEach(function (g) {
       var i = wordIndex(s, g);
       if (i < 0) return;
       if (!best || i < best.i || (i === best.i && g.length > best.g.length)) best = { i: i, g: g };
+      if (!GENERIC_GENRE[g] && (!bestSpecific || i < bestSpecific.i || (i === bestSpecific.i && g.length > bestSpecific.g.length))) bestSpecific = { i: i, g: g };
     });
+    // 「クリニック」「スクール」のような一般語は、具体的な言葉が無いときだけ使う
+    if (best && GENERIC_GENRE[best.g] && bestSpecific) best = bestSpecific;
     return best ? norm(best.g) : '';
   }
 
-  function genreByFreq(text) {
+  function genreByFreq(text, lex) {
     var counts = {};
-    GENRES.forEach(function (g) {
+    (lex || GENRES).forEach(function (g) {
       var n = wordCount(String(text || ''), g);
       if (n) counts[norm(g)] = (counts[norm(g)] || 0) + n;
     });
@@ -136,8 +156,19 @@
    * @param {object} src { title, ogTitle, metaDesc, text, ldAddress: string[], ldCuisine: string[], types: string[] }
    * @returns {{keyword:string, area:object, genre:object, multiStore:boolean, sourceLabel:string}}
    */
-  function derive(src) {
+  function derive(src, industry) {
     src = src || {};
+    industry = industry || 'restaurant';
+    var lex = LEX[industry] || GENRES;
+    if (BRAND_ONLY[industry]) {
+      var nm = shopName(src);
+      return {
+        keyword: nm, industry: industry,
+        area: { value: '', level: '', source: '', pref: '', city: '', town: '' },
+        genre: { value: '', source: '' }, multiStore: false,
+        sourceLabel: nm ? '名前（構造化データ・サイト名・タイトル）から' : ''
+      };
+    }
     var head = [src.title, src.ogTitle, src.metaDesc].filter(Boolean).join(' ');
     var text = String(src.text || '').slice(0, 20000);
     var ldAddr = (src.ldAddress || []).filter(Boolean);
@@ -168,23 +199,24 @@
     var area = searchArea(addr, head);
 
     // ---- 業態 ----
-    var genre = genreIn(head), genreSource = genre ? 'title' : '';
-    if (!genre) {
-      genre = genreIn((src.ldCuisine || []).join(' '));
+    var genre = genreIn(head, lex), genreSource = genre ? 'title' : '';
+    if (!genre && industry === 'restaurant') {
+      genre = genreIn((src.ldCuisine || []).join(' '), lex);
       if (!genre) (src.types || []).some(function (t) { if (SCHEMA_GENRE[t]) { genre = SCHEMA_GENRE[t]; return true; } return false; });
       if (genre) genreSource = 'structured';
     }
     if (!genre) {
-      var f = genreByFreq(text);
+      var f = genreByFreq(text, lex);
       if (f.genre) { genre = f.genre; genreSource = 'body'; }
     }
 
     var keyword = area.value && genre ? area.value + ' ' + genre : '';
     var LABEL = { structured: '構造化データ', title: 'タイトル', body: '本文' };
     var sourceLabel = keyword ? ('地域は' + (areaSource === 'structured' ? '構造化データの住所' : areaSource === 'title' ? 'タイトル' : '本文の住所') +
-      '、業態は' + LABEL[genreSource] + 'から') : '';
+      '、' + (industry === 'restaurant' ? '業態' : industry === 'clinic' ? '診療・施術' : '業種') + 'は' + LABEL[genreSource] + 'から') : '';
     return {
       keyword: keyword,
+      industry: industry,
       area: { value: area.value, level: area.level, source: areaSource, pref: addr.pref, city: addr.city, town: addr.town },
       genre: { value: genre, source: genreSource },
       multiStore: multiStore,
@@ -211,6 +243,28 @@
       { word: '口コミ', check: null }
     ]
   };
+  MODIFIERS.clinic = [
+    { word: 'おすすめ', check: null },
+    { word: '口コミ', check: null },
+    { word: '予約', check: /予約|web予約|ネット予約/i },
+    { word: '料金', check: /料金|価格|\d[\d,]*\s*円|[¥￥]\s*\d/ },
+    { word: 'カウンセリング', check: /カウンセリング|相談/ },
+    { word: '土日', check: /土曜|日曜|土日|祝日/ },
+    { word: '夜', check: /夜間|1[89]:\d\d|2[01]:\d\d|1[89]時|20時/ },
+    { word: '駐車場', check: /駐車場|パーキング/ },
+    { word: '女性医師', check: /女性医師|女医/ },
+    { word: '当日', check: /当日/ }
+  ];
+  MODIFIERS.other = [
+    { word: 'おすすめ', check: null },
+    { word: '口コミ', check: null },
+    { word: '料金', check: /料金|価格|\d[\d,]*\s*円|[¥￥]\s*\d/ },
+    { word: '予約', check: /予約|reserve|reservation/i },
+    { word: '体験', check: /体験|お試し|無料カウンセリング/ },
+    { word: '初めて', check: /初めて|はじめて|初心者/ },
+    { word: '駐車場', check: /駐車場|パーキング/ },
+    { word: '営業時間', check: /営業時間|定休日|受付時間/ }
+  ];
   var BRAND_MODIFIERS = {
     restaurant: [
       { word: '', check: null },
@@ -218,15 +272,51 @@
       { word: 'メニュー', check: /メニュー|お品書き|\d[\d,]*\s*円/ },
       { word: '営業時間', check: /営業時間|定休日|open/i },
       { word: 'アクセス', check: /徒歩\s*\d+\s*分|アクセス|駅から|最寄/ }
+    ],
+    clinic: [
+      { word: '', check: null },
+      { word: '予約', check: /予約|web予約|ネット予約/i },
+      { word: '料金', check: /料金|価格|\d[\d,]*\s*円/ },
+      { word: '口コミ', check: null },
+      { word: 'アクセス', check: /徒歩\s*\d+\s*分|アクセス|駅から|最寄/ }
+    ],
+    other: [
+      { word: '', check: null },
+      { word: '料金', check: /料金|価格|\d[\d,]*\s*円/ },
+      { word: '予約', check: /予約|reserve|reservation/i },
+      { word: '口コミ', check: null },
+      { word: 'アクセス', check: /徒歩\s*\d+\s*分|アクセス|駅から|最寄/ }
+    ],
+    b2b: [
+      { word: '', check: null },
+      { word: '料金', check: /料金|価格|プラン|\d[\d,]*\s*円/ },
+      { word: '導入事例', check: /導入事例|事例|お客様の声/ },
+      { word: '資料請求', check: /資料請求|資料ダウンロード|ホワイトペーパー/ },
+      { word: '評判', check: null },
+      { word: '比較', check: null },
+      { word: '問い合わせ', check: /お問い合わせ|問い合わせ|contact/i }
+    ],
+    media: [
+      { word: '', check: null },
+      { word: 'とは', check: null },
+      { word: '評判', check: null },
+      { word: '運営会社', check: /運営会社|会社概要|運営者/ },
+      { word: '問い合わせ', check: /お問い合わせ|問い合わせ|contact/i },
+      { word: '広告掲載', check: /広告掲載|媒体資料|掲載のご案内/ }
     ]
   };
-  var BRAND_NOISE = /[【\[（(]?\s*(公式|オフィシャル|official|ホームページ|HP|TOP|トップ|ホーム|home)\s*[】\]）)]?/gi;
+  var BRAND_NOISE = /[【\[（(]?\s*(公式ホームページ|公式サイト|公式ページ|オフィシャルサイト|公式|オフィシャル|official|ホームページ|HP|TOP|トップ|ホーム|home)\s*[】\]）)]?/gi;
 
   /** 店名: 構造化データの name > og:site_name > タイトルの区切り記号の前（「公式」「HP」などは除く） */
   function shopName(src) {
     var cands = [src.ldName, src.ogSiteName, String(src.title || '').split(/\s*[|｜\-–—:：]\s*/)[0]];
     for (var i = 0; i < cands.length; i++) {
       var n = String(cands[i] || '').replace(BRAND_NOISE, ' ').replace(/\s+/g, ' ').trim();
+      var n2 = n.replace(/\s*[（(][^）)]*[）)]\s*$/, '').trim(); // 「Sansan（営業AXサービス）」→「Sansan」
+      if (n2.length >= 2) n = n2;
+      var q = /「([^」]{2,20})」/.exec(n); // 「IT総合情報ポータル「ITmedia」」→「ITmedia」
+      if (q) n = q[1];
+      n = n.replace(/^(株式会社|有限会社|合同会社|一般社団法人|医療法人社団|医療法人)\s*|\s*(株式会社|有限会社|合同会社)$/g, '').trim();
       if (n.length >= 2 && n.length <= 30 && !/^(ホーム|home|top|トップ)$/i.test(n)) return n;
     }
     return '';
@@ -262,7 +352,7 @@
       }
       out.push({ text: t, group: group, modifier: mod ? mod.word : '', answered: answered, evidence: evidence });
     }
-    if (base && base.keyword) {
+    if (base && base.keyword && !BRAND_ONLY[industry]) {
       push(base.keyword, 'base', null);
       mods.forEach(function (m) { push(base.keyword + ' ' + m.word, 'condition', m); });
     }
@@ -271,7 +361,19 @@
     return out;
   }
 
-  var api = { derive: derive, candidates: candidates, shopName: shopName, parseAddress: parseAddress, genreIn: genreIn, version: 'keyword-v1' };
+  /** 全業種分をまとめて作る（診断時は業種がまだ決まっていないため） */
+  function deriveAll(src, limit) {
+    var out = {};
+    ['restaurant', 'clinic', 'other', 'b2b', 'media'].forEach(function (ind) {
+      var b = derive(src, ind);
+      b.candidates = candidates(b, src, ind, limit || 20);
+      b.shopName = shopName(src);
+      out[ind] = b;
+    });
+    return out;
+  }
+
+  var api = { derive: derive, deriveAll: deriveAll, candidates: candidates, shopName: shopName, parseAddress: parseAddress, genreIn: genreIn, version: 'keyword-v2' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachKeyword = api;
 })(typeof window !== 'undefined' ? window : null);
