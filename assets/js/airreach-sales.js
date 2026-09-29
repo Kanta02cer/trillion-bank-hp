@@ -532,7 +532,9 @@
         missingWhen: function (diag) {
           var out = [];
           if (!diag || !diag.page) return ['診断前のため未確認'];
-          if ((diag.page.faqCount || 0) < 3) out.push('FAQが少ない／無い');
+          var fc = diag.page.faqCount || 0;
+          if (fc === 0) out.push('FAQ（よくある質問）が無い');
+          else if (fc < 3) out.push('FAQが3問未満（いま ' + fc + ' 問）');
           var types = (diag.page.types || []).join(' ');
           if (!/FAQPage/.test(types)) out.push('FAQPageの構造化が無い');
           return out;
