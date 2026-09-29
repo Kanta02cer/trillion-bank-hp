@@ -147,6 +147,7 @@
     var faqCount = 0;
     var ldAddress = [];
     var ldCuisine = [];
+    var ldName = '';
     ldNodes.forEach(function (node) {
       try {
         var data = JSON.parse(node.textContent);
@@ -156,6 +157,8 @@
           var t = it['@type'];
           if (Array.isArray(t)) t.forEach(function (x) { types[x] = true; });
           else if (typeof t === 'string') types[t] = true;
+          var tList = Array.isArray(t) ? t : [t];
+          if (!ldName && it.name && tList.some(function (x) { return /Restaurant|FoodEstablishment|LocalBusiness|CafeOrCoffeeShop|BarOrPub|Bakery|IceCreamShop|Store/.test(String(x || '')); })) ldName = String(it.name);
           var ad = it.address;
           if (ad && typeof ad === 'object' && !Array.isArray(ad)) {
             ['addressRegion', 'addressLocality', 'streetAddress'].forEach(function (k) { if (ad[k]) ldAddress.push(String(ad[k])); });
@@ -188,11 +191,15 @@
         Array.prototype.forEach.call(bodyClone.querySelectorAll('script,style,noscript,template'), function (n) { n.remove(); });
         cleanText = (bodyClone.textContent || '').replace(/\s+/g, ' ').trim();
       }
+      var ogSiteName = (doc.querySelector('meta[property="og:site_name"]') || {}).content || '';
+      var kwSrc = {
+        title: title.trim(), ogTitle: ogTitle, metaDesc: metaDesc.trim(), text: cleanText,
+        ldAddress: ldAddress, ldCuisine: ldCuisine, types: Object.keys(types), ldName: ldName, ogSiteName: ogSiteName
+      };
       try {
-        keywordAuto = window.AirReachKeyword.derive({
-          title: title.trim(), ogTitle: ogTitle, metaDesc: metaDesc.trim(), text: cleanText,
-          ldAddress: ldAddress, ldCuisine: ldCuisine, types: Object.keys(types)
-        });
+        keywordAuto = window.AirReachKeyword.derive(kwSrc);
+        // 調べそうな言葉の一覧（飲食店の付け足す言葉）。サイトに答えが書いてあるかの判定つき
+        keywordAuto.candidates = window.AirReachKeyword.candidates(keywordAuto, kwSrc, 'restaurant', 20);
       } catch (e) { keywordAuto = null; }
     }
     var hasContact = /お問い合わせ|contact|inquiry|相談|予約/i.test(text) || !!doc.querySelector('a[href*="contact"], a[href*="meeting"], form');

@@ -1016,6 +1016,25 @@
       ];
     }
 
+    // 飲食店: 「探している人 ◯回/月」（文字列から作った推定値）の代わりに、
+    // 調べそうな言葉のうち、サイトに答えが書いてある数を出す（HTMLから判定した実測）。入力された検索数があればそちらを使う。
+    var kwSet = industryId === 'restaurant' && diagnose && diagnose.page && diagnose.page.keywordAuto && diagnose.page.keywordAuto.candidates;
+    var hasVolumeInput = opts.volumeOverride != null && String(opts.volumeOverride).trim() !== '' && isFinite(Number(opts.volumeOverride));
+    if (kwSet && kwSet.length && !hasVolumeInput && headline4 && headline4[0] && headline4[0].id === 'demand') {
+      var judged = kwSet.filter(function (c) { return c.answered !== null; });
+      var answered = judged.filter(function (c) { return c.answered; });
+      headline4[0] = {
+        id: 'demand',
+        label: 'お客さんが調べそうな言葉',
+        value: judged.length ? (answered.length + ' / ' + judged.length) : '—',
+        unit: judged.length ? '個にサイトが答えている' : '',
+        badge: 'Observed',
+        meaning: '調べそうな言葉ごとに、答え（ランチ・個室・予約など）がサイトに書いてあるかの数。検索回数ではありません',
+        sub: '全' + kwSet.length + '語（一覧は詳細データ）',
+        keywordSet: kwSet
+      };
+    }
+
     var primaryCta = mode === 'branded_search' || industryId === 'media'
       ? (profile.cta_branded || 'どの記事が使われているか見る')
       : (profile.cta_generic || 'まず何を直すか見る');

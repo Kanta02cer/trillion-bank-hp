@@ -171,7 +171,86 @@
     };
   }
 
-  var api = { derive: derive, parseAddress: parseAddress, genreIn: genreIn, version: 'keyword-v1' };
+
+  // ---- 調べそうな言葉の一覧（Studio の buildKeywords と同じ組み立て: 業態×付け足す言葉、地域、店名） ----
+  // 付け足す言葉は業種ごと。check はサイトの本文に「答え」が書いてあるかの判定（null は判定しない）。
+  var MODIFIERS = {
+    restaurant: [
+      { word: 'おすすめ', check: null },
+      { word: '人気', check: null },
+      { word: 'ランチ', check: /ランチ|昼の部|昼営業/ },
+      { word: 'ディナー', check: /ディナー|夜の部|夜営業/ },
+      { word: '個室', check: /個室|半個室/ },
+      { word: '予約', check: /予約|reserve|reservation/i },
+      { word: '子連れ', check: /子連れ|お子様|キッズ|子ども|お子さま/ },
+      { word: '駐車場', check: /駐車場|パーキング|駐車\s*\d+\s*台/ },
+      { word: 'テイクアウト', check: /テイクアウト|持ち帰り/ },
+      { word: '宴会', check: /宴会|貸切|貸し切り|コース/ },
+      { word: '安い', check: /\d[\d,]*\s*円|[¥￥]\s*\d/ },
+      { word: '口コミ', check: null }
+    ]
+  };
+  var BRAND_MODIFIERS = {
+    restaurant: [
+      { word: '', check: null },
+      { word: '予約', check: /予約|reserve|reservation/i },
+      { word: 'メニュー', check: /メニュー|お品書き|\d[\d,]*\s*円/ },
+      { word: '営業時間', check: /営業時間|定休日|open/i },
+      { word: 'アクセス', check: /徒歩\s*\d+\s*分|アクセス|駅から|最寄/ }
+    ]
+  };
+  var BRAND_NOISE = /[【\[（(]?\s*(公式|オフィシャル|official|ホームページ|HP|TOP|トップ|ホーム|home)\s*[】\]）)]?/gi;
+
+  /** 店名: 構造化データの name > og:site_name > タイトルの区切り記号の前（「公式」「HP」などは除く） */
+  function shopName(src) {
+    var cands = [src.ldName, src.ogSiteName, String(src.title || '').split(/\s*[|｜\-–—:：]\s*/)[0]];
+    for (var i = 0; i < cands.length; i++) {
+      var n = String(cands[i] || '').replace(BRAND_NOISE, ' ').replace(/\s+/g, ' ').trim();
+      if (n.length >= 2 && n.length <= 30 && !/^(ホーム|home|top|トップ)$/i.test(n)) return n;
+    }
+    return '';
+  }
+
+  function snippet(text, rx) {
+    var m = rx.exec(text);
+    if (!m) return '';
+    var a = Math.max(0, m.index - 14), b = Math.min(text.length, m.index + m[0].length + 14);
+    return (a > 0 ? '…' : '') + text.slice(a, b) + (b < text.length ? '…' : '');
+  }
+
+  /**
+   * @param {object} base derive() の戻り値
+   * @param {object} src derive() と同じ入力（ldName / ogSiteName を足す）
+   * @returns {Array<{text,group,modifier,answered,evidence}>} answered: true / false / null（判定しない）
+   */
+  function candidates(base, src, industry, limit) {
+    industry = industry || 'restaurant';
+    limit = limit || 20;
+    var mods = MODIFIERS[industry] || [];
+    var bmods = BRAND_MODIFIERS[industry] || [];
+    var text = [src.title, src.ogTitle, src.metaDesc, src.text].filter(Boolean).join(' ').slice(0, 30000);
+    var out = [], seen = {};
+    function push(t, group, mod) {
+      t = String(t || '').replace(/\s+/g, ' ').trim();
+      if (!t || seen[t] || out.length >= limit) return;
+      seen[t] = 1;
+      var answered = null, evidence = '';
+      if (mod && mod.check) {
+        evidence = snippet(text, mod.check);
+        answered = !!evidence;
+      }
+      out.push({ text: t, group: group, modifier: mod ? mod.word : '', answered: answered, evidence: evidence });
+    }
+    if (base && base.keyword) {
+      push(base.keyword, 'base', null);
+      mods.forEach(function (m) { push(base.keyword + ' ' + m.word, 'condition', m); });
+    }
+    var name = shopName(src);
+    if (name) bmods.forEach(function (m) { push(name + (m.word ? ' ' + m.word : ''), 'brand', m); });
+    return out;
+  }
+
+  var api = { derive: derive, candidates: candidates, shopName: shopName, parseAddress: parseAddress, genreIn: genreIn, version: 'keyword-v1' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachKeyword = api;
 })(typeof window !== 'undefined' ? window : null);

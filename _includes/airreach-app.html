@@ -382,6 +382,11 @@ body.ar-modal-open{overflow:hidden}
 .ar-dchk-lab{font-size:.92rem;font-weight:600;color:var(--ar-ink,#0f172a);min-width:0}
 .ar-dchk-state{margin-left:8px;font-size:.75rem;font-weight:600;color:var(--ar-muted,#64748b)}
 .ar-dchk.is-ng .ar-dchk-state{color:#b91c1c}
+.ar-kwq-note{margin:-4px 0 10px;font-size:.8rem;line-height:1.55;color:var(--ar-muted,#64748b)}
+.ar-dchk.is-na .ar-dchk-mark{background:#cbd5e1;color:#475569}
+.ar-dchk-ev{display:block;margin-top:2px;font-size:.75rem;font-weight:500;color:var(--ar-muted,#64748b);word-break:break-all}
+.ar-kwq-group{padding:8px 14px;font-size:.75rem;font-weight:700;color:var(--ar-muted,#64748b);background:#f8fafc;border-top:1px solid var(--ar-line,#e2e8f0)}
+.ar-kwq-group:first-child{border-top:0}
 .ar-dchk-link{color:#94a3b8;font-size:1.3rem;line-height:1;text-decoration:none;text-align:center}
 .ar-dchk-link:hover{color:var(--ar-accent,#1d4ed8)}
 .ar-dchk-link.is-off{opacity:.35}
@@ -1086,6 +1091,11 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <p class="ar-fix-lead" id="ar-detail-lead">各項目の点数と、検出した項目の詳細です。点数は「ホームページの情報整備」の区分で、AI掲載率・順位・成果ではありません。</p>
           <!-- 項目別の点数（押すと不足・未確認の内訳が開く） -->
           <div class="ar-detail-list" id="ar-detail-factors"></div>
+          <div id="ar-kwq-wrap" hidden>
+            <h3 class="ar-detail-h3">お客さんが調べそうな言葉</h3>
+            <p class="ar-kwq-note">言葉ごとに、答えがトップページに書いてあるかを見ています。「書いていない」は、その店に無いという意味ではありません。検索回数は Search Console などを接続したときだけ出します。</p>
+            <ul class="ar-detail-checks" id="ar-kwq-list"></ul>
+          </div>
           <h3 class="ar-detail-h3">検出されたその他の項目</h3>
           <ul class="ar-detail-checks" id="ar-detail-checks"></ul>
           <!-- 計算式はモーダルで見せる（初期表示は「計算式」「今回の計算」だけ） -->
@@ -1848,6 +1858,29 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         detailFactors.appendChild(row);
       });
+    }
+    // 調べそうな言葉（飲食店）: 言葉ごとに、答えがサイトに書いてあるか
+    var kwqWrap = $('ar-kwq-wrap'), kwqList = $('ar-kwq-list');
+    var kwqSet = (report.headline4 || []).reduce(function (acc, h) { return acc || (h.id === 'demand' && h.keywordSet) || null; }, null);
+    if (kwqWrap && kwqList) {
+      if (kwqSet && kwqSet.length) {
+        var GROUP = { base: '地域＋業態', condition: '条件をつけて探すとき', brand: '店名で調べるとき' };
+        var lastGroup = '', html = '';
+        kwqSet.forEach(function (c) {
+          if (c.group !== lastGroup) { lastGroup = c.group; html += '<li class="ar-kwq-group">' + tipAttr(GROUP[c.group] || '') + '</li>'; }
+          var st = c.answered === true ? 'ok' : (c.answered === false ? 'ng' : 'na');
+          var mark = st === 'ok' ? '✓' : (st === 'ng' ? '!' : '–');
+          var stLabel = st === 'ok' ? '書いてある' : (st === 'ng' ? '書いていない' : '判定なし');
+          html += '<li class="ar-dchk is-' + st + '"><span class="ar-dchk-mark" aria-hidden="true">' + mark + '</span>' +
+            '<span class="ar-dchk-lab">' + tipAttr(c.text) + '<span class="ar-dchk-state">' + stLabel + '</span>' +
+            (c.evidence ? '<span class="ar-dchk-ev">' + tipAttr(c.evidence) + '</span>' : '') + '</span><span></span></li>';
+        });
+        kwqList.innerHTML = html;
+        kwqWrap.hidden = false;
+      } else {
+        kwqList.innerHTML = '';
+        kwqWrap.hidden = true;
+      }
     }
     var detailChecks = $('ar-detail-checks');
     if (detailChecks) {

@@ -52,6 +52,23 @@ expect('multi-store flag',
 expect('source label', K.derive({ title: '炭火焼肉 さくら 神楽坂店', ldAddress: ['東京都新宿区神楽坂3-1-2'] }).sourceLabel,
   '地域は構造化データの住所、業態はタイトルから');
 
+// 調べそうな言葉の一覧（Studio と同じ組み立て・飲食店の付け足す言葉）
+{
+  const src = { title: '[公式] 炭火焼肉 さくら | 神楽坂', ldAddress: ['東京都新宿区神楽坂3-1-2'], text: 'ランチ営業 11:30〜 ご予約はこちら 個室あり 1,200円' };
+  const set = K.candidates(K.derive(src), src, 'restaurant', 20);
+  const by = Object.fromEntries(set.map((c) => [c.text, c]));
+  expect('set: base keyword first', set[0].text, '神楽坂 焼肉');
+  expect('set: condition answered (個室)', by['神楽坂 焼肉 個室'].answered, true);
+  expect('set: condition not answered (駐車場)', by['神楽坂 焼肉 駐車場'].answered, false);
+  expect('set: not judged (おすすめ)', by['神楽坂 焼肉 おすすめ'].answered, null);
+  expect('set: brand from title without 公式', K.shopName(src), '炭火焼肉 さくら');
+  expect('set: brand + 予約 answered', by['炭火焼肉 さくら 予約'].answered, true);
+  expect('set: size <= 20', set.length <= 20, true);
+  const none = K.candidates(K.derive({ title: 'ホーム', text: '' }), { title: 'ホーム', text: '' }, 'restaurant', 20);
+  expect('set: no base and no brand -> empty', none.length, 0);
+  expect('shopName prefers structured name', K.shopName({ ldName: 'そば処 テスト', ogSiteName: 'TEST', title: 'TOP | x' }), 'そば処 テスト');
+}
+
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);
