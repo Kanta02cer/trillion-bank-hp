@@ -41,12 +41,33 @@
 
   function norm(g) { return GENRE_NORM[g] || g; }
 
+  // 語の一部として出てきたものは業態にしない（サーバー・ジャパン・アドバイス・「駅のそば」など）
+  var KATA = /[ァ-ヶー]/;
+  function isWordHit(s, i, g) {
+    var prev = s.charAt(i - 1), next = s.charAt(i + g.length);
+    if (KATA.test(g.charAt(0)) && KATA.test(prev)) return false;
+    if (KATA.test(g.charAt(g.length - 1)) && KATA.test(next)) return false;
+    if (g === 'そば' && (prev === 'の' || next === 'に' || next === 'で' || next === 'か')) return false;
+    if (/^[A-Za-z]/.test(g) && (/[A-Za-z]/.test(next) || /[a-z]/.test(prev))) return false; // YScafe は拾い、MyBistroApp は拾わない
+    return true;
+  }
+  function wordIndex(s, g) {
+    var i = s.indexOf(g);
+    while (i >= 0 && !isWordHit(s, i, g)) i = s.indexOf(g, i + 1);
+    return i;
+  }
+  function wordCount(s, g) {
+    var n = 0, i = s.indexOf(g);
+    while (i >= 0) { if (isWordHit(s, i, g)) n++; i = s.indexOf(g, i + g.length); }
+    return n;
+  }
+
   /** 文字列の中で最初に出てくる業態語（辞書順ではなく出現位置で選ぶ） */
   function genreIn(s) {
     s = String(s || '');
     var best = null;
     GENRES.forEach(function (g) {
-      var i = s.indexOf(g);
+      var i = wordIndex(s, g);
       if (i < 0) return;
       if (!best || i < best.i || (i === best.i && g.length > best.g.length)) best = { i: i, g: g };
     });
@@ -56,7 +77,7 @@
   function genreByFreq(text) {
     var counts = {};
     GENRES.forEach(function (g) {
-      var n = String(text || '').split(g).length - 1;
+      var n = wordCount(String(text || ''), g);
       if (n) counts[norm(g)] = (counts[norm(g)] || 0) + n;
     });
     var top = '', max = 0;
