@@ -65,3 +65,6 @@ ops/social-publisher/.env
 ops/social-publisher/**/*.secret
 ops/crawler-observability/package-lock.json
 vendor/
+
+# AirReach API local test output
+scripts/airreach-api/out/

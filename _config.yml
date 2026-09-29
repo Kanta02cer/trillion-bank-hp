@@ -421,6 +421,7 @@ exclude:
   - prompts
   - scripts
   - ops
+  - supabase
   - tools
   - admin
   - AIO-Hack2_package
