@@ -1910,7 +1910,7 @@ document.addEventListener('DOMContentLoaded', function () {
           if (c.group !== lastGroup) { lastGroup = c.group; html += '<li class="ar-kwq-group">' + tipAttr(GROUP[c.group] || '') + '</li>'; }
           var st = c.answered === true ? 'ok' : (c.answered === false ? 'ng' : 'na');
           var mark = st === 'ok' ? '✓' : (st === 'ng' ? '!' : '–');
-          var stLabel = st === 'ok' ? '書いてある' : (st === 'ng' ? '書いていない' : '判定なし');
+          var stLabel = st === 'ok' ? '書いてある' : (st === 'ng' ? '書いていない' : (c.reason === 'unreadable' ? '本文を読み取れず未判定' : '判定なし'));
           html += '<li class="ar-dchk is-' + st + '"><span class="ar-dchk-mark" aria-hidden="true">' + mark + '</span>' +
             '<span class="ar-dchk-lab">' + tipAttr(c.text) + '<span class="ar-dchk-state">' + stLabel + '</span>' +
             (c.evidence ? '<span class="ar-dchk-ev">' + tipAttr(c.evidence) + '</span>' : '') + '</span><span></span></li>';

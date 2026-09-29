@@ -1030,14 +1030,15 @@
     if (kwSet && kwSet.length && !hasVolumeInput && headline4 && headline4[0] && headline4[0].id === 'demand') {
       var judged = kwSet.filter(function (c) { return c.answered !== null; });
       var answered = judged.filter(function (c) { return c.answered; });
+      var unreadable = kwSet.some(function (c) { return c.reason === 'unreadable'; });
       headline4[0] = {
         id: 'demand',
         label: 'お客さんが調べそうな言葉',
         value: judged.length ? (answered.length + ' / ' + judged.length) : '—',
         unit: judged.length ? '個にサイトが答えている' : '',
         badge: 'Observed',
-        meaning: '調べそうな言葉ごとに、答え（ランチ・個室・予約など）がサイトに書いてあるかの数。検索回数ではありません',
-        sub: '全' + kwSet.length + '語（一覧は詳細データ）',
+        meaning: '調べそうな言葉ごとに、その答え（' + (industryId === 'restaurant' ? 'ランチ・個室・予約' : industryId === 'clinic' ? '予約・料金・診療時間' : (industryId === 'b2b' ? '料金・導入事例・資料請求' : industryId === 'media' ? '運営会社・問い合わせ・広告掲載' : '料金・予約・営業時間')) + ' など）がサイトに書いてあるかの数。検索回数ではありません',
+        sub: unreadable ? 'ページの本文を JavaScript で表示しているため読み取れず、一部を判定していません' : '全' + kwSet.length + '語（一覧は詳細データ）',
         keywordSet: kwSet
       };
     }

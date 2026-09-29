@@ -54,7 +54,7 @@ expect('source label', K.derive({ title: '炭火焼肉 さくら 神楽坂店', 
 
 // 調べそうな言葉の一覧（Studio と同じ組み立て・飲食店の付け足す言葉）
 {
-  const src = { title: '[公式] 炭火焼肉 さくら | 神楽坂', ldAddress: ['東京都新宿区神楽坂3-1-2'], text: 'ランチ営業 11:30〜 ご予約はこちら 個室あり 1,200円' };
+  const src = { title: '[公式] 炭火焼肉 さくら | 神楽坂', ldAddress: ['東京都新宿区神楽坂3-1-2'], text: 'ランチ営業 11:30〜 ご予約はこちら 個室あり 1,200円 ' + '炭火で焼き上げる国産牛の焼肉をお楽しみください。'.repeat(12) };
   const set = K.candidates(K.derive(src), src, 'restaurant', 20);
   const by = Object.fromEntries(set.map((c) => [c.text, c]));
   expect('set: base keyword first', set[0].text, '神楽坂 焼肉');
@@ -91,6 +91,14 @@ expect('Bistro inside word ignored', K.genreIn('MyBistroApp'), '');
   expect('b2b set: 料金 answered', all.b2b.candidates.find((c) => c.modifier === '料金').answered, true);
   expect('b2b set: no area keyword', all.b2b.candidates.some((c) => c.group === 'base'), false);
   expect('restaurant unchanged in deriveAll', all.restaurant.keyword, '');
+}
+
+// 本文を読めないサイト（JavaScript で表示）は「書いていない」にしない
+{
+  const src = { title: 'テスト（営業支援）', text: '' };
+  const set = K.deriveAll(src).b2b.candidates;
+  expect('unreadable: not judged as missing', set.find((c) => c.modifier === '問い合わせ').answered, null);
+  expect('unreadable: reason set', set.find((c) => c.modifier === '問い合わせ').reason, 'unreadable');
 }
 
 const failed = results.filter((x) => !x).length;

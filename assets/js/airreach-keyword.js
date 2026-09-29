@@ -166,7 +166,7 @@
         keyword: nm, industry: industry,
         area: { value: '', level: '', source: '', pref: '', city: '', town: '' },
         genre: { value: '', source: '' }, multiStore: false,
-        sourceLabel: nm ? '名前（構造化データ・サイト名・タイトル）から' : ''
+        sourceLabel: nm ? '名前をサイト名・タイトルから' : ''
       };
     }
     var head = [src.title, src.ogTitle, src.metaDesc].filter(Boolean).join(' ');
@@ -340,17 +340,20 @@
     var mods = MODIFIERS[industry] || [];
     var bmods = BRAND_MODIFIERS[industry] || [];
     var text = [src.title, src.ogTitle, src.metaDesc, src.text].filter(Boolean).join(' ').slice(0, 30000);
+    // 本文を JavaScript で後から表示するサイトは、取得した HTML に本文が無い。見つからない＝書いていない、とは言えない
+    var unreadable = String(src.text || '').replace(/\s+/g, '').length < 300;
     var out = [], seen = {};
     function push(t, group, mod) {
       t = String(t || '').replace(/\s+/g, ' ').trim();
       if (!t || seen[t] || out.length >= limit) return;
       seen[t] = 1;
-      var answered = null, evidence = '';
+      var answered = null, evidence = '', reason = '';
       if (mod && mod.check) {
         evidence = snippet(text, mod.check);
-        answered = !!evidence;
+        answered = evidence ? true : (unreadable ? null : false);
+        if (!evidence && unreadable) reason = 'unreadable';
       }
-      out.push({ text: t, group: group, modifier: mod ? mod.word : '', answered: answered, evidence: evidence });
+      out.push({ text: t, group: group, modifier: mod ? mod.word : '', answered: answered, evidence: evidence, reason: reason });
     }
     if (base && base.keyword && !BRAND_ONLY[industry]) {
       push(base.keyword, 'base', null);
