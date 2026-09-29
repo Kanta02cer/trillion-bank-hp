@@ -382,6 +382,9 @@ body.ar-modal-open{overflow:hidden}
 .ar-dchk-lab{font-size:.92rem;font-weight:600;color:var(--ar-ink,#0f172a);min-width:0}
 .ar-dchk-state{margin-left:8px;font-size:.75rem;font-weight:600;color:var(--ar-muted,#64748b)}
 .ar-dchk.is-ng .ar-dchk-state{color:#b91c1c}
+.ar-details-chev{display:inline-block;width:8px;height:8px;margin-left:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .15s}
+#ar-cta-details[aria-expanded="true"] .ar-details-chev{transform:translateY(2px) rotate(-135deg)}
+@media (prefers-reduced-motion:reduce){.ar-details-chev{transition:none}}
 .ar-fold{margin:0 0 12px;border:1px solid var(--ar-line,#e2e8f0);border-radius:12px;background:#fff}
 .ar-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 16px;font-size:1rem;font-weight:700;color:var(--ar-ink,#0f172a)}
 .ar-fold>summary::-webkit-details-marker{display:none}
@@ -1092,7 +1095,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           </aside>
           <!-- この画面の出口。ステップ3（詳細データ）は任意なので控えめな枠ボタンにする -->
           <div class="ar-panel-exit">
-            <a class="ar-btn ar-btn-ghost" href="#expert-view" id="ar-cta-details">詳しいデータを見る<span class="ar-arrow" aria-hidden="true">→</span></a>
+            <button type="button" class="ar-btn ar-btn-ghost" id="ar-cta-details" aria-expanded="false" aria-controls="expert-view"><span id="ar-cta-details-label">詳しいデータを見る</span><span class="ar-details-chev" aria-hidden="true"></span></button>
           </div>
         </div>
         <div class="ar-panel is-hidden" id="expert-view">
@@ -1413,6 +1416,16 @@ document.addEventListener('DOMContentLoaded', function () {
   function revealPanel(id) {
     var el = $(id);
     if (el) el.classList.remove('is-hidden');
+    if (id === 'expert-view') syncDetailsButton(true);
+  }
+
+  // 「詳しいデータを見る」はボタンの下に開閉する
+  function syncDetailsButton(open) {
+    var b = $('ar-cta-details');
+    if (!b) return;
+    b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    var lab = $('ar-cta-details-label');
+    if (lab) lab.textContent = open ? '詳しいデータを閉じる' : '詳しいデータを見る';
   }
 
   function applyIndustryUi() {
@@ -1453,6 +1466,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setStep(1);
     // hide later panels again for progressive disclosure
     if ($('expert-view')) $('expert-view').classList.add('is-hidden');
+    syncDetailsButton(false);
     if ($('actions')) $('actions').classList.add('is-hidden');
 
     $('ar-analyzing').textContent = 'AirReach Tools';
@@ -2286,9 +2300,12 @@ document.addEventListener('DOMContentLoaded', function () {
   if ($('ar-cta-details')) {
     $('ar-cta-details').addEventListener('click', function (e) {
       e.preventDefault();
-      revealPanel('expert-view');
-      setStep(3);
-      $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var panel = $('expert-view');
+      if (!panel) return;
+      var willOpen = panel.classList.contains('is-hidden');
+      panel.classList.toggle('is-hidden', !willOpen);
+      syncDetailsButton(willOpen);
+      setStep(willOpen ? 3 : 2);
     });
   }
 
