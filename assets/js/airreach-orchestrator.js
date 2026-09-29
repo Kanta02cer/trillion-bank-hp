@@ -491,7 +491,10 @@
         action: RESTAURANT_ACTION[c.modifier] || RESTAURANT_ACTION[''],
         seed_source: fromGsc ? 'GSC' : 'Site', why: why, answered: c.answered, evidence: c.evidence || '', prompts: [] });
     });
-    return out;
+    // 直す対象（P0）を先頭に。同じ優先度の中は元の並び（基本→条件→店名）を保つ
+    return out.map(function (k, i) { return { k: k, i: i }; })
+      .sort(function (a, b) { return (prioRank(a.k.priority) - prioRank(b.k.priority)) || (a.i - b.i); })
+      .map(function (x) { return x.k; });
   }
 
   // 推定値が1つも無いときは null（「0回」「約◯回」と出さない）
@@ -552,9 +555,15 @@
     row('店名', org.name);
     row('業態（servesCuisine）', org.servesCuisine);
     row('住所', org.address ? [org.address.addressRegion, org.address.addressLocality].filter(Boolean).join('') + '（番地は要記入）' : '');
+    var byMod = {};
+    (job.keywords || []).forEach(function (k) {
+      var mod = String(k.keyword || '').split(' ').pop();
+      if (k.answered === true && k.evidence && !byMod[mod]) byMod[mod] = k.evidence;
+    });
+    function seen(mod) { return byMod[mod] ? 'サイトに記載あり（抜粋：' + byMod[mod] + '）→ 正確な値を記入' : ''; }
     row('電話番号', '');
-    row('営業時間・定休日', '');
-    row('予約方法（電話・予約サイトURL）', '');
+    row('営業時間・定休日', seen('営業時間'));
+    row('予約方法（電話・予約サイトURL）', seen('予約'));
     row('価格帯', '');
     lines.push('', '## FAQ で記載が見つからなかった質問');
     faqItems.filter(function (f) { return !f.found; }).forEach(function (f) { lines.push('- ' + f.q); });
