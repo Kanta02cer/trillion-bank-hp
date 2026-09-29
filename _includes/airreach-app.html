@@ -556,6 +556,15 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 .ar-gauge-band{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .ar-gauge-band .ar-band{font-size:.95rem;padding:5px 12px}
 .ar-gauge-note{margin:0;font-size:.8rem;line-height:1.55;color:var(--ar-muted)}
+.ar-scale{margin:12px 0 10px;max-width:420px}
+.ar-scale-bar{position:relative;display:flex;gap:2px;height:10px}
+.ar-scale-seg{height:100%;border-radius:3px;opacity:.28}
+.ar-scale-seg.is-on{opacity:1}
+.ar-scale-mark{position:absolute;top:-6px;width:2px;height:22px;background:var(--ar-ink);border-radius:1px;transform:translateX(-1px)}
+.ar-scale-labels{display:flex;gap:2px;margin-top:6px}
+.ar-scale-labels span{font-size:.72rem;line-height:1.35;color:var(--ar-muted);text-align:center}
+.ar-scale-labels b{display:block;font-size:.78rem;font-weight:700;color:var(--ar-ink)}
+.ar-scale-labels .is-on b{text-decoration:underline;text-underline-offset:3px}
 .ar-sum-verdict{margin:16px 0 4px;font-size:1.08rem;font-weight:700;color:var(--ar-ink);line-height:1.5}
 .ar-sum-verdict-sub{margin:0 0 6px;font-size:.92rem;color:#334155;line-height:1.6}
 .ar-sum-rows{display:grid;margin-top:8px}
@@ -986,6 +995,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
             <div class="ar-gauge-side">
               <div class="ar-gauge-title" id="ar-gauge-title">ホームページの情報整備</div>
               <div class="ar-gauge-band" id="ar-gauge-band"></div>
+              <div class="ar-scale" id="ar-scale" hidden></div>
               <p class="ar-gauge-note" id="ar-gauge-note"></p>
             </div>
           </div>
@@ -1545,10 +1555,37 @@ document.addEventListener('DOMContentLoaded', function () {
       gauge.innerHTML =
         '<svg viewBox="0 0 128 128" width="128" height="128" aria-hidden="true">' +
         '<circle cx="64" cy="64" r="' + r + '" fill="none" stroke="#e2e8f0" stroke-width="12"/>' +
-        '<circle cx="64" cy="64" r="' + r + '" fill="none" stroke="' + tipAttr(color) + '" stroke-width="12" stroke-linecap="round" transform="rotate(-90 64 64)" stroke-dasharray="' + (c * pct).toFixed(1) + ' ' + c.toFixed(1) + '"/>' +
+        '<circle cx="64" cy="64" r="' + r + '" fill="none" stroke="' + tipAttr(color) + '" stroke-width="12" stroke-linecap="butt" transform="rotate(-90 64 64)" stroke-dasharray="' + (c * pct).toFixed(1) + ' ' + c.toFixed(1) + '"/>' +
+        (window.AirReachDisplay && AirReachDisplay.bands ? AirReachDisplay.bands.slice(1).map(function (b) {
+          // white tick at each band boundary (e.g. 40 / 70) so the ring shows the same ranges as the scale
+          var a = (Number(b.min) / 100) * 2 * Math.PI - Math.PI / 2;
+          var x1 = 64 + (r - 8) * Math.cos(a), y1 = 64 + (r - 8) * Math.sin(a), x2 = 64 + (r + 8) * Math.cos(a), y2 = 64 + (r + 8) * Math.sin(a);
+          return '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#fff" stroke-width="2"/>';
+        }).join('') : '') +
         '</svg>' +
         '<div class="ar-gauge-num">' + (scoreNum == null ? '<span class="ar-gauge-unknown">未確認</span>' : '<b>' + scoreNum + '</b><span>/ 100</span>') + '</div>';
       gauge.setAttribute('aria-label', 'ホームページの情報整備 ' + (scoreNum == null ? '未確認' : scoreNum + '点、区分 ' + band.label));
+    }
+    // Band scale: shows which range 低い / 要改善 / 高い covers, with the score marked on the same 0-100 axis.
+    var scaleEl = $('ar-scale');
+    if (scaleEl) {
+      var legend = (window.AirReachDisplay && AirReachDisplay.bands) ? AirReachDisplay.bands.slice() : [];
+      if (!legend.length) { scaleEl.hidden = true; }
+      else {
+        var segs = '', labels = '';
+        legend.forEach(function (b, i) {
+          var lo = Number(b.min), hi = i === legend.length - 1 ? 100 : Number(legend[i + 1].min);
+          var w = Math.max(0, hi - lo);
+          var on = scoreNum != null && band.key === b.key ? ' is-on' : '';
+          segs += '<span class="ar-scale-seg' + on + '" style="flex:' + w + ' 1 0;background:' + tipAttr(b.color || '#94a3b8') + '"></span>';
+          labels += '<span class="' + on.trim() + '" style="flex:' + w + ' 1 0"><b>' + tipAttr(b.label) + '</b>' + tipAttr(b.min + '〜' + (b.max != null ? b.max : '')) + '点</span>';
+        });
+        var mark = scoreNum == null ? '' : '<span class="ar-scale-mark" style="left:' + Math.max(0, Math.min(100, scoreNum)) + '%"></span>';
+        scaleEl.innerHTML = '<div class="ar-scale-bar" aria-hidden="true">' + segs + mark + '</div><div class="ar-scale-labels">' + labels + '</div>';
+        scaleEl.setAttribute('role', 'img');
+        scaleEl.setAttribute('aria-label', legend.map(function (b) { return b.label + ' ' + b.min + '〜' + b.max + '点'; }).join('、') + (scoreNum == null ? '' : '。この診断は ' + scoreNum + '点'));
+        scaleEl.hidden = false;
+      }
     }
     if ($('ar-gauge-title')) $('ar-gauge-title').textContent = (nowRow && nowRow.label) || 'ホームページの情報整備';
     if ($('ar-gauge-band')) {
@@ -1654,7 +1691,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       if (factorGaps) {
         var gaps = (fb.gaps && fb.gaps.length) ? fb.gaps : (fb.weakFactors || []).map(function (w) {
-          return w.label + 'が' + ((w.level && w.level.label) || '低い') + '区分（' + w.score + '点）';
+          return w.label + 'が' + ((w.level && w.level.label) || '要対策') + '区分（' + w.score + '点）';
         });
         var unknownsHtml = (fb.unknowns || []).map(function (u) {
           return '<li class="is-unknown" data-tip="取得できなかった項目です。不足と断定していません。">' + tipAttr(u) + '</li>';
