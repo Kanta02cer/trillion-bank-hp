@@ -1282,6 +1282,7 @@
   }
 
   var prefillIndustry = '';
+  var prefillIndustryHost = '';
   function outcomeToGoal(o) {
     if (o === 'reservation' || o === 'visit') return '予約を増やす';
     if (o === 'awareness' || o === 'citation') return '見え方を整える';
@@ -1306,7 +1307,7 @@
       var survey = JSON.parse(localStorage.getItem('airreach_onboard_survey_v1') || 'null');
       if (survey) {
         if (!url && survey.url) url = survey.url;
-        if (survey.industryId === 'restaurant') prefillIndustry = 'restaurant';
+        if (survey.industryId === 'restaurant') { prefillIndustry = 'restaurant'; prefillIndustryHost = hostOf(survey.url || ''); }
         // 飲食店の「調べる言葉」は地域＋業態なので、サービス名には使わない（業態は下の handoff から入れる）
         if (!service && survey.keyword && prefillIndustry !== 'restaurant') service = survey.keyword;
         if (!goal && survey.outcomeGoal) goal = outcomeToGoal(survey.outcomeGoal);
@@ -1506,7 +1507,8 @@
             summary: (q('service-summary') && q('service-summary').value) || ''
           },
           proxyConsent: !!(q('orch-proxy') && q('orch-proxy').checked),
-          industry: prefillIndustry
+          // 無料診断で選んだ業種は、同じサイトを分析するときだけ使う
+          industry: (prefillIndustry && prefillIndustryHost && hostOf(url) === prefillIndustryHost) ? prefillIndustry : ''
         }, function (j) { renderProgress(j); });
         renderResult(job);
         window.__orchLastJob = job;
