@@ -109,7 +109,9 @@ Worker 版と同じ契約。詳細な検証項目とエラー表は `ops/airreac
 
 - http / https のみ。認証情報とトークンらしきクエリ（token / key / auth / session / sig …）を除去
 - プライベート IP / ループバック / リンクローカル / CGNAT / マルチキャスト、`localhost`、`.local` 等の内部サフィックス、単一ラベル名を拒否
-- **追加**: ホスト名の DNS 解決先も検査し、プライベートに解決されるホストを拒否（Worker 版には無かった）
+- **追加**: ホスト名の DNS 解決先も検査し、1 つでもプライベート / 予約 / 非グローバル IP に解決されるホストを拒否（Worker 版には無かった）
+- **追加（DNS リバインディング / TOCTOU 対策）**: `fetch()` は使わず、Node 標準 `http` / `https` の `lookup` オプションで **検証済み IP を接続先に固定**する。ホスト名は `host` に渡すので Host ヘッダ・TLS の SNI・証明書検証はホスト名のまま。リダイレクトのホップごとに再解決・再検証・再固定する。外部依存なし
+- **追加**: `Content-Encoding`（gzip / deflate / br）は Node 標準 `zlib` で伸長し、**伸長後のサイズ**で上限を判定（gzip bomb 対策）
 - リダイレクト最大 3 回、各ホップで再検査。`Location` 無しは 502
 - タイムアウト既定 9 秒（`AIRREACH_FETCH_TIMEOUT_MS`。Vercel Hobby の 10 秒制限に収める。Pro なら 12 秒に戻せる）
 - 本文上限 900 KB（ヘッダとストリームの両方で打ち切り）。許可する種別は html / xhtml / plain / markdown / json
@@ -140,7 +142,7 @@ Worker 版と同じ契約。詳細な検証項目とエラー表は `ops/airreac
 | `SUPABASE_SERVICE_ROLE_KEY` | Production / Preview | AirReach Project の service_role（**Sensitive** にする。Hack2 の鍵ではない） |
 | `AIRREACH_ALLOWED_ORIGINS` | Preview / Development のみ | 例 `http://127.0.0.1:4000,http://localhost:4000` |
 | `AIRREACH_MAX_BODY_BYTES` / `AIRREACH_SUPABASE_TIMEOUT_MS` / `AIRREACH_FETCH_TIMEOUT_MS` / `AIRREACH_FETCH_MAX_BYTES` | 任意 | 既定 262144 / 8000 / 9000 / 900000 |
-| `AIRREACH_FETCH_ALLOW_LOOPBACK_FOR_TESTS` | **設定しない** | ローカル E2E 専用。Vercel には絶対に置かない |
+| `AIRREACH_FETCH_ALLOW_LOOPBACK_FOR_TESTS` / `AIRREACH_TEST_RESOLVE_MAP` | **設定しない** | ローカル E2E 専用。Vercel には絶対に置かない |
 
 `NEXT_PUBLIC_` / `VITE_` / `PUBLIC_` は付けない。鍵はコード・Git・ブラウザに出さない。
 
@@ -162,7 +164,8 @@ node scripts/airreach-api/e2e.mjs
 
 - health、same-origin / 許可 Origin / 非許可 Origin、OPTIONS
 - POST 201 → 同一 scanId 409、400 / 422 / 413、GET 共有 200 / 不正 404 / 失効 404
-- fetch: 正常、llms.txt / robots.txt、UA、リダイレクト（1 / 3 / 5 回、ループ、私設アドレスへ、localhost へ、Location 無し）、タイムアウト、2 MB（Content-Length / chunked）、404 / 410 / 500、PDF 拒否、秘密クエリ除去、SSRF 11 種、外部サイト（example.com）、DNS でループバックに解決されるホストの拒否、テストフラグ無しでのループバック拒否
+- fetch: 正常、llms.txt / robots.txt、UA、リダイレクト（1 / 3 / 5 回、ループ、私設アドレスへ、localhost へ、Location 無し）、タイムアウト、2 MB（Content-Length / chunked）、gzip 伸長と gzip bomb、404 / 410 / 500、PDF 拒否、秘密クエリ除去、SSRF（IPv4 12 種 + IPv6 25 種）、外部サイト（example.com）、DNS でループバックに解決されるホストの拒否、テストフラグ無しでのループバック拒否
+- 接続先固定: 注入リゾルバで「実 DNS に無い名前が検証済み IP へ接続される（接続時に再解決しない）」「次の要求では再解決される」「リダイレクト先で再解決・再検証・再固定される」「混在 / IPv6 private の応答は拒否」を確認（`unit-pin.mjs`）。自己署名証明書のローカル HTTPS で SNI = ホスト名、Host = ホスト名、SAN に無い名前は 502 を確認（テスト専用の `AIRREACH_TEST_RESOLVE_MAP` はループバック許可フラグが有効なときだけ参照される。Vercel には置かない）
 - Supabase 500 / ハング / 停止 → 503、復旧 → 201
 - ログに鍵・トークン・ハッシュ・本文・URL クエリが出ないこと、テーブル直接アクセス 0 件
 
@@ -185,7 +188,7 @@ node scripts/airreach-api/e2e.mjs
 | ランタイム | Worker（`Request` / `Response`） | Node.js Functions（`req` / `res`） |
 | Rate Limit | binding | Vercel Firewall（設定で対応） |
 | CORS | 許可リスト常時 | same-origin 前提。`AIRREACH_ALLOWED_ORIGINS` で Preview / ローカルだけ |
-| fetch の SSRF | リテラル判定のみ | リテラル + **DNS 解決先**判定 |
+| fetch の SSRF | リテラル判定のみ、`fetch()`（接続時に再解決） | リテラル + **DNS 解決先**判定、IPv6 はホワイトリスト方式、**検証済み IP に接続を固定**（`http`/`https` の `lookup`） |
 | fetch のタイムアウト | 12 秒 | 9 秒既定（環境変数で調整） |
 | 秘密 | `wrangler secret` | Vercel Environment Variables（Sensitive） |
 | 検証・採点再計算・mapper・RPC クライアント・トークン | 同一ロジック（TypeScript → JS 移植） | |

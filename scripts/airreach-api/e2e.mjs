@@ -4,7 +4,7 @@
  * 起動するもの: モック Supabase（RPC 2 本のみ）、モック対象サイト、ローカルハーネス。
  * 本物の Supabase / Cloudflare には接続しない。終了時にモックのデータを消して子プロセスを止める。
  */
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -13,7 +13,7 @@ import { buildScanPayload } from './fixture.mjs';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(DIR, '..', '..');
-const MOCK_PORT = 54321, TARGET_PORT = 54322, API_PORT = 3900;
+const MOCK_PORT = 54321, TARGET_PORT = 54322, TARGET_TLS_PORT = 54323, API_PORT = 3900;
 const MOCK = `http://127.0.0.1:${MOCK_PORT}`;
 const TARGET = `http://127.0.0.1:${TARGET_PORT}`;
 const API = `http://127.0.0.1:${API_PORT}`;
@@ -50,8 +50,28 @@ function start(name, file, envExtra, capture = false) {
   children.push(child);
   return child;
 }
+// TLS テスト用の自己署名証明書（rebind.test / rebind2.test。rebind-badcert.test は含めない）
+const OUT = path.join(DIR, 'out');
+await mkdir(OUT, { recursive: true });
+const TLS_KEY = path.join(OUT, 'tls.key');
+const TLS_CERT = path.join(OUT, 'tls.crt');
+let tlsAvailable = false;
+try {
+  execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', TLS_KEY, '-out', TLS_CERT, '-days', '2', '-subj', '/CN=rebind.test', '-addext', 'subjectAltName=DNS:rebind.test,DNS:rebind2.test'], { stdio: 'ignore' });
+  tlsAvailable = true;
+} catch { console.log('WARN  openssl not available: TLS SNI tests will be skipped'); }
+// テスト専用の名前解決（ループバック許可フラグが有効なときだけ fetch-proxy が参照する）
+const RESOLVE_MAP = JSON.stringify({
+  'rebind.test': '127.0.0.1',
+  'rebind2.test': '127.0.0.1',
+  'rebind-badcert.test': '127.0.0.1',
+  'rebind-private.test': '10.0.0.1',
+  'rebind-mixed.test': ['127.0.0.1', '10.0.0.1'],
+  'rebind-v6private.test': ['::ffff:a00:1'],
+});
+
 let mockProc = start('mock', 'mock-supabase.mjs', { MOCK_PORT: String(MOCK_PORT), MOCK_SERVICE_KEY: SERVICE_KEY });
-start('target', 'mock-target.mjs', { TARGET_PORT: String(TARGET_PORT) });
+start('target', 'mock-target.mjs', { TARGET_PORT: String(TARGET_PORT), TARGET_TLS_PORT: String(TARGET_TLS_PORT), ...(tlsAvailable ? { TLS_KEY, TLS_CERT } : {}) });
 start('api', 'local-server.mjs', {
   PORT: String(API_PORT),
   SUPABASE_URL: MOCK,
@@ -60,6 +80,8 @@ start('api', 'local-server.mjs', {
   AIRREACH_FETCH_TIMEOUT_MS: '1500',
   AIRREACH_ALLOWED_ORIGINS: ALLOWED_ORIGIN,
   AIRREACH_FETCH_ALLOW_LOOPBACK_FOR_TESTS: '1',
+  AIRREACH_TEST_RESOLVE_MAP: RESOLVE_MAP,
+  ...(tlsAvailable ? { NODE_EXTRA_CA_CERTS: TLS_CERT } : {}),
 }, true);
 
 async function stopMock() { if (!mockProc) return; mockProc.kill('SIGTERM'); await new Promise((r) => mockProc.once('exit', r)); mockProc = null; }
@@ -255,6 +277,39 @@ try {
   else record(`fetch public IPv6 literal (allowed by guard; environment returned ${r.status} — no IPv6 egress?)`, r.status !== 400, `status=${r.status}`);
   r = await fx('http://localtest.me/');
   expect('fetch hostname resolving to 127.0.0.1 (DNS check) → 400', r.status === 400, `status=${r.status} ${r.text.slice(0, 120)}`);
+
+  // ---- 接続先固定（DNS rebinding / TOCTOU）と TLS SNI / 証明書検証 ---------------------------
+  r = await fx(`http://rebind.test:${TARGET_PORT}/echo-host`);
+  expect('pinned (API): unresolvable-in-DNS name served via injected resolver → 200 with Host = hostname', r.status === 200 && r.json?.host === `rebind.test:${TARGET_PORT}` && r.json?.remote === '127.0.0.1', `status=${r.status} ${r.text.slice(0, 120)}`);
+  r = await fx('http://rebind-private.test/');
+  expect('pinned (API): name resolving to 10.0.0.1 → 400', r.status === 400, `status=${r.status}`);
+  r = await fx(`http://rebind-mixed.test:${TARGET_PORT}/`);
+  expect('pinned (API): mixed public/private answers → 400', r.status === 400, `status=${r.status}`);
+  r = await fx(`http://rebind-v6private.test:${TARGET_PORT}/`);
+  expect('pinned (API): IPv4-mapped private IPv6 answer → 400', r.status === 400, `status=${r.status}`);
+  r = await fx(`http://rebind.test:${TARGET_PORT}/redirect-to-private-name`);
+  expect('pinned (API): redirect to a name resolving private → 400', r.status === 400, `status=${r.status}`);
+  r = await fx(`http://rebind.test:${TARGET_PORT}/redirect-to-rebind2`);
+  expect('pinned (API): redirect re-resolves and re-pins; Host = rebind2.test', r.status === 200 && r.json?.host === `rebind2.test:${TARGET_PORT}` && r.headers.get('x-airreach-final-url') === `http://rebind2.test:${TARGET_PORT}/echo`, `status=${r.status} ${r.text.slice(0, 120)}`);
+  r = await fx(`http://rebind.test:${TARGET_PORT}/gzip`);
+  expect('fetch gzip response decompressed → 200 html', r.status === 200 && /<title>Mock Site<\/title>/.test(r.text), `status=${r.status}`);
+  r = await fx(`http://rebind.test:${TARGET_PORT}/gzip-bomb`);
+  expect('fetch gzip bomb (3 MB decompressed) → 502', r.status === 502, `status=${r.status}`);
+  if (tlsAvailable) {
+    r = await fx(`https://rebind.test:${TARGET_TLS_PORT}/echo`);
+    expect('TLS (API): SNI = hostname, Host = hostname, cert verified against hostname → 200', r.status === 200 && r.json?.sni === 'rebind.test' && r.json?.host === `rebind.test:${TARGET_TLS_PORT}` && r.json?.encrypted === true, `status=${r.status} ${r.text.slice(0, 160)}`);
+    r = await fx(`https://rebind.test:${TARGET_TLS_PORT}/redirect-to-rebind2`);
+    expect('TLS (API): redirect re-pins with new SNI = rebind2.test', r.status === 200 && r.json?.sni === 'rebind2.test' && r.json?.host === `rebind2.test:${TARGET_TLS_PORT}`, `status=${r.status} ${r.text.slice(0, 160)}`);
+    r = await fx(`https://rebind-badcert.test:${TARGET_TLS_PORT}/echo`);
+    expect('TLS (API): hostname not in certificate SAN → 502 (verification is against the hostname, not the IP)', r.status === 502 && /TLS/i.test(r.json?.error?.message || ''), `status=${r.status} ${r.text.slice(0, 160)}`);
+  }
+  // 単体: リゾルバ注入で「検証済み IP 以外へ接続しない」「リダイレクト先で再検証」を直接確認
+  const unit = spawn(process.execPath, [path.join(DIR, 'unit-pin.mjs')], { env: { ...process.env, TARGET_PORT: String(TARGET_PORT), AIRREACH_FETCH_ALLOW_LOOPBACK_FOR_TESTS: '1' } });
+  let unitOut = ''; unit.stdout.on('data', (d) => { unitOut += d; }); unit.stderr.on('data', (d) => { unitOut += d; });
+  const unitCode = await new Promise((res) => unit.on('exit', res));
+  for (const line of unitOut.trim().split('\n')) if (/^(PASS|FAIL)/.test(line)) console.log('  ' + line);
+  const unitSummary = (unitOut.match(/(\d+)\/(\d+) passed/) || [null, '0', '0']);
+  expect(`unit-pin: ${unitSummary[1]}/${unitSummary[2]} passed`, unitCode === 0 && unitSummary[1] === unitSummary[2] && Number(unitSummary[2]) > 0, unitOut.slice(-400));
 
   // ---- URL guard without the test flag (production behaviour) ------------------------------
   const guard = spawn(process.execPath, ['--input-type=module', '-e', `
