@@ -47,6 +47,10 @@
         discover: result && result.discover
       },
       gaps: (result && result.gaps) || [],
+      // Studio に渡す「業態・地域・店名」（サイトから読めたものだけ）
+      keywordAuto: (function (k) {
+        return k ? { keyword: k.keyword || '', genre: (k.genre && k.genre.value) || '', area: (k.area && k.area.value) || '', shopName: k.shopName || '' } : null;
+      })(result && result.page && result.page.keywordAuto),
       actionsNow: (result && result.actions && result.actions.now) || [],
       lifts: lifts,
       evidenceClass: 'Observed（公開ページ準備度）+ Inferred（改善率提案）'

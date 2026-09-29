@@ -200,6 +200,7 @@
         keywordAuto = window.AirReachKeyword.derive(kwSrc);
         // 調べそうな言葉の一覧（飲食店の付け足す言葉）。サイトに答えが書いてあるかの判定つき
         keywordAuto.candidates = window.AirReachKeyword.candidates(keywordAuto, kwSrc, 'restaurant', 20);
+        keywordAuto.shopName = window.AirReachKeyword.shopName(kwSrc);
       } catch (e) { keywordAuto = null; }
     }
     var hasContact = /お問い合わせ|contact|inquiry|相談|予約/i.test(text) || !!doc.querySelector('a[href*="contact"], a[href*="meeting"], form');
