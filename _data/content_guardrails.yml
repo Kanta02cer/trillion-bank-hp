@@ -71,8 +71,8 @@ private_patterns:
     regex: "(現預金|銀行残高|ランウェイ)"
     reason: "財務情報は個別承認なしに公開しない"
 
-# AirReach の結果画面・営業文言は「ホームページの情報整備」に限定する。
-# AI掲載率・検索順位・予約数を断定する表現、HackⅡ を対策として混ぜる表現を検出する。
+# AirReach Tools の結果画面・営業文言は「ホームページの情報整備」に限定する。
+# AI掲載率・検索順位・予約数を断定する表現、AirReach Consulting を対策として混ぜる表現を検出する。
 # 否定形（〜ではありません／保証しません）は許容するため、断定形だけを正規表現で拾う。
 scoped_claim_patterns:
   - name: "airreach: AI掲載・順位・予約の断定"
@@ -99,9 +99,9 @@ scoped_claim_patterns:
       - regex: "必ず(引用|掲載|紹介)され(ます|る)(?![か保こ])"
         reason: "掲載・引用の保証はできない"
       - regex: "slot: 'PARTNER'[^\\n]*\\n[^\\n]*actions\\.push"
-        reason: "HackⅡ / Teams は対策（actions）に混ぜず referral として別枠で出す"
-      - regex: "cta: 'HackⅡ Studioで作る'"
-        reason: "対策カードから HackⅡ Studio への誘導は削除済み（根拠リンクのみ残す）"
+        reason: "AirReach Consulting / Teams は対策（actions）に混ぜず referral として別枠で出す"
+      - regex: "cta: 'AirReach Tools Studioで作る'"
+        reason: "対策カードから AirReach Tools Studio への誘導は削除済み（根拠リンクのみ残す）"
 
 allowed_paths_for_restricted_terms:
   - "PUBLICATION_POLICY.md"

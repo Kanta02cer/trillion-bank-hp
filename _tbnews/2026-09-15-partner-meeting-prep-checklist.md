@@ -9,7 +9,7 @@ last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
 tbdesc: "Trillion Bankサービスの販売代理店検討で商談・問い合わせ前に揃える情報のチェックリストです。"
-keywords: "代理店 商談準備,HackⅡ パートナー チェックリスト"
+keywords: "代理店 商談準備,AirReach Consulting パートナー チェックリスト"
 ai_summary: "業種、既存顧客、提案したい役割、想定初回顧客、できないことを明確にしてから相談する。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -48,4 +48,4 @@ faq_items:
 
 Trillion Bankサービスの販売代理店・共同提案を検討される場合は、[お問い合わせフォーム](/trillionbank/contact/#form)または[商談予約（代理店）](/trillionbank/meeting/?type=agency)からご連絡ください。他社商材の代理販売依頼はお受けしていません。
 
-関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [HackⅡ](/trillionbank/business/hack2/)
+関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [AirReach Consulting](/trillionbank/business/hack2/)

@@ -1,17 +1,18 @@
-# AirReach 表示契約（区分・状態・文言の唯一の定義）
+# AirReach Tools 表示契約（区分・状態・文言の唯一の定義）
 #
 # 診断画面 (_includes/airreach-app.html)・営業画面 (assets/js/airreach-sales.js)・
 # 判定エンジン (assets/js/airreach-diagnose.js) は、区分の境界値・ラベル・色・状態表示を
 # ここからだけ読む。JS へは assets/js/airreach-display.js が Liquid で埋め込む。
 #
 # 境界値は 2026-09-25 画面設計案の「表示案」。採点式（ruleVersion）とは別に版管理し、
-# 公開前に境界値と「普通」の意味を承認してから approval.status を approved にする。
+# 公開前に境界値と「要改善」の意味を承認してから approval.status を approved にする。
 last_reviewed: "2026-09-29"
 display_version: "band-v1"
 approval:
   status: approved
-  note: "AirReach v1 の正式仕様として承認。区分 0-39 低い / 40-69 普通 / 70-100 高い、および airreach-common-v1 の4項目の配点・検出条件。"
+  note: "AirReach Tools v1 の正式仕様として承認。区分 0-39 低い / 40-69 要改善 / 70-100 高い、および airreach-common-v1 の4項目の配点・検出条件。"
   approved_on: "2026-09-29"
+  label_change: "2026-09-29 区分 mid のラベルを「普通」→「要改善」に変更（増山 承認）。境界値・配点は変更なし。"
 
 # 点数が意味するもの・意味しないもの（画面・営業トーク共通の説明文）
 score:
@@ -35,7 +36,7 @@ bands:
     color: "#dc2626"
     meaning: "来店・相談の前に知りたい情報が、ホームページで見つけにくい"
   - key: mid
-    label: "普通"
+    label: "要改善"
     min: 40
     max: 69
     tone: warn

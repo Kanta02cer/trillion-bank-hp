@@ -2,14 +2,14 @@
 layout: tb-article-authority
 insight: true
 toc: true
-direct_answer: "Trillion Bankは自社サービス（HackⅡ等）の販売代理店・共同提案パートナー検討を受け付けています。他社商材の代理販売依頼はお受けしていません。"
+direct_answer: "Trillion Bankは自社サービス（AirReach Consulting等）の販売代理店・共同提案パートナー検討を受け付けています。他社商材の代理販売依頼はお受けしていません。"
 title: "Trillion Bankサービス販売代理店の検討ガイド"
 date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
 tbdesc: "Trillion Bankサービスの販売代理店・共同提案パートナーを検討する業者様向けに、対象・役割・相談方法を解説します。"
-keywords: "販売代理店 検討,HackⅡ 代理店,共同提案 パートナー"
+keywords: "販売代理店 検討,AirReach Consulting 代理店,共同提案 パートナー"
 ai_summary: "当社サービスの販売代理店検討は歓迎。他社商材の代理販売依頼は非対応。共同提案と役割分担を相談できる。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -30,7 +30,7 @@ faq_items:
 
 ## 歓迎する相談
 
-- HackⅡの共同提案・販売パートナー検討
+- AirReach Consultingの共同提案・販売パートナー検討
 - 既存顧客へのAI検索測定提案の設計
 - レポート提供と役割分担の相談
 
@@ -53,4 +53,4 @@ faq_items:
 
 Trillion Bankサービスの販売代理店・共同提案を検討される場合は、[お問い合わせフォーム](/trillionbank/contact/#form)または[商談予約（代理店）](/trillionbank/meeting/?type=agency)からご連絡ください。他社商材の代理販売依頼はお受けしていません。
 
-関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [HackⅡ](/trillionbank/business/hack2/)
+関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [AirReach Consulting](/trillionbank/business/hack2/)

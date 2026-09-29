@@ -23,7 +23,7 @@ The machine-readable source is `_data/public_facts.yml`. Pages may paraphrase th
 
 Use these status labels consistently:
 
-- HackⅡ: `限定商用検証・導入相談受付`
+- AirReach Consulting: `限定商用検証・導入相談受付`
 - Adctor: `研究開発・PoC相談`
 - Roadmap capabilities: `構想` or `検討中`
 

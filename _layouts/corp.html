@@ -210,7 +210,7 @@
       waitForGtagAndInit(30);
     }
 
-    // ── グローバルAPI（HackⅡ計測連携用） ──────────────────────
+    // ── グローバルAPI（AirReach Consulting計測連携用） ──────────────────────
     window.RegalisAI = {
       getAttribution: getStoredAttribution,
       detect: function() {
@@ -238,7 +238,7 @@
   {%- assign _page_title = page.title | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' -%}
   {%- assign _meta_title = page.meta_title | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' -%}
   <title>{% if page.meta_title %}{{ _meta_title }}{% else %}{{ _page_title }} | 株式会社Trillion Bank{% endif %}</title>
-  {%- assign _desc = page.excerpt_text | default: page.description | default: '株式会社Trillion Bank（通称：トリリオンバンク）はAI検索計測・AEO/GEO/SEO実装支援サービス「HackⅡ」を提供するITカンパニーです。' | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' -%}
+  {%- assign _desc = page.excerpt_text | default: page.description | default: '株式会社Trillion Bank（通称：トリリオンバンク）はAI検索計測・AEO/GEO/SEO実装支援サービス「AirReach Consulting」を提供するITカンパニーです。' | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' -%}
   <meta name="description" content="{{ _desc | truncate: 160 | strip_html }}">
 
   <!-- OGP -->
@@ -249,7 +249,7 @@
   <meta property="og:image" content="{{ page.og_image | default: '/images/hero/tb-logo-color.webp' | absolute_url }}">
   <meta property="og:image:width" content="1366">
   <meta property="og:image:height" content="768">
-  <meta property="og:image:alt" content="トリリオンバンク — AI検索最適化インフラ HackⅡ">
+  <meta property="og:image:alt" content="トリリオンバンク — AI検索最適化インフラ AirReach Consulting">
   <meta property="og:locale" content="ja_JP">
   <meta property="og:site_name" content="株式会社Trillion Bank">
   {% if page.layout == 'news-post' %}
@@ -282,7 +282,7 @@
   <link rel="llms-full" href="{{ '/llms-full.txt' | absolute_url }}">
   <link rel="ai-patch" type="application/json" href="{{ '/ai-patch.json' | absolute_url }}">
   <link rel="knowledge-graph" type="application/json" href="{{ '/knowledge.json' | absolute_url }}">
-  <meta name="ai-summary" content="{% if page.ai_summary %}{{ page.ai_summary | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' }}{% elsif page.description %}{{ page.description | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' }}{% elsif page.excerpt_text %}{{ page.excerpt_text | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' }}{% else %}株式会社Trillion Bank（通称：トリリオンバンク）— AI検索時代の情報流通を、測る・守る・正規化するITカンパニー。HackⅡではAI回答内での候補入り・競合との勝敗・引用元を証拠付きで測定します。東京都千代田区麹町。{% endif %}">
+  <meta name="ai-summary" content="{% if page.ai_summary %}{{ page.ai_summary | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' }}{% elsif page.description %}{{ page.description | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' }}{% elsif page.excerpt_text %}{{ page.excerpt_text | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' }}{% else %}株式会社Trillion Bank（通称：トリリオンバンク）— AI検索時代の情報流通を、測る・守る・正規化するITカンパニー。AirReach ConsultingではAI回答内での候補入り・競合との勝敗・引用元を証拠付きで測定します。東京都千代田区麹町。{% endif %}">
   <meta name="ai-entity" content="株式会社Trillion Bank（通称：トリリオンバンク）— AI検索計測・AEO/GEO/SEO実装支援を行うITカンパニー。銀行・金融機関ではなく、同名作品・類似ブランドとは無関係。">
   <meta name="keywords" content="{% if page.keywords %}{{ page.keywords }}{% else %}トリリオンバンク,トリリオンバンク,LLMO,AIO,AEO,AI検索最適化,GEO,SEO代行,AI検索対策,llms.txt,構造化データ,オウンドメディア運営代行,DXコンサル{% endif %}">
   <meta name="robots" content="{% if page.robots %}{{ page.robots }}{% else %}index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1{% endif %}">
@@ -312,7 +312,7 @@
     "@id": "https://trillion-bank.jp/#website",
     "name": "株式会社Trillion Bank",
     "url": "https://trillion-bank.jp",
-    "description": "AI検索時代の情報流通を測る・守る・正規化する東京・千代田区のITカンパニー。HackⅡではAI回答内での候補入り・競合との勝敗・引用元を証拠付きで測定し、AEO/GEO/SEOの実装まで支援します。",
+    "description": "AI検索時代の情報流通を測る・守る・正規化する東京・千代田区のITカンパニー。AirReach ConsultingではAI回答内での候補入り・競合との勝敗・引用元を証拠付きで測定し、AEO/GEO/SEOの実装まで支援します。",
     "inLanguage": "ja",
     "publisher": {
       "@type": "Organization",
@@ -343,7 +343,7 @@
       "height": 318
     },
     "slogan": "AI検索時代の情報流通を、測る・守る・正規化する",
-    "description": "AI検索計測・AEO/GEO/SEO実装支援サービス「HackⅡ（ハックツ）」を開発・提供する東京都千代田区のITカンパニー。AI回答内での候補入り、競合との勝敗、引用元、AI流入を証拠付きで測定し、改善実装と再計測まで支援。",
+    "description": "AI検索計測・AEO/GEO/SEO実装支援サービス「AirReach Consulting」を開発・提供する東京都千代田区のITカンパニー。AI回答内での候補入り、競合との勝敗、引用元、AI流入を証拠付きで測定し、改善実装と再計測まで支援。",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "麹町六丁目2番1号 麹町サイトビル6階 ROOMZ",
@@ -369,7 +369,7 @@
     ],
     "knowsAbout": ["LLMO", "AIO", "AEO", "GEO", "AI検索最適化", "SEO", "DXコンサルティング", "オウンドメディア運営代行", "llms.txt", "構造化データ", "FAQPage", "HowToスキーマ", "AI引用最適化", "Web開発"],
     "subjectOf": [
-      {"@type": "Article", "name": "HackⅡ完全解説", "url": "https://trillion-bank.jp/trillionbank/business/hack2/"},
+      {"@type": "Article", "name": "AirReach Consulting完全解説", "url": "https://trillion-bank.jp/trillionbank/business/hack2/"},
       {"@type": "VideoObject", "name": "令和の虎 CHANNEL（人財版）出演回", "url": "https://www.youtube.com/watch?v=tXTnZBE4-wM"},
       {"@type": "VideoObject", "name": "令和の虎 CHANNEL（受験生版）出演回", "url": "https://youtu.be/tvK855skBTM"},
       {"@type": "VideoObject", "name": "Nontitle Season 6 出演回", "url": "https://youtu.be/AcJNa6jw1IY"},
@@ -420,7 +420,7 @@
     "@id": "https://trillion-bank.jp/#localbusiness",
     "name": "株式会社Trillion Bank",
     "alternateName": ["株式会社トリリオンバンク", "トリリオンバンク", "Trillion Bank"],
-    "description": "AI検索計測・AEO/GEO/SEO実装支援サービス「HackⅡ」を提供するITカンパニー。AI回答内での候補入り、競合差、引用元、AI流入を測定し、改善実装と再計測まで支援。東京都千代田区麹町拠点。",
+    "description": "AI検索計測・AEO/GEO/SEO実装支援サービス「AirReach Consulting」を提供するITカンパニー。AI回答内での候補入り、競合差、引用元、AI流入を測定し、改善実装と再計測まで支援。東京都千代田区麹町拠点。",
     "url": "https://trillion-bank.jp/",
     "parentOrganization": {"@id": "https://trillion-bank.jp/#organization"},
     "address": {
@@ -445,13 +445,13 @@
       "llms.txt設計・実装",
       "JSON-LD構造化データ",
       "AI検索インフラ設計",
-      "HackⅡ（AI検索計測・AEO/GEO/SEO実装支援サービス）"
+      "AirReach Consulting（AI検索計測・AEO/GEO/SEO実装支援サービス）"
     ],
     "makesOffer": {
       "@type": "Offer",
       "itemOffered": {
         "@type": "Service",
-        "name": "HackⅡ AI検索計測・分析支援",
+        "name": "AirReach Consulting AI検索計測・分析支援",
         "url": "https://trillion-bank.jp/trillionbank/business/hack2/",
         "description": "選定した質問について、AI回答本文、引用URL、自社・競合の言及、測定日時・条件を保存し、AI検索上の現在地と改善判断を支援するサービス。価格は対象範囲に応じた個別見積もり。"
       }
@@ -491,7 +491,7 @@
     "url": "https://trillion-bank.jp",
     "hasPart": [
       {"@type": "SiteNavigationElement", "name": "トップ", "url": "https://trillion-bank.jp/"},
-      {"@type": "SiteNavigationElement", "name": "HackⅡ — AI検索計測", "url": "https://trillion-bank.jp/trillionbank/business/hack2/"},
+      {"@type": "SiteNavigationElement", "name": "AirReach Consulting — AI検索計測", "url": "https://trillion-bank.jp/trillionbank/business/hack2/"},
       {"@type": "SiteNavigationElement", "name": "Adctor / Pay per Crawl", "url": "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/"},
       {"@type": "SiteNavigationElement", "name": "Insights", "url": "https://trillion-bank.jp/trillionbank/insights/"},
       {"@type": "SiteNavigationElement", "name": "会社概要", "url": "https://trillion-bank.jp/trillionbank/company/"},

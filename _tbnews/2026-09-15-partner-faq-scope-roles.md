@@ -9,7 +9,7 @@ last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
 tbdesc: "Trillion Bankサービスの販売代理店検討時によくある、対応範囲・役割分担・お断りの境界についてのFAQです。"
-keywords: "販売代理店 FAQ,役割分担,HackⅡ パートナー質問"
+keywords: "販売代理店 FAQ,役割分担,AirReach Consulting パートナー質問"
 ai_summary: "販売は歓迎、他社代理は拒否、成果保証なし、役割は案件ごとに設計。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -48,4 +48,4 @@ A. 他社商材の販売代理店依頼はお受けしていません。
 
 Trillion Bankサービスの販売代理店・共同提案を検討される場合は、[お問い合わせフォーム](/trillionbank/contact/#form)または[商談予約（代理店）](/trillionbank/meeting/?type=agency)からご連絡ください。他社商材の代理販売依頼はお受けしていません。
 
-関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [HackⅡ](/trillionbank/business/hack2/)
+関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [AirReach Consulting](/trillionbank/business/hack2/)

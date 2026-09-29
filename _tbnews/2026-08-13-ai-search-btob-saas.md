@@ -4,7 +4,7 @@ date: 2026-08-13
 last_modified: 2026-08-13
 category: コラム
 tbdesc: "BtoB SaaS・専門サービスのAI検索対策を解説。RFP・比較検討の前に担当者がAIへ質問する購買行動の変化、実際に使われる質問例、比較サイト依存・料金非公開など業界特有の課題、事例・FAQ整備から測定までの優先順位を整理。まず自社が候補に入っているか確認してください。"
-keywords: "BtoB SaaS AI検索対策,AEO BtoB,SaaS 比較 AI,AI検索 候補入り,ChatGPT SaaS 推薦,LLMO BtoB,士業 AI検索,トリリオンバンク,HackⅡ"
+keywords: "BtoB SaaS AI検索対策,AEO BtoB,SaaS 比較 AI,AI検索 候補入り,ChatGPT SaaS 推薦,LLMO BtoB,士業 AI検索,トリリオンバンク,AirReach Consulting"
 ai_summary: "BtoB SaaS・専門サービスのAI検索対策とは、担当者がRFPや比較検討の前にAIへ「おすすめの◯◯を教えて」と質問する段階で、自社が回答の候補集合に入る状態を作る取り組みである。比較サイト・レビューサイトへの依存度が高く料金非公開も多いこの業界では、自社サイトの導入事例・FAQの構造化と第三者情報の整備、そして候補入り率の継続測定が対策の基本になる。"
 references:
   - title: "Google — Google検索の生成AI機能向け最適化ガイド"
@@ -203,7 +203,7 @@ BtoBでは「料金はお問い合わせください」という運用が一般�
 
 このデモから読み取れる分析の型は3つあります。第一に、候補入り率をB社と比べると、**「出ているか」ではなく「どの程度の割合で出ているか」の差**が課題として特定できること。第二に、引用元に自社の導入事例が入っており、**構造化した事例が条件付き質問（中堅企業向け）の回答材料になっている**こと。第三に、比較サイトとレビューが引用元に含まれ、第三者情報の整備が測定結果に直結することです。
 
-HackⅡ（AI Recommendation Intelligence）は、この構造を **AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）** の4つの測定フレームとして体系化し、AI検索で「出たか」ではなく、なぜ選ばれ、なぜ外れたかまでを扱います。現在のステータスは**限定商用検証・導入相談受付中**で、対応するAIサービスの範囲は契約時点で本番検証済みの範囲をご案内しています。AI検索での表示・問い合わせ・売上といった成果を保証するものではなく、質問数が少ないうちはスプレッドシートによる内製測定でも十分に機能します。詳細は[HackⅡ製品ページ](/trillionbank/business/hack2/)をご覧ください。
+AirReach Consulting（AI Recommendation Intelligence）は、この構造を **AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）** の4つの測定フレームとして体系化し、AI検索で「出たか」ではなく、なぜ選ばれ、なぜ外れたかまでを扱います。現在のステータスは**限定商用検証・導入相談受付中**で、対応するAIサービスの範囲は契約時点で本番検証済みの範囲をご案内しています。AI検索での表示・問い合わせ・売上といった成果を保証するものではなく、質問数が少ないうちはスプレッドシートによる内製測定でも十分に機能します。詳細は[AirReach Consulting製品ページ](/trillionbank/business/hack2/)をご覧ください。
 
 ---
 

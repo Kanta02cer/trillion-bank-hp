@@ -3,13 +3,13 @@ layout: tb-article-authority
 insight: true
 toc: true
 direct_answer: "既存顧客との継続関係があり、課題ヒアリングと月次提案ができる業者に向きます。単発の売り切りだけを想定する場合は不向きです。"
-title: "HackⅡ販売代理店に向いている業者の特徴"
+title: "AirReach Consulting販売代理店に向いている業者の特徴"
 date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
-tbdesc: "HackⅡの販売代理店・共同提案に向いている業者の特徴と、向かないケースを整理します。"
-keywords: "HackⅡ 代理店 向いている,共同提案 適性,SEO会社 パートナー"
+tbdesc: "AirReach Consultingの販売代理店・共同提案に向いている業者の特徴と、向かないケースを整理します。"
+keywords: "AirReach Consulting 代理店 向いている,共同提案 適性,SEO会社 パートナー"
 ai_summary: "既存顧客関係、課題ヒアリング力、継続提案の習慣がある業者に向く。単発売り切りのみの場合は不向きになりやすい。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -50,4 +50,4 @@ faq_items:
 
 Trillion Bankサービスの販売代理店・共同提案を検討される場合は、[お問い合わせフォーム](/trillionbank/contact/#form)または[商談予約（代理店）](/trillionbank/meeting/?type=agency)からご連絡ください。他社商材の代理販売依頼はお受けしていません。
 
-関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [HackⅡ](/trillionbank/business/hack2/)
+関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [AirReach Consulting](/trillionbank/business/hack2/)

@@ -1,5 +1,5 @@
 title: 株式会社Trillion Bank | AI検索の見え方と情報利用を、測定・証跡・運用へ
-description: "株式会社Trillion Bankは、AI回答で企業・ブランドがどのように説明・比較・引用されるかを測定するHackⅡと、AIによるコンテンツ利用の契約・利用証跡を研究するAdctorに取り組むテクノロジー企業です。"
+description: "株式会社Trillion Bankは、AI回答で企業・ブランドがどのように説明・比較・引用されるかを測定するAirReach Consultingと、AIによるコンテンツ利用の契約・利用証跡を研究するAdctorに取り組むテクノロジー企業です。"
 url: "https://trillion-bank.jp"
 baseurl: ""
 theme: null
@@ -16,7 +16,7 @@ collections:
     permalink: /trillionbank/news/:slug/
 
 defaults:
-  # AirReach tool / state URLs: do not compete with the product pillar /airreach/
+  # AirReach Tools tool / state URLs: do not compete with the product pillar /airreach/
   - scope:
       path: "airreach/result"
     values:
@@ -427,7 +427,7 @@ exclude:
   - AIO-Hack2_package
   - ai-coupon-system
   - adctor
-  - HackⅡ
+  - AirReach Consulting
   - hack2-edge
   - skill-collector
   - screenshots

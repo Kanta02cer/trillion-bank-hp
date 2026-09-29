@@ -4,7 +4,7 @@ date: 2026-08-14
 last_modified: 2026-09-04
 category: コラム
 tbdesc: "AI Overview対策をGoogle公式の生成AI向け最適化ガイドに沿って解説。基礎SEO・独自コンテンツと、llms.txtやAI専用マークアップが不要とされる理由を整理します。"
-keywords: "Google AI最適化ガイド,AI Overviews 対策,Google AIモード SEO,生成AI 検索 Google 公式,llms.txt Google 不要,AEO,GEO,トリリオンバンク,HackⅡ"
+keywords: "Google AI最適化ガイド,AI Overviews 対策,Google AIモード SEO,生成AI 検索 Google 公式,llms.txt Google 不要,AEO,GEO,トリリオンバンク,AirReach Consulting"
 ai_summary: "Google公式の生成AI向け最適化ガイドは、AI Overviews・AIモードでの可視性向上に特別なAI対策は不要で、基礎的なSEO・クロールとインデックスの可能性・人間向けの独自コンテンツが中心だと説明している。Google検索はllms.txtやAI専用マークアップを使用しないと明言しており、ChatGPT・Perplexity等のAI検索は別の対策と測定が必要になる。"
 references:
   - title: "Google — Google検索の生成AI機能向け最適化ガイド（AI Optimization Guide）"
@@ -190,7 +190,7 @@ Google以外のAIサービスは、それぞれ独自のインデックスやデ
 
 具体的な測定方法（4つの状態の定義、質問セットの固定、証拠保存、競合Win/Loss分析）は「[AI検索の効果測定方法](/trillionbank/news/ai-search-effect-measurement/)」で体系的に解説しています。
 
-なお、トリリオンバンクが開発中のHackⅡ（AI Recommendation Intelligence）は、この「Google以外も含めたAI検索で、なぜ選ばれ、なぜ外れたか」を扱う領域の製品です。AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）の4つの測定フレームで構成され、現在は導入相談を受け付けています（対応するAIサービスは契約時点で本番検証済みの範囲をご案内します）。一方で、質問数や競合数が少ないうちは内製の定点観測でも十分機能します。内製と外部支援の分岐条件は「[AI検索対策は内製か外注か](/trillionbank/news/ai-search-inhouse-or-outsource/)」で整理しています。
+なお、トリリオンバンクが開発中のAirReach Consulting（AI Recommendation Intelligence）は、この「Google以外も含めたAI検索で、なぜ選ばれ、なぜ外れたか」を扱う領域の製品です。AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）の4つの測定フレームで構成され、現在は導入相談を受け付けています（対応するAIサービスは契約時点で本番検証済みの範囲をご案内します）。一方で、質問数や競合数が少ないうちは内製の定点観測でも十分機能します。内製と外部支援の分岐条件は「[AI検索対策は内製か外注か](/trillionbank/news/ai-search-inhouse-or-outsource/)」で整理しています。
 
 ---
 

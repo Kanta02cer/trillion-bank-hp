@@ -54,7 +54,7 @@ og_image: /images/hero/tb-logo-color.webp
 - **法人名：** 株式会社Trillion Bank
 - **代表者：** 代表取締役CEO 井上幹太
 - **所在地：** 〒102-0083 東京都千代田区麹町六丁目2番1号 麹町サイトビル6階 ROOMZ
-- **主な事業：** AI検索インテリジェンス「HackⅡ」、AIクローリング最適化「Adctor / Pay per Crawl」の研究開発
+- **主な事業：** AI検索インテリジェンス「AirReach Consulting」、AIクローリング最適化「Adctor / Pay per Crawl」の研究開発
 
 最新の法人情報は[会社概要](/trillionbank/company/)、事業内容は[事業概要](/trillionbank/business/)でご確認いただけます。
 

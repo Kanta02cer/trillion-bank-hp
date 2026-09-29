@@ -1,5 +1,5 @@
 /**
- * AirReach Platform — Growth Impact + Official baseline (GSC/GA4 CSV).
+ * AirReach Tools Platform — Growth Impact + Official baseline (GSC/GA4 CSV).
  * Evidence classes: Official / Observed / Inferred / User Input.
  * Simulation outputs are always Inferred (never guarantees).
  */

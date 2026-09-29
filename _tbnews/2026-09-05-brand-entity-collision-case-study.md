@@ -34,7 +34,7 @@ faq_items:
 | 通称 | トリリオンバンク |
 | 英語ブランド | TRILLION BANK |
 | 公式ドメイン | trillion-bank.jp |
-| 主力サービス | AI検索計測・最適化インフラ HackⅡ |
+| 主力サービス | AI検索計測・最適化インフラ AirReach Consulting |
 
 「株式会社トリリオンバンク」は過去表記・検索補助用のalternateNameとして残し、現在の法人名としては使用しません。
 
@@ -70,9 +70,9 @@ LocalBusinessの所在地は本文と一致させ、旧商号（Regalis Japan Gr
 | 質問 | 確認すること |
 |---|---|
 | トリリオンバンクとは？ | IT企業として識別されるか |
-| 株式会社Trillion Bankの事業内容は？ | HackⅡと公式URLが出るか |
+| 株式会社Trillion Bankの事業内容は？ | AirReach Consultingと公式URLが出るか |
 | AI検索計測のトリリオンバンク | サービスとの共起が形成されるか |
-| トリリオンバンク HackⅡ | 別作品・別商品より公式情報が優先されるか |
+| トリリオンバンク AirReach Consulting | 別作品・別商品より公式情報が優先されるか |
 
 回答本文、引用URL、誤認内容、実行日時を保存し、サイト変更・外部掲載の前後を比較します。
 

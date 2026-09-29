@@ -18,7 +18,7 @@ body .lp-url-box input{width:100%!important;padding:13px 12px!important;text-ali
 body .lp-url-btn{width:100%!important;padding:14px 12px!important;border-radius:10px!important}
 body .lp-hero-note{text-align:center!important}
 /* Crisp CSS-rendered portrait visual; avoids publishing rough or mismatched image assets. */
-body .lp-hero .lp-wrap::after{content:"HackⅡ  FOUNDING MONITOR\A\A AI検索で“選ばれるサイト”へ\A AIがどう見ているか、90日間で可視化。\A\A URL入力  →  情報入力  →  商談予約";white-space:pre-line;display:flex;align-items:center;justify-content:center;width:min(100%,360px);aspect-ratio:9/16;margin:30px auto 0;padding:40px 30px;border-radius:26px;background:radial-gradient(circle at 70% 20%,rgba(13,110,253,.32),transparent 35%),linear-gradient(160deg,#020d1f,#063e83 62%,#0d6efd);color:#fff;font-size:1.12rem;font-weight:800;line-height:1.7;letter-spacing:.02em;text-align:center;box-shadow:0 28px 64px rgba(15,23,42,.24);outline:1px solid rgba(148,163,184,.28);outline-offset:7px}
+body .lp-hero .lp-wrap::after{content:"AirReach Consulting  FOUNDING MONITOR\A\A AI検索で“選ばれるサイト”へ\A AIがどう見ているか、90日間で可視化。\A\A URL入力  →  情報入力  →  商談予約";white-space:pre-line;display:flex;align-items:center;justify-content:center;width:min(100%,360px);aspect-ratio:9/16;margin:30px auto 0;padding:40px 30px;border-radius:26px;background:radial-gradient(circle at 70% 20%,rgba(13,110,253,.32),transparent 35%),linear-gradient(160deg,#020d1f,#063e83 62%,#0d6efd);color:#fff;font-size:1.12rem;font-weight:800;line-height:1.7;letter-spacing:.02em;text-align:center;box-shadow:0 28px 64px rgba(15,23,42,.24);outline:1px solid rgba(148,163,184,.28);outline-offset:7px}
 body .lp-h2{font-size:1.52rem!important;line-height:1.4!important}
 body .lp-sub{font-size:.88rem!important;line-height:1.75!important;margin-bottom:28px!important}
 body .lp-problems,
@@ -41,7 +41,7 @@ body .lp-cta-btn{display:block!important;width:100%!important;padding:14px 12px!
 /* Hide the provisional low-resolution mockup until an approved product screenshot is supplied. */
 body .lp-screen{display:flex!important;align-items:center;justify-content:center;min-height:250px;max-width:100%!important;padding:30px 22px;border-radius:14px!important;background:linear-gradient(150deg,#f8fbff,#eaf3ff);box-shadow:0 16px 38px rgba(15,23,42,.1)!important}
 body .lp-screen img{display:none!important}
-body .lp-screen::before{content:"HackⅡ DASHBOARD\A\A 回答本文・引用URL・競合SOV・週次推移\A\A 公開許可済みの実画面へ差し替え予定";white-space:pre-line;color:#0f2850;font-size:.9rem;font-weight:700;line-height:1.65;text-align:center}
+body .lp-screen::before{content:"AirReach Consulting DASHBOARD\A\A 回答本文・引用URL・競合SOV・週次推移\A\A 公開許可済みの実画面へ差し替え予定";white-space:pre-line;color:#0f2850;font-size:.9rem;font-weight:700;line-height:1.65;text-align:center}
 /* Crisp plan card rendered in HTML/CSS rather than a compressed poster image. */
 body #program .lp-wrap::after{content:"FOUNDING MONITOR / 90 DAYS\A\A 質問設計　最大10問\A 競合設定　最大2社\A AIエンジン　1\A 計測回数　3回\A 面談　2回\A\A 設定・計測・分析を伴走";white-space:pre-line;display:flex;align-items:center;justify-content:center;width:min(100%,350px);aspect-ratio:3/4;margin:30px auto 0;padding:34px 28px;border-radius:22px;background:linear-gradient(155deg,#fff,#edf5ff);border:1px solid #cbdcf0;color:#0f2850;font-size:1rem;font-weight:750;line-height:1.75;text-align:left;box-shadow:0 24px 56px rgba(15,23,42,.14);outline:1px solid rgba(148,163,184,.2);outline-offset:6px}
 body .lp-spec{border-radius:14px!important}

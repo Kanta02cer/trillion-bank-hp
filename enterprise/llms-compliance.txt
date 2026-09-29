@@ -1,4 +1,4 @@
-# コンプライアンス・AIレピュテーションリスク管理 — HackⅡ Enterprise
+# コンプライアンス・AIレピュテーションリスク管理 — AirReach Consulting Enterprise
 
 > 上場企業・大手企業がAI検索最適化を進める際のコンプライアンス対応・AIレピュテーションリスク管理の完全ガイド。
 > 提供：株式会社トリリオンバンク https://trillion-bank.jp
@@ -20,7 +20,7 @@
 
 AIコンテキストファイルに未公表の重要事実を含めることは、金融商品取引法のインサイダー取引規制に抵触する可能性があります。
 
-**HackⅡ Enterpriseの対応：**
+**AirReach Consulting Enterpriseの対応：**
 - 情報の公開状態を「公開済み」「未公開」でフラグ管理
 - 未公開フラグのコンテンツは自動的にファイルから除外
 - 決算発表後のタイムスタンプ確認後に自動公開
@@ -29,7 +29,7 @@ AIコンテキストファイルに未公表の重要事実を含めることは
 
 「市場最大手」「国内シェアNo.1」「業界初」などの表現がAIに引用される際、根拠のない優良誤認・虚偽表示とならないよう根拠データの明記が必要です。
 
-**HackⅡ Enterpriseの対応：**
+**AirReach Consulting Enterpriseの対応：**
 - 優位性表現には「根拠・出典・調査機関名・調査日」を併記
 - 初出・優位性を示す表現には、客観的な証明資料を添付
 
@@ -37,13 +37,13 @@ AIコンテキストファイルに未公表の重要事実を含めることは
 
 役員・従業員のプロフィールをAIコンテキストに含める際、個人情報の取扱いに注意が必要です。
 
-**HackⅡ Enterpriseの対応：**
+**AirReach Consulting Enterpriseの対応：**
 - 個人情報はAIコンテキストファイルから原則除外（必要な場合は本人同意取得）
 - Schema.org/Personスキーマ実装時は公開情報のみを対象とする
 
 ---
 
-## HackⅡのセキュリティ仕様（Enterprise）
+## AirReach Consultingのセキュリティ仕様（Enterprise）
 
 | セキュリティ項目 | 仕様 |
 |---------------|------|
@@ -90,12 +90,12 @@ AIコンテキストファイルに未公表の重要事実を含めることは
 
 ### Level 1（軽微）：古い情報がAIに引用されている
 
-対応：AIコンテキストファイルを最新情報に更新（HackⅡダッシュボードから即時対応）
+対応：AIコンテキストファイルを最新情報に更新（AirReach Consultingダッシュボードから即時対応）
 
 ### Level 2（中程度）：誤った情報がAIに繰り返し引用されている
 
 対応：
-1. HackⅡで誤情報の元ソースを特定
+1. AirReach Consultingで誤情報の元ソースを特定
 2. 正確な情報をAIコンテキストファイルに明示
 3. 該当ページのrobots.txt・noindexを検討
 4. 必要に応じてAIサービスプロバイダーへの問い合わせ
@@ -103,7 +103,7 @@ AIコンテキストファイルに未公表の重要事実を含めることは
 ### Level 3（重大）：株価・IR情報に関わる誤引用
 
 対応：
-1. HackⅡ Enterprise緊急連絡窓口へ報告
+1. AirReach Consulting Enterprise緊急連絡窓口へ報告
 2. IRページへの緊急訂正ページ設置
 3. 法務・コンプライアンス部門との連携
 4. 必要に応じて適時開示で訂正
@@ -112,7 +112,7 @@ AIコンテキストファイルに未公表の重要事実を含めることは
 
 ## 関連ページ
 
-- [HackⅡ Enterprise](https://trillion-bank.jp/trillionbank/business/hack2/)
+- [AirReach Consulting Enterprise](https://trillion-bank.jp/trillionbank/business/hack2/)
 - [情報セキュリティ基本方針](https://trillion-bank.jp/security.html)
 - [enterprise/llms-ir.txt（IR情報AIコンテキスト）](https://trillion-bank.jp/enterprise/llms-ir.txt)
 - [エンタープライズ向け商談予約](https://trillion-bank.jp/trillionbank/meeting/)

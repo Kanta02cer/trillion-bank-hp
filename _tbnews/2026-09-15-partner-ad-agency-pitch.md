@@ -9,7 +9,7 @@ last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
 tbdesc: "広告代理店が、出稿前・出稿中の判断材料としてAI検索測定を提案に追加する理由と注意点を解説します。"
-keywords: "広告代理店 AI検索,AEO 提案,HackⅡ パートナー"
+keywords: "広告代理店 AI検索,AEO 提案,AirReach Consulting パートナー"
 ai_summary: "広告前に有機的な推薦状況の基準線があると、出稿判断とメッセージ設計がしやすい。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -48,4 +48,4 @@ faq_items:
 
 Trillion Bankサービスの販売代理店・共同提案を検討される場合は、[お問い合わせフォーム](/trillionbank/contact/#form)または[商談予約（代理店）](/trillionbank/meeting/?type=agency)からご連絡ください。他社商材の代理販売依頼はお受けしていません。
 
-関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [HackⅡ](/trillionbank/business/hack2/)
+関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [AirReach Consulting](/trillionbank/business/hack2/)

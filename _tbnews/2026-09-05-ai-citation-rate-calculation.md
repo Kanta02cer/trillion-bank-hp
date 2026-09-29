@@ -1,18 +1,18 @@
 ---
 insight: true
 toc: true
-direct_answer: "HackⅡの引用率は「自社URLが1件以上引用された成功計測数 ÷ 対象期間の成功計測数 × 100」で計算します。"
+direct_answer: "AirReach Consultingの引用率は「自社URLが1件以上引用された成功計測数 ÷ 対象期間の成功計測数 × 100」で計算します。"
 title: "AI検索の引用率はどう計算する？分母・成功計測・欠損値の扱い"
 date: 2026-09-05
 last_modified: 2026-09-06
 category: 調査レポート
 author: 井上 幹太
-tbdesc: "AI検索の引用率・言及率・SOVを混同しないために、HackⅡで採用する計算式、成功計測の分母、欠損時の表示、機会損失額の算出方法を公開します。"
-keywords: "AI検索 引用率 計測,LLMO 効果測定,AI検索 SOV,AI検索 言及率,HackⅡ,機会損失額"
-ai_summary: "HackⅡの引用率は、対象期間の成功計測のうち自社URLが1件以上引用された計測の割合。言及率、SOVとは分け、計測未完了のキーワードがある期間は機会損失額を集計中として表示する。"
+tbdesc: "AI検索の引用率・言及率・SOVを混同しないために、AirReach Consultingで採用する計算式、成功計測の分母、欠損時の表示、機会損失額の算出方法を公開します。"
+keywords: "AI検索 引用率 計測,LLMO 効果測定,AI検索 SOV,AI検索 言及率,AirReach Consulting,機会損失額"
+ai_summary: "AirReach Consultingの引用率は、対象期間の成功計測のうち自社URLが1件以上引用された計測の割合。言及率、SOVとは分け、計測未完了のキーワードがある期間は機会損失額を集計中として表示する。"
 og_image: /images/hero/tb-logo-color.webp
 references:
-  - title: "HackⅡ 製品情報"
+  - title: "AirReach Consulting 製品情報"
     url: "https://trillion-bank.jp/trillionbank/business/hack2/"
   - title: "Google Search Central — AI features and your website"
     url: "https://developers.google.com/search/docs/appearance/ai-features"
@@ -52,7 +52,7 @@ AI検索では、回答に会社名が出ること、公式サイトが参照さ
 
 APIエラー、認証エラー、タイムアウト、解析失敗は「引用なし」と同じではありません。失敗した計測を0として分母に入れると、サービス障害で引用率が下がったように見えます。
 
-HackⅡでは、成功した結果レコードを率の分母に使い、失敗は別ログで表示します。比較レポートでは、成功件数と失敗件数を必ず併記します。
+AirReach Consultingでは、成功した結果レコードを率の分母に使い、失敗は別ログで表示します。比較レポートでは、成功件数と失敗件数を必ず併記します。
 
 ## 機会損失額の式
 

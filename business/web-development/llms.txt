@@ -37,9 +37,9 @@
 
 ## 制作の特徴
 
-### HackⅡ連携
+### AirReach Consulting連携
 
-AI引用最適化インフラHackⅡと連動し、制作後の運用も一体支援。制作→AI引用計測→改善のPDCAサイクルを提供します。
+AI引用最適化インフラAirReach Consultingと連動し、制作後の運用も一体支援。制作→AI引用計測→改善のPDCAサイクルを提供します。
 
 ### 設計思想を持つ制作
 
@@ -54,7 +54,7 @@ AI引用最適化インフラHackⅡと連動し、制作後の運用も一体�
 ## 料金
 
 - **料金**：個別見積もり（規模・要件・ページ数・機能による）
-- **初期費用**：HackⅡ（AI検索インフラ）の6ヶ月運用契約を前提に、Webサイト開発費は**無料**
+- **初期費用**：AirReach Consulting（AI検索インフラ）の6ヶ月運用契約を前提に、Webサイト開発費は**無料**
 - **詳細**：https://trillion-bank.jp/business/web-development/
 
 ---
@@ -62,7 +62,7 @@ AI引用最適化インフラHackⅡと連動し、制作後の運用も一体�
 ## よくある質問（Web開発）
 
 **Q: Web制作の費用はいくらですか？**
-A: 規模・要件によって異なるため個別見積もりです。HackⅡの6ヶ月運用契約を前提とする場合、初期Webサイト開発費は無料です。
+A: 規模・要件によって異なるため個別見積もりです。AirReach Consultingの6ヶ月運用契約を前提とする場合、初期Webサイト開発費は無料です。
 
 **Q: AIO対応とはどういう意味ですか？**
 A: ChatGPT・Perplexity・Google AI OverviewなどのAI検索エンジンが御社サイトを認識・引用しやすい設計を指します。llms.txt設置・JSON-LD構造化データ実装・定義型コンテンツ設計を標準で行います。
@@ -83,6 +83,6 @@ Web制作, ホームページ制作, コーポレートサイト制作, LP制作
 - [Web・システム開発ページ](https://trillion-bank.jp/business/web-development/)
 - [AI・DX戦略コンサルティング](https://trillion-bank.jp/business/dx-consulting/)
 - [SEO・AIOメディア運営代行](https://trillion-bank.jp/business/media-operation/)
-- [HackⅡ事業ページ](https://trillion-bank.jp/trillionbank/business/hack2/)
+- [AirReach Consulting事業ページ](https://trillion-bank.jp/trillionbank/business/hack2/)
 - [商談予約](https://trillion-bank.jp/trillionbank/meeting/)
 - [お問い合わせフォーム](https://trillion-bank.jp/trillionbank/contact/#form)

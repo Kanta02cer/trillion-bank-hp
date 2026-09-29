@@ -4,7 +4,7 @@ date: 2026-08-13
 last_modified: 2026-08-13
 category: コラム
 tbdesc: "AI検索の効果測定方法を体系的に解説。候補入り・言及・推薦・引用の4つの状態の定義、単発目視確認の限界、回答本文と引用URLの証拠保存、競合Win/Loss分析、施策前後の再測定、KPI設計例まで。まず自社の現状を測るところから始めてください。"
-keywords: "AI検索 効果測定,AEO KPI,GEO 計測方法,AI検索 競合分析,AI検索 引用率,ChatGPT 流入 計測,AI検索 ツール 比較,トリリオンバンク,HackⅡ"
+keywords: "AI検索 効果測定,AEO KPI,GEO 計測方法,AI検索 競合分析,AI検索 引用率,ChatGPT 流入 計測,AI検索 ツール 比較,トリリオンバンク,AirReach Consulting"
 ai_summary: "AI検索の効果測定は、候補入り・言及・推薦・引用の4つの状態を分けて定義し、条件を固定した反復測定と証拠保存によって行う。単発の目視確認では回答の揺らぎを捉えられないため、Measure→Act→Remeasureのサイクルと競合Win/Loss分析を組み合わせたKPI設計が必要になる。"
 references:
   - title: "Google — Google検索の生成AI機能向け最適化ガイド"
@@ -156,7 +156,7 @@ AI検索の効果測定において、証拠保存は集計と同じくらい重
 
 これが必要な理由は、検証可能性だけではありません。**「実測した結果、言及ゼロだった」ことと「測定自体が失敗していた（質問が不適切・取得漏れ・条件の混在）」ことを区別するため**です。証拠が残っていれば、ゼロという結果を「測定は正しく行われた上でのゼロ」として報告でき、改善の起点になります。証拠がなければ、そのゼロは誰にも検証できない数字になります。
 
-社内やクライアントへの報告では、集計値（率）と証拠(生ログ)をセットで提示するのが誠実な形です。証拠付きレポートの構成例は「[HackⅡサンプルレポート](/trillionbank/news/hackii-sample-report/)」で公開しています。
+社内やクライアントへの報告では、集計値（率）と証拠(生ログ)をセットで提示するのが誠実な形です。証拠付きレポートの構成例は「[AirReach Consultingサンプルレポート](/trillionbank/news/hackii-sample-report/)」で公開しています。
 
 ---
 
@@ -202,7 +202,7 @@ AI検索の効果測定において、証拠保存は集計と同じくらい重
   └─ 施策効果（施策前後の再測定による差分）
 ```
 
-HackⅡ（AI Recommendation Intelligence）では、この構造を **AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）** という4つの測定フレームとして体系化しています。
+AirReach Consulting（AI Recommendation Intelligence）では、この構造を **AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）** という4つの測定フレームとして体系化しています。
 
 一方で、この構造は考え方さえ押さえれば自社でも簡易的に代替できます。内製で始める場合の最小構成は次のとおりです。
 
@@ -217,11 +217,11 @@ HackⅡ（AI Recommendation Intelligence）では、この構造を **AI Decisio
 
 ---
 
-## HackⅡが支援する範囲（誠実開示）
+## AirReach Consultingが支援する範囲（誠実開示）
 
-HackⅡは、AI検索で「出たか」ではなく、**なぜ選ばれ、なぜ外れたかまで**を扱うAI Recommendation Intelligenceです。支援するのは測定の代行ではなく、**質問設計 → 測定 → 証拠保存 → 競合Win/Loss分析 → 施策 → 再測定という一連のサイクルの体系化**です。前述の4つの測定フレーム（AI Decision Share／Recommendation Win・Loss／Citation Channel Map／Measure→Act→Remeasure）は、このサイクルをそのまま製品構造に落とし込んだものです。
+AirReach Consultingは、AI検索で「出たか」ではなく、**なぜ選ばれ、なぜ外れたかまで**を扱うAI Recommendation Intelligenceです。支援するのは測定の代行ではなく、**質問設計 → 測定 → 証拠保存 → 競合Win/Loss分析 → 施策 → 再測定という一連のサイクルの体系化**です。前述の4つの測定フレーム（AI Decision Share／Recommendation Win・Loss／Citation Channel Map／Measure→Act→Remeasure）は、このサイクルをそのまま製品構造に落とし込んだものです。
 
-現在のステータスは**限定商用検証・導入相談受付中**です。対応するAIサービスの範囲は、契約時点で本番検証済みの範囲をご案内しています。また、AI検索での表示・問い合わせ・売上といった成果を保証するものではありません。この記事で説明した内製の簡易代替で十分なケースも多くあります。製品の詳細は[HackⅡ製品ページ](/trillionbank/business/hack2/)をご覧ください。
+現在のステータスは**限定商用検証・導入相談受付中**です。対応するAIサービスの範囲は、契約時点で本番検証済みの範囲をご案内しています。また、AI検索での表示・問い合わせ・売上といった成果を保証するものではありません。この記事で説明した内製の簡易代替で十分なケースも多くあります。製品の詳細は[AirReach Consulting製品ページ](/trillionbank/business/hack2/)をご覧ください。
 
 ---
 
@@ -274,4 +274,4 @@ AI検索の効果測定の要点を整理します。
 3. **証拠を保存する** — 回答本文・引用URL・日時・条件を残し、「実測ゼロ」と「測定失敗」を区別する
 4. **競合Win/Lossで負け筋を言語化し、Measure→Act→Remeasureで施策を検証する**
 
-まずは自社の業界で、AI検索での見え方の現在地を確認するところから始めてください。業種別の傾向は「[AI検索可視性ベンチマーク](/trillionbank/news/ai-search-visibility-benchmark/)」、証拠付きレポートの実例は「[HackⅡサンプルレポート](/trillionbank/news/hackii-sample-report/)」が参考になります。
+まずは自社の業界で、AI検索での見え方の現在地を確認するところから始めてください。業種別の傾向は「[AI検索可視性ベンチマーク](/trillionbank/news/ai-search-visibility-benchmark/)」、証拠付きレポートの実例は「[AirReach Consultingサンプルレポート](/trillionbank/news/hackii-sample-report/)」が参考になります。

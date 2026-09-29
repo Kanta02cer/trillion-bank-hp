@@ -28,7 +28,7 @@ faq_items:
   - question: "広告支援と同じですか？"
     answer: "異なります。有機的な回答面と広告は分けて設計します。"
   - question: "Trillion Bankの支援範囲は？"
-    answer: "HackⅡを中心とした測定と改善判断の相談です。"
+    answer: "AirReach Consultingを中心とした測定と改善判断の相談です。"
 ---
 
 ## 依頼範囲のレイヤー
@@ -51,6 +51,6 @@ faq_items:
 
 ## 次の一歩
 
-選定前に自社の現在地を確認したい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+選定前に自社の現在地を確認したい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。AirReach Consulting（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
 
 関連: [内製／外注判断ガイド](/trillionbank/guide/inhouse-or-outsource/) / [測定方法](/trillionbank/news/ai-search-measurement-method/) / [ツール比較の考え方](/trillionbank/news/ai-search-tools-vendors/)

@@ -3,13 +3,13 @@ layout: tb-article-authority
 insight: true
 toc: true
 direct_answer: "共同提案は、顧客の重要質問確認、現状の見え方整理、役割分担、商談、の順で進めます。"
-title: "販売代理店向け｜HackⅡ共同提案の進め方"
+title: "販売代理店向け｜AirReach Consulting共同提案の進め方"
 date: 2026-09-15
 last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
-tbdesc: "販売代理店がHackⅡを既存顧客へ共同提案するときの、初回ヒアリングから役割分担までの進め方です。"
-keywords: "共同提案 進め方,HackⅡ 代理店 フロー,パートナー 営業"
+tbdesc: "販売代理店がAirReach Consultingを既存顧客へ共同提案するときの、初回ヒアリングから役割分担までの進め方です。"
+keywords: "共同提案 進め方,AirReach Consulting 代理店 フロー,パートナー 営業"
 ai_summary: "顧客課題の確認→質問設計→現状説明→役割分担→商談、の順で進める。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -48,4 +48,4 @@ faq_items:
 
 Trillion Bankサービスの販売代理店・共同提案を検討される場合は、[お問い合わせフォーム](/trillionbank/contact/#form)または[商談予約（代理店）](/trillionbank/meeting/?type=agency)からご連絡ください。他社商材の代理販売依頼はお受けしていません。
 
-関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [HackⅡ](/trillionbank/business/hack2/)
+関連: [販売代理店向け共同提案ガイド](/trillionbank/guide/agency-co-proposal/) / [AirReach Consulting](/trillionbank/business/hack2/)

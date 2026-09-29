@@ -1,5 +1,5 @@
 /**
- * Shared package tree + validators for HackⅡ Studio ZIP / GitHub draft PR.
+ * Shared package tree + validators for AirReach Tools Studio ZIP / GitHub draft PR.
  * Source of truth for paths: docs/airreach-studio-package-blueprint.md
  */
 (function (root) {

@@ -1,5 +1,5 @@
 /**
- * AirReach tip: short visible label + detail on hover/focus/tap.
+ * AirReach Tools tip: short visible label + detail on hover/focus/tap.
  * Markup: <span data-tip="詳細">短い語</span>
  */
 (function () {

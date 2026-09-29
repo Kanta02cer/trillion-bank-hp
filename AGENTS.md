@@ -6,7 +6,7 @@ This repository publishes the corporate website of **株式会社Trillion Bank**
 The public site must help a reader understand, within 30 seconds:
 
 1. what Trillion Bank does;
-2. what HackⅡ measures;
+2. what AirReach Consulting measures;
 3. what is available now and what remains research / PoC;
 4. where to ask for a business discussion.
 
@@ -40,13 +40,13 @@ When sources conflict, use the newest explicitly approved public fact. Do not re
 
 Trillion Bank is a technology company that works on the measurement and governance of information in AI search and AI-agent environments. It is **not a bank or financial institution**.
 
-### HackⅡ
+### AirReach Consulting
 
-HackⅡ measures and stores selected AI answers, cited URLs, brand/competitor mentions, measurement conditions, and changes over time so that companies can make evidence-based decisions about AI-search visibility.
+AirReach Consulting measures and stores selected AI answers, cited URLs, brand/competitor mentions, measurement conditions, and changes over time so that companies can make evidence-based decisions about AI-search visibility.
 
 Current public status: **limited commercial validation / implementation consultation**.
 
-Do not claim that HackⅡ:
+Do not claim that AirReach Consulting:
 
 - guarantees inclusion, rankings, traffic, leads, bookings, or revenue;
 - measures every AI surface;
@@ -57,7 +57,7 @@ Do not claim that HackⅡ:
 
 ### Adctor / Pay per Use
 
-Adctor is a separate research and PoC program for AI-content access, licensing, usage evidence, and future billing workflows. It is not a completed commercial settlement network. Keep it visually and contractually separate from HackⅡ.
+Adctor is a separate research and PoC program for AI-content access, licensing, usage evidence, and future billing workflows. It is not a completed commercial settlement network. Keep it visually and contractually separate from AirReach Consulting.
 
 ## Information that must not be published without written approval
 
@@ -98,7 +98,7 @@ Adctor is a separate research and PoC program for AI-content access, licensing, 
 2. Create or use a feature branch. Never push a large refactor directly to `main`.
 3. Make one coherent phase at a time.
 4. Run the content guard, Jekyll build, HTML checks, and browser checks.
-5. Inspect desktop and mobile screenshots for home, HackⅡ, insights, company, and contact.
+5. Inspect desktop and mobile screenshots for home, AirReach Consulting, insights, company, and contact.
 6. Check console errors, broken links, canonical URLs, structured data, robots, and sitemap.
 7. Open a pull request with facts changed, routes changed, screenshots, test results, and unresolved approvals.
 

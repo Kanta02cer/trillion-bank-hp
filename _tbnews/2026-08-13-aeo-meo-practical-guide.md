@@ -4,7 +4,7 @@ date: 2026-08-13
 last_modified: 2026-08-13
 category: コラム
 tbdesc: "AEO（回答エンジン最適化）とMEO（マップエンジン最適化）の具体的な活用方法を実務手順で解説。FAQ構造化・一次情報・GBP整備・口コミ返信・NAP統一、海外のGEO研究とAI可視性計測ツール市場の先行動向まで。まず自社の現在地の把握から始めてください。"
-keywords: "AEO 活用方法,MEO 対策,AEO MEO 違い,ローカルSEO,Googleビジネスプロフィール 最適化,AI検索 ローカル検索,GEO 海外事例,トリリオンバンク,HackⅡ"
+keywords: "AEO 活用方法,MEO 対策,AEO MEO 違い,ローカルSEO,Googleビジネスプロフィール 最適化,AI検索 ローカル検索,GEO 海外事例,トリリオンバンク,AirReach Consulting"
 ai_summary: "AEOはAIアシスタントの回答に自社が引用・推薦されるための最適化、MEOはGoogleビジネスプロフィール等のローカル検索（海外でいうLocal SEO）の最適化である。AIがローカルな質問に答える際は地図情報・GBP・口コミが引用元になるため、MEOの整備がAEOの土台になる。本記事は両者の実務手順と海外の先行動向を整理する。"
 references:
   - title: "Google — Google検索の生成AI機能向け最適化ガイド"
@@ -179,7 +179,7 @@ AI回答の引用元は自社サイトだけではありません。むしろ比
 <div class="dmk-note">※ デモ画面（架空データによるサンプル表示）。実際の製品画面・出力・数値とは異なります。</div>
 </div>
 
-このように分解できると、「自社サイトを強化するより先に、口コミの量と返信品質、地図情報の完全性を整えるべき」といった判断が数字で下せます。HackⅡ（AI Recommendation Intelligence）では、この引用元チャネルの分析をCitation Channel Mapとして、AI Decision Share（候補入り率）・Recommendation Win・Loss（競合勝敗）・Measure→Act→Remeasure（施策前後の再測定）とあわせた4つの測定フレームの1つに位置づけています。HackⅡは現在限定商用検証・導入相談受付中で、対応するAIサービスは契約時点で本番検証済みの範囲をご案内しています。詳細は[HackⅡ製品ページ](/trillionbank/business/hack2/)をご覧ください。
+このように分解できると、「自社サイトを強化するより先に、口コミの量と返信品質、地図情報の完全性を整えるべき」といった判断が数字で下せます。AirReach Consulting（AI Recommendation Intelligence）では、この引用元チャネルの分析をCitation Channel Mapとして、AI Decision Share（候補入り率）・Recommendation Win・Loss（競合勝敗）・Measure→Act→Remeasure（施策前後の再測定）とあわせた4つの測定フレームの1つに位置づけています。AirReach Consultingは現在限定商用検証・導入相談受付中で、対応するAIサービスは契約時点で本番検証済みの範囲をご案内しています。詳細は[AirReach Consulting製品ページ](/trillionbank/business/hack2/)をご覧ください。
 
 ---
 

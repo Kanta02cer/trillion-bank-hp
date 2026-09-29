@@ -1,5 +1,5 @@
 /**
- * AirReach — client-side AI search readiness diagnosis (no API keys).
+ * AirReach Tools — client-side AI search readiness diagnosis (no API keys).
  * Scores public HTML / llms.txt / robots signals only.
  * Pages are always fetched via the same-origin fetch API (/api/airreach/fetch/); the browser never contacts the target site.
  * No Cloudflare / third-party proxy.
@@ -316,12 +316,12 @@
     if (llmsKnown && (!llmsText || llmsText.length < 80)) actions.weeks.push('llms.txtで主要ページ（会社・サービス・FAQ・ポリシー）への案内を置く');
     if (page.h1.length !== 1) actions.weeks.push('トップと主要LPのH1を「何のサービスか」が一瞬で分かる文言に揃える');
     actions.weeks.push('サービスの対象・対象外・比較の軸を公式ページに書く');
-    // HackⅡ (a separate measurement service) is never listed as a 対策. It lives in `referral` and is shown in its own frame.
+    // AirReach Consulting (a separate measurement service) is never listed as a 対策. It lives in `referral` and is shown in its own frame.
     var referral = {
       kicker: '別のサービスの案内',
       title: 'AI上での紹介・引用まで調べたい？',
-      body: 'この診断はホームページの情報整備を見るものです。AI回答での言及・引用・他社との比較まで調べたい場合は、別サービスのHackⅡをご利用ください。',
-      cta: 'HackⅡについて相談する',
+      body: 'この診断はホームページの情報整備を見るものです。AI回答での言及・引用・他社との比較まで調べたい場合は、別サービスのAirReach Consultingをご利用ください。',
+      cta: 'AirReach Consultingについて相談する',
       href: '/trillionbank/meeting/?type=company&from=airreach-referral',
       note: '対策とは別枠の案内です。診断の点数には影響しません。'
     };
@@ -383,11 +383,11 @@
         finalUrl: pageRes.finalUrl || baseHref
       },
       modelPlaceholders: [
-        { name: 'Google AI Overviews', status: '要HackⅡ測定', note: '実回答の引用率は本ツールでは取得しません' },
-        { name: 'Gemini', status: '要HackⅡ測定', note: '準備度シグナルのみ反映' },
-        { name: 'ChatGPT', status: '要HackⅡ測定', note: '準備度シグナルのみ反映' },
-        { name: 'Claude', status: '要HackⅡ測定', note: '準備度シグナルのみ反映' },
-        { name: 'Perplexity他', status: '要HackⅡ測定', note: '準備度シグナルのみ反映' }
+        { name: 'Google AI Overviews', status: '要AirReach Consulting測定', note: '実回答の引用率は本ツールでは取得しません' },
+        { name: 'Gemini', status: '要AirReach Consulting測定', note: '準備度シグナルのみ反映' },
+        { name: 'ChatGPT', status: '要AirReach Consulting測定', note: '準備度シグナルのみ反映' },
+        { name: 'Claude', status: '要AirReach Consulting測定', note: '準備度シグナルのみ反映' },
+        { name: 'Perplexity他', status: '要AirReach Consulting測定', note: '準備度シグナルのみ反映' }
       ]
     };
   }

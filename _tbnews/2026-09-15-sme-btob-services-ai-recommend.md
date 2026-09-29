@@ -48,6 +48,6 @@ faq_items:
 
 ## 次の一歩
 
-現状の見える化から始めたい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+現状の見える化から始めたい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。AirReach Consulting（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
 
 関連: [AI検索の効果測定方法](/trillionbank/news/ai-search-measurement-method/) / [内製か外注かの判断ガイド](/trillionbank/guide/inhouse-or-outsource/)

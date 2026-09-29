@@ -48,7 +48,7 @@ jsonld: |
         "name": "企業はどのAIモデルを優先して対策・測定すべきですか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "一般論としては「自社の顧客が実際に使っているAI」から優先するのが合理的です。BtoBかBtoCか、顧客の年齢層や職種によって主に使われるAIサービスは異なります。その上で、AIごとに回答傾向が異なるため、主要なAIを横断して自社の候補入り・言及・引用の状況を測定し、どのAIで強く、どのAIで弱いかを把握してから優先順位を決めるアプローチが推奨されます。株式会社トリリオンバンクのHackⅡ（AI Recommendation Intelligence）は、こうした横断測定と競合Win/Loss分析を体系化しています。"
+          "text": "一般論としては「自社の顧客が実際に使っているAI」から優先するのが合理的です。BtoBかBtoCか、顧客の年齢層や職種によって主に使われるAIサービスは異なります。その上で、AIごとに回答傾向が異なるため、主要なAIを横断して自社の候補入り・言及・引用の状況を測定し、どのAIで強く、どのAIで弱いかを把握してから優先順位を決めるアプローチが推奨されます。株式会社トリリオンバンクのAirReach Consulting（AI Recommendation Intelligence）は、こうした横断測定と競合Win/Loss分析を体系化しています。"
         }
       },
       {
@@ -172,7 +172,7 @@ jsonld: |
 
 なお、AI検索面への広告出稿という選択肢との使い分けは「[AI広告とAEOの違い](/trillionbank/news/ai-ads-vs-aeo/)」で整理しています。広告は即効性がある一方、この記事で見てきた「学習データやWeb上の情報蓄積」はオーガニックな推薦の土台になるもので、両者は代替関係ではありません。
 
-株式会社トリリオンバンクの **[HackⅡ](/trillionbank/business/hack2/)**（AI Recommendation Intelligence）は、AI検索で「出たか」ではなく、なぜ選ばれ、なぜ外れたかまでを扱う測定基盤として、AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）の4フレームでこの横断測定を体系化しています。現在のステータスは限定商用検証・導入相談受付中で、対応するAIサービスは契約時点で本番検証済みの範囲をご案内しています。小規模であれば、この記事の考え方をもとに自社での簡易測定から始めることも十分可能です。
+株式会社トリリオンバンクの **[AirReach Consulting](/trillionbank/business/hack2/)**（AI Recommendation Intelligence）は、AI検索で「出たか」ではなく、なぜ選ばれ、なぜ外れたかまでを扱う測定基盤として、AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）の4フレームでこの横断測定を体系化しています。現在のステータスは限定商用検証・導入相談受付中で、対応するAIサービスは契約時点で本番検証済みの範囲をご案内しています。小規模であれば、この記事の考え方をもとに自社での簡易測定から始めることも十分可能です。
 
 ---
 

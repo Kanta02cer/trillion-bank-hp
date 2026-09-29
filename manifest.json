@@ -1,7 +1,7 @@
 {
-  "name": "トリリオンバンク — AI検索最適化インフラ HackⅡ",
+  "name": "トリリオンバンク — AI検索最適化インフラ AirReach Consulting",
   "short_name": "トリリオンバンク",
-  "description": "AI検索時代の情報流通を、測る・守る・正規化するITカンパニー。HackⅡでAI回答内の候補入り・競合差・引用元・AI流入を測定し、AEO/GEO/SEO実装まで支援します。",
+  "description": "AI検索時代の情報流通を、測る・守る・正規化するITカンパニー。AirReach ConsultingでAI回答内の候補入り・競合差・引用元・AI流入を測定し、AEO/GEO/SEO実装まで支援します。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

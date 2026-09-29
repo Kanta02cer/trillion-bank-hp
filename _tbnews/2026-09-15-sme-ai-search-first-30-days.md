@@ -9,7 +9,7 @@ last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
 tbdesc: "AI検索対策に未着手の中小企業が、最初の30日で現状把握・質問設計・一次情報整備まで進める実務手順を解説します。"
-keywords: "中小企業 AI検索対策,AI検索 始め方,未着手 AEO,GEO 初歩,HackⅡ"
+keywords: "中小企業 AI検索対策,AI検索 始め方,未着手 AEO,GEO 初歩,AirReach Consulting"
 ai_summary: "未着手の中小企業は、ツール導入より先に重要質問の洗い出し・手動確認・表記ゆれ修正・FAQ整備で基準線をつくる。測定は同じ条件での再計測を前提にする。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -75,6 +75,6 @@ GoogleはAI機能向けの特別なマークアップを必須とはしていま
 
 ## 次の一歩
 
-現状の見える化から始めたい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+現状の見える化から始めたい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。AirReach Consulting（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
 
 関連: [AI検索の効果測定方法](/trillionbank/news/ai-search-measurement-method/) / [内製か外注かの判断ガイド](/trillionbank/guide/inhouse-or-outsource/)

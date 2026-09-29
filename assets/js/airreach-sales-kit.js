@@ -1,5 +1,5 @@
 /**
- * AirReach Sales kit — talk script + proposal draft from scan (deterministic).
+ * AirReach Tools Sales kit — talk script + proposal draft from scan (deterministic).
  * Does not invent metrics; only rearranges stored diagnosis fields.
  */
 (function () {
@@ -84,7 +84,7 @@
       'table{width:100%;border-collapse:collapse;margin:12px 0}td,th{border:1px solid #e2e8f0;padding:10px;text-align:left}' +
       '.box{border:1px solid #bfdbfe;background:#eff6ff;border-radius:10px;padding:14px 16px;margin:16px 0}' +
       '.note{font-size:.8rem;color:#94a3b8;margin-top:32px}@media print{.no-print{display:none}}</style></head><body>' +
-      '<p class="meta">AirReach 提案書下書き · ' + when + ' · 成果・掲載は保証しません</p>' +
+      '<p class="meta">AirReach Tools 提案書下書き · ' + when + ' · 成果・掲載は保証しません</p>' +
       '<h1>' + name + ' 様へのご提案</h1>' +
       '<p class="meta">' + industry + (outcome ? (' · 増やしたいこと：' + outcome) : '') + '<br>' + url + '</p>' +
       '<h2>いまの状態（参考）</h2><table><thead><tr><th>項目</th><th>値</th><th>区分</th></tr></thead><tbody>' + rows + '</tbody></table>' +
@@ -93,7 +93,7 @@
       '<h2>次の進め方</h2><ol><li>上記の不足情報を公式サイトに追加する</li>' +
       '<li>必要なら Google の実測（Search Console）と接続して継続測定する</li>' +
       '<li>改善後に同じ条件で再診断し、Before / After を確認する</li></ol>' +
-      '<p class="note">本資料の数値は AirReach の診断・参考予測に基づきます。検索順位・AI掲載・予約・問い合わせ・売上を保証するものではありません。顧客名・成果の公開には別途承認が必要です。</p>' +
+      '<p class="note">本資料の数値は AirReach Tools の診断・参考予測に基づきます。検索順位・AI掲載・予約・問い合わせ・売上を保証するものではありません。顧客名・成果の公開には別途承認が必要です。</p>' +
       '<p class="no-print"><button onclick="window.print()">印刷 / PDF保存</button></p></body></html>';
   }
 

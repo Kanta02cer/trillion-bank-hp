@@ -837,7 +837,7 @@ keywords:
   - priority: 204
     group: P1
     cluster: "販売代理店検討"
-    keyword: "販売代理店が最初の1社にHackⅡを提案する手順"
+    keyword: "販売代理店が最初の1社にAirReach Consultingを提案する手順"
     intent: "リード獲得"
     slug: "partner-first-client-playbook"
     content_type: "guide"
@@ -869,7 +869,7 @@ keywords:
   - priority: 208
     group: P1
     cluster: "販売代理店検討"
-    keyword: "SEO会社がHackⅡを提案メニューに追加する考え方"
+    keyword: "SEO会社がAirReach Consultingを提案メニューに追加する考え方"
     intent: "リード獲得"
     slug: "partner-seo-firm-add-on"
     content_type: "guide"
@@ -885,7 +885,7 @@ keywords:
   - priority: 210
     group: P1
     cluster: "販売代理店検討"
-    keyword: "HackⅡ販売代理店に向いている業者の特徴"
+    keyword: "AirReach Consulting販売代理店に向いている業者の特徴"
     intent: "リード獲得"
     slug: "partner-who-fits"
     content_type: "guide"

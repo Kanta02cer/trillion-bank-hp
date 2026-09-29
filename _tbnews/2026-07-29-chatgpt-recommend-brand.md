@@ -4,7 +4,7 @@ date: 2026-07-29
 last_modified: 2026-07-29
 category: コラム
 tbdesc: "ChatGPTやPerplexityなどのAI検索で、自社ブランドが推薦・引用される状態をつくる5つのステップを解説。構造化データ整備・E-E-A-T強化・定点計測の具体的な実装方法まで。"
-keywords: "ChatGPT 自社 推薦,ChatGPT検索対策,AI検索 推薦される方法,AEO対策 やり方,AI引用 増やす,LLMO 実践,AI検索最適化,トリリオンバンク,HackⅡ"
+keywords: "ChatGPT 自社 推薦,ChatGPT検索対策,AI検索 推薦される方法,AEO対策 やり方,AI引用 増やす,LLMO 実践,AI検索最適化,トリリオンバンク,AirReach Consulting"
 ai_summary: "ChatGPTやPerplexityなどのAI検索で自社が推薦・引用されるための5ステップを解説。(1)現状計測、(2)構造化データ整備、(3)E-E-A-Tシグナル強化、(4)引用されやすいコンテンツ設計、(5)定点観測と改善サイクル。プリンストン大学の研究に基づく定量的な改善手法も紹介。"
 references:
   - title: "Generative Engine Optimization (GEO) — Princeton/Georgia Tech/IIT Delhi/Allen AI"
@@ -55,7 +55,7 @@ jsonld: |
         "name": "自社のChatGPTでの引用状況を確認する方法はありますか？",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "手動で確認する方法と、専用ツールで計測する方法があります。手動の場合は、自社に関連するプロンプトをChatGPTに入力し、回答に自社が含まれるかを確認します。ただし回答は都度変わるため再現性がありません。専用のAEO計測ツール（HackⅡ、ミエルカGEO、Otterly等）を使えば、引用率・推薦率・競合比較を定点観測できます。"
+          "text": "手動で確認する方法と、専用ツールで計測する方法があります。手動の場合は、自社に関連するプロンプトをChatGPTに入力し、回答に自社が含まれるかを確認します。ただし回答は都度変わるため再現性がありません。専用のAEO計測ツール（AirReach Consulting、ミエルカGEO、Otterly等）を使えば、引用率・推薦率・競合比較を定点観測できます。"
         }
       }
     ]
@@ -106,7 +106,7 @@ ChatGPTに以下のようなプロンプトを入力し、自社が含まれる�
 AEO計測ツールを使えば、引用率・推薦率・参照URL・競合比較を定点で観測できます。
 
 主な計測ツール:
-- **HackⅡ** — 5AI対応を想定。候補入り率・競合Win/Loss・引用元を証拠付きで測定（料金は個別案内）
+- **AirReach Consulting** — 5AI対応を想定。候補入り率・競合Win/Loss・引用元を証拠付きで測定（料金は個別案内）
 - **ミエルカGEO** — 6AI対応、国内大手実績豊富（月額¥49,800〜）
 - **Otterly.ai** — 手頃な入門ツール（月額$29〜）
 

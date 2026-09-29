@@ -8,8 +8,8 @@ date: 2026-09-16
 last_modified: 2026-09-16
 category: 解説
 author: 井上 幹太
-tbdesc: "AI検索対策会社を選ぶときの比較軸を、測定・支援・SEO拡張の3分類と確認質問で整理します。Trillion Bankは測定（HackⅡ）を中心に相談を受け付けます。"
-keywords: "AI検索対策 会社,AI検索対策 選び方,AEO 会社,GEO 支援会社,HackⅡ"
+tbdesc: "AI検索対策会社を選ぶときの比較軸を、測定・支援・SEO拡張の3分類と確認質問で整理します。Trillion Bankは測定（AirReach Consulting）を中心に相談を受け付けます。"
+keywords: "AI検索対策 会社,AI検索対策 選び方,AEO 会社,GEO 支援会社,AirReach Consulting"
 ai_summary: "会社選定は機能一覧より、測定範囲・証跡・再計測・役割分担・保証しない範囲の確認が重要。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -28,7 +28,7 @@ faq_items:
   - question: "何を基準に選べばよいですか？"
     answer: "測るAI範囲、証跡保存、同条件再計測、改善の役割分担、保証しない範囲の明示です。"
   - question: "Trillion Bankは何を提供しますか？"
-    answer: "HackⅡによる測定と改善優先度の整理を中心に、導入相談を受け付けています。"
+    answer: "AirReach Consultingによる測定と改善優先度の整理を中心に、導入相談を受け付けています。"
 ---
 
 ## 結論：会社名より「何を測り、誰が直すか」
@@ -55,7 +55,7 @@ faq_items:
 
 ## Trillion Bankの位置づけ
 
-Trillion Bankはテクノロジー企業として、HackⅡ（限定商用検証・導入相談受付）でAI回答の現在地測定を支援します。成果保証型の「対策会社」ではありません。
+Trillion Bankはテクノロジー企業として、AirReach Consulting（限定商用検証・導入相談受付）でAI回答の現在地測定を支援します。成果保証型の「対策会社」ではありません。
 
 ## できないこと・限界
 
@@ -66,6 +66,6 @@ Trillion Bankはテクノロジー企業として、HackⅡ（限定商用検証
 
 ## 次の一歩
 
-選定前に自社の現在地を確認したい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。HackⅡ（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+選定前に自社の現在地を確認したい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。AirReach Consulting（限定商用検証・導入相談受付）は、選定した質問についてAI回答・引用URL・競合言及を保存し、改善優先度の整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
 
 関連: [内製／外注判断ガイド](/trillionbank/guide/inhouse-or-outsource/) / [測定方法](/trillionbank/news/ai-search-measurement-method/) / [ツール比較の考え方](/trillionbank/news/ai-search-tools-vendors/)

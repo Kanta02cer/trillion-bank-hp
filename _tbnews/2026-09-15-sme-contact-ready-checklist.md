@@ -9,7 +9,7 @@ last_modified: 2026-09-15
 category: 解説
 author: 井上 幹太
 tbdesc: "Trillion Bankへの問い合わせ前に、中小企業が揃えておくと相談が前に進みやすい情報のチェックリストです。"
-keywords: "AI検索 相談準備,問い合わせ チェックリスト,中小企業 HackⅡ"
+keywords: "AI検索 相談準備,問い合わせ チェックリスト,中小企業 AirReach Consulting"
 ai_summary: "重要質問、競合、現状メモ、直せるページ、決裁者を揃えると初回相談が具体化する。"
 og_image: /images/hero/tb-logo-color.webp
 references:
@@ -47,6 +47,6 @@ faq_items:
 
 ## 次の一歩
 
-現状の見える化から始めたい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。HackⅡ（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
+現状の見える化から始めたい場合は、[お問い合わせフォーム](/trillionbank/contact/#form)からご連絡ください。AirReach Consulting（限定商用検証・導入相談受付）では、選定した質問についてAI回答本文・引用URL・自社／競合の言及を保存し、改善の優先度整理を支援します。掲載・順位・問い合わせや売上を保証するものではありません。
 
 関連: [AI検索の効果測定方法](/trillionbank/news/ai-search-measurement-method/) / [内製か外注かの判断ガイド](/trillionbank/guide/inhouse-or-outsource/)

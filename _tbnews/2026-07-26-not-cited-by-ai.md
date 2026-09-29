@@ -7,7 +7,7 @@ date: 2026-07-26
 last_modified: 2026-09-06
 category: コラム
 tbdesc: "ChatGPTやPerplexityなどの生成AIに自社が引用・推薦されない原因を6分類で整理。GEO対策・生成AI検索最適化として確認すべき技術、一次情報、エンティティ、第三者情報、鮮度、証拠を解説します。"
-keywords: "生成AI 引用されない,GEO対策,生成AI検索最適化,AI検索対策,LLMO,AEO,GEO,エンティティ,構造化データ,トリリオンバンク,HackⅡ"
+keywords: "生成AI 引用されない,GEO対策,生成AI検索最適化,AI検索対策,LLMO,AEO,GEO,エンティティ,構造化データ,トリリオンバンク,AirReach Consulting"
 ai_summary: "生成AIに引用されない原因は、①技術要因（クロール不可・noindex・レンダリング）②情報不足③エンティティ不整合④第三者情報の不足⑤鮮度⑥証拠不足の6つに分類できる。各原因は自分で確認する方法があり、原因の切り分け→対策→再測定の順で進めるのが基本となる。"
 references:
   - title: "Google — Google検索の生成AI機能向け最適化ガイド"
@@ -217,7 +217,7 @@ AIは学習時点の知識と、検索で取得した情報を組み合わせて
 
 6分類のどれに該当するかは、思い込みではなく測定で確定させるのが確実です。進め方は「測る→直す→再測定」の反復で、確認用の質問設計は「[AI検索最適化に使えるプロンプト集](/trillionbank/news/prompt-collection/)」、測定の設計方法（出現割合での記録・証拠保存・競合Win/Loss）は「[AI検索の効果測定方法](/trillionbank/news/ai-search-effect-measurement/)」で詳しく解説しています。質問数や競合数が少ないうちは、この記事の「自分で確認する方法」とスプレッドシートだけでも十分に始められます。
 
-株式会社トリリオンバンクのHackⅡ（AI Recommendation Intelligence）は、この切り分けを体系化したものです。AI検索で「出たか」ではなく、**なぜ選ばれ、なぜ外れたかまで**を、AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）の4つの測定フレームで扱います。現在のステータスは限定商用検証・導入相談受付中で、対応するAIサービスは契約時点で本番検証済みの範囲をご案内しています。なお、対策や測定によってAI検索での表示・問い合わせ・売上が保証されるわけではありません。詳細は[HackⅡ製品ページ](/trillionbank/business/hack2/)をご覧ください。
+株式会社トリリオンバンクのAirReach Consulting（AI Recommendation Intelligence）は、この切り分けを体系化したものです。AI検索で「出たか」ではなく、**なぜ選ばれ、なぜ外れたかまで**を、AI Decision Share（候補入り率）／Recommendation Win・Loss（競合勝敗）／Citation Channel Map（引用元チャネル分析）／Measure→Act→Remeasure（施策前後の再測定）の4つの測定フレームで扱います。現在のステータスは限定商用検証・導入相談受付中で、対応するAIサービスは契約時点で本番検証済みの範囲をご案内しています。なお、対策や測定によってAI検索での表示・問い合わせ・売上が保証されるわけではありません。詳細は[AirReach Consulting製品ページ](/trillionbank/business/hack2/)をご覧ください。
 
 ---
 
