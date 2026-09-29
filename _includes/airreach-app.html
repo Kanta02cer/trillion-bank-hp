@@ -1691,7 +1691,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       if (factorGaps) {
         var gaps = (fb.gaps && fb.gaps.length) ? fb.gaps : (fb.weakFactors || []).map(function (w) {
-          return w.label + 'が' + ((w.level && w.level.label) || '低い') + '区分（' + w.score + '点）';
+          return w.label + 'が' + ((w.level && w.level.label) || '要対策') + '区分（' + w.score + '点）';
         });
         var unknownsHtml = (fb.unknowns || []).map(function (u) {
           return '<li class="is-unknown" data-tip="取得できなかった項目です。不足と断定していません。">' + tipAttr(u) + '</li>';

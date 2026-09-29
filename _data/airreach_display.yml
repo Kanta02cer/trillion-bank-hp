@@ -10,9 +10,9 @@ last_reviewed: "2026-09-29"
 display_version: "band-v1"
 approval:
   status: approved
-  note: "AirReach Tools v1 の正式仕様として承認。区分 0-39 低い / 40-69 要改善 / 70-100 高い、および airreach-common-v1 の4項目の配点・検出条件。"
+  note: "AirReach Tools v1 の正式仕様として承認。区分 0-39 要対策 / 40-69 要改善 / 70-100 良好、および airreach-common-v1 の4項目の配点・検出条件。"
   approved_on: "2026-09-29"
-  label_change: "2026-09-29 区分 mid のラベルを「普通」→「要改善」に変更（増山 承認）。境界値・配点は変更なし。"
+  label_change: "2026-09-29 区分 mid のラベルを「普通」→「要改善」、low「低い」→「要対策」、high「高い」→「良好」に変更（増山 承認）。境界値・配点は変更なし。"
 
 # 点数が意味するもの・意味しないもの（画面・営業トーク共通の説明文）
 score:
@@ -29,7 +29,7 @@ score:
 # 3区分（0-100点）。min/max は含む。色は補助で、ラベルを常に併記する。
 bands:
   - key: low
-    label: "低い"
+    label: "要対策"
     min: 0
     max: 39
     tone: bad
@@ -43,7 +43,7 @@ bands:
     color: "#d97706"
     meaning: "基本的な情報は載っているが、足りない項目がある"
   - key: high
-    label: "高い"
+    label: "良好"
     min: 70
     max: 100
     tone: good
