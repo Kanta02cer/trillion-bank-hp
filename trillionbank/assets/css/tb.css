@@ -65,7 +65,7 @@ header.tbh.solid{border-bottom-color:var(--border)}
   .tbh .mega-panel{position:static;opacity:1;visibility:visible;transform:none;box-shadow:none;border:0;min-width:0;padding:0 0 8px}
   .tbh .cta{margin-top:16px;justify-content:center}
   .tbh .cta-s{margin-top:8px;justify-content:center;width:100%}
-  .tbh .burger{display:flex}
+  .tbh .burger{display:flex;margin-left:auto}
 }
 
 /* ---------- buttons ---------- */

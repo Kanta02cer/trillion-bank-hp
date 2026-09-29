@@ -322,11 +322,11 @@
     // HackⅡ (a separate measurement service) is never listed as a 対策. It lives in `referral` and is shown in its own frame.
     var referral = {
       kicker: '別のサービスの案内',
-      title: 'AI回答で紹介されるか・引用元・他店との比較を調べたい場合',
-      body: 'この診断はホームページの情報整備を見るもので、AI回答の中身は測っていません。実際のAI回答での言及・引用・比較を同条件で測る場合は、別サービスのHackⅡで行います。',
+      title: 'AI上での紹介・引用まで調べたい？',
+      body: 'この診断はホームページの情報整備を見るものです。AI回答での言及・引用・他社との比較まで調べたい場合は、別サービスのHackⅡをご利用ください。',
       cta: 'HackⅡについて相談する',
       href: '/trillionbank/meeting/?type=company&from=airreach-referral',
-      note: '対策の手順や根拠リンクとは別枠の案内です。診断の点数には影響しません。'
+      note: '対策とは別枠の案内です。診断の点数には影響しません。'
     };
 
     var host = '';
