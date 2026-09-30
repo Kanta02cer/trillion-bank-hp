@@ -36,6 +36,7 @@
     return '未確認';
   }
 
+  // 廃止: 言葉の文字列から計算した値で、検索データではない。互換のため関数だけ残し、画面・計算・共有には使わない。
   function estimateSearchVolume(keyword, mode) {
     var k = String(keyword || '').trim();
     if (!k) {
@@ -695,27 +696,18 @@
       rows: readinessRows
     });
 
-    var volVal = volume.value;
+    var volUser = volume.evidenceClass === 'User Input' && volume.value != null;
     sections.push({
       id: 'volume',
-      title: '2. 月間検索需要',
-      summary: volume.note || 'キーワード特徴からの推定モデル。Search Console公式ボリュームではない。',
+      title: '2. 検索データ',
+      summary: '検索回数は推定しません。Google Search Console の実測（表示回数・クリック・平均順位）は、診断したサイトと同じサイトのデータだけを使います。',
       rows: [
         {
-          label: '推定需要 V',
-          formula: 'hash(keyword) → base ∈ [800,18800]（指名検索は [200,4700]）→ 語特徴で係数補正',
-          value: volVal != null ? ('V = ' + cnt(volVal) + ' 回/月') : 'お客さんの言葉未入力のため未算出',
-          note: 'evidence = ' + (volume.evidenceClass || 'Estimated'),
-          evidence: volume.evidenceClass || 'Estimated'
-        },
-        {
-          label: '関連質問・商用質問（派生）',
-          formula: 'related ≈ max(40, round(V×0.08)) / commercial ≈ max(8, round(V×0.012))',
-          value: volVal != null
-            ? ('related ' + cnt(volume.relatedQuestions) + ' / commercial ' + cnt(volume.commercialQuestions))
-            : '—',
-          note: '需要の内訳目安。公式クエリ数ではない。',
-          evidence: 'Estimated'
+          label: '検索回数',
+          formula: '推定しない（入力した数、または正式な検索回数データがあるときだけ使う）',
+          value: volUser ? ('入力値 ' + cnt(volume.value)) : '未計測',
+          note: '',
+          evidence: volUser ? 'User Input' : 'Unmeasured'
         }
       ]
     });
@@ -760,9 +752,9 @@
       rows: [
         {
           label: '現在の成果件数 I₀',
-          formula: 'ユーザー入力。未入力時は max(3, round(V×0.0015))',
+          formula: 'ユーザー入力（または GA4）。未入力なら試算しない',
           value: 'I₀ = ' + cnt(inq.currentInquiries) + '（source: ' + (inq.inquiriesSource || '—') + '）',
-          note: '訪問者は未入力時 max(I₀×40, round(V×0.08)) で補完。',
+          note: '訪問者はユーザー入力（または GA4）のときだけ使う。',
           evidence: inq.inquiriesSource === 'User Input' ? 'User Input' : 'Estimated'
         },
         {
@@ -888,15 +880,19 @@
       inputs.monthlyInquiries = baseline.ga4.monthlyKeyEvents;
     }
 
-    var volume = estimateSearchVolume(keyword, mode);
+    // 検索回数は推定しない（言葉の文字列から計算した値は使わない）。使うのは店の方が入力した数だけ
+    var volume = {
+      value: null,
+      evidenceClass: 'Unmeasured',
+      label: '検索データなし',
+      note: '検索回数は推定しません。Search Console の実測か、入力した数だけを使います。'
+    };
     if (opts.volumeOverride != null && isFinite(Number(opts.volumeOverride)) && String(opts.volumeOverride).trim() !== '') {
       volume = {
         value: Number(opts.volumeOverride),
         evidenceClass: 'User Input',
-        label: '入力した月間検索数',
-        note: 'ユーザー入力値',
-        relatedQuestions: volume.relatedQuestions,
-        commercialQuestions: volume.commercialQuestions
+        label: '入力した検索回数',
+        note: 'ユーザー入力値'
       };
     }
 
@@ -912,9 +908,10 @@
       inq.addLow = inq.addHigh = inq.afterLow = inq.afterHigh = null;
       inq.currentInquiries = null;
       inq.cpa = null;
-      if (!(inputs.monthlyVisitors > 0)) inq.currentVisitors = null;
       inq.notComputed = true;
     }
+    // 訪問数は入力（または GA4）があるときだけ出す。検索回数から補完しない
+    if (!(inputs.monthlyVisitors > 0) && volume.evidenceClass !== 'User Input') inq.currentVisitors = null;
     var lost = inqMeasured ? opportunityLoss(inq.currentInquiries, acq.score, close, deal)
       : { evidenceClass: 'Unmeasured', missedInquiries: null, missedDeals: null, missedRevenue: null, note: 'いまの件数が分からないため、取りこぼしの件数は試算していません。' };
     var brand = mode === 'branded_search' || industryId === 'media' ? brandReflection(diagnose, mediaUrl) : null;
@@ -1039,7 +1036,12 @@
     var hasVolumeInput = opts.volumeOverride != null && String(opts.volumeOverride).trim() !== '' && isFinite(Number(opts.volumeOverride));
     if (!hasVolumeInput && headline4 && headline4[0] && headline4[0].id === 'demand' && !(kwSet && kwSet.length)) {
       // 言葉を作れなかったとき: 文字列から作った推定回数は出さない
-      headline4[0] = {
+      // 調べる言葉（メイン）があるときはその言葉で見出しを作る。回数は出さない
+      headline4[0] = keyword ? {
+        id: 'demand', label: '「' + keyword + '」で探している人', value: '—', unit: '', badge: 'Unmeasured',
+        meaning: '検索回数は Search Console を接続したときだけ出します。文字列からの推定は出しません',
+        sub: 'Search Console 未接続のため未計測'
+      } : {
         id: 'demand', label: 'お客さんが調べそうな言葉', value: '—', unit: '', badge: 'Unmeasured',
         meaning: 'サイトから住所・業種・名前を読み取れなかったため、言葉を作れませんでした。検索回数は Search Console を接続したときだけ出します',
         sub: '調べる言葉を入力すると判定できます'
@@ -1061,6 +1063,30 @@
       };
     }
 
+    // キーワード比較（詳細データ）の「検索データ」: Google 実測（診断したサイトと同じサイトの Search Console）・
+    // 正式な月間検索数（将来）・入力値だけ。文字列から作った回数は使わない。GSC が無くても動く
+    var kwLib = window.AirReachKeywordList;
+    var kwNorm = kwLib ? kwLib.normalize(keyword, opts.keywords) : { keyword: keyword, keywords: [] };
+    var keywordComparison = kwLib
+      ? kwLib.compare(kwNorm.keywords, { gsc: kwLib.gscFromBaseline(baseline, opts.url), volumeInput: hasVolumeInput ? Number(opts.volumeOverride) : null })
+      : [];
+    var primaryRow = keywordComparison.filter(function (r) { return r.primary; })[0];
+    var primaryGsc = primaryRow && primaryRow.searchData && primaryRow.searchData.gsc;
+    if (primaryGsc && primaryGsc.impressions != null && headline4 && headline4[0] && headline4[0].id === 'demand') {
+      // メインの言葉に実測があれば、見出しは実測を優先（検索回数ではなく、このサイトが表示された回数）
+      var gd = primaryGsc;
+      headline4[0] = {
+        id: 'demand',
+        label: '「' + keyword + '」での表示回数',
+        value: cnt(gd.impressions),
+        unit: '回 / 直近' + gd.periodDays + '日',
+        badge: 'Official',
+        meaning: 'Google Search Console の実測（直近' + gd.periodDays + '日）。クリック ' + (gd.clicks != null ? cnt(gd.clicks) : '—') +
+          ' · 平均順位 ' + (gd.position != null ? gd.position.toFixed(1) : '—') + '。この言葉で検索されたときに、このサイトが検索結果に表示された回数です（検索回数そのものではありません）',
+        sub: 'クリック ' + (gd.clicks != null ? cnt(gd.clicks) : '—') + (gd.position != null ? ' · 平均順位 ' + gd.position.toFixed(1) : '')
+      };
+    }
+
     var primaryCta = mode === 'branded_search' || industryId === 'media'
       ? (profile.cta_branded || 'どの記事が使われているか見る')
       : (profile.cta_generic || 'まず何を直すか見る');
@@ -1073,6 +1099,8 @@
       industryLabel: profile.label,
       industryDetect: industryDetect,
       keyword: keyword,
+      keywords: kwNorm.keywords,
+      keywordComparison: keywordComparison,
       url: opts.url || '',
       measuredAt: new Date().toISOString(),
       heroTitle: heroTitle,

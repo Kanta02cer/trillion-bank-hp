@@ -76,11 +76,18 @@ function publishOfficialBaseline(){
     if(sessions||keyEvents){
       baseline.ga4={evidenceClass:'Official',source:'Studio measurements',monthlySessions:scale(sessions),monthlyKeyEvents:scale(keyEvents)};
     }
+    // サイトごとの GSC 実測（gscProperty を記録した行だけ）。以前の取り込み（別の画面で入れたサイト）は残す
+    if(window.AirReachKeywordList){
+      var prev=null;try{prev=JSON.parse(localStorage.getItem('airreach_official_baseline_v1')||'null')}catch(e2){}
+      baseline.gscSites=window.AirReachKeywordList.mergeGscSites(prev&&prev.gscSites,window.AirReachKeywordList.gscSitesFromRows(state.measurements,periodDays));
+    }
     localStorage.setItem('airreach_official_baseline_v1', JSON.stringify(baseline));
   }catch(e){}
 }
 
-function mapGsc(rows){rows.forEach(function(r){var kw=r.query||r.Query||r.keyword||r.Keyword||'',url=r.page||r.Page||r.url||r.URL||'',date=r.date||r.Date||'';state.measurements.push({date:date,keyword:kw,url:url,impressions:n(r.impressions||r.Impressions),clicks:n(r.clicks||r.Clicks),position:n(r.position||r.Position),sessions:0,keyEvents:0})});publishOfficialBaseline()}
+// GSC の行を測定データに足す。property（GSC のサイト URL）が分かれば各行に記録する（診断結果の Google実測 は同じサイトの行だけを使う）
+function gscPropertyInput(){return String(val('gsc-site')||(state.google&&state.google.gscSite)||'').trim()}
+function mapGsc(rows,property){var prop=property!=null?String(property).trim():gscPropertyInput();if(prop&&window.AirReachKeywordList&&!window.AirReachKeywordList.gscProperty(prop))prop='';rows.forEach(function(r){var kw=r.query||r.Query||r.keyword||r.Keyword||'',url=r.page||r.Page||r.url||r.URL||'',date=r.date||r.Date||'';var m={date:date,keyword:kw,url:url,impressions:n(r.impressions||r.Impressions),clicks:n(r.clicks||r.Clicks),position:n(r.position||r.Position),sessions:0,keyEvents:0};if(prop)m.gscProperty=prop;state.measurements.push(m)});publishOfficialBaseline()}
 function mapGa4(rows){rows.forEach(function(r){var date=r.date||r.Date||'',url=r.landingPagePlusQueryString||r['Landing page + query string']||r.landingPage||r['Landing page']||'';var found=state.measurements.find(function(x){return x.date===date&&(x.url===url||(!x.url&&url))});if(found){found.sessions+=n(r.sessions||r.Sessions);found.keyEvents+=n(r.keyEvents||r['Key events']||r.conversions||r.Conversions)}else state.measurements.push({date:date,keyword:'',url:url,impressions:0,clicks:0,position:0,sessions:n(r.sessions||r.Sessions),keyEvents:n(r.keyEvents||r['Key events']||r.conversions||r.Conversions)})});publishOfficialBaseline()}
 function fileHandler(id,fn){var el=q(id);if(!el)return;el.onchange=function(){var f=el.files&&el.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){try{fn(parseCsv(rd.result));save()}catch(e){alert('CSVを読み込めませんでした: '+e.message)}};rd.readAsText(f,'utf-8')}}
 function demo(){state.profile={url:'https://trillion-bank.jp/',brand:'株式会社Trillion Bank',service:'AI検索対策',audience:'企業のマーケティング・経営担当者',summary:'AI検索での見え方を計測し、選ばれない理由を特定して、改善実装と再計測まで支援。'};state.competitors=[{url:'https://example-competitor-a.com/',note:'比較・料金ページが強い'},{url:'https://example-competitor-b.com/',note:'FAQと一次情報が豊富'}];seedKeywords();state.measurements=[];['2026-08-01','2026-08-15','2026-09-01','2026-09-15'].forEach(function(d,i){state.measurements.push({date:d,keyword:state.keywords[0].text,url:'https://trillion-bank.jp/airreach/',impressions:1000+i*420,clicks:26+i*15,position:18-i*2.2,sessions:21+i*12,keyEvents:1+i,aiMention:i>1?1:0,aiCitation:i>2?1:0})});fillProfile();publishOfficialBaseline();save()}
@@ -97,7 +104,9 @@ load();document.addEventListener('DOMContentLoaded',function(){fillProfile();bin
 
 window.AirReachStudio={
   getState:function(){return state},
-  importGscRows:function(rows){mapGsc(rows);save();return state.measurements},
+  importGscRows:function(rows,property){mapGsc(rows,property);save();return state.measurements},
+  publishBaseline:function(){publishOfficialBaseline()},
+  gscPropertyInput:function(){return gscPropertyInput()},
   setProfile:function(p){state.profile=Object.assign({},state.profile,p||{});fillProfile();save()},
   seedKeywords:seedKeywords,
   generateFiles:generateFiles,

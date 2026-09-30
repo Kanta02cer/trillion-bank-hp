@@ -299,7 +299,8 @@
       if (!belongsToEntity(text, brand, s, url)) return;
       seen[nk] = 1;
       var gsc = lookupGsc(gscMap, text);
-      // 検索回数は Keyword Planner / GSC の実データがあるときだけ入れる（文字列から作った推定値は使わない）
+      // volume（月間検索数）は Keyword Planner を取り込んだときだけ入る。GSC の表示回数は別列（gsc_impressions）で、volume には入れない。
+      // 文字列から作った推定値は使わない
       var vol = null;
       var intent = /比較|おすすめ|選び方|費用|料金|予約|相談|導入/.test(text) ? 'Commercial' : 'Informational';
       var fromGsc = !!(gsc && gsc.impressions > 0);
@@ -941,8 +942,13 @@
     } catch (e) {}
   }
 
-  function importGscRows(rows) {
+  // opts.property: GSC のサイト URL（'sc-domain:example.com' / 'https://www.example.com/'）。
+  // 指定が無ければ Studio の「GSCサイトURL」を使う。どちらも無ければ記録しない（診断結果の Google実測 には使わない）
+  function importGscRows(rows, opts) {
     var mapped = [];
+    var prop = (opts && opts.property != null) ? String(opts.property).trim()
+      : ((window.AirReachStudio && window.AirReachStudio.gscPropertyInput) ? window.AirReachStudio.gscPropertyInput() : '');
+    if (prop && window.AirReachKeywordList && !window.AirReachKeywordList.gscProperty(prop)) prop = '';
     (rows || []).forEach(function (r) {
       var kw = r.query || r.Query || r.keyword || r.Keyword || '';
       if (!String(kw).trim()) return;
@@ -956,14 +962,18 @@
         sessions: 0,
         keyEvents: 0
       });
+      if (prop) mapped[mapped.length - 1].gscProperty = prop;
     });
     if (!mapped.length) throw new Error('クエリ列が見つかりません');
+    mapped.gscProperty = prop;
 
     try {
       if (window.AirReachStudio && window.AirReachStudio.getState) {
         var st = window.AirReachStudio.getState();
         mapped.forEach(function (m) { st.measurements.push(m); });
         if (window.AirReachStudio.save) window.AirReachStudio.save();
+        // 診断結果（キーワード比較）が読む端末の基準値にも反映する
+        if (window.AirReachStudio.publishBaseline) window.AirReachStudio.publishBaseline();
       } else {
         var raw = JSON.parse(localStorage.getItem('airreach_studio_v1') || '{}');
         raw.measurements = (raw.measurements || []).concat(mapped);
@@ -1185,9 +1195,9 @@
       var why = k.why || whyForKeyword(k);
       var meta = [];
       if (k.seed_source === 'GSC') meta.push('GSC');
-      if (k.seed_source === 'KeywordPlanner') meta.push('公式需要');
-      if (k.volume_source === 'Official') meta.push('公式');
-      else if (k.volume) meta.push('需要目安 ' + Number(k.volume).toLocaleString('ja-JP'));
+      if (k.seed_source === 'KeywordPlanner') meta.push('Keyword Planner');
+      // 月間検索数は Keyword Planner の値だけ表示する（それ以外の volume は出さない）
+      if (k.volume_source === 'Official' && k.volume != null && isFinite(Number(k.volume))) meta.push('月間検索数 ' + Number(k.volume).toLocaleString('ja-JP') + '（Keyword Planner）');
       if (k.ai_mention_rate != null) meta.push('AI言及 ' + k.ai_mention_rate + '%');
       var metaHtml = meta.length ? ('<div class="orch-kw-meta">' + meta.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div>') : '';
       return '<tr class="orch-kw-row">' +
@@ -1218,18 +1228,23 @@
     wrap.hidden = false;
     var h = job.headline4 || {};
     if (q('orch-n-kw')) q('orch-n-kw').textContent = String(h.keywords || 0);
-    if (q('orch-n-demand') && h.demand == null) {
-      q('orch-n-demand').textContent = '—';
-      var dUnit0 = q('orch-n-demand').parentElement && q('orch-n-demand').parentElement.querySelector('.unit');
-      if (dUnit0) dUnit0.textContent = '検索回数は Search Console の取り込み時だけ表示';
-    } else if (q('orch-n-demand')) {
-      q('orch-n-demand').textContent = '約 ' + Number(h.demand || 0).toLocaleString('ja-JP');
-      var dUnit = q('orch-n-demand').parentElement && q('orch-n-demand').parentElement.querySelector('.unit');
-      var hasOfficialVol = (job.keywords || []).some(function (k) { return k.volume_source === 'Official'; });
-      if (dUnit) {
-        dUnit.innerHTML = hasOfficialVol
-          ? '回 <span class="orch-badge-off" data-tip="一部キーワードはKeyword Planner公式ボリューム">公式混在</span>'
-          : '回 <span class="orch-badge-est">推定</span>';
+    // ② 探している人: 月間検索数は Keyword Planner の値（volume_source=Official）だけを合計する。
+    // 値が無ければ「未計測」。Search Console の表示回数・文字列からの推定は含めない
+    if (q('orch-n-demand')) {
+      var demandEl = q('orch-n-demand');
+      var dUnit = demandEl.parentElement && demandEl.parentElement.querySelector('.unit');
+      var allKw = job.keywords || [];
+      var plannerKw = allKw.filter(function (k) { return k.volume_source === 'Official' && k.volume != null && k.volume !== '' && isFinite(Number(k.volume)); });
+      if (!plannerKw.length) {
+        demandEl.textContent = '未計測';
+        if (dUnit) dUnit.textContent = 'Keyword Planner の月間検索数を取り込むと表示します（Search Console の表示回数は含めません）';
+      } else {
+        var plannerTotal = plannerKw.reduce(function (s2, k) { return s2 + Number(k.volume); }, 0);
+        demandEl.textContent = plannerTotal.toLocaleString('ja-JP');
+        if (dUnit) {
+          dUnit.innerHTML = '回/月 · 月間検索数 <span class="orch-badge-off" data-tip="Google 広告 Keyword Planner の月間検索数">Keyword Planner</span>' +
+            (plannerKw.length < allKw.length ? ' <span class="orch-demand-part">（' + plannerKw.length + ' / ' + allKw.length + ' 語の合計）</span>' : '');
+        }
       }
     }
     if (q('orch-n-score')) {
@@ -1261,8 +1276,8 @@
     var gscNote = q('orch-gsc-note');
     if (gscNote) {
       gscNote.textContent = hasGsc
-        ? '検索回数は GSC Impressions がある行だけ実測で表示しています（推定値は出していません）。'
-        : '検索回数は出していません。上の「GSC CSV」を取り込むと、実測 Impressions が別列で付きます。';
+        ? 'GSC の表示回数（Impressions）がある行だけ Google 実測を別列で表示しています。表示回数は検索回数ではありません。月間検索数は Keyword Planner の取り込み時だけ表示します。'
+        : '検索回数は出していません。上の「GSC CSV」を取り込むと、Google 実測の表示回数・クリックが別列で付きます（表示回数は検索回数ではありません）。';
       gscNote.hidden = false;
     }
 
@@ -1453,7 +1468,8 @@
           try {
             var rows = parseCsv(rd.result);
             var mapped = importGscRows(rows);
-            setGscStatus('GSC取込完了: ' + mapped.length + ' 行（実測）。分析済みなら表へ反映します。', true);
+            setGscStatus('GSC取込完了: ' + mapped.length + ' 行（実測）。分析済みなら表へ反映します。' +
+              (mapped.gscProperty ? '' : ' GSCサイトURLが未設定のため、無料診断の「Google実測」には使いません。'), true);
             if (window.__orchLastJob && window.__orchLastJob.status === 'completed') {
               window.__orchLastJob = reattachGscToJob(window.__orchLastJob);
               renderResult(window.__orchLastJob);

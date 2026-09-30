@@ -28,11 +28,42 @@ The OAuth client must allow the production callback URL, e.g. `https://trillion-
 
 ## Metric definitions
 
+- GSC = impressions / clicks / CTR / average position. **Impressions are not search volume** (they count how often the site appeared in results).
+- Monthly search volume (月間検索数) comes only from Keyword Planner. No data = 「未計測」. String/hash-derived search counts are never used or shown.
+- AI citation / mention rates are a separate metric from search data.
 - GSC CTR = clicks / impressions.
 - Average position = impression-weighted display for aggregated views; raw GSC position is retained by row.
 - GA4 CVR = keyEvents / sessions for the selected date/landing-page scope.
 - AI mention/citation rates = HackⅡ measured runs only. Readiness scores must never be mixed into these percentages.
 - `unmeasured`, `failed`, and measured `0` should be separate states before productionizing the HackⅡ connector.
+
+## GSC data in the free diagnosis (site matching)
+
+Every GSC import records which Search Console property it came from. The free diagnosis (AirReach Tools, 「キーワード比較」 → 「検索データ」 column) only uses GSC data for the same site as the diagnosed URL.
+
+Storage: `localStorage.airreach_official_baseline_v1.gscSites` (existing baseline fields are unchanged):
+
+```js
+gscSites: [{
+  property: 'sc-domain:example.com' | 'https://www.example.com/',  // GSC siteUrl as imported
+  scope: 'domain' | 'url_prefix',
+  host: 'example.com',                // normalized
+  periodDays: 28,
+  keywords: [{ query, impressions, clicks, position }],  // position = impression-weighted average
+  updatedAt
+}]
+```
+
+Writers: `/api/google/gsc` sync (response includes `siteUrl`; each Studio measurement row stores `gscProperty`), Studio GSC CSV (uses the 「GSCサイトURL」 setting), platform CSV (optional 「GSCプロパティ」 field). Rows without a property are kept for Studio but never become `gscSites`.
+
+Matching (`assets/js/airreach-keyword-list.js`):
+
+- Host normalization follows the API's `normalizeSiteUrl`: lowercase, trailing dot removed, default port dropped. `www` is a different host.
+- Domain property `sc-domain:example.com` covers `example.com` and `www.example.com` only (other subdomains are not used).
+- URL-prefix property covers the exact same host only (including `www`).
+- At import time, rows whose page URL is on another host are discarded.
+- Old baselines without `gscSites` (or with an unverified `host` field) are never used as Google実測.
+- Without OAuth / GSC data, every keyword shows 「未計測」 and the keyword feature works on its own.
 
 ## Generated file tree
 

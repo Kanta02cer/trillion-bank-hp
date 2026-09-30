@@ -12,13 +12,23 @@
     try { return new Date().toISOString(); } catch (e) { return ''; }
   }
 
+  // 調べる言葉: keyword（メイン）と keywords（最大5語）をそろえる。旧データは keyword から keywords を作る
+  // 呼び出し元のオブジェクトをそのまま書き換える（従来の saveSurvey と同じ振る舞い）
+  function withKeywords(survey) {
+    if (!window.AirReachKeywordList || !survey || typeof survey !== 'object') return survey;
+    var n = window.AirReachKeywordList.normalize(survey.keyword, survey.keywords);
+    survey.keyword = n.keyword;
+    survey.keywords = n.keywords;
+    return survey;
+  }
+
   function loadSurvey() {
-    try { return JSON.parse(localStorage.getItem(KEY) || 'null'); }
+    try { return withKeywords(JSON.parse(localStorage.getItem(KEY) || 'null')); }
     catch (e) { return null; }
   }
 
   function saveSurvey(survey) {
-    survey = survey || {};
+    survey = withKeywords(survey || {});
     survey.version = 1;
     survey.savedAt = nowIso();
     survey.evidenceClass = 'User Input';
@@ -32,6 +42,7 @@
         mode: survey.mode,
         url: survey.url,
         keyword: survey.keyword,
+        keywords: survey.keywords,
         goal: survey.goal,
         outcomeGoal: survey.outcomeGoal || '',
         siteTitle: survey.siteTitle || ''

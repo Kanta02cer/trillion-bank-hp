@@ -63,7 +63,7 @@ robots: "noindex, follow"
           </select>
         </div>
         <div class="ars-field">
-          <label for="orch-gsc-csv"><span data-tip="Search ConsoleのパフォーマンスCSV。市場需要（推定）とは別に、実測Impressionsをキーワードへ紐づけます。">GSC CSV（任意・実測）</span></label>
+          <label for="orch-gsc-csv"><span data-tip="Search ConsoleのパフォーマンスCSV。キーワードごとの表示回数・クリック（Google実測）を別列で紐づけます。表示回数は検索回数ではありません。">GSC CSV（任意・実測）</span></label>
           <input id="orch-gsc-csv" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values">
           <p id="orch-gsc-status" class="orch-gsc-status" hidden></p>
         </div>
@@ -82,7 +82,7 @@ robots: "noindex, follow"
 
     <section class="ars-orch-result" id="orch-result" hidden>
       <h2>分析が完了しました</h2>
-      <p class="orch-metric-legend">数字の見方：①対策に使う言葉の数　②その言葉で探している人の目安（推定）　③公開ページの準備度（100点・AI掲載率ではない）　④いま着手すべき改善の件数</p>
+      <p class="orch-metric-legend">数字の見方：①対策に使う言葉の数　②Keyword Planner の月間検索数（無ければ未計測）　③公開ページの準備度（100点・AI掲載率ではない）　④いま着手すべき改善の件数</p>
       <div class="orch-four">
         <div class="orch-four-card">
           <div class="lab" data-tip="選定した対策キーワード数">① 対策候補</div>
@@ -90,9 +90,9 @@ robots: "noindex, follow"
           <div class="unit">キーワード数</div>
         </div>
         <div class="orch-four-card">
-          <div class="lab" data-tip="検索回数の合計。Keyword Planner または Search Console の実データを取り込んだときだけ表示します。">② 探している人</div>
-          <div class="val" id="orch-n-demand">—</div>
-          <div class="unit">回/月 <span class="orch-badge-est">推定</span></div>
+          <div class="lab" data-tip="Keyword Planner の月間検索数の合計。取り込んだときだけ表示します。Search Console の表示回数は検索回数ではないため含めません。">② 探している人</div>
+          <div class="val" id="orch-n-demand">未計測</div>
+          <div class="unit">Keyword Planner の月間検索数を取り込むと表示します</div>
         </div>
         <div class="orch-four-card">
           <div class="lab" data-tip="公開ページ準備度。AI掲載率ではありません。">③ 準備度</div>
@@ -333,6 +333,7 @@ robots: "noindex, follow"
 <script src="/assets/js/airreach-display.js" defer></script>
 <script src="/assets/js/airreach-keyword.js" defer></script>
 <script src="/assets/js/airreach-diagnose.js" defer></script>
+<script src="/assets/js/airreach-keyword-list.js" defer></script>
 <script src="/assets/js/airreach-studio.js" defer></script>
 <script src="/assets/js/airreach-package-schema.js" defer></script>
 <script src="/assets/js/airreach-orchestrator.js" defer></script>

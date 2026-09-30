@@ -54,7 +54,8 @@ export default async function handler(req, res) {
     position: row.position || 0,
     source: 'gsc'
   }));
-  return res.status(200).json({ rows, count: rows.length });
+  // siteUrl: どの Search Console プロパティのデータか（クライアントは各行に記録し、同じサイトの診断にだけ使う）
+  return res.status(200).json({ rows, count: rows.length, siteUrl });
 }
 
 async function getAccessToken(req) {

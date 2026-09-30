@@ -823,6 +823,58 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 
 .ar-more-tools summary{cursor:pointer;font-weight:700;color:#475569}
 .ar-gate-note{font-size:.9rem;color:#64748b;margin-top:12px}
+/* 調べる言葉（入力画面 3）: 既存の入力欄・ボタンの見た目に合わせる */
+.ar-kw-h{margin:0 0 8px;font-size:.95rem;font-weight:700;color:#0f172a}
+.ar-kw-h .ar-field-opt{display:block;margin-top:2px;font-size:.82rem}
+.ar-kw-auto{margin:0 0 18px}
+.ar-kw-cands,.ar-kw-chips{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ar-kw-cand{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;min-height:48px;padding:10px 14px;border:1px solid var(--ar-line,#e2e8f0);border-radius:10px;background:#fff;font:inherit;font-size:1rem;font-weight:700;color:#0f172a;text-align:left;cursor:pointer}
+.ar-kw-cand:hover,.ar-kw-cand:focus-visible{border-color:#2563eb;background:var(--ar-accent-soft,#eff6ff)}
+.ar-kw-cand:focus-visible,.ar-kw-chip button:focus-visible{outline:2px solid var(--ar-accent,#1d4ed8);outline-offset:2px}
+.ar-kw-cand:disabled{cursor:default;color:#64748b;background:#f8fafc;border-color:var(--ar-line,#e2e8f0)}
+.ar-kw-cand .ar-kw-plus{flex:none;color:#1d4ed8;font-weight:800}
+.ar-kw-cand:disabled .ar-kw-plus{color:#16a34a}
+.ar-kw-text{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.45}
+.ar-kw-src{flex:none;padding:2px 8px;border-radius:999px;border:1px solid #cbd5e1;background:#f8fafc;color:#475569;font-size:.75rem;font-weight:700;white-space:nowrap}
+.ar-kw-add{display:flex;gap:8px;margin:0 0 18px}
+.ar-gate .ar-kw-add input[type=text]{flex:1;min-width:0;width:auto;margin:0}
+.ar-gate .ar-kw-add .ar-btn{flex:none;min-height:48px;padding:10px 18px;font-size:1rem}
+.ar-gate .ar-kw-add .ar-btn:disabled,.ar-gate .ar-kw-add input:disabled{opacity:.5;cursor:not-allowed}
+.ar-kw-picked{margin:0 0 18px}
+.ar-kw-chip{display:flex;align-items:center;gap:6px;min-height:48px;padding:4px 4px 4px 6px;box-sizing:border-box;border:1px solid var(--ar-line,#e2e8f0);border-radius:10px;background:#fff}
+.ar-kw-chip.is-primary{border-color:#2563eb;background:var(--ar-accent-soft,#eff6ff)}
+.ar-kw-chip button{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:0;border-radius:8px;background:transparent;font:inherit;font-size:1.1rem;cursor:pointer;color:#64748b}
+.ar-kw-chip .ar-kw-main{color:#1d4ed8}
+.ar-kw-chip button:hover{background:rgba(15,23,42,.06)}
+.ar-kw-chip .ar-kw-text{font-size:1rem;font-weight:700;color:#0f172a}
+.ar-kw-chip .ar-kw-src{margin-right:2px}
+#gate-kw-empty,#gate-kw-legend{margin-top:8px}
+#gate-kw-noauto{margin:0 0 18px}
+/* キーワード比較（詳細データ）。スマホは1語ずつの縦並び */
+.ar-kwc{width:100%;border-collapse:collapse;font-size:.92rem}
+.ar-kwc th{text-align:left;font-size:.78rem;font-weight:700;color:var(--ar-muted,#64748b);padding:8px 10px;border-bottom:1px solid var(--ar-line,#e2e8f0);white-space:nowrap}
+.ar-kwc td{padding:10px;border-bottom:1px solid var(--ar-line,#e2e8f0);vertical-align:top;color:#0f172a}
+.ar-kwc tr:last-child td{border-bottom:0}
+.ar-kwc tr.is-primary td{background:var(--ar-accent-soft,#eff6ff)}
+.ar-kwc .ar-kwc-text{font-weight:700;overflow-wrap:anywhere}
+.ar-kwc .ar-kwc-data{white-space:nowrap}
+.ar-kwc .ar-kwc-data span{display:block;line-height:1.5}
+.ar-kwc .ar-kwc-none{color:var(--ar-muted,#64748b)}
+.ar-kwc .ar-kwc-period{font-size:.78rem;color:var(--ar-muted,#64748b)}
+.ar-kwc .ar-badge-e{margin-top:0;font-size:.78rem !important;padding:3px 8px}
+.ar-kwc .ar-kwc-main{color:#1d4ed8;font-weight:800;white-space:nowrap}
+@media(max-width:640px){
+  .ar-kwc thead{display:none}
+  .ar-kwc,.ar-kwc tbody,.ar-kwc tr,.ar-kwc td{display:block;width:100%;box-sizing:border-box}
+  .ar-kwc tr{border:1px solid var(--ar-line,#e2e8f0);border-radius:10px;margin:0 0 8px;overflow:hidden}
+  .ar-kwc tr.is-primary{border-color:#2563eb}
+  .ar-kwc td{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:8px;border-bottom:0;padding:6px 12px}
+  .ar-kwc td::before{content:attr(data-label);font-size:.78rem;font-weight:700;color:var(--ar-muted,#64748b)}
+  .ar-kwc td.ar-kwc-text{padding-top:10px}
+  .ar-kwc td:last-child{padding-bottom:10px}
+  .ar-kwc .ar-kwc-data{white-space:normal}
+  .ar-kwc td:empty{display:none}
+}
 @media (prefers-reduced-motion: reduce){
   .ar-btn-primary,.ar-fix-how .ar-arrow,.ar-formula-entry .ar-arrow{transition:none;transform:none}
   .ar-modal-card{animation:none}
@@ -889,8 +941,36 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
       </ul>
       <div class="ar-gate-actions" id="gate-fail-actions" hidden>
         <button type="button" class="ar-btn ar-btn-line" id="gate-retry">入力に戻る</button>
-        <button type="button" class="ar-btn ar-btn-primary" id="gate-continue">推定のまま結果を見る</button>
+        <button type="button" class="ar-btn ar-btn-primary" id="gate-continue">推定のまま進む</button>
       </div>
+    </div>
+
+    <!-- 3 調べる言葉: 自動候補は採用しなくてよい。1語以上（最大5語）選ぶと結果へ進める -->
+    <div class="ar-gate-step" data-step="3">
+      <p class="ar-gate-kicker">AirReach Tools</p>
+      <h1 id="gate-kw-title">調べる言葉</h1>
+      <p class="ar-gate-lead">AI検索やGoogle検索でお客様が使いそうな言葉を選んでください。</p>
+
+      <div id="gate-kw-auto" class="ar-kw-auto">
+        <p class="ar-kw-h">自動候補 <span class="ar-field-opt">サイトの住所・業種・名前から作った例です。検索回数や順位ではありません</span></p>
+        <ul class="ar-kw-cands" id="gate-kw-cands"></ul>
+      </div>
+      <p class="ar-gate-note" id="gate-kw-noauto" hidden>サイトから候補を作れませんでした。お客様が使いそうな言葉を入力してください。</p>
+
+      <label class="ar-field-big" for="gate-kw-input">キーワードを追加</label>
+      <div class="ar-kw-add">
+        <input id="gate-kw-input" type="text" maxlength="100" placeholder="例: 地域名 業種 おすすめ" autocomplete="off" enterkeyhint="done">
+        <button type="button" class="ar-btn ar-btn-line" id="gate-kw-add">追加</button>
+      </div>
+
+      <div class="ar-kw-picked">
+        <p class="ar-kw-h">選んだ言葉 <span class="ar-field-opt" id="gate-kw-count">0 / 5</span></p>
+        <ul class="ar-kw-chips" id="gate-kw-chips" aria-label="選んだ言葉"></ul>
+        <p class="ar-gate-note" id="gate-kw-empty">まだ選んでいません。候補を押すか、言葉を入力して追加してください。</p>
+        <p class="ar-gate-note" id="gate-kw-legend" hidden>● がメインの言葉で、結果の上部に使います。○ を押すとメインを変えられます。</p>
+      </div>
+
+      <button type="button" class="ar-btn ar-btn-primary ar-gate-cta" id="gate-kw-next" disabled>この言葉で結果を見る →</button>
     </div>
 
     <div id="gate-err" class="ar-gate-err" role="alert"></div>
@@ -971,7 +1051,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         <p>お店・会社：<b id="sum-industry">—</b></p>
         <p>ホームページ：<b id="sum-url">—</b></p>
         <p>増やしたいこと：<b id="sum-goal">—</b></p>
-        <p>調べる言葉（自動）：<b id="sum-keyword">—</b></p>
+        <p>調べる言葉（メイン）：<b id="sum-keyword">—</b></p>
       </div>
 
       <form id="ar-form" class="ar-form" action="#" method="get" hidden>
@@ -1110,6 +1190,17 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <p class="ar-fix-lead" id="ar-detail-lead">各項目の点数と、検出した項目の詳細です。点数は「ホームページの情報整備」の区分で、AI掲載率・順位・成果ではありません。</p>
           <!-- 項目別の点数（押すと不足・未確認の内訳が開く） -->
           <div class="ar-detail-list" id="ar-detail-factors"></div>
+          <!-- キーワード比較: 検索データは Google 実測（Search Console）・正式な月間検索数・入力値だけ。推定の回数は出さない -->
+          <details class="ar-fold" id="ar-kwc-wrap" open hidden>
+            <summary>キーワード比較<span class="ar-fold-count" id="ar-kwc-count"></span></summary>
+            <div class="ar-fold-body">
+              <p class="ar-kwq-note">検索データは、Google Search Console の実測（診断したサイトと同じサイトのデータ）があるときだけ表示します。表示回数は、検索結果にこのサイトが出た回数で、検索された回数ではありません。推定の回数は付けません。</p>
+              <table class="ar-kwc" id="ar-kwc-table">
+                <thead><tr><th scope="col">キーワード</th><th scope="col">種別</th><th scope="col">検索データ</th><th scope="col">データ種別</th><th scope="col">メイン</th></tr></thead>
+                <tbody id="ar-kwc-body"></tbody>
+              </table>
+            </div>
+          </details>
           <details class="ar-fold" id="ar-kwq-wrap" hidden>
             <summary>お客さんが調べそうな言葉<span class="ar-fold-count" id="ar-kwq-count"></span></summary>
             <div class="ar-fold-body">
@@ -1155,6 +1246,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 <script src="{{ '/assets/js/airreach-handoff.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-display.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-keyword.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/airreach-keyword-list.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-diagnose.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-industry.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-sales.js' | relative_url }}" defer></script>
@@ -1177,12 +1269,15 @@ document.addEventListener('DOMContentLoaded', function () {
     url: '',
     goal: '',
     keyword: '',
+    keywords: [],
     mediaUrl: '',
     proxyConsent: false,
     outcomeGoal: '',
     siteTitle: '',
     previewDiagnose: null
   };
+  // 調べる言葉の一覧（最大5語）。keyword はメインの言葉で、#ar-keyword と同じ値
+  var keywordState = { keyword: '', keywords: [] };
   var pageIndustry = (document.body.getAttribute('data-industry') || '').trim();
   if (pageIndustry) {
     industryId = pageIndustry;
@@ -1245,20 +1340,57 @@ document.addEventListener('DOMContentLoaded', function () {
     return map[id] || id || '—';
   }
 
-  // 「調べた言葉」の自動候補。飲食店はサイトの住所と業態から「地域＋業態」を作り（airreach-keyword.js）、
-  // 作れなければ空（未設定）にする。業種ごとの固定語では埋めない。店の方の入力は呼び出し側で優先する。
+  // 「調べた言葉」の自動候補。サイトの住所・業態・名前から作り（airreach-keyword.js）、
+  // 作れなければ空（未設定）にする。見出しそのままや業種ごとの固定語（「近く 焼肉」など）では埋めない。
+  // 新しい診断では入力画面 3 で店の方が選ぶ。ここは保存済みデータに言葉が無いときの補完だけに使う。
   function autoKeyword(diagnose, industry) {
-    var page = (diagnose && diagnose.page) || {};
-    var kwa = page.keywordAuto || null;
-    // 全業種: サイトの住所・業態・名前から作る。作れなければ空（未設定）。見出しそのままや固定語は使わない
+    var kwa = (diagnose && diagnose.page && diagnose.page.keywordAuto) || null;
     if (kwa && kwa.industries && kwa.industries[industry || 'other']) return kwa.industries[industry || 'other'].keyword || '';
     if (industry === 'restaurant' && kwa) return kwa.keyword || '';
-    if (kwa) return '';
-    var raw = String(page.h1 || page.title || '').trim();
-    raw = raw.replace(/\s*[|｜\-–—].*$/, '').replace(/\s+/g, ' ').trim();
-    if (raw && raw.length >= 2 && raw.length <= 40) return raw;
-    var defaults = { restaurant: '近く 焼肉', clinic: '近く クリニック', b2b: '業務 効率化', media: 'ニュース', other: '近く おすすめ' };
-    return defaults[industry] || defaults.other;
+    return '';
+  }
+
+  // 入力画面 3 に出す自動候補（最大 n 語）。地域＋業種 → 答えがサイトにある条件つき → その他の条件 → 名前 の順
+  function autoCandidates(diagnose, industry, n) {
+    var kwa = (diagnose && diagnose.page && diagnose.page.keywordAuto) || null;
+    if (!kwa) return [];
+    var ind = kwa.industries && kwa.industries[industry || 'other'];
+    var list = (ind && ind.candidates) || (industry === 'restaurant' ? kwa.candidates : null) || [];
+    function rank(c) {
+      if (c.group === 'base') return 0;
+      if (c.group === 'condition') return c.answered === true ? 1 : 2;
+      return 3;
+    }
+    var out = [], seen = {};
+    list.map(function (c, i) { return { c: c, r: rank(c), i: i }; })
+      .sort(function (a, b) { return (a.r - b.r) || (a.i - b.i); })
+      .forEach(function (x) {
+        var t = window.AirReachKeywordList ? AirReachKeywordList.cleanText(x.c.text) : String(x.c.text || '').trim();
+        if (t && !seen[t] && out.length < (n || 3)) { seen[t] = true; out.push(t); }
+      });
+    return out;
+  }
+
+  // keyword（メイン）と keywords（一覧）をそろえる。旧データ（keyword だけ）は source: 'legacy' の1語になる
+  function normalizeKeywords(keyword, keywords) {
+    return window.AirReachKeywordList
+      ? window.AirReachKeywordList.normalize(keyword, keywords)
+      : { keyword: String(keyword || ''), keywords: [] };
+  }
+  // 自動で作った言葉だけの一覧（空なら []）
+  function autoKeywordList(text) {
+    return window.AirReachKeywordList ? window.AirReachKeywordList.single(text, 'auto') : [];
+  }
+  // 保存済みの一覧を使い、メインが空なら自動の言葉で埋める（survey / scan 風のオブジェクトを書き換える）
+  function fillKeywords(target, diagnose) {
+    var n = normalizeKeywords(target.keyword, target.keywords);
+    if (!n.keyword) {
+      var auto = autoKeyword(diagnose, target.industryId);
+      n = { keyword: auto, keywords: autoKeywordList(auto) };
+    }
+    target.keyword = n.keyword;
+    target.keywords = n.keywords;
+    return target;
   }
 
   // 「増やしたいこと」: 業種ページではその業種の選択肢、柱ページでは全選択肢
@@ -1353,12 +1485,14 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       industryDetect = det;
       surveyState.siteTitle = (result.page && (result.page.h1 || result.page.title)) || lastUrl;
-      surveyState.keyword = autoKeyword(result, surveyState.industryId);
+      // 自動候補は選ばせるだけで、最初から採用しない
+      surveyState.keyword = '';
+      surveyState.keywords = [];
       setProgress(2);
       setTimeout(function () {
         setProgress(3);
         var wait = Math.max(300, 1400 - (Date.now() - started));
-        setTimeout(finishSurvey, wait);
+        setTimeout(function () { openKeywordStep(result); }, wait);
       }, 350);
     }).catch(function (ex) {
       clearTimeout(t1);
@@ -1367,7 +1501,8 @@ document.addEventListener('DOMContentLoaded', function () {
       surveyState.url = lastUrl;
       surveyState.industryId = chosen || 'other';
       surveyState.siteTitle = String(lastUrl).replace(/^https?:\/\//, '').split('/')[0];
-      surveyState.keyword = autoKeyword(null, surveyState.industryId);
+      surveyState.keyword = '';
+      surveyState.keywords = [];
       setProgress(0, 1);
       gateErr((ex && ex.message ? ex.message + ' ' : '') + 'サイトを取得できなかったため、このまま進むと推定だけの結果になります。');
       $('gate-fail-actions').hidden = false;
@@ -1376,7 +1511,123 @@ document.addEventListener('DOMContentLoaded', function () {
 
   $('gate-next-1').addEventListener('click', startDiagnoseFlow);
   $('gate-retry').addEventListener('click', function () { setGateStep(1); });
-  $('gate-continue').addEventListener('click', function () { finishSurvey(); });
+  $('gate-continue').addEventListener('click', function () { openKeywordStep(null); });
+
+  // ---- 入力画面 3: 調べる言葉（最大5語、1語がメイン）。自動候補は選ばなくてよい ----
+  var KW_SOURCE_LABEL = { auto: '自動候補', user: '入力', gsc: 'Google実測', legacy: '以前の保存' };
+  var kwCandidates = [];
+
+  function openKeywordStep(diagnose) {
+    kwCandidates = autoCandidates(diagnose, surveyState.industryId, 3);
+    var n = normalizeKeywords(surveyState.keyword, surveyState.keywords);
+    surveyState.keyword = n.keyword;
+    surveyState.keywords = n.keywords;
+    $('gate-kw-input').value = '';
+    setGateStep(3);
+    renderKeywordStep();
+    setTimeout(function () { try { $('gate-kw-input').focus({ preventScroll: true }); } catch (e) {} }, 50);
+  }
+
+  function kwEl(tag, cls, text) {
+    var el = document.createElement(tag);
+    if (cls) el.className = cls;
+    if (text != null) el.textContent = text;
+    return el;
+  }
+
+  function renderKeywordStep() {
+    var list = surveyState.keywords || [];
+    var picked = {};
+    list.forEach(function (k) { picked[k.text] = true; });
+    var full = list.length >= (window.AirReachKeywordList ? AirReachKeywordList.MAX : 5);
+
+    var cands = $('gate-kw-cands');
+    cands.innerHTML = '';
+    kwCandidates.forEach(function (t) {
+      var li = kwEl('li');
+      var b = kwEl('button', 'ar-kw-cand');
+      b.type = 'button';
+      b.disabled = !!picked[t] || full;
+      b.setAttribute('aria-label', picked[t] ? t + '（追加済み）' : t + ' を追加（自動候補）');
+      b.appendChild(kwEl('span', 'ar-kw-plus', picked[t] ? '✓' : '＋')).setAttribute('aria-hidden', 'true');
+      b.appendChild(kwEl('span', 'ar-kw-text', t));
+      b.appendChild(kwEl('span', 'ar-kw-src', '自動候補'));
+      b.addEventListener('click', function () { addKeyword(t, 'auto'); });
+      li.appendChild(b);
+      cands.appendChild(li);
+    });
+    $('gate-kw-auto').hidden = kwCandidates.length === 0;
+    $('gate-kw-noauto').hidden = kwCandidates.length > 0;
+
+    var chips = $('gate-kw-chips');
+    chips.innerHTML = '';
+    list.forEach(function (k) {
+      var li = kwEl('li', 'ar-kw-chip' + (k.primary ? ' is-primary' : ''));
+      var main = kwEl('button', 'ar-kw-main', k.primary ? '●' : '○');
+      main.type = 'button';
+      main.setAttribute('aria-pressed', k.primary ? 'true' : 'false');
+      main.setAttribute('aria-label', k.primary ? k.text + '（メインの言葉）' : k.text + ' をメインにする');
+      main.title = k.primary ? 'メインの言葉' : 'メインにする';
+      main.addEventListener('click', function () { setPrimaryKeyword(k.text); });
+      var del = kwEl('button', 'ar-kw-del', '×');
+      del.type = 'button';
+      del.setAttribute('aria-label', k.text + ' を削除');
+      del.title = '削除';
+      del.addEventListener('click', function () { removeKeyword(k.text); });
+      li.appendChild(main);
+      li.appendChild(kwEl('span', 'ar-kw-text', k.text));
+      li.appendChild(kwEl('span', 'ar-kw-src', KW_SOURCE_LABEL[k.source] || ''));
+      li.appendChild(del);
+      chips.appendChild(li);
+    });
+    $('gate-kw-count').textContent = list.length + ' / ' + (window.AirReachKeywordList ? AirReachKeywordList.MAX : 5);
+    $('gate-kw-empty').hidden = list.length > 0;
+    $('gate-kw-legend').hidden = list.length === 0;
+    $('gate-kw-add').disabled = full;
+    $('gate-kw-input').disabled = full;
+    $('gate-kw-input').placeholder = full ? '追加できるのは5件までです' : '例: 地域名 業種 おすすめ';
+    $('gate-kw-next').disabled = list.length === 0;
+  }
+
+  function setKeywords(n) {
+    surveyState.keyword = n.keyword;
+    surveyState.keywords = n.keywords;
+    renderKeywordStep();
+  }
+
+  // 追加: 前後の空白を除く。空・101文字以上・重複・6件目は追加しない
+  function addKeyword(raw, source) {
+    gateErr('');
+    var L = window.AirReachKeywordList;
+    if (!L) { gateErr('スクリプトの読み込みに失敗しました。'); return false; }
+    var collapsed = String(raw == null ? '' : raw).replace(/[\s\u3000]+/g, ' ').trim();
+    if (!collapsed) { gateErr('言葉を入力してください。'); return false; }
+    if (collapsed.length > L.MAX_LEN) { gateErr('言葉は' + L.MAX_LEN + '文字以内で入力してください。'); return false; }
+    var t = L.cleanText(collapsed);
+    var list = surveyState.keywords || [];
+    if (list.some(function (k) { return k.text === t; })) { gateErr('「' + t + '」はすでに追加しています。'); return false; }
+    if (list.length >= L.MAX) { gateErr('追加できるのは' + L.MAX + '件までです。'); return false; }
+    setKeywords(L.add(list, t, source));
+    return true;
+  }
+  function removeKeyword(text) {
+    gateErr('');
+    if (window.AirReachKeywordList) setKeywords(AirReachKeywordList.remove(surveyState.keywords, text));
+  }
+  function setPrimaryKeyword(text) {
+    gateErr('');
+    if (window.AirReachKeywordList) setKeywords(AirReachKeywordList.setPrimary(surveyState.keywords, text));
+  }
+  function addFromInput() {
+    var input = $('gate-kw-input');
+    if (addKeyword(input.value, 'user')) { input.value = ''; try { input.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  $('gate-kw-add').addEventListener('click', addFromInput);
+  $('gate-kw-input').addEventListener('keydown', function (e) {
+    // 日本語入力の変換確定の Enter では追加しない
+    if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); addFromInput(); }
+  });
+  $('gate-kw-next').addEventListener('click', function () { finishSurvey(); });
   ['input', 'change'].forEach(function (ev) {
     $('gate-url').addEventListener(ev, updateGateStep1);
     $('gate-proxy').addEventListener(ev, updateGateStep1);
@@ -1393,7 +1644,8 @@ document.addEventListener('DOMContentLoaded', function () {
     mode = route.mode;
     $('ar-industry').value = industryId;
     $('ar-url').value = survey.url || '';
-    $('ar-keyword').value = survey.keyword || '';
+    keywordState = normalizeKeywords(survey.keyword, survey.keywords);
+    $('ar-keyword').value = keywordState.keyword;
     $('ar-media').value = survey.mediaUrl || '';
     $('ar-proxy-consent').checked = !!survey.proxyConsent;
     lastUrl = survey.url || '';
@@ -1405,9 +1657,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var kwDiag = survey.previewDiagnose || lastDiagnose;
     var kwAll = kwDiag && kwDiag.page && kwDiag.page.keywordAuto;
     var kwSrc = kwAll && kwAll.industries && kwAll.industries[industryId] ? kwAll.industries[industryId] : kwAll;
-    $('sum-keyword').textContent = survey.keyword
-      ? survey.keyword + (kwSrc && kwSrc.keyword === survey.keyword && kwSrc.sourceLabel ? '（' + kwSrc.sourceLabel + '）' : '')
-      : '未設定（住所や業態がサイトから読み取れませんでした）';
+    var kwMain = (keywordState.keywords || []).filter(function (k) { return k.primary; })[0];
+    var kwMore = (keywordState.keywords || []).length - 1;
+    var kwFrom = !kwMain ? '' : kwMain.source === 'auto'
+      ? (kwSrc && kwSrc.keyword === keywordState.keyword && kwSrc.sourceLabel ? '自動候補・' + kwSrc.sourceLabel : '自動候補')
+      : (KW_SOURCE_LABEL[kwMain.source] || '');
+    $('sum-keyword').textContent = keywordState.keyword
+      ? keywordState.keyword + (kwFrom ? '（' + kwFrom + '）' : '') + (kwMore > 0 ? ' ほか' + kwMore + '語' : '')
+      : '未設定';
     $('ar-summary').classList.add('is-on');
 
     $('ar-hero-title').innerHTML = route.copy.indexOf('記事') >= 0
@@ -1531,6 +1788,7 @@ document.addEventListener('DOMContentLoaded', function () {
           url: report.url || prev.url || lastUrl,
           industryId: report.industryId || prev.industryId,
           keyword: report.keyword || prev.keyword,
+          keywords: report.keyword === keywordState.keyword ? keywordState.keywords : prev.keywords,
           // Never store a guessed score: diagnosed-but-unknown stays null (not confidence, not 0).
           scoreOverall: (report.acquisition && report.acquisition.score != null) ? report.acquisition.score : (prev.scoreOverall != null ? prev.scoreOverall : null),
           diagnoseState: lastDiagnose ? (lastDiagnose.state || 'verified') : (prev.diagnoseState || 'not_diagnosed'),
@@ -1543,7 +1801,7 @@ document.addEventListener('DOMContentLoaded', function () {
             modeLabel: report.modeLabel,
             industryLabel: report.industryLabel,
             confidence: report.confidence,
-            headline: (report.headline4 || []).map(function (h) {
+            headline: ((window.AirReachScanStore && AirReachScanStore.sanitizeHeadlines) ? AirReachScanStore.sanitizeHeadlines(report.headline4) : (report.headline4 || [])).map(function (h) {
               return { id: h.id, label: h.label, value: h.value, unit: h.unit, badge: h.badge };
             })
           },
@@ -1615,7 +1873,9 @@ document.addEventListener('DOMContentLoaded', function () {
       cite_after: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'
     };
     var nowRow = null, otherRows = [];
-    (report.headline4 || []).forEach(function (h) { if (h.id === 'now') nowRow = h; else otherRows.push(h); });
+    // 以前の版の「探している人 約◯回」（Estimated）が紛れ込んでも表示しない（未計測に置き換える）
+    var headRows = (window.AirReachScanStore && AirReachScanStore.sanitizeHeadlines) ? AirReachScanStore.sanitizeHeadlines(report.headline4) : (report.headline4 || []);
+    headRows.forEach(function (h) { if (h.id === 'now') nowRow = h; else otherRows.push(h); });
     var band = (nowRow && nowRow.band) || (window.AirReachDisplay ? AirReachDisplay.band(null) : { label: '未確認', tone: 'muted', color: '#64748b', meaning: '' });
     var scoreNum = nowRow && nowRow.value !== '—' ? Number(nowRow.value) : null;
     var gauge = $('ar-gauge');
@@ -1913,6 +2173,44 @@ document.addEventListener('DOMContentLoaded', function () {
         detailFactors.appendChild(row);
       });
     }
+    // キーワード比較: 選んだ言葉ごとの種別・検索データ（Google 実測 / 正式な月間検索数 / 入力値。無ければ未計測）・メイン
+    var kwcWrap = $('ar-kwc-wrap'), kwcBody = $('ar-kwc-body');
+    var kwcRows = report.keywordComparison || [];
+    if (kwcWrap && kwcBody) {
+      var KWC_SOURCE = { auto: '自動候補', user: 'ユーザー入力', gsc: 'Google実測', legacy: '以前の保存' };
+      var num = function (n) { return Number(n).toLocaleString('ja-JP'); };
+      kwcBody.innerHTML = kwcRows.map(function (r) {
+        var sd = r.searchData || {}, lines = [], kinds = [];
+        if (sd.gsc) {
+          // GSC の表示回数は検索回数ではない（月間検索数・検索ボリュームとは書かない）
+          lines.push('<span>表示回数 ' + (sd.gsc.impressions != null ? num(sd.gsc.impressions) : '—') + '</span>' +
+            '<span>クリック ' + (sd.gsc.clicks != null ? num(sd.gsc.clicks) : '—') + '</span>' +
+            '<span>平均順位 ' + (sd.gsc.position != null ? sd.gsc.position.toFixed(1) : '—') + '</span>' +
+            '<span class="ar-kwc-period">直近' + tipAttr(sd.gsc.periodDays) + '日</span>');
+          kinds.push('<span class="ar-badge-e is-obs">Google実測</span>');
+        }
+        if (sd.volume) {
+          lines.push('<span>月間検索数 ' + num(sd.volume.value) + '</span>');
+          kinds.push('<span class="ar-badge-e is-obs">' + tipAttr(sd.volume.sourceLabel) + '</span>');
+        }
+        if (sd.input) {
+          lines.push('<span>入力値 ' + num(sd.input.value) + '</span>');
+          kinds.push('<span class="ar-badge-e is-user">ユーザー入力</span>');
+        }
+        var data = lines.length ? lines.join('') : '<span class="ar-kwc-none">未計測</span>';
+        var kind = kinds.length ? kinds.join(' ') : '<span class="ar-kwc-none">—</span>';
+        return '<tr' + (r.primary ? ' class="is-primary"' : '') + '>' +
+          '<td class="ar-kwc-text" data-label="キーワード">' + tipAttr(r.text) + '</td>' +
+          '<td data-label="種別">' + tipAttr(KWC_SOURCE[r.source] || '') + '</td>' +
+          '<td class="ar-kwc-data" data-label="検索データ"><div>' + data + '</div></td>' +
+          '<td data-label="データ種別">' + kind + '</td>' +
+          '<td data-label="メイン">' + (r.primary ? '<span class="ar-kwc-main">● メイン</span>' : '') + '</td>' +
+          '</tr>';
+      }).join('');
+      var nGsc = kwcRows.filter(function (r) { return r.searchData && r.searchData.gsc; }).length;
+      if ($('ar-kwc-count')) $('ar-kwc-count').textContent = kwcRows.length + '語' + (nGsc ? ' · Google実測 ' + nGsc + '語' : ' · Google実測なし');
+      kwcWrap.hidden = kwcRows.length === 0;
+    }
     // 調べそうな言葉（飲食店）: 言葉ごとに、答えがサイトに書いてあるか
     var kwqWrap = $('ar-kwq-wrap'), kwqList = $('ar-kwq-list');
     var kwqSet = (report.headline4 || []).reduce(function (acc, h) { return acc || (h.id === 'demand' && h.keywordSet) || null; }, null);
@@ -2130,6 +2428,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return window.AirReachSales.buildSalesReport({
       mode: mode,
       keyword: $('ar-keyword').value,
+      keywords: keywordState.keyword === $('ar-keyword').value ? keywordState.keywords : null,
       url: lastUrl,
       mediaUrl: $('ar-media').value,
       volumeOverride: $('ar-volume').value,
@@ -2149,7 +2448,11 @@ document.addEventListener('DOMContentLoaded', function () {
     var url = $('ar-url').value;
     var keyword = $('ar-keyword').value;
     if (!url) { showError('ホームページのURLが必要です。'); return; }
-    if (!keyword) { keyword = autoKeyword(lastDiagnose, industryId); $('ar-keyword').value = keyword; }
+    if (!keyword) {
+      keyword = autoKeyword(lastDiagnose, industryId);
+      $('ar-keyword').value = keyword;
+      keywordState = { keyword: keyword, keywords: autoKeywordList(keyword) };
+    }
     var allowProxy = !!$('ar-proxy-consent').checked;
     window.AirReach.diagnose(url, { allowProxy: allowProxy }).then(function (result) {
       lastDiagnose = result;
@@ -2192,13 +2495,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     surveyState.proxyConsent = true;
     if (!surveyState.url) { gateErr('ホームページのURLが未入力です。'); return; }
-    if (!surveyState.keyword) surveyState.keyword = autoKeyword(surveyState.previewDiagnose, surveyState.industryId);
+    var kwN = normalizeKeywords(surveyState.keyword, surveyState.keywords);
+    surveyState.keyword = kwN.keyword;
+    surveyState.keywords = kwN.keywords;
+    if (!surveyState.keywords.length) {
+      if (gateStep !== 3) openKeywordStep(surveyState.previewDiagnose);
+      gateErr('調べる言葉を1つ以上選んでください。');
+      return;
+    }
 
     var survey = window.AirReachOnboard.saveSurvey({
       industryId: surveyState.industryId,
       url: surveyState.url,
       goal: surveyState.goal,
       keyword: surveyState.keyword,
+      keywords: surveyState.keywords,
       mediaUrl: surveyState.mediaUrl || '',
       proxyConsent: true,
       outcomeGoal: surveyState.outcomeGoal,
@@ -2215,6 +2526,7 @@ document.addEventListener('DOMContentLoaded', function () {
         goal: survey.goal,
         outcomeGoal: survey.outcomeGoal,
         keyword: survey.keyword,
+        keywords: survey.keywords,
         displayName: survey.siteTitle || survey.url,
         siteTitle: survey.siteTitle || '',
         scoreOverall: surveyState.previewDiagnose ? surveyState.previewDiagnose.overall : null,
@@ -2249,7 +2561,8 @@ document.addEventListener('DOMContentLoaded', function () {
       window.location.href = '/airreach/?fresh=1';
       return;
     }
-    surveyState = { industryId: '', url: '', goal: '', keyword: '', mediaUrl: '', proxyConsent: false, outcomeGoal: '', siteTitle: '', previewDiagnose: null };
+    surveyState = { industryId: '', url: '', goal: '', keyword: '', keywords: [], mediaUrl: '', proxyConsent: false, outcomeGoal: '', siteTitle: '', previewDiagnose: null };
+    keywordState = { keyword: '', keywords: [] };
     $('gate-url').value = '';
     $('gate-proxy').checked = false;
     if ($('gate-outcome-select')) $('gate-outcome-select').value = '';
@@ -2448,13 +2761,14 @@ document.addEventListener('DOMContentLoaded', function () {
       industryId: pageIndustry || scan.industryId || 'other',
       url: scan.url,
       keyword: scan.keyword || '',
+      keywords: scan.keywords,
       goal: scan.goal || 'acquisition',
       outcomeGoal: scan.outcomeGoal || '',
       mediaUrl: scan.mediaUrl || '',
       siteTitle: scan.siteTitle || scan.displayName || '',
       proxyConsent: true
     };
-    if (!survey.keyword) survey.keyword = autoKeyword(scan.previewDiagnose, survey.industryId);
+    fillKeywords(survey, scan.previewDiagnose);
     var route = window.AirReachOnboard.routeFromSurvey(survey);
     applySurveyToPage(survey, route);
     closeGate();
@@ -2573,15 +2887,14 @@ document.addEventListener('DOMContentLoaded', function () {
           industryId: pageIndustry || scan.industryId || 'other',
           url: scan.url,
           keyword: scan.keyword || '',
+          keywords: scan.keywords,
           goal: scan.goal || 'acquisition',
           outcomeGoal: scan.outcomeGoal || '',
           mediaUrl: scan.mediaUrl || '',
           siteTitle: scan.siteTitle || scan.displayName || '',
           proxyConsent: true
         };
-        if (!surveyFromScan.keyword) {
-          surveyFromScan.keyword = autoKeyword(scan.previewDiagnose, surveyFromScan.industryId);
-        }
+        fillKeywords(surveyFromScan, scan.previewDiagnose);
         var routeScan = window.AirReachOnboard.routeFromSurvey(surveyFromScan);
         if (!pageIndustry && routeScan.basePath && location.pathname.indexOf('/airreach/result') < 0
             && location.pathname.replace(/\/$/, '') !== routeScan.basePath.replace(/\/$/, '')) {
@@ -2608,12 +2921,14 @@ document.addEventListener('DOMContentLoaded', function () {
         industryId: pageIndustry || params.get('industry') || 'other',
         url: params.get('url'),
         keyword: params.get('keyword') || '',
+        // URL の keyword はメインの言葉だけ。同じサイトの保存済み一覧があれば引き継ぐ（無ければ出どころ不明 = legacy）
+        keywords: existing && existing.url === params.get('url') ? existing.keywords : undefined,
         goal: (params.get('mode') === 'branded_search' || params.get('mode') === 'brand') ? 'visibility' : 'acquisition',
         outcomeGoal: params.get('outcome') || '',
         mediaUrl: params.get('media') || '',
         proxyConsent: false
       };
-      if (!survey.keyword) survey.keyword = autoKeyword(null, survey.industryId);
+      fillKeywords(survey, null);
       var route = window.AirReachOnboard.routeFromSurvey(survey);
       if (!pageIndustry && route.basePath && location.pathname.indexOf(route.basePath) !== 0) {
         window.AirReachOnboard.saveSurvey(survey);

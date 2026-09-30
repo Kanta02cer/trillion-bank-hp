@@ -70,7 +70,7 @@
     var talk = esc(buildTalk(scan)).replace(/\n/g, '<br>');
     var url = esc(scan.url || '');
     var when = esc((scan.savedAt || '').slice(0, 10));
-    var headlines = (scan.reportLite && scan.reportLite.headline) || [];
+    var headlines = savedHeadlines(scan);
     var rows = headlines.map(function (h) {
       return '<tr><td>' + esc(h.label) + '</td><td><b>' + esc(h.value) + '</b> ' + esc(h.unit || '') +
         '</td><td>' + esc(h.badge || '参考予測') + '</td></tr>';
@@ -107,7 +107,16 @@
     return true;
   }
 
+  // 端末に保存された結果の見出し。以前の保存には、言葉の文字列から計算した「探している人 約◯回」（Estimated）が
+  // 残っていることがあるので「未計測」に置き換えて出す（検索データではないため。保存データは書き換えない）。
+  function savedHeadlines(scan) {
+    var list = (scan && scan.reportLite && scan.reportLite.headline) || [];
+    if (window.AirReachScanStore && window.AirReachScanStore.sanitizeHeadlines) return window.AirReachScanStore.sanitizeHeadlines(list);
+    return list.filter(function (h) { return !(h && h.id === 'demand' && h.badge === 'Estimated'); });
+  }
+
   window.AirReachSalesKit = {
+    savedHeadlines: savedHeadlines,
     buildTalk: buildTalk,
     buildProposalHtml: buildProposalHtml,
     openProposal: openProposal,
