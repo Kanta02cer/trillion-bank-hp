@@ -100,9 +100,34 @@ select rule_version, default_display_version, published_at from public.rule_vers
 `service_role` キーは Vercel の server-side Environment Variables にだけ置き、その鍵で使えるのはこの RPC 2 本だけ。
 （`ops/airreach-api` の Cloudflare 版は比較・ロールバック用に残置。本番構成からは外す）
 
-## Phase 2（このディレクトリにまだ無いもの）
+## Phase 2 ログイン・顧客管理・月次レポート（PR #57・未適用）
 
-- Supabase Auth と `accounts` / `memberships` / `clients` / `client_relationships` / `locations`
-- `authenticated` への RLS ポリシー付き SELECT 再付与
+| ファイル | 内容 |
+|---|---|
+| `migrations/20260930120000_airreach_phase2_auth_reports.sql` | 社内メンバー・顧客・顧客側担当者・対象サイト・AI計測・流入・施策・レポートの8テーブル、RLS（社内は全件、顧客は自社の公開済みレポートだけ）、RPC `airreach_me()` / `airreach_client_scans()` |
+| `migrations/20260930130000_airreach_phase2_signup_guard.sql` | Auth の Before User Created フック関数。`staff_members` か `client_members` に登録済みのメールだけがアカウントを作れる |
+| `rollback/20260930120000_airreach_phase2_rollback.sql` | Phase 2 の取り消し（Phase 1 には触らない・Phase 2 の行は消える） |
+
+ローカル検証: `scripts/airreach-api/phase2-rls-test.sql`（26 PASS）。取り消し→再適用で Phase 1 の関数と行が変わらないことも確認済み。
+
+### 適用手順（Change ID の承認後にだけ）
+
+`scripts/airreach-api/phase2-apply.py` で1手順ずつ実行する。トークンは本人のアカウントで期限つきに発行し、`~/.config/airreach/supabase_token`（chmod 600）に置く。スクリプトは AirReach 以外の Project を拒否する。
+
+1. `check` — 読むだけ。Phase 1 があり Phase 2 が無いことを確認
+2. `apply-db` — migration 2本を適用し、権限を6項目で検証
+3. `add-staff <email> admin` — 最初の管理者
+4. `auth-config` — 戻り先 `https://trillion-bank.jp/airreach/app/`・日本語のメール文面（`~/.config/airreach/smtp.json` があれば SMTP も）。変更前の設定を `~/.config/airreach/` に保存
+5. `auth-hook` — 登録制限フックを有効化（管理者が0人なら止まる）
+6. `anon-key-to-vercel` — 公開用キーを Vercel 本番の `SUPABASE_ANON_KEY` に登録（値は表示しない）
+7. PR #57 をマージ → 本番で管理者のログイン・顧客登録・レポート作成を確認
+
+取り消すときは、フックを無効にしてから rollback SQL を実行し、Vercel の `SUPABASE_ANON_KEY` を消す。
+
+⚠️ Supabase 標準のメール送信は、Supabase のチームメンバー宛てにしか届かない。顧客がログインするには独自 SMTP が必要。
+
+## Phase 2 で見送ったもの
+
+- `accounts` / `memberships` / `client_relationships` / `locations`（代理店の階層。今回は社内と顧客の2者だけ）
 - `scans.status` の変更（認証ユーザー限定）、サイト別履歴一覧 API
 - `scan_findings`（検出内容の正規化。Phase 1 は `scans.raw_result` と `scan_checks.state` で代替）

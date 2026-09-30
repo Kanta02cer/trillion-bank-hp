@@ -8,6 +8,7 @@ Change ID（DEV-YYYY-NNN）の承認後にだけ使う。各手順は単独で�
   python3 scripts/airreach-api/phase2-apply.py verify                  # 検証だけ
   python3 scripts/airreach-api/phase2-apply.py add-staff <email> admin|staff
   python3 scripts/airreach-api/phase2-apply.py auth-config             # ログインの戻り先・日本語メール（SMTP は smtp.json があれば）
+  python3 scripts/airreach-api/phase2-apply.py auth-hook               # 登録済みのメールだけがアカウントを作れるフックを有効化
   python3 scripts/airreach-api/phase2-apply.py anon-key-to-vercel      # 公開用キーを Vercel 本番の SUPABASE_ANON_KEY に登録
 
 Supabase のアクセストークン（Account → Access Tokens で発行・期限つき推奨）は、
@@ -28,8 +29,11 @@ REF = 'opjjxbdrgfyoydyrmzns'          # AirReach（Tokyo）
 FORBIDDEN = {'inlnrdjdfccnhmskpyrs'}  # Hack2 Project。絶対に触らない
 API = 'https://api.supabase.com/v1'
 ROOT = Path(__file__).resolve().parents[2]
-MIGRATION = ROOT / 'supabase/migrations/20260930120000_airreach_phase2_auth_reports.sql'
-MIGRATION_NAME = 'airreach_phase2_auth_reports'
+MIGRATIONS = [
+    ('airreach_phase2_auth_reports', ROOT / 'supabase/migrations/20260930120000_airreach_phase2_auth_reports.sql'),
+    ('airreach_phase2_signup_guard', ROOT / 'supabase/migrations/20260930130000_airreach_phase2_signup_guard.sql'),
+]
+HOOK_URI = 'pg-functions://postgres/public/airreach_before_user_created'
 CONF_DIR = Path.home() / '.config/airreach'
 SITE_URL = 'https://trillion-bank.jp'
 REDIRECT = 'https://trillion-bank.jp/airreach/app/'
@@ -117,6 +121,7 @@ def cmd_check():
     print('Auth: メールログイン =', a.get('external_email_enabled'), '/ 新規登録の停止 =', a.get('disable_signup'))
     print('Auth: 独自 SMTP =', ('あり（' + str(a.get('smtp_host')) + '）') if a.get('smtp_host') else 'なし（標準：チームのメンバー宛てにしか届かない）')
     print('Auth: メール件名 =', a.get('mailer_subjects_magic_link'), '/', a.get('mailer_subjects_confirmation'))
+    print('Auth: 登録制限フック =', a.get('hook_before_user_created_enabled'), a.get('hook_before_user_created_uri'))
     print('Vercel 本番 SUPABASE_ANON_KEY:', 'あり' if vercel_has_anon_key() else 'なし')
 
 
@@ -126,8 +131,9 @@ def cmd_apply_db():
     for need in ('sites', 'scans', 'rule_versions'):
         if need not in t:
             die(f'Phase 1 の {need} がありません')
-    call('POST', f'/projects/{REF}/database/migrations', {'name': MIGRATION_NAME, 'query': MIGRATION.read_text()})
-    print('migration を適用しました')
+    for name, path in MIGRATIONS:
+        call('POST', f'/projects/{REF}/database/migrations', {'name': name, 'query': path.read_text()})
+        print('migration を適用しました:', name)
     verify()
 
 
@@ -150,6 +156,11 @@ def verify():
          "select has_function_privilege('anon','public.airreach_me()','execute') as a, "
          "has_function_privilege('anon','public.airreach_client_scans(uuid,integer)','execute') as b",
          lambda r: r[0]['a'] is False and r[0]['b'] is False),
+        ('登録制限のフック関数は Auth だけが実行できる',
+         "select has_function_privilege('anon','public.airreach_before_user_created(jsonb)','execute') as a, "
+         "has_function_privilege('authenticated','public.airreach_before_user_created(jsonb)','execute') as b, "
+         "has_function_privilege('supabase_auth_admin','public.airreach_before_user_created(jsonb)','execute') as c",
+         lambda r: r[0]['a'] is False and r[0]['b'] is False and r[0]['c'] is True),
         ('SECURITY DEFINER の関数は search_path 固定',
          "select count(*)::int as n from pg_proc where pronamespace='public'::regnamespace and proname like 'airreach_%' "
          "and prosecdef and (proconfig is null or not exists (select 1 from unnest(proconfig) c where c like 'search_path=%'))",
@@ -222,6 +233,17 @@ def cmd_auth_config():
         print(f'  {k} = {after.get(k)}')
 
 
+def cmd_auth_hook():
+    confirm_project()
+    if not sql("select 1 as x from pg_proc where proname = 'airreach_before_user_created'", True):
+        die('フック関数がありません。先に apply-db を実行してください')
+    if not sql('select count(*)::int as n from public.staff_members', True)[0]['n']:
+        die('社内メンバーが0人です。先に add-staff で最初の管理者を登録してください（誰もログインできなくなるため）')
+    call('PATCH', f'/projects/{REF}/config/auth', {'hook_before_user_created_enabled': True, 'hook_before_user_created_uri': HOOK_URI})
+    a = call('GET', f'/projects/{REF}/config/auth')
+    print('Before User Created フック:', a.get('hook_before_user_created_enabled'), a.get('hook_before_user_created_uri'))
+
+
 def cmd_anon_key_to_vercel():
     confirm_project()
     keys = call('GET', f'/projects/{REF}/api-keys?reveal=true') or []
@@ -243,7 +265,7 @@ def cmd_anon_key_to_vercel():
 
 def main():
     a = sys.argv[1:]
-    cmds = {'check': cmd_check, 'apply-db': cmd_apply_db, 'auth-config': cmd_auth_config,
+    cmds = {'check': cmd_check, 'apply-db': cmd_apply_db, 'auth-config': cmd_auth_config, 'auth-hook': cmd_auth_hook,
             'anon-key-to-vercel': cmd_anon_key_to_vercel, 'verify': lambda: (confirm_project(), verify())}
     if a and a[0] in cmds and len(a) == 1:
         cmds[a[0]]()
