@@ -5,8 +5,13 @@ keywords: "AirReach Tools,Sales,営業,提案書,Trillion Bank"
 ai_summary: "AirReach Tools Sales Mode。診断履歴から提案書下書きと商談モードを開ける。"
 layout: null
 permalink: /airreach/sales/
-robots: "noindex, follow"
+robots: "noindex, nofollow"
 ---
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">{% include tb-head.html %}
+</head>
+<body>{% include tb-header.html %}
+<main id="main">
 <style>
 .ars{max-width:760px;margin:40px auto 80px;padding:0 20px;font-family:var(--sans,'Noto Sans JP',sans-serif);color:#0f172a}
 .ars h1{font-size:1.75rem;margin:0 0 8px}
@@ -74,3 +79,6 @@ robots: "noindex, follow"
   render();
 })();
 </script>
+<script>try { sessionStorage.setItem('airreach_sales_ctx', '1'); } catch (e) {}</script>
+</main>{% include tb-footer.html %}
+</body></html>
