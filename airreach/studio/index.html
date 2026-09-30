@@ -314,12 +314,12 @@ robots: "noindex, follow"
             <div id="hack2-status" class="ars-note">未測定 — JSON取込または計測実行</div>
             <div class="ars-row" style="margin:12px 0;flex-wrap:wrap;gap:10px">
               <label><input type="checkbox" data-hack2-engine value="jev" checked> Jev（推定）</label>
-              <label><input type="checkbox" data-hack2-engine value="chatgpt"> ChatGPT（検索あり）</label>
+              <label><input type="checkbox" data-hack2-engine value="chatgpt"> ChatGPT（検索なし・言及率のみ）</label>
               <label><input type="checkbox" data-hack2-engine value="claude"> Claude（検索あり・有料クレジットが必要）</label>
               <label><input type="checkbox" data-hack2-engine value="perplexity"> Perplexity（検索あり）</label>
             </div>
             <div class="ars-model-grid" id="hack2-models"></div>
-            <div class="ars-grid" style="margin-top:16px"><div class="ars-card ars-c6"><h3>JSON取込</h3><textarea id="hack2-json" class="ars-code" style="min-height:200px"></textarea><button id="import-hack2" class="ars-btn ars-btn-primary" type="button" style="margin-top:10px">取込</button></div><div class="ars-card ars-c6"><h3>ルール</h3><ul class="ars-list"><li><strong>準備度 ≠ 引用率</strong></li><li><strong>0% ≠ 失敗</strong></li><li><strong>同一条件で再計測</strong></li><li><strong>Jevは推定</strong>：ページ本文から「引用されそうか」を推定した値で、実際のAIの回答ではない。引用率には含めない</li><li>ChatGPT・Claudeは検索ありで回答させ、返ってきた引用URLに公式サイトがあるかで判定</li><li>Perplexityは引用URLの一覧が取れないため、回答本文に公式サイトのドメインがあるときだけ「引用あり」。無いときは判定できない（0%にしない）</li><li>GitHub Pages上でも計測APIはVercelへ接続します</li></ul></div></div>
+            <div class="ars-grid" style="margin-top:16px"><div class="ars-card ars-c6"><h3>JSON取込</h3><textarea id="hack2-json" class="ars-code" style="min-height:200px"></textarea><button id="import-hack2" class="ars-btn ars-btn-primary" type="button" style="margin-top:10px">取込</button></div><div class="ars-card ars-c6"><h3>ルール</h3><ul class="ars-list"><li><strong>準備度 ≠ 引用率</strong></li><li><strong>0% ≠ 失敗</strong></li><li><strong>同一条件で再計測</strong></li><li><strong>Jevは推定</strong>：ページ本文から「引用されそうか」を推定した値で、実際のAIの回答ではない。引用率には含めない</li><li>ChatGPTは検索なし（gpt-4o-mini）で、店名・サービス名が回答に出た割合（言及率）だけを測る。引用は測らない</li><li>Claudeは検索ありで回答させ、返ってきた引用URLに公式サイトがあるかで判定</li><li>Perplexityは引用URLの一覧が取れないため、回答本文に公式サイトのドメインがあるときだけ「引用あり」。無いときは判定できない（0%にしない）</li><li>GitHub Pages上でも計測APIはVercelへ接続します</li></ul></div></div>
           </div>
         </section>
       </div>

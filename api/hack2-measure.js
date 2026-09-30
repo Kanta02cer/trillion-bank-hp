@@ -147,7 +147,8 @@ export default async function handler(req, res) {
     rows,
     note:
       'Jev results are Estimated proxy judgments from page text + prompt, not live AI-search captures. ' +
-      'ChatGPT and Claude answer with web search; cited = the official host is in the returned citation URLs. ' +
+      'ChatGPT (gpt-4o-mini, no web search) is measured for mentions only; cited is null. ' +
+      'Claude answers with web search; cited = the official host is in the returned citation URLs. ' +
       'Perplexity citation URLs are not returned through the gateway, so cited is judged only from the answer text (null when not found).',
     fetchNote: fetchNote
   });
@@ -287,13 +288,31 @@ async function measureWithProvider(engine, brand, prompts, pageUrl) {
     try { host = new URL(pageUrl).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) {}
   }
   const brandL = brand.toLowerCase();
-  // 検索つき（Responses API）は ChatGPT と Claude。Perplexity は出典URLが gateway から返らないため本文で判定
-  const withSearch = useGateway && (engine === 'chatgpt' || engine === 'claude');
+  // 検索つき（Responses API）は Claude だけ。ChatGPT は費用を抑えるため検索なしで言及率だけを測る（引用は判定しない）。
+  // Perplexity は出典URLが gateway から返らないため本文で判定
+  const withSearch = useGateway && engine === 'claude';
+  const mentionOnly = engine === 'chatgpt';
 
   const rows = await Promise.all(prompts.map(async (p) => {
     let out;
     if (withSearch) out = await callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt);
     else out = { answer: useGateway ? await callViaGateway(engine, gatewayKey, p.prompt) : await callProvider(engine, directKey, p.prompt), citations: null, searched: engine === 'perplexity' };
+    if (mentionOnly) {
+      return {
+        engine: engineLabel(engine),
+        keyword: p.keyword || p.prompt,
+        prompt: p.prompt,
+        mentioned: String(out.answer || '').toLowerCase().indexOf(brandL) !== -1 ? 1 : 0,
+        cited: null,
+        citeMethod: 'none',
+        searched: false,
+        citations: [],
+        evidenceClass: 'Observed',
+        model: useGateway ? gatewayModel(engine) : engine,
+        source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
+        answer_excerpt: String(out.answer || '').slice(0, 400)
+      };
+    }
     const lower = String(out.answer || '').toLowerCase();
     const mentioned = lower.indexOf(brandL) !== -1 ? 1 : 0;
     let cited = 0;
@@ -327,7 +346,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl) {
       count: rows.length,
       evidenceClass: 'Observed',
       search: withSearch || engine === 'perplexity',
-      citeMethod: withSearch ? 'citations' : 'text',
+      citeMethod: mentionOnly ? 'none' : (withSearch ? 'citations' : 'text'),
       model: useGateway ? gatewayModel(engine) : engine,
       via: useGateway ? 'ai-gateway' : 'direct'
     }
@@ -388,8 +407,8 @@ function gatewayError(status, data, model) {
 }
 
 function gatewayModel(engine) {
-  // 社内の計測スクリプト（月次レポート）と同じ ChatGPT のモデルにそろえる
-  if (engine === 'chatgpt') return process.env.AIRREACH_OPENAI_MODEL || 'openai/gpt-5-mini';
+  // ChatGPT は検索なしの言及率だけ（1回答 約0.0002ドル・2026-09-30 実測）
+  if (engine === 'chatgpt') return process.env.AIRREACH_OPENAI_MODEL || 'openai/gpt-4o-mini';
   if (engine === 'claude') return process.env.AIRREACH_CLAUDE_MODEL || 'anthropic/claude-haiku-4.5';
   if (engine === 'perplexity') return process.env.AIRREACH_PERPLEXITY_MODEL || 'perplexity/sonar';
   return null;
@@ -433,7 +452,7 @@ async function callProvider(engine, key, prompt) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: process.env.AIRREACH_OPENAI_MODEL || 'gpt-5-mini',
+        model: process.env.AIRREACH_OPENAI_MODEL || 'gpt-4o-mini',
         messages: [
           { role: 'system', content: system },
           { role: 'user', content: prompt }
