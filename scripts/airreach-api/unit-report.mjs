@@ -75,8 +75,8 @@ const compiled = R.compileReport({
 expect('report: 対象月と前月', [compiled.periodMonth, compiled.previousMonth], ['2026-09-01', '2026-08-01']);
 expect('report: 当月の診断（翌月の診断は使わない）', compiled.site.current.id, 'b');
 expect('report: 点数の差', compiled.site.overallDelta, 8);
-expect('report: 解消した不足', compiled.site.resolved, ['FAQPageがある']);
-expect('report: 新しく出た不足', compiled.site.added, ['robots.txtがある']);
+expect('report: 解消した不足（判定基準の言い方）', compiled.site.resolved, ['FAQの構造化データ（FAQPage）が無い']);
+expect('report: 新しく出た不足', compiled.site.added, ['robots.txt が無い']);
 expect('report: AI 引用率の差（同じ質問の版）', compiled.ai.providers.map((p) => p.citeDelta), [10, 20]);
 expect('report: 当月の実施済み施策だけ', compiled.actions.map((a) => a.title), ['FAQを追加']);
 expect('report: GSC 当月と前月', [compiled.traffic.gsc.clicks, compiled.traffic.gscPrev.clicks], [30, 5]);

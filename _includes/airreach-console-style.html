@@ -52,7 +52,7 @@
 @media(max-width:640px){.arr-cols{grid-template-columns:1fr}.arr-page{padding:20px 16px}}
 @media print{
   @page{size:A4;margin:12mm}
-  .arr-body header,.arr-body footer,.arr-body .site-header,.arr-body .site-footer,.arr-tools{display:none!important}
+  .arr-body header:not(.arr-head),.arr-body footer,.arr-body .site-header,.arr-body .site-footer,.arr-tools{display:none!important}
   .arr-wrap{padding:0;max-width:none}
   .arr-page{border:0;padding:0;margin:0}
   .arr-break{break-before:page}

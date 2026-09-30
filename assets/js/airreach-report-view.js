@@ -10,6 +10,8 @@
   var root = document.getElementById('arr-root');
   if (!root) return;
   var FACTOR = { structure: 'ページの骨格', entity: '会社・お店の情報', faq: 'よくある質問', discover: '見つけやすさ' };
+  var PROVIDER = { openai: 'ChatGPT（OpenAI）', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity' };
+  function prov(p) { return PROVIDER[p] || p; }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -29,8 +31,8 @@
     var kpi = [];
     kpi.push('<tr><th>ホームページの情報整備</th><td>' + v(prev && prev.overall, '点') + '</td><td>' + v(cur && cur.overall, '点') + '</td><td>' + d(site.overallDelta, '点') + '</td></tr>');
     if (ai) ai.providers.forEach(function (p) {
-      kpi.push('<tr><th>AIの引用率（' + esc(p.provider) + '）</th><td>' + v(p.prevCiteRate, '%') + '</td><td>' + v(p.citeRate, '%') + '</td><td>' + d(p.citeDelta, 'pt') + '</td></tr>');
-      kpi.push('<tr><th>AIの言及率（' + esc(p.provider) + '）</th><td>' + v(p.prevMentionRate, '%') + '</td><td>' + v(p.mentionRate, '%') + '</td><td>' + d(p.mentionDelta, 'pt') + '</td></tr>');
+      kpi.push('<tr><th>AIの引用率（' + esc(prov(p.provider)) + '）</th><td>' + v(p.prevCiteRate, '%') + '</td><td>' + v(p.citeRate, '%') + '</td><td>' + d(p.citeDelta, 'pt') + '</td></tr>');
+      kpi.push('<tr><th>AIの言及率（' + esc(prov(p.provider)) + '）</th><td>' + v(p.prevMentionRate, '%') + '</td><td>' + v(p.mentionRate, '%') + '</td><td>' + d(p.mentionDelta, 'pt') + '</td></tr>');
     });
     else kpi.push('<tr><th>AIの引用率・言及率</th><td colspan="3"><span class="arr-na">未計測</span></td></tr>');
     kpi.push('<tr><th>検索からのクリック</th><td>' + v(tr.gscPrev && tr.gscPrev.clicks) + '</td><td>' + v(tr.gsc && tr.gsc.clicks) + '</td><td>' + d(diff(tr.gsc && tr.gsc.clicks, tr.gscPrev && tr.gscPrev.clicks)) + '</td></tr>');
@@ -68,7 +70,7 @@
       '<section><h2 class="arr-h2">AI回答の計測</h2>' +
       (ai ? '<p>計測日 ' + esc(ai.measuredOn) + '・質問の版 ' + esc(ai.querySetVersion || '—') + (ai.comparable ? '' : '（前月と条件が異なる、または前月の計測なしのため、差は出していません）') + '</p>' +
         '<table class="arr-table"><thead><tr><th>AI</th><th>回答数</th><th>引用率</th><th>言及率</th><th>エラー</th></tr></thead><tbody>' +
-        ai.providers.map(function (p) { return '<tr><td>' + esc(p.provider) + '<br><small>' + esc(p.model) + '</small></td><td>' + v(p.answers) + '</td><td>' + v(p.citeRate, '%') + '</td><td>' + v(p.mentionRate, '%') + '</td><td>' + v(p.errors) + '</td></tr>'; }).join('') +
+        ai.providers.map(function (p) { return '<tr><td>' + esc(prov(p.provider)) + '<br><small>' + esc(p.model) + '</small></td><td>' + v(p.answers) + '</td><td>' + v(p.citeRate, '%') + '</td><td>' + v(p.mentionRate, '%') + '</td><td>' + v(p.errors) + '</td></tr>'; }).join('') +
         '</tbody></table><p class="arr-note">引用率＝対象の記事・ページが回答の引用に含まれた回答の割合。言及率＝社名・サービス名が回答本文に出た割合。無料枠のモデルで計測しており、一般向けの最新の ChatGPT・Gemini とは結果が異なることがあります。</p>'
         : '<p class="arr-na">今月は計測していません。</p>') + '</section>' +
       '<section><h2 class="arr-h2">検索・アクセス</h2><table class="arr-table"><tbody>' +

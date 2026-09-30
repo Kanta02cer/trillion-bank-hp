@@ -9,6 +9,29 @@
 (function (root) {
   'use strict';
 
+  // 診断のチェック名 → 不足のときの言い方（airreach-diagnose.js の CHECK_CRITERIA の ng と同じ。変えるときは両方）
+  var GAP_TEXT = {
+    'ページタイトルがある': 'ページタイトル（title）が無い',
+    'H1が1つ': '主見出し（H1）が0個か、2個以上ある',
+    '説明文（meta）が十分': '説明文（meta description）が無いか、40文字未満',
+    'canonicalがある': '正規URL（canonical）の指定が無い',
+    'og:titleがある': '共有用タイトル（og:title）が無い',
+    '本文量がある': '本文が800文字以下',
+    '会社情報（Organization等）': '会社・お店の構造化データ（Organization / LocalBusiness）が無い',
+    'WebSite / WebPage': 'サイト種別の構造化データ（WebSite / WebPage）が無い',
+    'Service / Product': 'サービス・商品の構造化データ（Service / Product）が無い',
+    'BreadcrumbList': 'ページ階層の構造化データ（BreadcrumbList）が無い',
+    '問い合わせ導線': '問い合わせ・予約・相談の案内が無い',
+    'FAQPageがある': 'FAQの構造化データ（FAQPage）が無い',
+    'FAQが3問以上': 'FAQが3問未満',
+    '画面上のFAQらしき領域': '画面にFAQのまとまりが無い',
+    'llms.txtがある': 'llms.txt が無いか、80文字以下',
+    'robots.txtがある': 'robots.txt が無い',
+    '主要AIボットの記載': 'robots.txt にAIボット（GPTBot など）の記載が無い',
+    'sitemap案内': 'robots.txt にサイトマップの案内が無い'
+  };
+  function gapText(label) { return GAP_TEXT[label] || label; }
+
   function monthStart(d) {
     var s = String(d || '').slice(0, 7);
     return /^\d{4}-\d{2}$/.test(s) ? s + '-01' : '';
@@ -164,8 +187,8 @@
     // 診断: 当月（なければ月末までで最新）と、前月の最新
     var scanNow = latest(p.scans, 'createdAt', function (s) { return String(s.createdAt).slice(0, 10) < end; });
     var scanPrev = latest(p.scans, 'createdAt', function (s) { return inMonth(s.createdAt, pm); });
-    var gapsNow = scanNow ? (scanNow.gaps || []) : [];
-    var gapsPrev = scanPrev ? (scanPrev.gaps || []) : [];
+    var gapsNow = scanNow ? (scanNow.gaps || []).map(gapText) : [];
+    var gapsPrev = scanPrev ? (scanPrev.gaps || []).map(gapText) : [];
     var site = {
       current: scanNow ? { id: scanNow.id, createdAt: scanNow.createdAt, url: scanNow.url, overall: scanNow.overallScore, factors: scanNow.factors || {}, gaps: gapsNow, unknownChecks: scanNow.unknownChecks || 0, inMonth: inMonth(scanNow.createdAt, m) } : null,
       previous: scanPrev ? { id: scanPrev.id, createdAt: scanPrev.createdAt, overall: scanPrev.overallScore, gaps: gapsPrev } : null,
@@ -214,7 +237,7 @@
     if (site.resolved.length) facts.push('前月から解消した不足：' + site.resolved.length + '件');
     if (ai) ai.providers.forEach(function (r) {
       if (r.citeRate == null) return;
-      facts.push('AIの引用率（' + r.provider + '）：' + (r.citeDelta != null ? (r.prevCiteRate + '% → ') : '') + r.citeRate + '%' + (r.citeDelta != null ? '（' + (r.citeDelta >= 0 ? '+' : '') + r.citeDelta + 'pt）' : (ai.comparable ? '' : '（前月と質問の版が違う、または前月の計測なし）')));
+      facts.push('AIの引用率（' + ({ openai: 'ChatGPT', gemini: 'Gemini' }[r.provider] || r.provider) + '）：' + (r.citeDelta != null ? (r.prevCiteRate + '% → ') : '') + r.citeRate + '%' + (r.citeDelta != null ? '（' + (r.citeDelta >= 0 ? '+' : '') + r.citeDelta + 'pt）' : (ai.comparable ? '' : '（前月と質問の版が違う、または前月の計測なし）')));
     });
     if (traffic.gsc && traffic.gsc.clicks != null) {
       facts.push('検索からのクリック：' + (traffic.gscPrev && traffic.gscPrev.clicks != null ? traffic.gscPrev.clicks + ' → ' : '') + traffic.gsc.clicks);
@@ -244,7 +267,7 @@
     };
   }
 
-  var api = { parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
+  var api = { gapText: gapText, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachReport = api;
 })(typeof window !== 'undefined' ? window : null);
