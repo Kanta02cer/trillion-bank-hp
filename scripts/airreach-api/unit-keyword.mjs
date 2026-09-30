@@ -114,6 +114,10 @@ expect('Bistro inside word ignored', K.genreIn('MyBistroApp'), '');
   expect('subpage: address found on subpage', addr.keyword, '松戸 そば');
 }
 
+// 県名と同じ名前の市（長野市・静岡市）
+expect('長野市川中島町 is 長野', K.derive({ title: 'そば処 テスト', text: '〒381-2221 長野市川中島町1-2 営業時間 11時から' }).keyword, '長野 そば');
+expect('静岡県静岡市 is 静岡', K.derive({ title: 'テスト寿司', text: '住所 静岡県静岡市葵区1-2-3' }).keyword, '静岡 寿司');
+
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);

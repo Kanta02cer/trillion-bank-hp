@@ -122,7 +122,8 @@
   }
 
   function withPrefSuffix(a) {
-    return a.replace(new RegExp('^(' + PREF_ALT + ')(?![都道府県])'), function (m, p) { return p + prefSuffix(p); });
+    // 「長野市川中島町」の「長野」は県ではなく市名の一部。後ろが「市」なら県の接尾辞を足さない
+    return a.replace(new RegExp('^(' + PREF_ALT + ')(?![都道府県市])'), function (m, p) { return p + prefSuffix(p); });
   }
 
   /** 本文から住所らしい部分を拾い、市区町村まで読めたものだけ返す */
