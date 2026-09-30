@@ -1,4 +1,4 @@
-last_reviewed: "2026-09-29"
+last_reviewed: "2026-09-30"
 company:
   legal_name: "株式会社Trillion Bank"
   display_name: "Trillion Bank"
@@ -51,7 +51,7 @@ products:
       - "ChatGPT・Gemini・Claude・AI Overviewsなどの実回答引用率を本ツール単体では取得しない"
       - "診断結果は端末内（localStorage）に保存し、診断完了時にサーバーへも保存して共有リンクを発行する。共有リンクを知っている人だけが結果を開ける。ログインと顧客DBは後続"
       - "業種・店名・キーワードは自動取得が既定。入力画面で業種を選び直せる"
-      - "検索需要の一部は推定値であり、Search Console未接続時は公式検索ボリュームではない"
+      - "検索回数は表示しない（文字列からの推定値は使わない）。調べそうな言葉ごとに、答えがサイトに書いてあるかを示す"
       - "追加予約・問い合わせ・改善後スコア・記事参照予測は仮定に基づく参考レンジであり、掲載・順位・流入・予約・問い合わせ・売上を保証しない"
       - "指定メディアの引用改善は参照候補化と継続計測を意味し、必ず引用されることを保証しない"
       - "Google OAuthライブ連携は接続環境の準備後に有効。未接続時はStudioのCSV取り込みを案内する"
@@ -62,13 +62,13 @@ products:
     former_names: ["HackⅡ Studio", "AirReach Studio"]
     aliases: ["ハックツ・スタジオ", "Hack2 Studio"]
     status: "ブラウザ内実行OS（Overview司令塔）。分析→キーワード→施策→ZIP／下書きPRまで。"
-    public_definition: "URL・目的・対策キーワード件数を入力すると、サイト理解・キーワード選定・AI向け質問・Gap・優先施策・実装パッケージ（ZIP）までを一連のジョブとして進める実行画面。市場検索需要は推定が既定で、Keyword Planner CSV取込時のみ公式ボリュームを行単位で上書き表示する。GSC ImpressionsとAirReach Consulting言及・引用は実測として分離する。公開や順位・引用・売上を保証しない。GitHubへの下書きPRはユーザーPATと人間承認前提。本番自動Deployはしない。"
+    public_definition: "URL・目的・対策キーワード件数を入力すると、サイト理解・キーワード選定・AI向け質問・Gap・優先施策・実装パッケージ（ZIP）までを一連のジョブとして進める実行画面。検索回数は推定せず、Keyword Planner CSV取込時のみ公式ボリュームを行単位で表示する。GSC ImpressionsとAirReach Consulting言及・引用は実測として分離する。公開や順位・引用・売上を保証しない。GitHubへの下書きPRはユーザーPATと人間承認前提。本番自動Deployはしない。"
     limitations:
       - "生成ファイルは下書きであり自動公開しない"
-      - "市場の検索ボリュームは推定が既定。Keyword Planner CSV取込時のみ当該行を公式ボリュームとして扱う"
+      - "市場の検索ボリュームは推定しない。Keyword Planner CSV取込時のみ当該行を公式ボリュームとして扱う"
       - "GSC Impressionsと市場需要を同一の「検索回数」として混ぜない"
       - "GitHub PRは下書き作成まで。マージと本番Deployは人間が行う（自動Deployなし）"
-      - "AirReach ConsultingライブAPI未接続時はJSON手動取込。競合SERP自動取得は未接続時は推定・手動に留める"
+      - "AirReach ConsultingライブAPI未接続時はJSON手動取込。競合は自動で推定・表示しない"
       - "GitHub Personal Access TokenはブラウザのsessionStorageにのみ保持し、リポジトリへ保存しない"
   hack2_platform:
     name: "AirReach Tools Platform"

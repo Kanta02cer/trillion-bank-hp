@@ -1484,6 +1484,11 @@ document.addEventListener('DOMContentLoaded', function () {
         t.innerHTML = 'このサイトは、<em>あと' + esc(inq.addLow) + '〜' + esc(inq.addHigh) + '件</em>、' + esc(report.displayLabel || '問い合わせ') + 'が増える目安です。';
       } else if (report.brand && report.brand.citationCurrent != null) {
         t.innerHTML = '会社名で調べられたとき、この情報が使われる割合は <em>' + esc(report.brand.citationCurrent) + '%</em> が目安です。';
+      } else if (report.scoreOverall != null || (lastDiagnose && lastDiagnose.overall != null)) {
+        // 件数を試算できないときは、実測した情報整備の点数を見出しにする
+        var sc = report.scoreOverall != null ? report.scoreOverall : lastDiagnose.overall;
+        var bd = window.AirReachDisplay ? AirReachDisplay.band(sc) : { label: '' };
+        t.innerHTML = 'このサイトのホームページの情報整備は、<em>' + esc(sc) + '点（' + esc(bd.label) + '）</em>です。';
       } else {
         t.textContent = report.heroTitle || '診断結果';
       }
@@ -1768,10 +1773,10 @@ document.addEventListener('DOMContentLoaded', function () {
     $('ba-now-v').textContent = AirReachSales.cnt(inq.currentVisitors) + ' 人';
     var close = Number($('biz-close').value) / 100;
     var deal = Number($('biz-deal').value);
-    var nowRev = (close > 0 && deal > 0) ? inq.currentInquiries * close * deal : null;
+    var nowRev = (close > 0 && deal > 0 && inq.currentInquiries != null) ? inq.currentInquiries * close * deal : null;
     $('ba-now-rev').textContent = AirReachSales.yen(nowRev);
-    $('ba-aft-i').textContent = AirReachSales.cnt(inq.afterLow) + '〜' + AirReachSales.cnt(inq.afterHigh) + ' 件';
-    $('ba-aft-add').textContent = '+' + inq.addLow + '〜' + inq.addHigh + ' 件';
+    $('ba-aft-i').textContent = inq.afterLow == null ? '—' : AirReachSales.cnt(inq.afterLow) + '〜' + AirReachSales.cnt(inq.afterHigh) + ' 件';
+    $('ba-aft-add').textContent = inq.addLow == null ? 'いまの件数を入れると試算します' : '+' + inq.addLow + '〜' + inq.addHigh + ' 件';
     $('ba-aft-cpa').textContent = AirReachSales.yen(inq.cpa);
 
     var box = $('ar-actions3');
