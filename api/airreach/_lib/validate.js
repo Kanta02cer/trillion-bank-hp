@@ -218,6 +218,46 @@ function recompute(rules, checks, adjustments) {
     const anyUnknown = checks.some((c) => !c.known);
     return { factors, overall, state: anyUnknown ? 'partial' : 'verified' };
 }
+// 調べる言葉の一覧（任意）。keyword（メイン）と同じ言葉が primary。保存先は raw_result.keywords（列は増やさない）
+const KEYWORD_SOURCES = ['auto', 'user', 'gsc', 'legacy'];
+const KEYWORDS_MAX = 5;
+function keywordList(issues, path, v, mainKeyword) {
+    if (v === undefined || v === null)
+        return null;
+    if (!Array.isArray(v)) {
+        issues.add(path, 'must be an array or null');
+        return null;
+    }
+    if (v.length > KEYWORDS_MAX) {
+        issues.add(path, `exceeds ${KEYWORDS_MAX} items`);
+        return null;
+    }
+    const out = [];
+    const seen = new Set();
+    v.forEach((raw, i) => {
+        const p = `${path}[${i}]`;
+        if (!isObj(raw)) {
+            issues.add(p, 'must be an object');
+            return;
+        }
+        const text = cleanStr(issues, `${p}.text`, raw.text, 100, { required: true });
+        const source = enumOf(issues, `${p}.source`, raw.source, KEYWORD_SOURCES);
+        if (typeof raw.primary !== 'boolean')
+            issues.add(`${p}.primary`, 'must be a boolean');
+        if (text && seen.has(text))
+            issues.add(`${p}.text`, 'is duplicated');
+        if (text)
+            seen.add(text);
+        if (text && source && typeof raw.primary === 'boolean')
+            out.push({ text, source, primary: raw.primary });
+    });
+    const primaries = out.filter((k) => k.primary);
+    if (primaries.length > 1)
+        issues.add(path, 'must have at most one primary');
+    else if (out.length && (primaries.length !== 1 || primaries[0].text !== (mainKeyword || '')))
+        issues.add(path, 'primary must equal scan.keyword');
+    return out.length ? out : null;
+}
 export function validateScanRequest(body) {
     if (!isObj(body))
         throw ApiError.badRequest('Body must be a JSON object');
@@ -259,11 +299,13 @@ export function validateScanRequest(body) {
         goal: enumOf(issues, 'scan.goal', scanIn.goal, ['acquisition', 'visibility'], { nullable: true }),
         outcomeGoal: outcomeGoal && OUTCOME_RE.test(outcomeGoal) ? outcomeGoal : null,
         keyword: cleanStr(issues, 'scan.keyword', scanIn.keyword, 100),
+        keywords: null,
         siteTitle: cleanStr(issues, 'scan.siteTitle', scanIn.siteTitle, 300),
         displayName: cleanStr(issues, 'scan.displayName', scanIn.displayName, 300),
         source: enumOf(issues, 'scan.source', scanIn.source, ['airreach_free', 'sales_mode', 'expert'], { nullable: true }) || 'airreach_free',
         savedAt: isoDateOrNull(issues, 'scan.savedAt', scanIn.savedAt),
     };
+    scan.keywords = keywordList(issues, 'scan.keywords', scanIn.keywords, scan.keyword);
     // ---- result: versions ---------------------------------------------------
     const ruleVersion = typeof resultIn.ruleVersion === 'string' ? resultIn.ruleVersion : '';
     const rules = RULES[ruleVersion];

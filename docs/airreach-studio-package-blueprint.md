@@ -89,14 +89,27 @@ flowchart TB
 
 ## 3. 証拠クラス（混ぜないルール）
 
+### 検索データの原則（現在仕様）
+
+| データ | 意味 | 表示ラベル |
+|--------|------|------------|
+| Google Search Console（GSC） | 表示回数 / クリック / CTR / 平均順位。**表示回数（Impressions）は検索ボリュームではない**（検索結果にサイトが出た回数） | 「Google実測」 |
+| Keyword Planner | **月間検索数**（`volume_source=Official`） | 「月間検索数 / Keyword Planner」 |
+| データなし | 値を作らない | 「未計測」 |
+| 言葉の文字列から計算した値（旧 hash 推定） | **使用・表示しない**（旧 `estimateSearchVolume()` / `estimateVolume()` は呼び出し元なし。削除は別 cleanup） | — |
+| AI 引用率・言及率 | 検索データとは**別指標**（HackⅡ の計測結果のみ） | 別列 |
+
+- GSC の表示回数を「月間検索数」「検索ボリューム」「月間需要」と呼ばない。`volume` 列に入れない。
+- 無料診断（AirReach Tools）の「キーワード比較」は列名「検索データ」。GSC は診断したサイトと同じサイトのデータだけを使う（`airreach_official_baseline_v1.gscSites`、照合規則は `docs/airreach-studio-architecture.md`）。
+
 ```mermaid
 flowchart TB
-  subgraph estimated [Estimated]
-    VolE[月間需要 volume<br/>推定モデル]
-  end
   subgraph official [Official]
-    VolO[月間需要 volume<br/>Keyword Planner CSV]
-    GSC[gsc_impressions / clicks<br/>GSC CSV or API]
+    VolO[月間検索数 volume<br/>Keyword Planner CSV のみ]
+    GSC[gsc_impressions / clicks / position<br/>GSC CSV or API（検索ボリュームではない）]
+  end
+  subgraph unmeasured [Unmeasured]
+    None[データなし → 未計測<br/>推定値で埋めない]
   end
   subgraph observed [Observed]
     Score[acquisition score<br/>公開HTML診断]
@@ -109,9 +122,9 @@ flowchart TB
 
 | フィールド | 許可ソース | 混ぜてはいけないもの |
 |------------|------------|----------------------|
-| `volume` + `volume_source=Estimated` | 推定モデル | GSC Impressions |
-| `volume` + `volume_source=Official` | Keyword Planner CSV | 「GSC検索回数」ラベル |
-| `gsc_impressions` | GSC CSV / `/api/google/gsc` | 市場需要の単一ラベル |
+| `volume` + `volume_source=Official` | Keyword Planner CSV のみ | GSC Impressions・文字列からの推定 |
+| `volume` が無い | — | 「未計測」と表示（推定値で埋めない） |
+| `gsc_impressions` / `gsc_clicks` / `gsc_position` | GSC CSV / `/api/google/gsc` | 「月間検索数」「検索ボリューム」「月間需要」ラベル |
 | `overall` 獲得力 | 公開HTML診断 Observed / 失敗時 Estimated | AI言及・引用率 |
 | `ai_mention_rate` / `ai_citation_rate` | HackⅡ JSON | 準備度スコア |
 | prompts / actions | Inferred | 順位・引用・売上の保証 |
@@ -268,9 +281,9 @@ erDiagram
 | フィールド | 型 | 説明 |
 |------------|-----|------|
 | `keyword` | string | 表示・対策対象語 |
-| `volume` | number | 月間需要（Estimated or Official） |
-| `volume_source` | `Estimated` \| `Official` | Planner取込時のみ Official |
-| `gsc_impressions` | number\|null | GSC実測。需要と別列 |
+| `volume` | number\|null | 月間検索数。Keyword Planner 取込時だけ入る。無ければ null（=未計測） |
+| `volume_source` | `Official` \| `Unavailable` | Planner取込時のみ Official。推定（Estimated）の volume は作らない |
+| `gsc_impressions` | number\|null | GSC実測の表示回数。検索ボリュームではない（volume と別列） |
 | `gsc_clicks` | number\|null | GSC実測 |
 | `gsc_position` | number\|null | 加重平均順位 |
 | `ai_mention_rate` | number\|null | HackⅡ言及率 % |
@@ -419,6 +432,7 @@ PR本文には人間向けチェックリストと「自動マージ・本番Dep
 ## 10. 変更時の注意
 
 1. ZIPツリーを変えるときは **本設計図・AGENT_PROMPT・MANIFEST** を同時更新する
-2. `volume` と `gsc_impressions` を同一列・同一ラベルにしない
+2. `volume` と `gsc_impressions` を同一列・同一ラベルにしない（GSC の表示回数を月間検索数・検索ボリューム・月間需要と呼ばない）
+2a. 言葉の文字列から計算した検索数（旧 hash 推定）を volume・画面・共有結果・計算式に出さない
 3. GitHub PATを `localStorage` やリポジトリに保存しない
 4. `deployment_run.auto_deploy` を `true` にする機能は追加しない

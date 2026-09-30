@@ -19,10 +19,20 @@ Expert panels (gap / competitors / generator / keywords / timeseries / Google / 
 
 | Field | Allowed sources | Must not mix with |
 |-------|-----------------|-------------------|
-| Market demand (月間検索需要) | Estimated model | GSC impressions |
-| GSC Impressions | Official CSV / OAuth | Market demand label 「検索回数」 alone |
+| Monthly search volume (月間検索数, `volume`) | Keyword Planner CSV only (`volume_source=Official`) | GSC impressions, string-derived estimates |
+| No volume | — (show 「未計測」) | Any estimate (the old hash-based `estimateVolume()` has no callers and must not be used) |
+| GSC impressions / clicks / CTR / avg. position | Official CSV / OAuth (`/api/google/gsc`) | Labels 「月間検索数」「検索ボリューム」「月間需要」「検索回数」 — impressions are **not** search volume |
 | Acquisition score | Observed diagnose or Estimated placeholder | AI mention/citation rates |
 | Prompts / actions | Inferred generation | Guarantees of rank/citation |
+
+Principles (current):
+
+- GSC = impressions / clicks / CTR / average position. Impressions are not search volume.
+- Keyword Planner = monthly search volume (月間検索数).
+- No data = 「未計測」.
+- String/hash-derived search counts are never used or shown.
+- AI citation / mention rates are a separate metric (HackⅡ runs only).
+- Studio card 「② 探している人」 sums Keyword Planner volumes only; otherwise it shows 「未計測」.
 
 ## Phase 1 pipeline
 
@@ -31,7 +41,7 @@ URL + goal + kwLimit + region
 → site understand (diagnose or estimated)
 → competitor stubs (estimated from industry)
 → keyword candidates (limit 20/50/100)
-→ attach estimated volumes (+ optional GSC impressions)
+→ attach Keyword Planner volumes when imported (otherwise 未計測) + optional GSC impressions in a separate column
 → AI prompts per keyword
 → gap → priority actions compressed to N pages
 → artifact bundle → ZIP download

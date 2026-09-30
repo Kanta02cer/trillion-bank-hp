@@ -74,7 +74,7 @@ robots: "noindex, nofollow"
   document.getElementById('ard-present').href = AirReachScanStore.presentPath(id);
   document.getElementById('ard-result').href = AirReachScanStore.resultPath(id);
   var kpis = document.getElementById('ard-kpis');
-  var heads = (scan.reportLite && scan.reportLite.headline) || [];
+  var heads = kit.savedHeadlines ? kit.savedHeadlines(scan) : ((scan.reportLite && scan.reportLite.headline) || []);
   if (heads.length) {
     kpis.innerHTML = heads.slice(0, 3).map(function (h) {
       return '<div class="kpi"><div class="l">' + (h.label || '') + '</div><div class="v">' + (h.value || '—') + '</div></div>';

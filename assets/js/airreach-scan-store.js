@@ -30,8 +30,41 @@
     try { localStorage.setItem(INDEX_KEY, JSON.stringify(list.slice(0, 50))); } catch (e) {}
   }
 
+  // 調べる言葉: keyword（メイン）と keywords（最大5語）をそろえる。旧データは keyword から keywords を作る
+  // 呼び出し元のオブジェクトをそのまま書き換える（従来の saveScan と同じ振る舞い）
+  function withKeywords(scan) {
+    if (!window.AirReachKeywordList || !scan || typeof scan !== 'object') return scan;
+    var n = window.AirReachKeywordList.normalize(scan.keyword, scan.keywords);
+    scan.keyword = n.keyword;
+    scan.keywords = n.keywords;
+    return scan;
+  }
+
+  // 以前の版が保存した「探している人 約◯回」（言葉の文字列から計算した回数。badge: Estimated）は検索データではないので、
+  // 表示するときに「未計測」に置き換える。保存データは書き換えない。
+  // Google実測（Official）・お客様入力（User Input）・サイトの実測（Observed）・未計測（Unmeasured）はそのまま。
+  var LEGACY_ESTIMATE_BADGES = { 'Estimated': 1, '推定': 1, '参考予測': 1 };
+  function isLegacyDemandEstimate(h) {
+    return !!h && h.id === 'demand' && !!LEGACY_ESTIMATE_BADGES[String(h.badge || '')];
+  }
+  function sanitizeHeadline(h) {
+    if (!isLegacyDemandEstimate(h)) return h;
+    var out = {};
+    Object.keys(h).forEach(function (k) { out[k] = h[k]; });
+    out.value = '未計測';
+    out.unit = '';
+    out.badge = 'Unmeasured';
+    out.meaning = '検索回数は推定しません。以前の保存にあった推定の回数は表示しません';
+    out.sub = '未計測';
+    delete out.keywordSet;
+    return out;
+  }
+  function sanitizeHeadlines(list) {
+    return Array.isArray(list) ? list.map(sanitizeHeadline) : [];
+  }
+
   function saveScan(partial) {
-    var scan = partial || {};
+    var scan = withKeywords(partial || {});
     scan.id = scan.id || uid();
     scan.version = 1;
     scan.savedAt = nowIso();
@@ -62,7 +95,7 @@
 
   function loadScan(id) {
     if (!id) return null;
-    try { return JSON.parse(localStorage.getItem(PREFIX + id) || 'null'); }
+    try { return withKeywords(JSON.parse(localStorage.getItem(PREFIX + id) || 'null')); }
     catch (e) { return null; }
   }
 
@@ -95,6 +128,9 @@
     INDEX_KEY: INDEX_KEY,
     saveScan: saveScan,
     loadScan: loadScan,
+    isLegacyDemandEstimate: isLegacyDemandEstimate,
+    sanitizeHeadline: sanitizeHeadline,
+    sanitizeHeadlines: sanitizeHeadlines,
     listScans: listScans,
     markStatus: markStatus,
     resultPath: resultPath,

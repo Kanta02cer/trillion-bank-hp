@@ -576,7 +576,8 @@
           var data = await res.json().catch(function () { return {}; });
           if (!res.ok) throw new Error(data.error || data.message || ('HTTP ' + res.status));
           if (window.AirReachOrchestrator && window.AirReachOrchestrator.importGscRows) {
-            window.AirReachOrchestrator.importGscRows(data.rows || []);
+            // 同期したサイト（GSC の siteUrl）を各行に記録する
+            window.AirReachOrchestrator.importGscRows(data.rows || [], { property: data.siteUrl || site });
             if (window.__orchLastJob && window.AirReachOrchestrator.reattachGscToJob) {
               window.__orchLastJob = window.AirReachOrchestrator.reattachGscToJob(window.__orchLastJob);
               if (window.AirReachOrchestrator.renderResult) window.AirReachOrchestrator.renderResult(window.__orchLastJob);

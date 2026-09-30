@@ -164,6 +164,14 @@ try {
     ['missing robots evidence', (p) => { delete p.result.evidence.robots; }],
     ['state mismatch', (p) => { p.result.state = 'verified'; }],
     ['oversized keyword', (p) => { p.scan.keyword = 'x'.repeat(101); }],
+    ['keywords not an array', (p) => { p.scan.keywords = 'Example'; }],
+    ['6 keywords', (p) => { p.scan.keywords = ['a', 'b', 'c', 'd', 'e', 'Example'].map((t) => ({ text: t, source: 'user', primary: t === 'Example' })); }],
+    ['keywords oversized text', (p) => { p.scan.keywords = [{ text: 'Example', source: 'user', primary: true }, { text: 'x'.repeat(101), source: 'user', primary: false }]; }],
+    ['keywords unknown source', (p) => { p.scan.keywords = [{ text: 'Example', source: 'magic', primary: true }]; }],
+    ['keywords primary not boolean', (p) => { p.scan.keywords = [{ text: 'Example', source: 'user', primary: 'yes' }]; }],
+    ['keywords two primaries', (p) => { p.scan.keywords = [{ text: 'Example', source: 'user', primary: true }, { text: 'b', source: 'user', primary: true }]; }],
+    ['keywords primary != keyword', (p) => { p.scan.keywords = [{ text: 'Other', source: 'user', primary: true }]; }],
+    ['keywords duplicated text', (p) => { p.scan.keywords = [{ text: 'Example', source: 'user', primary: true }, { text: 'Example', source: 'auto', primary: false }]; }],
   ];
   const insertsBefore = (await mock('/__mock/state')).calls.filter((c) => c === 'insert').length;
   for (const [name, mutate] of cases) {
@@ -179,11 +187,27 @@ try {
   r = await api('/api/airreach/scans');
   expect('GET /api/airreach/scans → 405', r.status === 405, `status=${r.status}`);
 
+  // ---- keywords（調べる言葉の一覧）: raw_result.keywords に保存し、共有で返す -------------------
+  const pk = buildScanPayload();
+  pk.scan.keywords = [{ text: 'Example', source: 'auto', primary: true }, { text: 'Example 料金', source: 'user', primary: false }];
+  r = await api('/api/airreach/scans', { method: 'POST', body: pk });
+  expect('POST with keywords → 201', r.status === 201 && r.json?.ok === true, `status=${r.status} ${r.text.slice(0, 200)}`);
+  const kwToken = r.json?.shareToken || '';
+  if (kwToken) issuedTokens.push(kwToken);
+  r = await api(`/api/airreach/shared-scans/?shareToken=${encodeURIComponent(kwToken)}`);
+  expect('shared: result.keywords round-trips', r.status === 200 && JSON.stringify(r.json?.result?.keywords) === JSON.stringify(pk.scan.keywords), JSON.stringify(r.json?.result?.keywords));
+  expect('shared: scan.keyword stays the primary', r.json?.scan?.keyword === 'Example');
+  const pn = buildScanPayload(); pn.scan.keywords = null;
+  r = await api('/api/airreach/scans', { method: 'POST', body: pn });
+  expect('POST keywords: null → 201', r.status === 201, `status=${r.status}`);
+  if (r.json?.shareToken) issuedTokens.push(r.json.shareToken);
+
   // ---- GET /api/airreach/shared-scans/:token -------------------------------------------
   r = await api(`/api/airreach/shared-scans/?shareToken=${encodeURIComponent(token)}`);
   expect('GET valid shareToken (query form) → 200', r.status === 200 && r.json?.ok === true, `status=${r.status} ${r.text.slice(0, 160)}`);
   expect('shared: scan.id / factors 4 / checks 18 / sources 3', r.json?.scan?.id === payload.scan.id && r.json?.factors?.length === 4 && r.json?.checks?.length === 18 && r.json?.sources?.length === 3);
   expect('shared: raw_result whitelisted', r.json?.result?.overall === payload.result.overall && r.json?.result?.referral === undefined && r.json?.result?.modelPlaceholders === undefined);
+  expect('shared: client without keywords → no result.keywords, scan.keyword kept', r.json?.result?.keywords === undefined && r.json?.scan?.keyword === payload.scan.keyword);
   expect('shared: no hash column or value in response', !r.text.includes('share_token_hash') && !r.text.includes(hash));
   expect('shared: no-store', r.headers.get('cache-control') === 'no-store');
   r = await api(`/api/airreach/shared-scans/${token}/`);

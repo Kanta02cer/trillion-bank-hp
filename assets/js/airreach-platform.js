@@ -196,6 +196,12 @@
         };
       }
       gsc.source = 'Studio localStorage';
+      // サイトごとの GSC 実測（GSCサイトURLを記録した行だけ）
+      if (window.AirReachKeywordList) {
+        var prevB = loadBaseline();
+        gsc.gscSites = window.AirReachKeywordList.mergeGscSites(prevB && prevB.gscSites,
+          window.AirReachKeywordList.gscSitesFromRows(measurements, 28));
+      }
       return gsc;
     } catch (e) {
       return null;
@@ -366,6 +372,24 @@
         if (!gsc.keywords.length) throw new Error('クエリ/ページ行が見つかりません');
         var prev = loadBaseline() || {};
         if (prev.ga4) gsc.ga4 = prev.ga4;
+        // GSCプロパティ（任意）が指定されたときだけ、サイトごとの実測として記録する。無ければ無料診断の Google実測 には使わない
+        var L = window.AirReachKeywordList;
+        var propRaw = (q('arp-gsc-site') && q('arp-gsc-site').value || '').trim();
+        var prop = L && propRaw ? L.gscProperty(propRaw) : null;
+        var added = [];
+        if (prop) {
+          added = L.gscSitesFromRows(rows.map(function (r) {
+            return {
+              query: String(pick(r, ['query', 'Query', 'クエリ', '検索クエリ', 'keyword', 'Keyword']) || '').trim(),
+              page: String(pick(r, ['page', 'Page', 'ページ', '上位のページ', 'url', 'URL']) || '').trim(),
+              impressions: numCell(pick(r, ['impressions', 'Impressions', '表示回数', 'インプレッション'])),
+              clicks: numCell(pick(r, ['clicks', 'Clicks', 'クリック数', 'クリック'])),
+              position: numCell(pick(r, ['position', 'Position', '掲載順位', '平均掲載順位', '順位'])),
+              gscProperty: prop.property
+            };
+          }), period);
+        }
+        if (L) gsc.gscSites = L.mergeGscSites(prev.gscSites, added);
         saveBaseline(gsc);
         applyBaselineToForm(gsc);
         if (window.AirReachHandoff) {
@@ -375,7 +399,8 @@
         }
         setStatus(
           'Official取込完了: ' + gsc.keywords.length + 'キーワード · 月次換算クリック ' +
-          count(gsc.monthlyClicks) + ' · 自動再計算済み',
+          count(gsc.monthlyClicks) + ' · 自動再計算済み' +
+          (added.length ? ' · ' + prop.property + ' の実測として記録' : (propRaw ? ' · GSCプロパティを読めなかったため、無料診断の Google実測 には使いません' : ' · GSCプロパティ未指定のため、無料診断の Google実測 には使いません')),
           'good'
         );
         render();

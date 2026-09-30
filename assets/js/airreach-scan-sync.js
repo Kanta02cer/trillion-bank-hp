@@ -59,6 +59,8 @@
         goal: scan.goal || null,
         outcomeGoal: scan.outcomeGoal || null,
         keyword: scan.keyword || null,
+        // 旧 API はこの項目を無視する（ホワイトリスト方式）。保存先は raw_result.keywords
+        keywords: Array.isArray(scan.keywords) && scan.keywords.length ? scan.keywords : null,
         siteTitle: scan.siteTitle || null,
         displayName: scan.displayName || null,
         source: scan.source || 'airreach_free',
@@ -149,13 +151,18 @@
   /** 共有 API の応答を、画面が扱う scan 相当の形にする（永続保存はしない）。 */
   function toScan(data) {
     var s = (data && data.scan) || {};
+    var r = (data && data.result) || {};
+    var kw = window.AirReachKeywordList
+      ? window.AirReachKeywordList.normalize(s.keyword || '', r.keywords)
+      : { keyword: s.keyword || '', keywords: undefined };
     return {
       id: s.id || '',
       url: s.url || '',
       industryId: s.industryId || 'other',
       goal: s.goal || 'acquisition',
       outcomeGoal: s.outcomeGoal || '',
-      keyword: s.keyword || '',
+      keyword: kw.keyword,
+      keywords: kw.keywords,
       siteTitle: s.siteTitle || '',
       displayName: s.siteTitle || s.url || '',
       scoreOverall: s.overallScore != null ? s.overallScore : null,
