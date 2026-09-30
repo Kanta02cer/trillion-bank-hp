@@ -70,7 +70,7 @@
       auth: {
         getSession: function () { return Promise.resolve({ data: { session: email() ? { user: { email: email() } } : null } }); },
         onAuthStateChange: function (cb) { listeners.push(cb); return { data: { subscription: { unsubscribe: function () {} } } }; },
-        signInWithOtp: function (o) { sessionStorage.setItem('fake_email', o.email); window.__fakeOtp = o; return Promise.resolve({ error: null }); },
+        signInWithOtp: function (o) { sessionStorage.setItem('fake_email', o.email); window.__fakeOtp = o; setTimeout(function () { listeners.forEach(function (cb) { cb('SIGNED_IN'); }); }, 300); return Promise.resolve({ error: null }); },
         signOut: function () { sessionStorage.removeItem('fake_email'); return Promise.resolve({ error: null }); }
       },
       from: function (t) { return new Query(t); },

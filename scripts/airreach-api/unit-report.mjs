@@ -82,6 +82,10 @@ expect('report: 当月の実施済み施策だけ', compiled.actions.map((a) => 
 expect('report: GSC 当月と前月', [compiled.traffic.gsc.clicks, compiled.traffic.gscPrev.clicks], [30, 5]);
 expect('report: 事実の最初の行', compiled.facts[0], 'ホームページの情報整備：40点 → 48点（+8）');
 expect('report: 足りない材料は GA4 だけ', compiled.missing, ['GA4 の数値']);
+expect('report: 推移は6か月（古い順）', compiled.history.map((h) => h.month), ['2026-04-01', '2026-05-01', '2026-06-01', '2026-07-01', '2026-08-01', '2026-09-01']);
+expect('report: 推移の点数（材料の無い月は null・翌月の診断は入れない）', compiled.history.map((h) => h.score), [null, null, null, null, 40, 48]);
+expect('report: 推移の引用率', compiled.history.slice(4).map((h) => h.cite), [{ openai: 0, gemini: 0 }, { openai: 10, gemini: 20 }]);
+expect('report: 推移のクリック', compiled.history.slice(4).map((h) => h.clicks), [5, 30]);
 
 // 質問の版が違う月は比較しない
 const c2 = R.compileReport({ periodMonth: '2026-09-01', scans: [], runs: [
