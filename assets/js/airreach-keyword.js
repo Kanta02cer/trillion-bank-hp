@@ -170,7 +170,7 @@
       };
     }
     var head = [src.title, src.ogTitle, src.metaDesc].filter(Boolean).join(' ');
-    var text = String(src.text || '').slice(0, 20000);
+    var text = [String(src.text || '').slice(0, 20000)].concat((src.pages || []).map(function (p) { return String(p.text || '').slice(0, 8000); })).join(' ');
     var ldAddr = (src.ldAddress || []).filter(Boolean);
     var addr = { pref: '', city: '', town: '' }, areaSource = '', multiStore = false;
 
@@ -340,20 +340,26 @@
     var mods = MODIFIERS[industry] || [];
     var bmods = BRAND_MODIFIERS[industry] || [];
     var text = [src.title, src.ogTitle, src.metaDesc, src.text].filter(Boolean).join(' ').slice(0, 30000);
+    var pages = (src.pages || []).filter(function (p) { return p && p.text; });
     // 本文を JavaScript で後から表示するサイトは、取得した HTML に本文が無い。見つからない＝書いていない、とは言えない
-    var unreadable = String(src.text || '').replace(/\s+/g, '').length < 300;
+    var allText = String(src.text || '') + pages.map(function (p) { return p.text; }).join('');
+    var unreadable = allText.replace(/\s+/g, '').length < 300;
     var out = [], seen = {};
     function push(t, group, mod) {
       t = String(t || '').replace(/\s+/g, ' ').trim();
       if (!t || seen[t] || out.length >= limit) return;
       seen[t] = 1;
-      var answered = null, evidence = '', reason = '';
+      var answered = null, evidence = '', reason = '', evidenceUrl = '';
       if (mod && mod.check) {
         evidence = snippet(text, mod.check);
+        for (var pi = 0; !evidence && pi < pages.length; pi++) {
+          evidence = snippet(pages[pi].text, mod.check);
+          if (evidence) evidenceUrl = pages[pi].url || '';
+        }
         answered = evidence ? true : (unreadable ? null : false);
         if (!evidence && unreadable) reason = 'unreadable';
       }
-      out.push({ text: t, group: group, modifier: mod ? mod.word : '', answered: answered, evidence: evidence, reason: reason });
+      out.push({ text: t, group: group, modifier: mod ? mod.word : '', answered: answered, evidence: evidence, evidenceUrl: evidenceUrl, reason: reason });
     }
     if (base && base.keyword && !BRAND_ONLY[industry]) {
       push(base.keyword, 'base', null);
