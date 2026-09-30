@@ -1,3 +1,6 @@
+import { isGa4Enabled } from './_lib/scopes.js';
+import { ga4Host, siteHost } from './_lib/host.js';
+
 function setCors(req, res) {
   const origin = req.headers.origin || '';
   let allow = 'https://trillion-bank.jp';
@@ -25,32 +28,69 @@ export default async function handler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST required' });
+  // GA4 連携は準備中。OAuth で analytics.readonly を要求していないので、Google へは問い合わせない（コードは再開用に残す）
+  if (!isGa4Enabled()) return res.status(503).json({ error: 'GA4連携は準備中です。GA4 は CSV で取り込めます。', code: 'ga4_not_enabled' });
   const token = await getAccessToken(req);
-  if (!token) return res.status(401).json({ error: 'Google connection required' });
-  const { propertyId, startDate, endDate } = req.body || {};
-  if (!propertyId || !startDate || !endDate) return res.status(400).json({ error: 'propertyId, startDate, endDate are required' });
+  if (!token) return res.status(401).json({ error: 'Google connection required', code: 'not_connected' });
+  const { propertyId, startDate, endDate, siteUrl } = req.body || {};
+  if (!propertyId || !startDate || !endDate || !siteUrl) return res.status(400).json({ error: 'propertyId, siteUrl, startDate, endDate are required', code: 'bad_request' });
+  // どのサイトの GA4 として使うか（このホストの行だけを返す。www の有無も区別する）
+  const host = siteHost(/^[a-z][a-z0-9+.-]*:\/\//i.test(String(siteUrl)) ? siteUrl : `https://${siteUrl}`);
+  if (!host || host.indexOf('.') < 0) return res.status(400).json({ code: 'invalid_site_url', error: '対象サイトの URL を https://example.com/ の形で入力してください。' });
+  // プロパティIDは数字だけ（「properties/123」も受け付ける）。G- で始まる測定ID（Measurement ID）は別物
+  const pid = String(propertyId).trim().replace(/^properties\//, '');
+  if (/^G-/i.test(pid)) {
+    return res.status(400).json({ code: 'measurement_id', error: '「G-」で始まる測定ID（Measurement ID）ではなく、数字だけのプロパティID（例: 123456789）を入力してください。' });
+  }
+  if (!/^\d{1,20}$/.test(pid)) return res.status(400).json({ code: 'invalid_property_id', error: 'プロパティIDは数字だけです（例: 123456789）。' });
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(startDate)) || !/^\d{4}-\d{2}-\d{2}$/.test(String(endDate))) {
+    return res.status(400).json({ code: 'bad_request', error: 'startDate / endDate は YYYY-MM-DD で指定してください。' });
+  }
 
-  const url = `https://analyticsdata.googleapis.com/v1beta/properties/${encodeURIComponent(propertyId)}:runReport`;
+  const url = `https://analyticsdata.googleapis.com/v1beta/properties/${encodeURIComponent(pid)}:runReport`;
   const r = await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       dateRanges: [{ startDate, endDate }],
-      dimensions: [{ name: 'date' }, { name: 'landingPagePlusQueryString' }],
+      // hostName: GA4 プロパティに複数のドメインがあっても、対象サイトの行だけを使うため
+      dimensions: [{ name: 'date' }, { name: 'landingPagePlusQueryString' }, { name: 'hostName' }],
       metrics: [{ name: 'sessions' }, { name: 'keyEvents' }],
       limit: '100000'
     })
   });
-  const data = await r.json();
-  if (!r.ok) return res.status(r.status).json(data);
-  const rows = (data.rows || []).map(row => ({
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    // Google の応答を画面で扱える形にする（数値は作らない）
+    const e = (data && data.error) || {};
+    const scopeInsufficient = r.status === 403 && (/ACCESS_TOKEN_SCOPE_INSUFFICIENT/.test(JSON.stringify(e)) || /insufficient authentication scopes/i.test(e.message || ''));
+    if (scopeInsufficient) {
+      return res.status(403).json({ code: 'scope_insufficient', error: 'Google アナリティクスの権限がありません。Studio の「接続」からもう一度 Google に接続し、アナリティクス（読み取り）を許可してください。', google: e.message || '' });
+    }
+    if (r.status === 403) {
+      return res.status(403).json({ code: 'forbidden', error: 'このプロパティを見る権限がありません。接続した Google アカウントに、この GA4 プロパティの閲覧権限があるか確認してください。', google: e.message || '' });
+    }
+    if (r.status === 401) {
+      return res.status(401).json({ code: 'unauthorized', error: 'Google への接続が切れています。Studio の「接続」からもう一度接続してください。', google: e.message || '' });
+    }
+    return res.status(r.status).json({ code: 'google_error', error: e.message || ('GA4 API error ' + r.status), google: e.message || '' });
+  }
+  const all = (data.rows || []).map(row => ({
     date: normalizeDate(row.dimensionValues?.[0]?.value || ''),
+    host: ga4Host(row.dimensionValues?.[2]?.value || ''),
     url: row.dimensionValues?.[1]?.value || '',
     sessions: Number(row.metricValues?.[0]?.value || 0),
     keyEvents: Number(row.metricValues?.[1]?.value || 0),
     source: 'ga4'
   }));
-  return res.status(200).json({ rows, count: rows.length });
+  // 対象ホストと一致しない行（別ドメイン・www 違い・ホスト不明）は含めない
+  const rows = all.filter((r) => r.host === host);
+  const excludedHosts = {};
+  all.forEach((r) => { if (r.host !== host) { const k = r.host || '(not set)'; excludedHosts[k] = (excludedHosts[k] || 0) + 1; } });
+  return res.status(200).json({
+    rows, count: rows.length, propertyId: pid, siteUrl: String(siteUrl), host,
+    excluded: { rows: all.length - rows.length, hosts: Object.keys(excludedHosts).sort((a, b) => excludedHosts[b] - excludedHosts[a]).slice(0, 10) }
+  });
 }
 
 function normalizeDate(v) {

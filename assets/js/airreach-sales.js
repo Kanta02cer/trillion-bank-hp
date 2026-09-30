@@ -873,11 +873,16 @@
       ? window.AirReachHandoff.loadOfficialBaseline()
       : null;
 
-    if (baseline && baseline.ga4 && baseline.ga4.monthlySessions > 0 && !inputs.monthlyVisitors) {
-      inputs.monthlyVisitors = baseline.ga4.monthlySessions;
+    // GA4 の実測は、診断したサイトと同じホストの ga4Sites だけを使う。サイト情報の無い baseline.ga4（以前の形式）や
+    // 別サイトの GA4 は使わない（無ければ訪問・問い合わせは未計測のまま）
+    var siteGa4 = (window.AirReachKeywordList && window.AirReachKeywordList.ga4FromBaseline)
+      ? window.AirReachKeywordList.ga4FromBaseline(baseline, opts.url)
+      : null;
+    if (siteGa4 && siteGa4.monthlySessions > 0 && !inputs.monthlyVisitors) {
+      inputs.monthlyVisitors = siteGa4.monthlySessions;
     }
-    if (baseline && baseline.ga4 && baseline.ga4.monthlyKeyEvents > 0 && !inputs.monthlyInquiries) {
-      inputs.monthlyInquiries = baseline.ga4.monthlyKeyEvents;
+    if (siteGa4 && siteGa4.monthlyKeyEvents > 0 && !inputs.monthlyInquiries) {
+      inputs.monthlyInquiries = siteGa4.monthlyKeyEvents;
     }
 
     // 検索回数は推定しない（言葉の文字列から計算した値は使わない）。使うのは店の方が入力した数だけ
@@ -919,7 +924,7 @@
       mode: mode,
       hasDiagnose: !!diagnose,
       hasGsc: !!(baseline && baseline.monthlyClicks > 0),
-      hasGa4: !!(baseline && baseline.ga4 && baseline.ga4.monthlySessions > 0),
+      hasGa4: !!(siteGa4 && siteGa4.monthlySessions > 0),
       hasKeyword: !!keyword,
       hasBusinessInputs: !!(inputs.monthlyInquiries || inputs.monthlyVisitors),
       hasMediaUrl: !!mediaUrl,
@@ -1101,6 +1106,7 @@
       keyword: keyword,
       keywords: kwNorm.keywords,
       keywordComparison: keywordComparison,
+      ga4: siteGa4,
       url: opts.url || '',
       measuredAt: new Date().toISOString(),
       heroTitle: heroTitle,

@@ -21,8 +21,9 @@
 
 | Capability | Location | Blocker |
 |---|---|---|
-| Google OAuth | `api/google/*` | Vercel project + Client Secret |
-| GSC / GA4 live sync | `api/google/gsc.js`, `ga4.js` | same |
+| Google OAuth（Search Console・GA4 の読み取り） | `api/google/auth.js`, `callback.js`, `_lib/scopes.js` | 本番に Client ID と callback（`https://trillion-bank.jp/api/google/callback`）は設定済み。GSC は本番接続済み。GA4 追加後は既存ユーザーの再接続が必要 |
+| GSC live sync | `api/google/gsc.js` | 同上 |
+| GA4 live sync | `api/google/ga4.js` | 有効（`analytics.readonly`、数字のプロパティID）。実アカウントでの GA4 同期の確認が未了。GA4 は CSV でも取り込み可 |
 | URL Inspection / PageSpeed | `api/google/url-inspection.js`, `pagespeed.js` | same |
 | GitHub draft PR (Studio) | shipped (browser PAT) | merge + deploy remain human |
 | GitHub App auto-merge / auto-deploy | not provided | intentional |
