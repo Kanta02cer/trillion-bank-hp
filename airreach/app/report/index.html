@@ -1,0 +1,18 @@
+---
+title: "AirReach 月次レポート - Trillion Bank"
+tbdesc: "AirReach の月次レポート（ログインした方だけが閲覧できます）。"
+layout: null
+permalink: /airreach/app/report/
+robots: "noindex, nofollow"
+---
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">{% include tb-head.html %}
+{% include airreach-console-style.html %}
+</head>
+<body class="arr-body">{% include tb-header.html %}
+<main id="main" class="arr-wrap">
+  <div id="arr-root"><p class="arc-loading">読み込んでいます…</p></div>
+</main>{% include tb-footer.html %}
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="{{ '/assets/js/airreach-report-view.js' | relative_url }}"></script>
+</body></html>

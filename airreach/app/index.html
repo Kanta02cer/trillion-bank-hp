@@ -1,0 +1,19 @@
+---
+title: "AirReach｜ログイン・顧客管理・月次レポート - Trillion Bank"
+tbdesc: "AirReach の管理画面。社内は顧客の材料を登録して月次レポートを作成し、お客様は公開済みのレポートを閲覧します。"
+layout: null
+permalink: /airreach/app/
+robots: "noindex, nofollow"
+---
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">{% include tb-head.html %}
+{% include airreach-console-style.html %}
+</head>
+<body>{% include tb-header.html %}
+<main id="main" class="arc-wrap">
+  <div id="arc-root"><p class="arc-loading">読み込んでいます…</p></div>
+</main>{% include tb-footer.html %}
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="{{ '/assets/js/airreach-report.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/airreach-console.js' | relative_url }}"></script>
+</body></html>
