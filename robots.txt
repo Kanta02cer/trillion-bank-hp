@@ -13,6 +13,7 @@ Disallow: /ai-coupon-system/
 Disallow: /docs/
 Disallow: /airreach/result/
 Disallow: /airreach/sales/
+Disallow: /airreach/app/
 Disallow: /airreach/studio/
 Disallow: /airreach/platform/
 

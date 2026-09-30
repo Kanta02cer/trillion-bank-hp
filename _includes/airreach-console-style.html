@@ -1,0 +1,63 @@
+<style>
+/* サイト共通ヘッダー（#tbh）は position:fixed で高さ 80px。その分を上に空けないとボタンが隠れる */
+.arc-wrap,.arr-wrap{max-width:960px;margin:0 auto;padding:calc(var(--tbh-h,80px) + 28px) 20px 80px;font-family:var(--sans,'Noto Sans JP',system-ui,sans-serif);color:#0f172a}
+.arc-loading{color:#64748b}
+.arc-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:0 0 16px}
+.arc-h1{font-size:1.5rem;margin:4px 0 0}
+.arc-h2{font-size:1.05rem;margin:0 0 10px}
+.arc-back{font-size:.85rem;color:#2563eb;text-decoration:none}
+.arc-who{font-size:.85rem;color:#64748b}
+.arc-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin:0 0 16px}
+.arc-login{max-width:440px;margin:40px auto}
+.arc-lead{color:#475569;margin:6px 0 14px}
+.arc-label{display:block;font-weight:600;font-size:.9rem;margin:0 0 6px}
+.arc-input{font:inherit;padding:9px 11px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;min-width:0}
+.arc-login .arc-input{width:100%;margin:0 0 12px}
+.arc-ta{width:100%;margin:0 0 8px;resize:vertical}
+.arc-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.arc-row .arc-input{flex:1 1 160px}
+.arc-btn{font:inherit;font-weight:700;padding:9px 16px;border-radius:8px;border:0;background:#1d4ed8;color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
+.arc-btn-line{background:#fff;color:#0f172a;border:1px solid #cbd5e1}
+.arc-btn-sm{font:inherit;font-size:.8rem;padding:3px 9px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer}
+.arc-btn:focus-visible,.arc-btn-sm:focus-visible,.arc-input:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+.arc-list{list-style:none;margin:0;padding:0}
+.arc-list li{padding:8px 0;border-top:1px solid #f1f5f9;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.arc-list li:first-child{border-top:0}
+.arc-list a{font-weight:600;color:#1d4ed8;text-decoration:none}
+.arc-sub{font-size:.8rem;color:#64748b}
+.arc-empty{color:#94a3b8}
+.arc-note{font-size:.8rem;color:#64748b;margin:6px 0}
+/* 画面の下の方で保存しても結果が見えるよう、固定ヘッダーのすぐ下に貼り付ける */
+.arc-msg{padding:10px 12px;border-radius:8px;background:#f1f5f9;margin:0 0 12px;position:sticky;top:calc(var(--tbh-h,80px) + 8px);z-index:5;box-shadow:0 2px 8px rgba(15,23,42,.08)}
+.arc-msg.is-ok{background:#ecfdf5;color:#047857}
+.arc-msg.is-error{background:#fef2f2;color:#b91c1c}
+.arc-table,.arr-table{width:100%;border-collapse:collapse;font-size:.88rem;margin:8px 0}
+.arc-table th,.arc-table td,.arr-table th,.arr-table td{border-top:1px solid #e2e8f0;padding:7px 6px;text-align:left;vertical-align:top}
+.arc-chip{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#475569}
+.arc-chip.is-ok{background:#ecfdf5;color:#047857}
+.arr-tools{display:flex;gap:12px;align-items:center;margin:0 0 16px}
+.arr-btn{font:inherit;font-weight:700;padding:9px 16px;border-radius:8px;border:0;background:#1d4ed8;color:#fff;cursor:pointer}
+.arr-draft{font-size:.85rem;font-weight:700;color:#b45309;background:#fffbeb;padding:4px 10px;border-radius:6px}
+.arr-page{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:28px 30px;margin:0 0 16px}
+.arr-kicker{font-size:.8rem;letter-spacing:.06em;color:#2563eb;font-weight:700}
+.arr-title{font-size:1.45rem;margin:4px 0}
+.arr-meta{font-size:.8rem;color:#64748b;margin:0 0 12px}
+.arr-h2{font-size:1rem;margin:18px 0 6px;padding-bottom:4px;border-bottom:1px solid #e2e8f0}
+.arr-h3{font-size:.9rem;margin:10px 0 4px}
+.arr-ol,.arr-ul{margin:4px 0;padding-left:1.4em}
+.arr-na{color:#94a3b8}
+.arr-up{color:#047857;font-weight:700}
+.arr-down{color:#b91c1c;font-weight:700}
+.arr-note{font-size:.78rem;color:#64748b;margin:8px 0}
+.arr-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.arr-table a,.arr-ul a{word-break:break-all;color:#1d4ed8}
+@media(max-width:640px){.arr-cols{grid-template-columns:1fr}.arr-page{padding:20px 16px}}
+@media print{
+  @page{size:A4;margin:12mm}
+  .arr-body header:not(.arr-head),.arr-body footer,.arr-body .site-header,.arr-body .site-footer,.arr-tools{display:none!important}
+  .arr-wrap{padding:0;max-width:none}
+  .arr-page{border:0;padding:0;margin:0}
+  .arr-break{break-before:page}
+  .arr-table,section{break-inside:avoid}
+}
+</style>
