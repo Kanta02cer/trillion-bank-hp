@@ -254,5 +254,33 @@
     }).join('') + '</div>';
   }
 
-  window.AirReachCharts = { tiles: tiles, trends: trends, factors: factors, aiCompare: aiCompare, band: band, series: series };
+  // ---- 一覧用の小さな推移（点数・0〜100）--------------------------------------
+  /** values: 古い順の点数（null 可）。区分の色で最後の点を塗る */
+  function sparkline(values, label) {
+    var W = 120, H = 34, P = 4, n = values.length, pts = [], out = '';
+    if (!values.some(function (v) { return v != null; })) return '<span class="arv-na" style="font-size:.75rem">診断なし</span>';
+    values.forEach(function (v, i) {
+      if (v == null) return;
+      var x = n === 1 ? W / 2 : P + i / (n - 1) * (W - P * 2), y = H - P - Math.max(0, Math.min(100, v)) / 100 * (H - P * 2);
+      pts.push([x, y, v]);
+    });
+    bands().forEach(function (b) {
+      var y1 = H - P - (Number(b.max) + (Number(b.max) === 100 ? 0 : 1)) / 100 * (H - P * 2), y2 = H - P - Number(b.min) / 100 * (H - P * 2);
+      out += '<rect x="0" y="' + y1.toFixed(1) + '" width="' + W + '" height="' + (y2 - y1).toFixed(1) + '" fill="' + b.color + '" opacity=".08"/>';
+    });
+    if (pts.length > 1) out += '<polyline fill="none" stroke="' + INK + '" stroke-width="1.6" stroke-linejoin="round" points="' + pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '"/>';
+    var last = pts[pts.length - 1];
+    out += '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="3.5" fill="' + band(last[2]).color + '" stroke="#fff" stroke-width="1.5"/>';
+    return '<svg class="arv-spark" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(label || '点数の推移') + '">' + out + '</svg>';
+  }
+
+  /** 材料のそろい具合（✓／未）。items: [{label, ok, note}] */
+  function readiness(items) {
+    return '<ul class="arv-ready">' + items.map(function (it) {
+      return '<li class="' + (it.ok ? 'is-ok' : 'is-ng') + '"><span class="arv-ready-i" aria-hidden="true">' + (it.ok ? '✓' : '—') + '</span>' +
+        '<span><b>' + esc(it.label) + '</b><small>' + esc(it.note || (it.ok ? 'あり' : '未登録')) + '</small></span></li>';
+    }).join('') + '</ul>';
+  }
+
+  window.AirReachCharts = { tiles: tiles, trends: trends, factors: factors, aiCompare: aiCompare, sparkline: sparkline, readiness: readiness, band: band, series: series };
 })();
