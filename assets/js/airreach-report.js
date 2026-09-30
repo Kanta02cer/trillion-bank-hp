@@ -32,6 +32,47 @@
   };
   function gapText(label) { return GAP_TEXT[label] || label; }
 
+  // 不足ごとの「直すこと」。配点は airreach-diagnose.js の check() と同じ（変えるときは両方）。
+  // studio: 直す材料（/airreach/studio/）で下書きを作れるもの
+  var FACTOR_LABEL = { structure: 'ページの骨格', entity: '会社・お店の情報', faq: 'よくある質問', discover: '見つけやすさ' };
+  var FIX_INFO = {
+    'ページタイトルがある': { factor: 'structure', points: 2, why: '検索結果やAIが、ページの主題を読む最初の手がかりになります。', how: '店名・会社名と、何のページかが分かるタイトル（title）を設定する。' },
+    'H1が1つ': { factor: 'structure', points: 3, why: '主題が一目で分かる見出しが1つだけあると、内容を取り違えられにくくなります。', how: 'ページの主見出し（H1）を1つにし、店名・サービス名を入れる。' },
+    '説明文（meta）が十分': { factor: 'structure', points: 2, why: '検索結果に出る説明文で、誰向けの何のページかが伝わります。', how: '40文字以上の説明文（meta description）を書く。対象・内容・場所を入れる。' },
+    'canonicalがある': { factor: 'structure', points: 2, why: '同じ内容のURLが複数あるとき、正しいURLを示せます。', how: '正規URL（canonical）をページごとに指定する。' },
+    'og:titleがある': { factor: 'structure', points: 1, why: 'SNSやチャットで共有されたときの見出しになります。', how: '共有用タイトル（og:title）を設定する。' },
+    '本文量がある': { factor: 'structure', points: 2, why: '案内の文章が少ないと、AIや検索が内容を判断する材料が足りません。', how: 'サービス内容・料金の目安・対象・場所など、来店前・相談前に知りたいことを本文に書き足す。' },
+    '会社情報（Organization等）': { factor: 'entity', points: 4, why: '誰のサイトか（正式名称・所在地・連絡先）を機械が読めると、取り違えられにくくなります。', how: '会社・お店の構造化データ（Organization / LocalBusiness）を入れる。', studio: true },
+    'WebSite / WebPage': { factor: 'entity', points: 2, why: 'サイトとページの種類を機械が読めるようになります。', how: 'サイト種別の構造化データ（WebSite / WebPage）を入れる。' },
+    'Service / Product': { factor: 'entity', points: 2, why: '何を提供しているかを機械が読めるようになります。', how: 'サービス・商品の構造化データ（Service / Product）を入れる。', studio: true },
+    'BreadcrumbList': { factor: 'entity', points: 1, why: 'ページの階層（どこの何のページか）が伝わります。', how: 'ページ階層の構造化データ（BreadcrumbList）を入れる。' },
+    '問い合わせ導線': { factor: 'entity', points: 1, why: '興味を持った人が、次に何をすればよいか分かります。', how: '予約・問い合わせ・相談の案内（ボタンやリンク）を目立つ位置に置く。' },
+    'FAQPageがある': { factor: 'faq', points: 3, why: 'よくある質問と答えを機械が読める形にすると、AIの回答の材料になりやすくなります。', how: '画面のFAQと同じ内容で、FAQの構造化データ（FAQPage）を入れる。', studio: true },
+    'FAQが3問以上': { factor: 'faq', points: 3, why: '決める前に聞かれることに、公式の答えが用意されている状態になります。', how: '予約・料金・駐車場・支払い方法など、よく聞かれる質問を3問以上書く。', studio: true },
+    '画面上のFAQらしき領域': { factor: 'faq', points: 2, why: '人が読めるFAQがあると、機械向けのデータと内容をそろえられます。', how: 'ページに「よくある質問」の見出しとQ&Aのまとまりを置く。' },
+    'llms.txtがある': { factor: 'discover', points: 4, why: 'AI向けに、サイトの概要と重要なページを案内するファイルです。', how: 'サイトの一番上の階層に llms.txt（81文字以上）を置く。', studio: true },
+    'robots.txtがある': { factor: 'discover', points: 2, why: '検索やAIのクローラーに、読んでよい範囲を伝えるファイルです。', how: 'サイトの一番上の階層に robots.txt を置く。' },
+    '主要AIボットの記載': { factor: 'discover', points: 2, why: 'AIのクローラーへの方針（読んでよいか）が明示されます。', how: 'robots.txt に GPTBot などAIボットへの方針を書く。' },
+    'sitemap案内': { factor: 'discover', points: 2, why: 'クローラーがページの一覧を見つけやすくなります。', how: 'robots.txt に Sitemap: の行でサイトマップのURLを書く。' }
+  };
+  var TEXT_TO_KEY = {};
+  Object.keys(GAP_TEXT).forEach(function (k) { TEXT_TO_KEY[GAP_TEXT[k]] = k; });
+
+  /**
+   * 最新の診断の不足を「直すこと」にして、配点の大きい順に並べる。
+   * @returns {Array<{key,text,factor,factorLabel,points,why,how,studio}>}
+   */
+  function todoList(compiled) {
+    var cur = compiled && compiled.site && compiled.site.current;
+    if (!cur) return [];
+    var keys = Array.isArray(cur.gapKeys) ? cur.gapKeys : (cur.gaps || []).map(function (t) { return TEXT_TO_KEY[t] || t; });
+    var order = ['entity', 'faq', 'discover', 'structure'];
+    return keys.map(function (k) {
+      var f = FIX_INFO[k] || {};
+      return { key: k, text: gapText(k), factor: f.factor || '', factorLabel: FACTOR_LABEL[f.factor] || '', points: f.points || 0, why: f.why || '', how: f.how || '', studio: !!f.studio };
+    }).sort(function (a, b) { return (b.points - a.points) || (order.indexOf(a.factor) - order.indexOf(b.factor)); });
+  }
+
   function monthStart(d) {
     var s = String(d || '').slice(0, 7);
     return /^\d{4}-\d{2}$/.test(s) ? s + '-01' : '';
@@ -190,7 +231,7 @@
     var gapsNow = scanNow ? (scanNow.gaps || []).map(gapText) : [];
     var gapsPrev = scanPrev ? (scanPrev.gaps || []).map(gapText) : [];
     var site = {
-      current: scanNow ? { id: scanNow.id, createdAt: scanNow.createdAt, url: scanNow.url, overall: scanNow.overallScore, factors: scanNow.factors || {}, gaps: gapsNow, unknownChecks: scanNow.unknownChecks || 0, inMonth: inMonth(scanNow.createdAt, m) } : null,
+      current: scanNow ? { id: scanNow.id, createdAt: scanNow.createdAt, url: scanNow.url, overall: scanNow.overallScore, factors: scanNow.factors || {}, gaps: gapsNow, gapKeys: (scanNow.gaps || []).slice(), unknownChecks: scanNow.unknownChecks || 0, inMonth: inMonth(scanNow.createdAt, m) } : null,
       previous: scanPrev ? { id: scanPrev.id, createdAt: scanPrev.createdAt, overall: scanPrev.overallScore, gaps: gapsPrev } : null,
       overallDelta: scanNow && scanPrev ? delta(scanNow.overallScore, scanPrev.overallScore) : null,
       resolved: scanPrev ? gapsPrev.filter(function (g) { return gapsNow.indexOf(g) < 0; }) : [],
@@ -288,7 +329,7 @@
     };
   }
 
-  var api = { gapText: gapText, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
+  var api = { gapText: gapText, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachReport = api;
 })(typeof window !== 'undefined' ? window : null);
