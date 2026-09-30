@@ -209,6 +209,10 @@ def cmd_auth_config():
         'uri_allow_list': ','.join(allow),
         'external_email_enabled': True,
         'mailer_otp_exp': 3600,
+    }
+    # 無料プランで標準のメール送信を使っている間は、文面を変えると 400 で断られる（2026-09-30 実測）。
+    # 文面は独自 SMTP を設定するときにだけ変える。
+    templates = {
         'mailer_subjects_magic_link': 'AirReach ログイン用リンク',
         'mailer_templates_magic_link_content': MAIL_BODY,
         # 初めてログインする人には「確認」メールが送られるので、同じ文面にそろえる
@@ -217,6 +221,7 @@ def cmd_auth_config():
     }
     smtp = private_file('smtp.json')
     if smtp:
+        patch.update(templates)
         s = json.loads(smtp.read_text())
         need = ('smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_admin_email', 'smtp_sender_name')
         missing = [k for k in need if not s.get(k)]
@@ -226,7 +231,7 @@ def cmd_auth_config():
         patch['rate_limit_email_sent'] = int(s.get('rate_limit_email_sent', 30))
         print('SMTP も設定します:', s['smtp_host'], '/ 送信元', s['smtp_admin_email'])
     else:
-        print('smtp.json が無いので SMTP は変えません（標準のままだとチームのメンバー宛てにしか届きません）')
+        print('smtp.json が無いので SMTP とメール文面は変えません（標準のままだとチームのメンバー宛てにしか届かず、文面は英語）')
     call('PATCH', f'/projects/{REF}/config/auth', patch)
     after = call('GET', f'/projects/{REF}/config/auth')
     for k in ('site_url', 'uri_allow_list', 'external_email_enabled', 'mailer_subjects_magic_link', 'smtp_host'):
