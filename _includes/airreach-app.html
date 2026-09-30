@@ -1062,13 +1062,14 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         </div>
 
         <div id="impact" hidden aria-hidden="true">
-          <input id="biz-visitors" type="hidden" value="5000">
-          <input id="biz-inq" type="hidden" value="20">
-          <input id="biz-line" type="hidden" value="10">
-          <input id="biz-fee" type="hidden" value="200000">
-          <input id="biz-close" type="hidden" value="20">
-          <input id="biz-deal" type="hidden" value="500000">
-          <input id="biz-margin" type="hidden" value="60">
+          <!-- お店・会社の実数（GA4 や入力で分かったときだけ入る）。架空の既定値は入れない -->
+          <input id="biz-visitors" type="hidden" value="">
+          <input id="biz-inq" type="hidden" value="">
+          <input id="biz-line" type="hidden" value="">
+          <input id="biz-fee" type="hidden" value="">
+          <input id="biz-close" type="hidden" value="">
+          <input id="biz-deal" type="hidden" value="">
+          <input id="biz-margin" type="hidden" value="">
           <span id="biz-inq-label" hidden></span>
           <span id="biz-inq-why" hidden></span>
           <span id="ba-now-i-label" hidden></span>
@@ -1448,14 +1449,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function readBiz() {
+    // 空欄は「入力なし」。0 として扱わない
+    function v(id) { var x = ($(id) && $(id).value || '').trim(); return x === '' ? undefined : x; }
     return {
-      monthlyVisitors: $('biz-visitors').value,
-      monthlyInquiries: $('biz-inq').value,
-      monthlyLine: $('biz-line').value,
-      monthlyFee: $('biz-fee').value,
-      closeRatePct: $('biz-close').value,
-      avgDeal: $('biz-deal').value,
-      grossMarginPct: $('biz-margin').value
+      monthlyVisitors: v('biz-visitors'),
+      monthlyInquiries: v('biz-inq'),
+      monthlyLine: v('biz-line'),
+      monthlyFee: v('biz-fee'),
+      closeRatePct: v('biz-close'),
+      avgDeal: v('biz-deal'),
+      grossMarginPct: v('biz-margin')
     };
   }
 
@@ -1489,6 +1492,11 @@ document.addEventListener('DOMContentLoaded', function () {
         t.innerHTML = 'このサイトは、<em>あと' + esc(inq.addLow) + '〜' + esc(inq.addHigh) + '件</em>、' + esc(report.displayLabel || '問い合わせ') + 'が増える目安です。';
       } else if (report.brand && report.brand.citationCurrent != null) {
         t.innerHTML = '会社名で調べられたとき、この情報が使われる割合は <em>' + esc(report.brand.citationCurrent) + '%</em> が目安です。';
+      } else if (report.scoreOverall != null || (lastDiagnose && lastDiagnose.overall != null)) {
+        // 件数を試算できないときは、実測した情報整備の点数を見出しにする
+        var sc = report.scoreOverall != null ? report.scoreOverall : lastDiagnose.overall;
+        var bd = window.AirReachDisplay ? AirReachDisplay.band(sc) : { label: '' };
+        t.innerHTML = 'このサイトのホームページの情報整備は、<em>' + esc(sc) + '点（' + esc(bd.label) + '）</em>です。';
       } else {
         t.textContent = report.heroTitle || '診断結果';
       }
@@ -1771,12 +1779,12 @@ document.addEventListener('DOMContentLoaded', function () {
     var inq = report.inquiries;
     $('ba-now-i').textContent = AirReachSales.cnt(inq.currentInquiries) + ' 件';
     $('ba-now-v').textContent = AirReachSales.cnt(inq.currentVisitors) + ' 人';
-    var close = Number($('biz-close').value) / 100;
-    var deal = Number($('biz-deal').value);
-    var nowRev = (close > 0 && deal > 0) ? inq.currentInquiries * close * deal : null;
+    var close = Number($('biz-close').value || 0) / 100;
+    var deal = Number($('biz-deal').value || 0);
+    var nowRev = (close > 0 && deal > 0 && inq.currentInquiries != null) ? inq.currentInquiries * close * deal : null;
     $('ba-now-rev').textContent = AirReachSales.yen(nowRev);
-    $('ba-aft-i').textContent = AirReachSales.cnt(inq.afterLow) + '〜' + AirReachSales.cnt(inq.afterHigh) + ' 件';
-    $('ba-aft-add').textContent = '+' + inq.addLow + '〜' + inq.addHigh + ' 件';
+    $('ba-aft-i').textContent = inq.afterLow == null ? '—' : AirReachSales.cnt(inq.afterLow) + '〜' + AirReachSales.cnt(inq.afterHigh) + ' 件';
+    $('ba-aft-add').textContent = inq.addLow == null ? 'いまの件数を入れると試算します' : '+' + inq.addLow + '〜' + inq.addHigh + ' 件';
     $('ba-aft-cpa').textContent = AirReachSales.yen(inq.cpa);
 
     var box = $('ar-actions3');
