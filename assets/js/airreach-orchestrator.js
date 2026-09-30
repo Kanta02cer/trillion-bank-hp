@@ -9,7 +9,7 @@
   var ORCH_KEY = 'airreach_studio_orch_v1';
   var STEPS = [
     { id: 'site', label: 'サイトを確認しています' },
-    { id: 'competitors', label: '競合を探しています' },
+    { id: 'competitors', label: '業種を判定しています' },
     { id: 'demand', label: '検索需要を調べています' },
     { id: 'keywords', label: 'キーワードを選定しています' },
     { id: 'prompts', label: 'AI向け質問を予測しています' },
@@ -299,7 +299,8 @@
       if (!belongsToEntity(text, brand, s, url)) return;
       seen[nk] = 1;
       var gsc = lookupGsc(gscMap, text);
-      var vol = estimateVolume(text, region);
+      // 検索回数は Keyword Planner / GSC の実データがあるときだけ入れる（文字列から作った推定値は使わない）
+      var vol = null;
       var intent = /比較|おすすめ|選び方|費用|料金|予約|相談|導入/.test(text) ? 'Commercial' : 'Informational';
       var fromGsc = !!(gsc && gsc.impressions > 0);
       var priority = fromGsc && gsc.impressions >= 200 ? 'P0' : (fromGsc ? 'P1' : 'P2');
@@ -314,7 +315,7 @@
         id: uid(),
         keyword: text,
         volume: vol,
-        volume_source: 'Estimated',
+        volume_source: 'Unavailable',
         gsc_impressions: fromGsc ? Math.round(gsc.impressions) : null,
         gsc_clicks: fromGsc ? Math.round(gsc.clicks || 0) : null,
         gsc_position: fromGsc && gsc.positionWeight ? Math.round((gsc.positionSum / gsc.positionWeight) * 10) / 10 : null,
@@ -344,7 +345,7 @@
       if (isForeignBrandKeyword(text2, brand, s)) continue;
       seen[nk2] = 1;
       var row2 = {
-        id: uid(), keyword: text2, volume: estimateVolume(text2, region), volume_source: 'Estimated',
+        id: uid(), keyword: text2, volume: null, volume_source: 'Unavailable',
         gsc_impressions: null, gsc_clicks: null, gsc_position: null,
         intent: /外注|会社|ツール|代理店/.test(text2) ? 'Commercial' : 'Informational',
         priority: 'P2', strength: '普通', gap: '小',
@@ -663,7 +664,7 @@
       keyword_count: (job.keywords || []).length,
       evidence: {
         market_demand: isFood ? ((job.keywords || []).some(function (k) { return k.gsc_impressions > 0; }) ? 'GSC impressions only (no market volume)' : 'Unavailable (no search volume shown)')
-          : ((job.keywords || []).some(function (k) { return k.volume_source === 'Official'; }) ? 'Official (partial) + Estimated' : 'Estimated'),
+          : ((job.keywords || []).some(function (k) { return k.volume_source === 'Official'; }) ? 'Official (partial, Keyword Planner)' : 'Unavailable (no search volume shown)'),
         acquisition_score: job.diagnose_source === 'Observed' ? 'Observed' : 'Estimated',
         gsc: gscKeys ? 'Official (partial)' : 'Unavailable',
         hack2: job.hack2_imported ? 'Observed (imported JSON)' : 'Unavailable',
@@ -681,7 +682,7 @@
       '## Hard rules',
       '- Do not invent prices, case studies, customers, rankings, or metrics.',
       '- JSON-LD must match visible page content.',
-      '- Market demand volumes are Estimated by default; Official only when Keyword Planner CSV was applied (volume_source=Official).',
+      '- Market demand volumes are empty unless a Keyword Planner CSV was applied (volume_source=Official). Do not invent volumes.',
       '- GSC impressions (if present) are Official and must stay in a separate column from market demand.',
       '- AirReach Consulting mention/citation rates (if present) are Observed and must not be mixed into acquisition score.',
       '- Human approval is required before production publish. Do not open a PR or deploy automatically.',
@@ -732,7 +733,7 @@
       '',
       '## Evidence',
       '',
-      '- Market demand (`volume`): Estimated unless `volume_source=Official` (Keyword Planner CSV)',
+      '- Market demand (`volume`): empty unless `volume_source=Official` (Keyword Planner CSV)',
       '- GSC impressions: Official, separate from market demand',
       '- Acquisition score: Observed diagnose or Estimated fallback',
       '- AirReach Consulting mention/citation: Observed JSON import only',
@@ -994,8 +995,8 @@
         job.keywords.push({
           id: uid(),
           keyword: g.keyword,
-          volume: estimateVolume(g.keyword, job.region),
-          volume_source: 'Estimated',
+          volume: null,
+          volume_source: 'Unavailable',
           gsc_impressions: Math.round(g.impressions),
           gsc_clicks: Math.round(g.clicks || 0),
           gsc_position: g.positionWeight ? Math.round((g.positionSum / g.positionWeight) * 10) / 10 : null,
@@ -1094,10 +1095,8 @@
 
     setStep(1, 'running', 40);
     var gaps = (diagnose.gaps || []).slice(0, 2);
-    job.competitors = isFood ? [] : [
-      { url: 'https://competitor-a.example/', note: gaps[0] ? ('推定: ' + gaps[0]) : '比較・料金が強い（推定）', evidenceClass: 'Estimated' },
-      { url: 'https://competitor-b.example/', note: gaps[1] ? ('推定: ' + gaps[1]) : 'FAQ・根拠が豊富（推定）', evidenceClass: 'Estimated' }
-    ];
+    // 実在の競合を調べる仕組みが無いので、架空の競合（competitor-a.example など）は出さない
+    job.competitors = [];
     setStep(1, 'done', 100);
     await sleep(220);
 
@@ -1262,8 +1261,8 @@
     var gscNote = q('orch-gsc-note');
     if (gscNote) {
       gscNote.textContent = hasGsc
-        ? '月間需要は推定。GSC Impressionsがある行のみ実測を別列で表示しています。'
-        : '月間需要は推定です。上の「GSC CSV」を取り込むと、実測Impressionsが別列で付きます。';
+        ? '検索回数は GSC Impressions がある行だけ実測で表示しています（推定値は出していません）。'
+        : '検索回数は出していません。上の「GSC CSV」を取り込むと、実測 Impressions が別列で付きます。';
       gscNote.hidden = false;
     }
 

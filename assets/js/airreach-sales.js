@@ -775,7 +775,7 @@
         {
           label: '追加件数 ΔI',
           formula: 'ΔI_low = max(1, round(I₀·λ_low)); ΔI_high = max(ΔI_low+1, round(I₀·λ_high))',
-          value: 'ΔI = +' + cnt(inq.addLow) + '〜+' + cnt(inq.addHigh) + ' → 改善後 ' + cnt(inq.afterLow) + '〜' + cnt(inq.afterHigh),
+          value: inq.addLow == null ? '未計算（いまの件数が未入力）' : ('ΔI = +' + cnt(inq.addLow) + '〜+' + cnt(inq.addHigh) + ' → 改善後 ' + cnt(inq.afterLow) + '〜' + cnt(inq.afterHigh)),
           note: '訪問増加 ≈ 現訪問 × visitLift（visitLift=' + (Math.round(visitLift * 1000) / 1000) + '）',
           evidence: 'Inferred'
         },
@@ -805,7 +805,7 @@
         {
           label: '取りこぼし件数',
           formula: 'missedInq = max(1, round(I₀ · m)); deals/rev は close×deal を乗算',
-          value: '問い合わせ ≈ ' + cnt(lost.missedInquiries)
+          value: lost.missedInquiries == null ? '未計算（いまの件数が未入力）' : '問い合わせ ≈ ' + cnt(lost.missedInquiries)
             + (lost.missedDeals != null ? (' / 受注 ≈ ' + lost.missedDeals) : '')
             + (lost.missedRevenue != null ? (' / 売上機会 ≈ ' + yen(lost.missedRevenue)) : ''),
           note: '表示は参考。実測の逸失需要ではない。',
@@ -906,7 +906,17 @@
     var inq = inquiryForecast(inputs, acq.score, volume.value);
     var close = clamp(num(inputs.closeRatePct, 20) / 100, 0, 1);
     var deal = Math.max(0, num(inputs.avgDeal, 0));
-    var lost = opportunityLoss(inq.currentInquiries, acq.score, close, deal);
+    // いまの件数が入力も GA4 も無いとき、検索回数の推定から件数を作らない（以前は文字列から計算した回数 ×0.15% を「いま」にしていた）
+    var inqMeasured = inq.inquiriesSource !== 'Estimated' && inq.currentInquiries > 0;
+    if (!inqMeasured) {
+      inq.addLow = inq.addHigh = inq.afterLow = inq.afterHigh = null;
+      inq.currentInquiries = null;
+      inq.cpa = null;
+      if (!(inputs.monthlyVisitors > 0)) inq.currentVisitors = null;
+      inq.notComputed = true;
+    }
+    var lost = inqMeasured ? opportunityLoss(inq.currentInquiries, acq.score, close, deal)
+      : { evidenceClass: 'Unmeasured', missedInquiries: null, missedDeals: null, missedRevenue: null, note: 'いまの件数が分からないため、取りこぼしの件数は試算していません。' };
     var brand = mode === 'branded_search' || industryId === 'media' ? brandReflection(diagnose, mediaUrl) : null;
     var confidenceBreakdown = {
       mode: mode,
@@ -1002,7 +1012,7 @@
           meaning: profile.after_meaning,
           sub: '目安 ' + improve.multiplierLow + '〜' + improve.multiplierHigh + '倍（レンジ・保証なし）'
         },
-        {
+        inqMeasured ? {
           id: 'outcome',
           label: profile.outcome_label,
           value: '+' + inq.addLow + '〜' + inq.addHigh,
@@ -1010,6 +1020,14 @@
           badge: 'Inferred',
           meaning: profile.outcome_meaning,
           sub: '現在 ' + cnt(inq.currentInquiries) + ' → ' + cnt(inq.afterLow) + '〜' + cnt(inq.afterHigh) + ' 件'
+        } : {
+          id: 'outcome',
+          label: profile.outcome_label,
+          value: '—',
+          unit: '',
+          badge: 'Unmeasured',
+          meaning: 'いまの' + (profile.display_label || '件数') + 'の数が分からないため、増える件数は試算していません',
+          sub: '月の件数を入力するか GA4 を接続すると試算します'
         }
       ];
     }
@@ -1058,6 +1076,7 @@
       url: opts.url || '',
       measuredAt: new Date().toISOString(),
       heroTitle: heroTitle,
+      scoreOverall: acq.score,
       volume: volume,
       acquisition: acq,
       improve: improve,
