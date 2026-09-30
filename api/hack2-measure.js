@@ -352,6 +352,9 @@ async function callResponsesWithSearch(model, key, prompt) {
       model,
       input: prompt,
       tools: [{ type: 'web_search', user_location: { type: 'approximate', country: 'JP' } }],
+      // 費用を抑える: 検索は1回まで・推論は少なめ（2026-09-30 実測 gpt-5-mini: 制限なし 0.04〜0.085ドル/回答・3〜7回検索 → 制限あり 約0.015ドル/回答、引用URLは8〜12件返る）
+      max_tool_calls: 1,
+      reasoning: /^openai\//.test(model) ? { effort: 'low' } : undefined,
       store: false
     }),
     signal: AbortSignal.timeout(120000)
