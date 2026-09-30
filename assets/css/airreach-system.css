@@ -157,11 +157,21 @@
 }
 .ar-factor-card.is-bad,
 .ar-expert-col.is-bad,
-.ars-list.bad li,
-.ar-gap-list li {
+.ars-list.bad li {
   border-color: #94a3b8 !important;
   background: #fff !important;
   color: var(--ar-ink) !important;
+}
+/* 「足りないもの」は不足の一覧なので赤で示す（未確認は灰色のまま） */
+.ar-gap-list li {
+  border-color: #fecaca !important;
+  background: #fff1f2 !important;
+  color: #9f1239 !important;
+}
+.ar-gap-list li.is-unknown {
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  color: #475569 !important;
 }
 .ar-factor-miss li {
   color: var(--ar-ink) !important;

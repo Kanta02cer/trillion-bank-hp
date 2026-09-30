@@ -145,6 +145,9 @@
     var ldNodes = Array.prototype.slice.call(doc.querySelectorAll('script[type="application/ld+json"]'));
     var types = {};
     var faqCount = 0;
+    var ldAddress = [];
+    var ldCuisine = [];
+    var ldName = '';
     ldNodes.forEach(function (node) {
       try {
         var data = JSON.parse(node.textContent);
@@ -154,6 +157,13 @@
           var t = it['@type'];
           if (Array.isArray(t)) t.forEach(function (x) { types[x] = true; });
           else if (typeof t === 'string') types[t] = true;
+          var tList = Array.isArray(t) ? t : [t];
+          if (!ldName && it.name && tList.some(function (x) { return /Restaurant|FoodEstablishment|LocalBusiness|CafeOrCoffeeShop|BarOrPub|Bakery|IceCreamShop|Store/.test(String(x || '')); })) ldName = String(it.name);
+          var ad = it.address;
+          if (ad && typeof ad === 'object' && !Array.isArray(ad)) {
+            ['addressRegion', 'addressLocality', 'streetAddress'].forEach(function (k) { if (ad[k]) ldAddress.push(String(ad[k])); });
+          } else if (typeof ad === 'string') ldAddress.push(ad);
+          if (it.servesCuisine) ldCuisine = ldCuisine.concat(Array.isArray(it.servesCuisine) ? it.servesCuisine.map(String) : [String(it.servesCuisine)]);
           if (t === 'FAQPage' || (Array.isArray(t) && t.indexOf('FAQPage') >= 0)) {
             var ents = it.mainEntity || [];
             faqCount += Array.isArray(ents) ? ents.length : 0;
@@ -172,6 +182,26 @@
       if (idEl && idEl.id) { faqAnchor = idEl.id; break; }
     }
     var ids = Array.prototype.slice.call(doc.querySelectorAll('[id]'), 0, 300).map(function (n) { return n.id; }).filter(Boolean);
+    // 「調べた言葉」の自動候補（地域＋業態）。script/style を除いた本文から作る
+    var keywordAuto = null;
+    if (typeof window !== 'undefined' && window.AirReachKeyword) {
+      var cleanText = '';
+      if (doc.body) {
+        var bodyClone = doc.body.cloneNode(true);
+        Array.prototype.forEach.call(bodyClone.querySelectorAll('script,style,noscript,template'), function (n) { n.remove(); });
+        cleanText = (bodyClone.textContent || '').replace(/\s+/g, ' ').trim();
+      }
+      var ogSiteName = (doc.querySelector('meta[property="og:site_name"]') || {}).content || '';
+      var kwSrc = {
+        title: title.trim(), ogTitle: ogTitle, metaDesc: metaDesc.trim(), text: cleanText,
+        ldAddress: ldAddress, ldCuisine: ldCuisine, types: Object.keys(types), ldName: ldName, ogSiteName: ogSiteName
+      };
+      try {
+        keywordAuto = window.AirReachKeyword.derive(kwSrc);
+        // 調べそうな言葉の一覧（飲食店の付け足す言葉）。サイトに答えが書いてあるかの判定つき
+        keywordAuto.candidates = window.AirReachKeyword.candidates(keywordAuto, kwSrc, 'restaurant', 20);
+      } catch (e) { keywordAuto = null; }
+    }
     var hasContact = /お問い合わせ|contact|inquiry|相談|予約/i.test(text) || !!doc.querySelector('a[href*="contact"], a[href*="meeting"], form');
     return {
       title: title.trim(),
@@ -187,7 +217,8 @@
       ids: ids,
       hasContact: hasContact,
       textLen: text.length,
-      htmlLen: html.length
+      htmlLen: html.length,
+      keywordAuto: keywordAuto
     };
   }
 
@@ -211,6 +242,32 @@
     var points = null;
     if (known) points = ok ? pointsIfOk : (partialPoints || 0);
     return { factor: factor, label: label, tip: tip, state: state, ok: state === 'ok', known: known, points: points, max: max, evidence: evidence };
+  }
+
+  // 各チェックの判定基準（画面の文言用）。ラベル・配点は変えない
+  var CHECK_CRITERIA = {
+    'ページタイトルがある': { ok: 'ページタイトル（title）がある', ng: 'ページタイトル（title）が無い' },
+    'H1が1つ': { ok: '主見出し（H1）がちょうど1つ', ng: '主見出し（H1）が0個か、2個以上ある' },
+    '説明文（meta）が十分': { ok: '説明文（meta description）が40文字以上', ng: '説明文（meta description）が無いか、40文字未満' },
+    'canonicalがある': { ok: '正規URL（canonical）の指定がある', ng: '正規URL（canonical）の指定が無い' },
+    'og:titleがある': { ok: '共有用タイトル（og:title）がある', ng: '共有用タイトル（og:title）が無い' },
+    '本文量がある': { ok: '本文が800文字を超える', ng: '本文が800文字以下' },
+    '会社情報（Organization等）': { ok: '会社・お店の構造化データ（Organization / LocalBusiness）がある', ng: '会社・お店の構造化データ（Organization / LocalBusiness）が無い' },
+    'WebSite / WebPage': { ok: 'サイト種別の構造化データ（WebSite / WebPage）がある', ng: 'サイト種別の構造化データ（WebSite / WebPage）が無い' },
+    'Service / Product': { ok: 'サービス・商品の構造化データ（Service / Product）がある', ng: 'サービス・商品の構造化データ（Service / Product）が無い' },
+    'BreadcrumbList': { ok: 'ページ階層の構造化データ（BreadcrumbList）がある', ng: 'ページ階層の構造化データ（BreadcrumbList）が無い' },
+    '問い合わせ導線': { ok: '問い合わせ・予約・相談の案内がある', ng: '問い合わせ・予約・相談の案内が無い' },
+    'FAQPageがある': { ok: 'FAQの構造化データ（FAQPage）がある', ng: 'FAQの構造化データ（FAQPage）が無い' },
+    'FAQが3問以上': { ok: 'FAQが3問以上ある', ng: 'FAQが3問未満' },
+    '画面上のFAQらしき領域': { ok: '画面にFAQのまとまりがある', ng: '画面にFAQのまとまりが無い' },
+    'llms.txtがある': { ok: 'llms.txt が81文字以上ある', ng: 'llms.txt が無いか、80文字以下' },
+    'robots.txtがある': { ok: 'robots.txt がある', ng: 'robots.txt が無い' },
+    '主要AIボットの記載': { ok: 'robots.txt にAIボット（GPTBot など）の記載がある', ng: 'robots.txt にAIボット（GPTBot など）の記載が無い' },
+    'sitemap案内': { ok: 'robots.txt にサイトマップの案内がある', ng: 'robots.txt にサイトマップの案内が無い' }
+  };
+  function criteriaText(label, ok) {
+    var c = CHECK_CRITERIA[label];
+    return c ? (ok ? c.ok : c.ng) : (ok ? label : '「' + label + '」を満たしていない');
   }
 
   function analyze(page, pageRes, llmsRes, robotsRes, baseHref) {
@@ -305,7 +362,7 @@
     var unknowns = [];
     checks.forEach(function (c) {
       if (c.state === 'ok') strengths.push(c.label);
-      else if (c.state === 'ng') gaps.push(c.label + 'がない／弱い');
+      else if (c.state === 'ng') gaps.push(criteriaText(c.label, false));
       else unknowns.push(c.label + '（未確認）');
     });
 
@@ -335,7 +392,7 @@
     else if (!display) tone = '項目ごとの点数と不足を確認してください。';
     else if (bandKey === 'high') tone = 'ホームページの情報整備はひととおり揃っています。残っている不足項目を個別に確認してください。';
     else if (bandKey === 'mid') tone = '基本的な情報は載っていますが、定義・よくある質問・会社情報に足りない項目があります。';
-    else tone = 'ホームページの情報整備がまだ薄い状態です。まず公式の定義とよくある質問、会社情報を補うのが先です。';
+    else tone = 'ホームページの情報整備は「要対策」の区分です。まず会社・お店の情報、よくある質問、サービスの説明を補うのが先です。';
     var summary = overall == null
       ? host + ' のホームページ情報整備は未確認です。' + tone
       : host + ' のホームページ情報整備は ' + overall + ' / 100 です。' + tone;
@@ -380,7 +437,8 @@
         hasLlms: llmsKnown ? !!(llmsText && llmsText.length > 80) : null,
         hasRobots: robotsKnown ? !!robotsText : null,
         baseHref: baseHref,
-        finalUrl: pageRes.finalUrl || baseHref
+        finalUrl: pageRes.finalUrl || baseHref,
+        keywordAuto: page.keywordAuto || null
       },
       modelPlaceholders: [
         { name: 'Google AI Overviews', status: '要AirReach Consulting測定', note: '実回答の引用率は本ツールでは取得しません' },
@@ -410,5 +468,5 @@
     });
   }
 
-  window.AirReach = { diagnose: diagnose, normalizeUrl: normalizeUrl, RULE_VERSION: RULE_VERSION, FACTORS: FACTORS };
+  window.AirReach = { checkCriteria: criteriaText, diagnose: diagnose, normalizeUrl: normalizeUrl, RULE_VERSION: RULE_VERSION, FACTORS: FACTORS };
 })();

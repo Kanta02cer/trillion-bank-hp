@@ -503,8 +503,8 @@
           var out = [];
           if (!diag || !diag.page) return ['診断前のため未確認'];
           var p = diag.page;
-          if (!p.h1) out.push('主見出し（H1）が弱い');
-          if (!(p.title)) out.push('タイトルが弱い');
+          if (!p.h1) out.push('主見出し（H1）が無い');
+          if (!(p.title)) out.push('ページタイトル（title）が無い');
           return out;
         }
       },
@@ -518,8 +518,8 @@
           var out = [];
           if (!diag || !diag.page) return ['診断前のため未確認'];
           var types = (diag.page.types || []).join(' ');
-          if (!/Organization|LocalBusiness/.test(types)) out.push('会社情報の構造化データが無い');
-          if (!/Service|Product/.test(types)) out.push('サービス定義が弱い');
+          if (!/Organization|LocalBusiness/.test(types)) out.push('会社・お店の構造化データ（Organization / LocalBusiness）が無い');
+          if (!/Service|Product/.test(types)) out.push('サービス・商品の構造化データ（Service / Product）が無い');
           return out;
         }
       },
@@ -532,9 +532,11 @@
         missingWhen: function (diag) {
           var out = [];
           if (!diag || !diag.page) return ['診断前のため未確認'];
-          if ((diag.page.faqCount || 0) < 3) out.push('FAQが少ない／無い');
+          var fc = diag.page.faqCount || 0;
+          if (fc === 0) out.push('FAQ（よくある質問）が無い');
+          else if (fc < 3) out.push('FAQが3問未満（いま ' + fc + ' 問）');
           var types = (diag.page.types || []).join(' ');
-          if (!/FAQPage/.test(types)) out.push('FAQPageの構造化が無い');
+          if (!/FAQPage/.test(types)) out.push('FAQの構造化データ（FAQPage）が無い');
           return out;
         }
       },
@@ -550,9 +552,9 @@
           var page = diag.page || {};
           // hasLlms / hasRobots: true = あり, false = なし, null = 取得できず（未確認）
           if (page.hasLlms === null) out.push('llms.txtは未確認（取得できませんでした）');
-          else if (!page.hasLlms) out.push('llms.txtが無い／薄い');
+          else if (!page.hasLlms) out.push('llms.txt が無いか、80文字以下');
           if (page.hasRobots === null) out.push('robots.txtは未確認（取得できませんでした）');
-          else if (!page.hasRobots) out.push('robots.txtが無い');
+          else if (!page.hasRobots) out.push('robots.txt が無い');
           return out;
         }
       }
@@ -570,9 +572,14 @@
       var lv = level(score);
       var fstate = factorStates[p.id] && factorStates[p.id].state ? factorStates[p.id].state : (score == null ? 'unknown' : 'verified');
       var missing = p.missingWhen(d);
+      // 同じ内容の重複を出さない（例:「FAQが少ない／無い」と「FAQが3問以上」を満たしていない）
+      var TOPICS = [/H1|主見出し/, /タイトル|title/, /meta|説明文/, /FAQPage/, /3問|FAQが少ない/, /llms/, /robots/, /Organization|会社情報/, /Service|Product|サービス定義/];
+      function topicOf(t) { for (var i = 0; i < TOPICS.length; i++) if (TOPICS[i].test(t)) return i; return -1; }
+      function covered(t) { var k = topicOf(t); return k >= 0 && missing.some(function (m) { return topicOf(m) === k; }); }
       // also pull matching gaps text
       (d.gaps || []).forEach(function (g) {
         var t = String(g || '');
+        if (covered(t)) return;
         if (p.id === 'structure' && /H1|タイトル|meta/i.test(t) && missing.indexOf(t) < 0) missing.push(t);
         if (p.id === 'entity' && /Organization|エンティティ|構造化|問い合わせ導線/i.test(t) && missing.indexOf(t) < 0) missing.push(t);
         if (p.id === 'faq' && /FAQ/i.test(t) && missing.indexOf(t) < 0) missing.push(t);
@@ -1014,6 +1021,25 @@
           sub: '現在 ' + cnt(inq.currentInquiries) + ' → ' + cnt(inq.afterLow) + '〜' + cnt(inq.afterHigh) + ' 件'
         }
       ];
+    }
+
+    // 飲食店: 「探している人 ◯回/月」（文字列から作った推定値）の代わりに、
+    // 調べそうな言葉のうち、サイトに答えが書いてある数を出す（HTMLから判定した実測）。入力された検索数があればそちらを使う。
+    var kwSet = industryId === 'restaurant' && diagnose && diagnose.page && diagnose.page.keywordAuto && diagnose.page.keywordAuto.candidates;
+    var hasVolumeInput = opts.volumeOverride != null && String(opts.volumeOverride).trim() !== '' && isFinite(Number(opts.volumeOverride));
+    if (kwSet && kwSet.length && !hasVolumeInput && headline4 && headline4[0] && headline4[0].id === 'demand') {
+      var judged = kwSet.filter(function (c) { return c.answered !== null; });
+      var answered = judged.filter(function (c) { return c.answered; });
+      headline4[0] = {
+        id: 'demand',
+        label: 'お客さんが調べそうな言葉',
+        value: judged.length ? (answered.length + ' / ' + judged.length) : '—',
+        unit: judged.length ? '個にサイトが答えている' : '',
+        badge: 'Observed',
+        meaning: '調べそうな言葉ごとに、答え（ランチ・個室・予約など）がサイトに書いてあるかの数。検索回数ではありません',
+        sub: '全' + kwSet.length + '語（一覧は詳細データ）',
+        keywordSet: kwSet
+      };
     }
 
     var primaryCta = mode === 'branded_search' || industryId === 'media'

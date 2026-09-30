@@ -245,7 +245,7 @@
         label: INDUSTRIES.other.label,
         confidence: 30,
         needsConfirm: true,
-        reasons: ['明確な業種シグナルが弱い'],
+        reasons: ['業種を判断できる手がかり（業態の言葉・構造化データ）が見つからない'],
         candidates: ['restaurant', 'b2b', 'media', 'other']
       };
     }

@@ -369,6 +369,8 @@ body.ar-modal-open{overflow:hidden}
 .ar-drow-meta{margin:12px 0 8px;font-size:.88rem;color:#334155;line-height:1.6}
 .ar-drow-items{margin:0;padding:0;list-style:none;display:grid;gap:6px}
 .ar-drow-items li{font-size:.9rem;font-weight:600;padding:8px 10px;border-radius:8px;background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
+.ar-drow-items li.is-minor{background:#fffbeb;color:#92400e;border-color:#fde68a}
+.ar-drow-sub{margin:0 0 6px;font-size:.8rem;font-weight:700;color:var(--ar-muted,#64748b)}
 .ar-drow-items li.is-unknown{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
 .ar-drow-ok{margin:0;font-size:.9rem;font-weight:600;color:#047857}
 .ar-detail-h3{margin:0 0 10px;font-size:1rem;font-weight:700;color:var(--ar-ink,#0f172a)}
@@ -382,6 +384,24 @@ body.ar-modal-open{overflow:hidden}
 .ar-dchk-lab{font-size:.92rem;font-weight:600;color:var(--ar-ink,#0f172a);min-width:0}
 .ar-dchk-state{margin-left:8px;font-size:.75rem;font-weight:600;color:var(--ar-muted,#64748b)}
 .ar-dchk.is-ng .ar-dchk-state{color:#b91c1c}
+.ar-details-chev{display:inline-block;width:8px;height:8px;margin-left:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .15s}
+#ar-cta-details[aria-expanded="true"] .ar-details-chev{transform:translateY(2px) rotate(-135deg)}
+@media (prefers-reduced-motion:reduce){.ar-details-chev{transition:none}}
+.ar-fold{margin:0 0 12px;border:1px solid var(--ar-line,#e2e8f0);border-radius:12px;background:#fff}
+.ar-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 16px;font-size:1rem;font-weight:700;color:var(--ar-ink,#0f172a)}
+.ar-fold>summary::-webkit-details-marker{display:none}
+.ar-fold>summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid #94a3b8;border-bottom:2px solid #94a3b8;transform:rotate(45deg);transition:transform .15s}
+.ar-fold[open]>summary::after{transform:rotate(-135deg)}
+.ar-fold>summary:focus-visible{outline:2px solid #2563eb;outline-offset:2px;border-radius:12px}
+.ar-fold-count{font-size:.8rem;font-weight:600;color:var(--ar-muted,#64748b)}
+.ar-fold-body{padding:0 16px 14px}
+.ar-fold-body .ar-detail-checks{margin:0}
+@media (prefers-reduced-motion:reduce){.ar-fold>summary::after{transition:none}}
+.ar-kwq-note{margin:-4px 0 10px;font-size:.8rem;line-height:1.55;color:var(--ar-muted,#64748b)}
+.ar-dchk.is-na .ar-dchk-mark{background:#cbd5e1;color:#475569}
+.ar-dchk-ev{display:block;margin-top:2px;font-size:.75rem;font-weight:500;color:var(--ar-muted,#64748b);word-break:break-all}
+.ar-kwq-group{padding:8px 14px;font-size:.75rem;font-weight:700;color:var(--ar-muted,#64748b);background:#f8fafc;border-top:1px solid var(--ar-line,#e2e8f0)}
+.ar-kwq-group:first-child{border-top:0}
 .ar-dchk-link{color:#94a3b8;font-size:1.3rem;line-height:1;text-decoration:none;text-align:center}
 .ar-dchk-link:hover{color:var(--ar-accent,#1d4ed8)}
 .ar-dchk-link.is-off{opacity:.35}
@@ -1077,7 +1097,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           </aside>
           <!-- この画面の出口。ステップ3（詳細データ）は任意なので控えめな枠ボタンにする -->
           <div class="ar-panel-exit">
-            <a class="ar-btn ar-btn-ghost" href="#expert-view" id="ar-cta-details">詳しいデータを見る<span class="ar-arrow" aria-hidden="true">→</span></a>
+            <button type="button" class="ar-btn ar-btn-ghost" id="ar-cta-details" aria-expanded="false" aria-controls="expert-view"><span id="ar-cta-details-label">詳しいデータを見る</span><span class="ar-details-chev" aria-hidden="true"></span></button>
           </div>
         </div>
         <div class="ar-panel is-hidden" id="expert-view">
@@ -1086,8 +1106,19 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <p class="ar-fix-lead" id="ar-detail-lead">各項目の点数と、検出した項目の詳細です。点数は「ホームページの情報整備」の区分で、AI掲載率・順位・成果ではありません。</p>
           <!-- 項目別の点数（押すと不足・未確認の内訳が開く） -->
           <div class="ar-detail-list" id="ar-detail-factors"></div>
-          <h3 class="ar-detail-h3">検出されたその他の項目</h3>
-          <ul class="ar-detail-checks" id="ar-detail-checks"></ul>
+          <details class="ar-fold" id="ar-kwq-wrap" hidden>
+            <summary>お客さんが調べそうな言葉<span class="ar-fold-count" id="ar-kwq-count"></span></summary>
+            <div class="ar-fold-body">
+            <p class="ar-kwq-note">言葉ごとに、答えがトップページに書いてあるかを見ています。「書いていない」は、その店に無いという意味ではありません。検索回数は Search Console などを接続したときだけ出します。</p>
+            <ul class="ar-detail-checks" id="ar-kwq-list"></ul>
+            </div>
+          </details>
+          <details class="ar-fold" id="ar-detail-checks-wrap">
+            <summary>検出されたその他の項目<span class="ar-fold-count" id="ar-detail-checks-count"></span></summary>
+            <div class="ar-fold-body">
+              <ul class="ar-detail-checks" id="ar-detail-checks"></ul>
+            </div>
+          </details>
           <!-- 計算式はモーダルで見せる（初期表示は「計算式」「今回の計算」だけ） -->
           <div class="ar-logic" id="ar-logic-wrap">
             <button type="button" class="ar-formula-entry" id="ar-formula-open" aria-haspopup="dialog" aria-controls="ar-formula-modal"><svg class="ar-formula-entry-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/></svg><span class="ar-formula-entry-label">詳しい計算式を見る</span><span class="ar-arrow" aria-hidden="true">→</span></button>
@@ -1119,6 +1150,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 <script src="{{ '/assets/js/airreach-tip.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-handoff.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-display.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/airreach-keyword.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-diagnose.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-industry.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/airreach-sales.js' | relative_url }}" defer></script>
@@ -1209,8 +1241,13 @@ document.addEventListener('DOMContentLoaded', function () {
     return map[id] || id || '—';
   }
 
+  // 「調べた言葉」の自動候補。飲食店はサイトの住所と業態から「地域＋業態」を作り（airreach-keyword.js）、
+  // 作れなければ空（未設定）にする。業種ごとの固定語では埋めない。店の方の入力は呼び出し側で優先する。
   function autoKeyword(diagnose, industry) {
     var page = (diagnose && diagnose.page) || {};
+    if (industry === 'restaurant') {
+      return (page.keywordAuto && page.keywordAuto.keyword) || '';
+    }
     var raw = String(page.h1 || page.title || '').trim();
     raw = raw.replace(/\s*[|｜\-–—].*$/, '').replace(/\s+/g, ' ').trim();
     if (raw && raw.length >= 2 && raw.length <= 40) return raw;
@@ -1359,7 +1396,11 @@ document.addEventListener('DOMContentLoaded', function () {
     $('sum-industry').textContent = labels[industryId] || industryId;
     $('sum-url').textContent = survey.url || '—';
     $('sum-goal').textContent = OUTCOME_LABELS[survey.outcomeGoal] || (survey.goal === 'visibility' ? '認知を広げたい' : '新しいお客さん向け');
-    $('sum-keyword').textContent = survey.keyword || '—';
+    var kwDiag = survey.previewDiagnose || lastDiagnose;
+    var kwSrc = kwDiag && kwDiag.page && kwDiag.page.keywordAuto;
+    $('sum-keyword').textContent = survey.keyword
+      ? survey.keyword + (kwSrc && kwSrc.keyword === survey.keyword && kwSrc.sourceLabel ? '（' + kwSrc.sourceLabel + '）' : '')
+      : '未設定（住所や業態がサイトから読み取れませんでした）';
     $('ar-summary').classList.add('is-on');
 
     $('ar-hero-title').innerHTML = route.copy.indexOf('記事') >= 0
@@ -1377,6 +1418,16 @@ document.addEventListener('DOMContentLoaded', function () {
   function revealPanel(id) {
     var el = $(id);
     if (el) el.classList.remove('is-hidden');
+    if (id === 'expert-view') syncDetailsButton(true);
+  }
+
+  // 「詳しいデータを見る」はボタンの下に開閉する
+  function syncDetailsButton(open) {
+    var b = $('ar-cta-details');
+    if (!b) return;
+    b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    var lab = $('ar-cta-details-label');
+    if (lab) lab.textContent = open ? '詳しいデータを閉じる' : '詳しいデータを見る';
   }
 
   function applyIndustryUi() {
@@ -1417,6 +1468,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setStep(1);
     // hide later panels again for progressive disclosure
     if ($('expert-view')) $('expert-view').classList.add('is-hidden');
+    syncDetailsButton(false);
     if ($('actions')) $('actions').classList.add('is-hidden');
 
     $('ar-analyzing').textContent = 'AirReach Tools';
@@ -1502,7 +1554,7 @@ document.addEventListener('DOMContentLoaded', function () {
       tb.innerHTML = '';
       report.brand.sources.forEach(function (s) {
         var tr = document.createElement('tr');
-        tr.innerHTML = '<td>' + s.name + '</td><td><b>' + s.share + '%</b></td><td>' + (s.used ? '使われやすい' : '弱い／未充足') + '</td>';
+        tr.innerHTML = '<td>' + s.name + '</td><td><b>' + s.share + '%</b></td><td>' + (s.used ? '使われやすい' : '使われにくい') + '</td>';
         tb.appendChild(tr);
       });
       $('brand-cite-note').textContent = report.brand.citationNote || '';
@@ -1812,9 +1864,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var lv = f.level || { label: '未確認', tone: 'muted' };
         var row = document.createElement('div');
         row.className = 'ar-drow';
+        // 区分が「良好」のときの不足は、赤ではなく「あと少し」の色で出す（区分の色と食い違わないように）
+        var minor = lv.tone === 'good';
         var items = (f.missing || []).map(function (m) {
           var isUnk = /未確認/.test(String(m));
-          return '<li class="' + (isUnk ? 'is-unknown' : 'is-ng') + '">' + tipAttr(m) + '</li>';
+          return '<li class="' + (isUnk ? 'is-unknown' : (minor ? 'is-minor' : 'is-ng')) + '">' + tipAttr(m) + '</li>';
         }).join('');
         row.innerHTML =
           '<button type="button" class="ar-drow-btn" aria-expanded="false">' +
@@ -1826,7 +1880,7 @@ document.addEventListener('DOMContentLoaded', function () {
           '</button>' +
           '<div class="ar-drow-panel" hidden>' +
           '<p class="ar-drow-meta">' + tipAttr(f.tip || '') + (unknown ? ' 取得できなかったため点数を出していません（0点ではありません）。' : ' 総合への重み ' + tipAttr(String(f.weightPct)) + '%・寄与約 ' + tipAttr(String(f.contribution)) + '点。') + '</p>' +
-          (items ? '<ul class="ar-drow-items">' + items + '</ul>' : '<p class="ar-drow-ok">大きな不足は見当たりません。</p>') +
+          (items ? (minor ? '<p class="ar-drow-sub">満点まであと少しの点</p>' : '') + '<ul class="ar-drow-items">' + items + '</ul>' : '<p class="ar-drow-ok">大きな不足は見当たりません。</p>') +
           '</div>';
         var btn = row.querySelector('.ar-drow-btn');
         var panel = row.querySelector('.ar-drow-panel');
@@ -1839,6 +1893,33 @@ document.addEventListener('DOMContentLoaded', function () {
         detailFactors.appendChild(row);
       });
     }
+    // 調べそうな言葉（飲食店）: 言葉ごとに、答えがサイトに書いてあるか
+    var kwqWrap = $('ar-kwq-wrap'), kwqList = $('ar-kwq-list');
+    var kwqSet = (report.headline4 || []).reduce(function (acc, h) { return acc || (h.id === 'demand' && h.keywordSet) || null; }, null);
+    if (kwqWrap && kwqList) {
+      if (kwqSet && kwqSet.length) {
+        var GROUP = { base: '地域＋業態', condition: '条件をつけて探すとき', brand: '店名で調べるとき' };
+        var lastGroup = '', html = '';
+        kwqSet.forEach(function (c) {
+          if (c.group !== lastGroup) { lastGroup = c.group; html += '<li class="ar-kwq-group">' + tipAttr(GROUP[c.group] || '') + '</li>'; }
+          var st = c.answered === true ? 'ok' : (c.answered === false ? 'ng' : 'na');
+          var mark = st === 'ok' ? '✓' : (st === 'ng' ? '!' : '–');
+          var stLabel = st === 'ok' ? '書いてある' : (st === 'ng' ? '書いていない' : '判定なし');
+          html += '<li class="ar-dchk is-' + st + '"><span class="ar-dchk-mark" aria-hidden="true">' + mark + '</span>' +
+            '<span class="ar-dchk-lab">' + tipAttr(c.text) + '<span class="ar-dchk-state">' + stLabel + '</span>' +
+            (c.evidence ? '<span class="ar-dchk-ev">' + tipAttr(c.evidence) + '</span>' : '') + '</span><span></span></li>';
+        });
+        kwqList.innerHTML = html;
+        var kwJudged = kwqSet.filter(function (c) { return c.answered !== null; });
+        var kwYes = kwJudged.filter(function (c) { return c.answered; }).length;
+        if ($('ar-kwq-count')) $('ar-kwq-count').textContent = '全' + kwqSet.length + '語 · ' + kwYes + '/' + kwJudged.length + ' 個に答えあり';
+        kwqWrap.open = false;
+        kwqWrap.hidden = false;
+      } else {
+        kwqList.innerHTML = '';
+        kwqWrap.hidden = true;
+      }
+    }
     var detailChecks = $('ar-detail-checks');
     if (detailChecks) {
       detailChecks.innerHTML = '';
@@ -1846,17 +1927,27 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!checks.length) {
         detailChecks.innerHTML = '<li class="ar-dchk is-unknown"><span class="ar-dchk-mark">?</span><span class="ar-dchk-lab">診断データがまだありません。</span></li>';
       }
+      var cntOk = 0, cntNg = 0, cntUnk = 0;
+      checks.forEach(function (c) {
+        var st0 = c.state || (c.ok ? 'ok' : 'ng');
+        if (st0 === 'ok') cntOk++; else if (st0 === 'ng') cntNg++; else cntUnk++;
+      });
+      if ($('ar-detail-checks-count')) $('ar-detail-checks-count').textContent = checks.length ? ('あり ' + cntOk + ' · なし ' + cntNg + (cntUnk ? ' · 未確認 ' + cntUnk : '')) : '';
+      if ($('ar-detail-checks-wrap')) $('ar-detail-checks-wrap').open = false;
       checks.forEach(function (c) {
         var state = c.state || (c.ok ? 'ok' : 'ng');
         var mark = state === 'ok' ? '✓' : (state === 'ng' ? '!' : '?');
-        var label = String(c.label || '').replace(/がある$/, '');
+        var hasCrit = !!(window.AirReach && AirReach.checkCriteria);
+        var label = (hasCrit && state !== 'unknown')
+          ? AirReach.checkCriteria(c.label, state === 'ok')
+          : String(c.label || '').replace(/がある$/, '');
         var ev = c.evidence || {};
         var href = state !== 'unknown' && ev.finalUrl ? ev.finalUrl + (ev.anchor ? '#' + ev.anchor : '') : '';
         var li = document.createElement('li');
         li.className = 'ar-dchk is-' + state;
         li.innerHTML =
           '<span class="ar-dchk-mark" aria-hidden="true">' + mark + '</span>' +
-          '<span class="ar-dchk-lab">' + tipAttr(label) + '<span class="ar-dchk-state">' + (state === 'ok' ? 'あり' : (state === 'ng' ? 'なし' : '未確認')) + '</span></span>' +
+          '<span class="ar-dchk-lab">' + tipAttr(label) + (hasCrit ? (state === 'unknown' ? '<span class="ar-dchk-state">未確認</span>' : '') : '<span class="ar-dchk-state">' + (state === 'ok' ? 'あり' : (state === 'ng' ? 'なし' : '未確認')) + '</span>') + '</span>' +
           (href ? '<a class="ar-dchk-link" href="' + tipAttr(href) + '" target="_blank" rel="noopener noreferrer" title="確認したページを開く" aria-label="' + tipAttr(label) + ' の確認したページを開く">›</a>' : '<span class="ar-dchk-link is-off" aria-hidden="true">›</span>');
         detailChecks.appendChild(li);
       });
@@ -2216,9 +2307,12 @@ document.addEventListener('DOMContentLoaded', function () {
   if ($('ar-cta-details')) {
     $('ar-cta-details').addEventListener('click', function (e) {
       e.preventDefault();
-      revealPanel('expert-view');
-      setStep(3);
-      $('expert-view').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var panel = $('expert-view');
+      if (!panel) return;
+      var willOpen = panel.classList.contains('is-hidden');
+      panel.classList.toggle('is-hidden', !willOpen);
+      syncDetailsButton(willOpen);
+      setStep(willOpen ? 3 : 2);
     });
   }
 
