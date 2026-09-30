@@ -419,6 +419,64 @@ try {
   await expectGoogleMeasured('G3 sync → diagnosis', { pg: pageS2, errs: [] }, '8.5');
   await ctxS.close();
 
+  // ---- O: Google 連携（Search Console のみ。GA4 は準備中）----
+  const ctxO = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  track(ctxO, 'O');
+  const pageO = await ctxO.newPage();
+  const errorsO = []; pageO.on('pageerror', (e) => errorsO.push(String(e)));
+  // 無料診断の「Googleと連携」→ Studio の Google 画面へ（壊れていた fetch 経由の案内をやめた）
+  await pageO.goto(`${BASE}/airreach/other/?fresh=1`, { waitUntil: 'domcontentloaded' });
+  await pageO.evaluate(() => document.getElementById('ar-google-connect').click());
+  await pageO.waitForURL(/\/airreach\/studio\/#google$/, { timeout: 15000 });
+  await pageO.waitForFunction(() => window.AirReachStudio && document.querySelector('[data-panel-view="google"].is-active'), null, { timeout: 15000 });
+  expect('O: free tool 「Googleと連携」 opens Studio Google panel', true);
+  const ga4Btn = await pageO.$eval('#sync-ga4', (b) => ({ disabled: b.disabled, text: b.textContent, title: b.title }));
+  expect('O: GA4 sync button disabled and labelled 準備中', ga4Btn.disabled && /準備中/.test(ga4Btn.text) && /準備中/.test(ga4Btn.title), JSON.stringify(ga4Btn));
+  expect('O: status says Search Console only / GA4 準備中', /Search Console のみ/.test(await pageO.textContent('#google-status')) && /GA4（準備中）/.test(await pageO.textContent('label[for="ga-property"]')));
+  const ga4Calls = [];
+  await pageO.route((u) => u.pathname.startsWith('/api/google/ga4'), (route) => { ga4Calls.push(route.request().url()); route.fulfill({ status: 503, body: '{}' }); });
+  await pageO.evaluate(() => document.getElementById('sync-ga4').click()); // disabled: 何も起きない
+  expect('O: clicking disabled GA4 does not call /api/google/ga4', ga4Calls.length === 0);
+  // GSC 同期: POST /api/google/gsc（Cookie 付き）→ 行に siteUrl を記録 → gscSites
+  const gscReqs = [];
+  const gscHosts = [];
+  pageO.on('request', (r) => { if (r.url().includes('/api/google/')) gscHosts.push(new URL(r.url()).host); });
+  await pageO.route((u) => u.pathname.startsWith('/api/google/gsc'), async (route) => {
+    const req = route.request();
+    if (req.method() !== 'POST') return route.fulfill({ status: 204 });
+    gscReqs.push({ method: req.method(), body: req.postDataJSON(), url: req.url() });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ count: 2, siteUrl: req.postDataJSON().siteUrl, rows: [
+      { date: '2026-09-01', keyword: '町田 焼肉 予約', url: 'https://gsc-sync.example/menu', clicks: 38, impressions: 1240, ctr: 0.03, position: 8.44, source: 'gsc' },
+      { date: '2026-09-02', keyword: '別サイトの行', url: 'https://other.example/', clicks: 1, impressions: 9, ctr: 0.1, position: 3, source: 'gsc' },
+    ] }) });
+  });
+  await pageO.fill('#gsc-site', 'sc-domain:gsc-sync.example');
+  await pageO.fill('#sync-start', '2026-09-01');
+  await pageO.fill('#sync-end', '2026-09-28');
+  await pageO.click('#sync-gsc');
+  await pageO.waitForFunction(() => /GSC同期完了/.test((document.getElementById('sync-message') || {}).textContent || ''), null, { timeout: 10000 }).catch(() => {});
+  expect('O: GSC sync is same-origin (cookies reach the API; never the vercel.app API host)', gscReqs.length === 1 && new URL(gscReqs[0].url).host === new URL(BASE).host && gscHosts.every((h) => h === new URL(BASE).host), JSON.stringify(gscHosts));
+  expect('O: GSC sync POSTs siteUrl + dates to /api/google/gsc', gscReqs.length === 1 && gscReqs[0].method === 'POST' && gscReqs[0].body.siteUrl === 'sc-domain:gsc-sync.example' && gscReqs[0].body.startDate === '2026-09-01', JSON.stringify(gscReqs));
+  expect('O: sync message shows 完了 (not 「API未接続」)', /GSC同期完了: 2 行/.test(await pageO.textContent('#sync-message')), await pageO.textContent('#sync-message'));
+  const syncedSite = await pageO.evaluate(() => (JSON.parse(localStorage.getItem('airreach_official_baseline_v1') || '{}').gscSites || []).find((x) => x.property === 'sc-domain:gsc-sync.example'));
+  expect('O: synced rows stored for that site only (other-site row dropped)', !!syncedSite && syncedSite.scope === 'domain' && syncedSite.keywords.length === 1 && syncedSite.keywords[0].impressions === 1240, JSON.stringify(syncedSite));
+  // 「接続」は同一オリジンの /api/google/auth/ へ（戻り先と同じドメインで state Cookie を発行するため）
+  let authNav = '';
+  await pageO.route((u) => u.pathname.startsWith('/api/google/auth'), (route) => { authNav = route.request().url(); route.fulfill({ status: 200, contentType: 'text/plain', body: 'stub' }); });
+  await pageO.click('#google-connect');
+  await pageO.waitForURL(/\/api\/google\/auth\/$/, { timeout: 10000 }).catch(() => {});
+  expect('O: 「接続」 starts OAuth on the same origin', authNav === `${BASE}/api/google/auth/`, authNav);
+  // OAuth から戻ったときの表示
+  await pageO.goto(`${BASE}/airreach/studio/?google=connected#google`, { waitUntil: 'load' });
+  await pageO.waitForFunction(() => /接続しました/.test((document.getElementById('google-status') || {}).textContent || ''), null, { timeout: 10000 }).catch(() => {});
+  expect('O: ?google=connected → 接続しました（Search Console のみ）', /Googleと接続しました（Search Console のみ）/.test(await pageO.textContent('#google-status')));
+  await (await pageO.$('[data-panel-view="google"]')).screenshot({ path: path.join(OUT, 'o-studio-google-connected.png') });
+  await pageO.goto(`${BASE}/airreach/studio/?google=scope_missing#google`, { waitUntil: 'load' });
+  await pageO.waitForFunction(() => /許可されなかった/.test((document.getElementById('google-status') || {}).textContent || ''), null, { timeout: 10000 }).catch(() => {});
+  expect('O: ?google=scope_missing → 権限を許可するよう案内', /Search Console へのアクセスが許可されなかった/.test(await pageO.textContent('#google-status')));
+  expect('O: no page errors', errorsO.length === 0, errorsO.join(' | ').slice(0, 300));
+  await ctxO.close();
+
   // (b) 実数ベースライン画面の CSV 取り込み（GSCプロパティを指定したときだけ記録）
   const csv = 'クエリ,クリック数,表示回数,CTR,掲載順位\n町田 焼肉 予約,38,1240,3.06%,8.44\n';
   const importCsv = async (prop) => {
