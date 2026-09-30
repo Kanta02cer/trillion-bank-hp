@@ -231,7 +231,7 @@ robots: "noindex, follow"
           <button data-panel="keywords" data-tip="調べたい言葉やPromptを登録します。">言葉</button>
           <div class="group">測る</div>
           <button data-panel="timeseries" data-tip="期間ごとの数字を見ます。">時系列</button>
-          <button data-panel="google" data-tip="Search Console / GA4 との連携です。">Google</button>
+          <button data-panel="google" data-tip="Search Console との連携です（GA4 は準備中）。">Google</button>
           <button data-panel="hack2" data-tip="AirReach Consultingの実測データを取り込みます。">実測</button>
         </aside>
 
@@ -306,7 +306,7 @@ robots: "noindex, follow"
 
           <div class="ars-panel" data-panel-view="google">
             <div class="ars-title-row"><div><h2>Google連携</h2></div><button id="google-connect" class="ars-btn ars-btn-primary" type="button">接続</button></div>
-            <div class="ars-grid"><div class="ars-card ars-c4"><h3>状態</h3><div id="google-status" class="ars-note">未接続</div><div class="ars-form" style="margin-top:12px"><div class="ars-field"><label for="gsc-site">GSC</label><input id="gsc-site" class="ars-input"></div><div class="ars-field"><label for="ga-property">GA4</label><input id="ga-property" class="ars-input"></div><button id="save-google-settings" class="ars-btn ars-btn-secondary" type="button">保存</button></div></div><div class="ars-card ars-c8"><h3>同期 / CSV</h3><div class="ars-row"><input id="sync-start" class="ars-input" type="date" style="max-width:160px"><input id="sync-end" class="ars-input" type="date" style="max-width:160px"><button id="sync-gsc" class="ars-btn ars-btn-soft" type="button">GSC</button><button id="sync-ga4" class="ars-btn ars-btn-soft" type="button">GA4</button></div><div id="sync-message" class="ars-note" style="margin-top:12px">CSVフォールバック可</div><div class="ars-row" style="margin-top:10px"><label class="ars-btn ars-btn-secondary">GSC CSV<input id="gsc-csv" type="file" accept=".csv,text/csv" hidden></label><label class="ars-btn ars-btn-secondary">GA4 CSV<input id="ga4-csv" type="file" accept=".csv,text/csv" hidden></label></div></div></div>
+            <div class="ars-grid"><div class="ars-card ars-c4"><h3>状態</h3><div id="google-status" class="ars-note">未接続（Search Console のみ。GA4 は準備中）</div><div class="ars-form" style="margin-top:12px"><div class="ars-field"><label for="gsc-site">GSC</label><input id="gsc-site" class="ars-input"></div><div class="ars-field"><label for="ga-property">GA4（準備中）</label><input id="ga-property" class="ars-input"></div><button id="save-google-settings" class="ars-btn ars-btn-secondary" type="button">保存</button></div></div><div class="ars-card ars-c8"><h3>同期 / CSV</h3><div class="ars-row"><input id="sync-start" class="ars-input" type="date" style="max-width:160px"><input id="sync-end" class="ars-input" type="date" style="max-width:160px"><button id="sync-gsc" class="ars-btn ars-btn-soft" type="button">GSC</button><button id="sync-ga4" class="ars-btn ars-btn-soft" type="button" disabled aria-disabled="true" title="GA4連携は準備中です。GA4 は CSV で取り込めます。">GA4（準備中）</button></div><div id="sync-message" class="ars-note" style="margin-top:12px">CSVフォールバック可</div><div class="ars-row" style="margin-top:10px"><label class="ars-btn ars-btn-secondary">GSC CSV<input id="gsc-csv" type="file" accept=".csv,text/csv" hidden></label><label class="ars-btn ars-btn-secondary">GA4 CSV<input id="ga4-csv" type="file" accept=".csv,text/csv" hidden></label></div></div></div>
           </div>
 
           <div class="ars-panel" data-panel-view="hack2">

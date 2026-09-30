@@ -1,3 +1,5 @@
+import { GSC_SCOPE, hasScope } from './_lib/scopes.js';
+
 function setCors(req, res) {
   const origin = req.headers.origin || '';
   let allow = 'https://trillion-bank.jp';
@@ -49,6 +51,13 @@ export default async function handler(req, res) {
   if (!tokenRes.ok) return res.status(400).json(tokens);
 
   const secure = 'Path=/; HttpOnly; Secure; SameSite=Lax';
+  // 同意画面で Search Console の権限を外された場合は、接続済みにしない（GSC 同期が必ず失敗するため）
+  if (tokens.scope && !hasScope(tokens.scope, GSC_SCOPE)) {
+    res.setHeader('Set-Cookie', [`airreach_google_state=; ${secure}; Max-Age=0`]);
+    res.writeHead(302, { Location: '/airreach/studio/?google=scope_missing#google' });
+    res.end();
+    return;
+  }
   const cookieHeaders = [
     `airreach_google_access=${encodeURIComponent(tokens.access_token || '')}; ${secure}; Max-Age=${Number(tokens.expires_in || 3600)}`,
     `airreach_google_state=; ${secure}; Max-Age=0`
@@ -57,7 +66,7 @@ export default async function handler(req, res) {
     cookieHeaders.push(`airreach_google_refresh=${encodeURIComponent(tokens.refresh_token)}; ${secure}; Max-Age=2592000`);
   }
   res.setHeader('Set-Cookie', cookieHeaders);
-  res.writeHead(302, { Location: '/airreach/studio/?google=connected' });
+  res.writeHead(302, { Location: '/airreach/studio/?google=connected#google' });
   res.end();
 }
 

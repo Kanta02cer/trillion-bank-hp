@@ -1,3 +1,5 @@
+import { OAUTH_SCOPES } from './_lib/scopes.js';
+
 function setCors(req, res) {
   const origin = req.headers.origin || '';
   let allow = 'https://trillion-bank.jp';
@@ -38,10 +40,8 @@ export default async function handler(req, res) {
     prompt: 'consent',
     include_granted_scopes: 'true',
     state,
-    scope: [
-      'https://www.googleapis.com/auth/webmasters.readonly',
-      'https://www.googleapis.com/auth/analytics.readonly'
-    ].join(' ')
+    // いまは Search Console（webmasters.readonly）だけ。GA4 は準備中（_lib/scopes.js）
+    scope: OAUTH_SCOPES.join(' ')
   });
   res.writeHead(302, { Location: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}` });
   res.end();

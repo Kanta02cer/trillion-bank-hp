@@ -13,10 +13,11 @@ AirReach Studio separates three data classes so the UI never presents estimates 
 - `/airreach/` — free URL readiness check.
 - `/airreach/studio/` — remediation workbench.
 - `assets/js/airreach-studio.js` — browser-side MVP: gap analysis, generator, keyword registry, CSV import, time series, HackⅡ JSON import.
-- `api/google/auth.js` — Google OAuth start endpoint for Vercel.
+- `api/google/auth.js` — Google OAuth start endpoint for Vercel. **Scope: Search Console only** (`webmasters.readonly`). Scopes are defined in `api/google/_lib/scopes.js`.
+- `api/google/callback.js` — exchanges the code, stores HttpOnly cookies and returns to `/airreach/studio/?google=connected#google`. If the user did not grant the Search Console scope, it does not connect and returns `?google=scope_missing`.
 - `api/google/callback.js` — OAuth callback.
 - `api/google/gsc.js` — Search Console `date + query + page` sync.
-- `api/google/ga4.js` — GA4 `date + landingPagePlusQueryString` with sessions/keyEvents sync.
+- `api/google/ga4.js` — GA4 `date + landingPagePlusQueryString` with sessions/keyEvents sync. **GA4 is on hold**: OAuth does not request `analytics.readonly`, so this endpoint returns `503 { code: 'ga4_not_enabled' }` without calling Google, and Studio shows 「GA4（準備中）」. GA4 CSV import still works. To re-enable (separate PR): add `GA4_SCOPE` to `OAUTH_SCOPES` in `_lib/scopes.js` (users must reconnect to grant the new scope).
 
 ## Environment variables for Vercel
 

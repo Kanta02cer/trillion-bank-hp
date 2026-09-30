@@ -564,9 +564,9 @@
           syncMsg.textContent = '/api/google/gsc に接続中…';
         }
         try {
-          var gscUrl = (window.AirReachAPI && window.AirReachAPI.apiUrl)
-            ? window.AirReachAPI.apiUrl('/api/google/gsc')
-            : '/api/google/gsc/';
+          // Google のトークンは開いているドメインの HttpOnly Cookie にある。別ドメインの API ホスト（tb-api-base）へ送ると
+          // Cookie が付かず 401 になるため、同一オリジンで呼ぶ
+          var gscUrl = '/api/google/gsc/';
           var res = await fetch(gscUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

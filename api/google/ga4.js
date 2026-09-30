@@ -1,3 +1,5 @@
+import { isGa4Enabled } from './_lib/scopes.js';
+
 function setCors(req, res) {
   const origin = req.headers.origin || '';
   let allow = 'https://trillion-bank.jp';
@@ -25,6 +27,8 @@ export default async function handler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST required' });
+  // GA4 連携は準備中。OAuth で analytics.readonly を要求していないので、Google へは問い合わせない（コードは再開用に残す）
+  if (!isGa4Enabled()) return res.status(503).json({ error: 'GA4連携は準備中です。GA4 は CSV で取り込めます。', code: 'ga4_not_enabled' });
   const token = await getAccessToken(req);
   if (!token) return res.status(401).json({ error: 'Google connection required' });
   const { propertyId, startDate, endDate } = req.body || {};
