@@ -103,6 +103,8 @@
         var m;
         if ((m = /^#\/c\/([0-9a-f-]{36})$/.exec(h))) return me.is_staff ? clientStaff(m[1]) : clientMember(m[1]);
         if ((m = /^#\/r\/([0-9a-f-]{36})$/.exec(h)) && me.is_staff) return reportEditor(m[1]);
+        // お客様で、見られる顧客が1社だけなら一覧を飛ばしてその顧客のホームを開く
+        if (!me.is_staff && (me.client_ids || []).length === 1) { location.replace('#/c/' + me.client_ids[0]); return; }
         return clientList();
       });
     }).catch(fail);
@@ -156,7 +158,7 @@
   function clientMember(id) {
     return Promise.all([
       sb.from('clients').select('id,name').eq('id', id).maybeSingle(),
-      sb.from('reports').select('id,period_month,published_at,conclusions,compiled').eq('client_id', id).eq('status', 'published').order('period_month', { ascending: false })
+      sb.from('reports').select('id,period_month,published_at,conclusions,next_actions,client_decisions,compiled').eq('client_id', id).eq('status', 'published').order('period_month', { ascending: false })
     ]).then(function (rs) {
       var c = q(rs[0]); var reps = q(rs[1]) || [];
       if (!c) throw new Error('この顧客は表示できません');
@@ -168,13 +170,15 @@
           C.tiles(top.compiled || {}) +
           ((top.conclusions || []).length ? '<h3 class="arc-h3">今月の結論</h3><ol class="arr-ol arr-concl">' + top.conclusions.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ol>' : '') +
           '</section>' +
-          todoCard(window.AirReachReport ? window.AirReachReport.todoList(top.compiled || {}) : [], top.compiled || {}, 'client') +
-          '<section class="arc-card"><h2 class="arc-h2">推移（直近6か月）</h2>' + C.trends(top.compiled || {}) + '</section>';
+          nextCard(top) +
+          '<section class="arc-card"><h2 class="arc-h2">推移（直近6か月）</h2>' + C.trends(top.compiled || {}) + '</section>' +
+          todoCard(window.AirReachReport ? window.AirReachReport.todoList(top.compiled || {}) : [], top.compiled || {}, 'client');
       }
       body += '<section class="arc-card"><h2 class="arc-h2">これまでのレポート</h2><ul class="arc-list">' +
         (reps.length ? reps.map(function (r) { return '<li><a href="/airreach/app/report/?id=' + r.id + '">' + esc(ymJa(r.period_month)) + ' のレポート</a>' + (r.published_at ? '<span class="arc-sub">公開 ' + esc(String(r.published_at).slice(0, 10)) + '</span>' : '') + '</li>'; }).join('') : '<li class="arc-empty">公開済みのレポートはまだありません。</li>') +
         '</ul></section>';
-      shell(c.name, body, '#/');
+      // 見られる顧客が1社だけなら「戻る」は出さない（一覧に戻っても、この画面に戻されるため）
+      shell(c.name, body, (me.client_ids || []).length > 1 ? '#/' : '');
     });
   }
   function todoCard(items, compiled, audience, studioHref) {
@@ -182,7 +186,19 @@
     if (!C || !cur) return '';
     return '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">直すこと' + (items.length ? '（' + items.length + '件）' : '') + '</h2>' +
       '<span class="arc-sub">' + esc(String(cur.createdAt || '').slice(0, 10)) + ' の診断で見つかった不足・優先度の高い順</span></div>' +
-      C.todos(items, { audience: audience, studioHref: studioHref }) + '</section>';
+      (audience === 'client' && items.length > 5
+        ? C.todos(items.slice(0, 5), { audience: audience }) + '<details class="arc-more"><summary>残り ' + (items.length - 5) + '件をすべて表示</summary>' + C.todos(items.slice(5), { audience: audience, start: 5 }) + '</details>'
+        : C.todos(items, { audience: audience, studioHref: studioHref })) + '</section>';
+  }
+  // お客様のホーム: 最新の公開レポートの「次にやる3施策」と「ご判断いただきたいこと」
+  function nextCard(r) {
+    var next = r.next_actions || [], dec = r.client_decisions || [];
+    if (!next.length && !dec.length) return '';
+    return '<section class="arc-card"><h2 class="arc-h2">次にやること</h2>' +
+      (next.length ? '<table class="arc-table"><thead><tr><th>施策</th><th style="width:22%">担当</th><th style="width:18%">期限</th></tr></thead><tbody>' +
+        next.map(function (a) { return '<tr><td>' + esc(a.title) + '</td><td>' + esc(a.owner || '') + '</td><td>' + esc(a.due || '') + '</td></tr>'; }).join('') + '</tbody></table>' : '') +
+      (dec.length ? '<h3 class="arc-h3">ご判断いただきたいこと</h3><ul class="arr-ul">' + dec.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '') +
+      '</section>';
   }
 
   // ---- Studio との受け渡し --------------------------------------------------------

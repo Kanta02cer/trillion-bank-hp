@@ -72,7 +72,7 @@
         C.factors(c) +
         '<div class="arr-cols"><div><h3 class="arr-h3">前月から解消した不足</h3><ul class="arr-ul arr-ok">' + ((site.resolved || []).map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('') || '<li class="arr-na">なし</li>') + '</ul></div>' +
         '<div><h3 class="arr-h3">残っている不足</h3><p class="arr-sub">' + ((cur.gaps || []).length ? (cur.gaps || []).length + '件（直し方は下の「直すこと」）' : 'なし') + '</p></div></div>' +
-        (window.AirReachReport && (cur.gaps || []).length ? '<h3 class="arr-h3">直すこと（優先度の高い順）</h3>' + C.todos(window.AirReachReport.todoList(c), { audience: 'client' }) : '')
+        (window.AirReachReport && (cur.gaps || []).length ? '<h3 class="arr-h3">直すこと（優先度の高い順）</h3>' + C.todos(window.AirReachReport.todoList(c), { audience: 'client', limit: 5, moreText: '（すべての項目は AirReach の画面で確認できます）' }) : '')
         : '<p class="arr-na">診断の記録がありません。</p>') + '</section>' +
       '<section><h2 class="arr-h2">AI回答の計測</h2>' +
       (ai ? '<p class="arr-sub">計測日 ' + esc(ai.measuredOn) + '・質問の版 ' + esc(ai.querySetVersion || '—') + (ai.comparable ? '' : '（前月と条件が異なる、または前月の計測なしのため、差は出していません）') + '</p>' +
