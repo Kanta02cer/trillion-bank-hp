@@ -20,6 +20,8 @@
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
   function $(sel, el) { return (el || root).querySelector(sel); }
+  var PROVIDER_LABEL = { openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity' };
+  var SOURCE_LABEL = { gsc_csv: 'Search Console（CSV）', gsc_api: 'Search Console（連携）', ga4_manual: 'GA4（手入力）', ga4_api: 'GA4（連携）' };
   function msg(text, kind) {
     var el = document.getElementById('arc-msg');
     if (!el) return;
@@ -132,15 +134,27 @@
   function clientMember(id) {
     return Promise.all([
       sb.from('clients').select('id,name').eq('id', id).maybeSingle(),
-      sb.from('reports').select('id,period_month,published_at').eq('client_id', id).eq('status', 'published').order('period_month', { ascending: false })
+      sb.from('reports').select('id,period_month,published_at,conclusions,compiled').eq('client_id', id).eq('status', 'published').order('period_month', { ascending: false })
     ]).then(function (rs) {
       var c = q(rs[0]); var reps = q(rs[1]) || [];
       if (!c) throw new Error('この顧客は表示できません');
-      shell(c.name, '<section class="arc-card"><h2 class="arc-h2">月次レポート</h2><ul class="arc-list">' +
-        (reps.length ? reps.map(function (r) { return '<li><a href="/airreach/app/report/?id=' + r.id + '">' + esc(ym(r.period_month)) + ' のレポート</a></li>'; }).join('') : '<li class="arc-empty">公開済みのレポートはまだありません。</li>') +
-        '</ul></section>', '#/');
+      var C = window.AirReachCharts, top = reps[0], body = '';
+      if (top && C) {
+        // 最新の公開レポートの数字と推移を、そのままホームに出す
+        body += '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(top.period_month)) + 'の数字</h2>' +
+          '<a class="arc-btn" href="/airreach/app/report/?id=' + top.id + '">レポートを開く・PDF</a></div>' +
+          C.tiles(top.compiled || {}) +
+          ((top.conclusions || []).length ? '<h3 class="arc-h3">今月の結論</h3><ol class="arr-ol arr-concl">' + top.conclusions.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ol>' : '') +
+          '</section>' +
+          '<section class="arc-card"><h2 class="arc-h2">推移（直近6か月）</h2>' + C.trends(top.compiled || {}) + '</section>';
+      }
+      body += '<section class="arc-card"><h2 class="arc-h2">これまでのレポート</h2><ul class="arc-list">' +
+        (reps.length ? reps.map(function (r) { return '<li><a href="/airreach/app/report/?id=' + r.id + '">' + esc(ymJa(r.period_month)) + ' のレポート</a>' + (r.published_at ? '<span class="arc-sub">公開 ' + esc(String(r.published_at).slice(0, 10)) + '</span>' : '') + '</li>'; }).join('') : '<li class="arc-empty">公開済みのレポートはまだありません。</li>') +
+        '</ul></section>';
+      shell(c.name, body, '#/');
     });
   }
+  function ymJa(d) { var s = String(d || ''); return s.slice(0, 4) + '年' + Number(s.slice(5, 7)) + '月'; }
 
   // ---- 顧客（社内向け）: 材料の登録とレポート作成 ------------------------------
   function clientStaff(id) {
@@ -160,13 +174,13 @@
 
       var runRows = runs.map(function (r) {
         var k = '';
-        try { k = R.parseMeasurementSummary(r.summary).rows.filter(function (x) { return x.group === 'main'; }).map(function (x) { return esc(x.provider) + ' 引用' + esc(x.citeRate) + '% / 言及' + esc(x.mentionRate) + '%'; }).join('、'); } catch (e) { k = '（集計を読めません）'; }
+        try { k = R.parseMeasurementSummary(r.summary).rows.filter(function (x) { return x.group === 'main'; }).map(function (x) { return esc(PROVIDER_LABEL[x.provider] || x.provider) + ' 引用' + esc(x.citeRate) + '% / 言及' + esc(x.mentionRate) + '%'; }).join('、'); } catch (e) { k = '（集計を読めません）'; }
         return '<tr><td>' + esc(r.measured_on) + '</td><td>' + esc(r.query_set_version || '') + '</td><td>' + k + '</td><td><button class="arc-btn-sm" data-del-run="' + r.id + '">削除</button></td></tr>';
       }).join('');
       var trRows = traffic.map(function (t) {
         var m = t.metrics || {};
         var v = /^gsc/.test(t.source) ? 'クリック ' + esc(m.clicks) + ' / 表示 ' + esc(m.impressions) : 'セッション ' + esc(m.sessions) + ' / AI経由 ' + esc(m.ai_sessions) + ' / CV ' + esc(m.conversions);
-        return '<tr><td>' + esc(ym(t.period_month)) + '</td><td>' + esc(t.source) + '</td><td>' + v + '</td><td><button class="arc-btn-sm" data-del-traffic="' + t.id + '">削除</button></td></tr>';
+        return '<tr><td>' + esc(ym(t.period_month)) + '</td><td>' + esc(SOURCE_LABEL[t.source] || t.source) + '</td><td>' + v + '</td><td><button class="arc-btn-sm" data-del-traffic="' + t.id + '">削除</button></td></tr>';
       }).join('');
       var actRows = actions.map(function (a) {
         return '<tr><td>' + esc(a.done_on || '') + '</td><td>' + esc(a.title) + (a.evidence_url ? ' <a href="' + esc(a.evidence_url) + '" target="_blank" rel="noopener noreferrer">証拠 ↗</a>' : '') + '</td><td>' + (a.status === 'done' ? '実施済み' : '予定') + '</td><td><button class="arc-btn-sm" data-del-action="' + a.id + '">削除</button></td></tr>';

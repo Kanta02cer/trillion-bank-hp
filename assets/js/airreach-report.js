@@ -244,6 +244,26 @@
     }
     if (actions.length) facts.push('今月実施した施策：' + actions.length + '件');
 
+    // 推移（対象月までの6か月）。グラフ用。各月の最新の材料だけを使い、無い月は null のまま（線をつながない）
+    var history = [];
+    for (var k = 5; k >= 0; k--) {
+      var mm = m;
+      for (var j = 0; j < k; j++) mm = prevMonth(mm);
+      var sc = latest(p.scans, 'createdAt', function (s) { return inMonth(s.createdAt, mm); });
+      var ak = aiKpis(latest(p.runs, 'measured_on', function (r) { return inMonth(r.measured_on, mm); }));
+      var tr = trafficFor(p.traffic, mm);
+      var cite = {};
+      if (ak) ak.providers.forEach(function (r) { cite[r.provider] = r.citeRate; });
+      history.push({
+        month: mm,
+        score: sc ? num(sc.overallScore) : null,
+        querySetVersion: ak ? ak.querySetVersion : null,
+        cite: cite,
+        clicks: tr.gsc ? num(tr.gsc.clicks) : null,
+        conversions: tr.ga4 ? num(tr.ga4.conversions) : null
+      });
+    }
+
     // 足りない材料（レポートに「未計測」と出すもの）
     var missing = [];
     if (!site.current) missing.push('ホームページの診断');
@@ -263,6 +283,7 @@
       traffic: traffic,
       actions: actions,
       facts: facts,
+      history: history,
       missing: missing
     };
   }
