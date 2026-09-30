@@ -297,7 +297,7 @@
     return '<ol class="arv-todos">' + list.map(function (t, i) {
       var pr = priority(t.points);
       var studio = t.studio ? (opts.audience === 'staff'
-        ? '<a class="arv-todo-studio" href="/airreach/studio/" target="_blank" rel="noopener">直す材料で下書きを作る ↗</a>'
+        ? '<a class="arv-todo-studio" href="' + esc(opts.studioHref || '/airreach/studio/') + '">直す材料で下書きを作る →</a>'
         : '<span class="arv-todo-studio">Trillion Bank で下書きを用意できます</span>') : '';
       return '<li class="arv-todo is-' + pr.key + '"><span class="arv-todo-no">' + (i + 1) + '</span><div class="arv-todo-b">' +
         '<div class="arv-todo-h"><b>' + esc(t.text) + '</b><span class="arv-prio is-' + pr.key + '">' + pr.label + '</span>' + (t.factorLabel ? '<span class="arv-todo-f">' + esc(t.factorLabel) + '</span>' : '') + '</div>' +
