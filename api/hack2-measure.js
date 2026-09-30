@@ -77,13 +77,13 @@ export default async function handler(req, res) {
   const rows = [];
   const engineStatus = {};
 
-  for (const engine of engines) {
+  await Promise.all(engines.map(async (engine) => {
     try {
       if (engine === 'jev') {
         const apiKey = process.env.TYPESAFE_API_KEY;
         if (!apiKey) {
           engineStatus.jev = { ok: false, error: 'TYPESAFE_API_KEY is not configured' };
-          continue;
+          return;
         }
         const judged = await measureWithJev({
           apiKey,
@@ -110,7 +110,7 @@ export default async function handler(req, res) {
         error: err && err.message ? err.message : 'measurement failed'
       };
     }
-  }
+  }));
 
   const judgments = [];
   engines.forEach((engine) => {
@@ -146,7 +146,9 @@ export default async function handler(req, res) {
     model: engines.indexOf('jev') >= 0 ? 'jev-latest' : (engines[0] || null),
     rows,
     note:
-      'Jev results are Estimated proxy judgments from page text + prompt, not live AI-search captures. Provider engines require their API keys on Vercel.',
+      'Jev results are Estimated proxy judgments from page text + prompt, not live AI-search captures. ' +
+      'ChatGPT and Claude answer with web search; cited = the official host is in the returned citation URLs. ' +
+      'Perplexity citation URLs are not returned through the gateway, so cited is judged only from the answer text (null when not found).',
     fetchNote: fetchNote
   });
 }
@@ -280,48 +282,113 @@ async function measureWithProvider(engine, brand, prompts, pageUrl) {
     };
   }
 
-  const rows = [];
-  for (let i = 0; i < prompts.length; i++) {
-    const p = prompts[i];
-    const answer = useGateway
-      ? await callViaGateway(engine, gatewayKey, p.prompt)
-      : await callProvider(engine, directKey, p.prompt);
-    const lower = String(answer || '').toLowerCase();
-    const brandL = brand.toLowerCase();
+  let host = '';
+  if (pageUrl) {
+    try { host = new URL(pageUrl).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) {}
+  }
+  const brandL = brand.toLowerCase();
+  // 検索つき（Responses API）は ChatGPT と Claude。Perplexity は出典URLが gateway から返らないため本文で判定
+  const withSearch = useGateway && (engine === 'chatgpt' || engine === 'claude');
+
+  const rows = await Promise.all(prompts.map(async (p) => {
+    let out;
+    if (withSearch) out = await callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt);
+    else out = { answer: useGateway ? await callViaGateway(engine, gatewayKey, p.prompt) : await callProvider(engine, directKey, p.prompt), citations: null, searched: engine === 'perplexity' };
+    const lower = String(out.answer || '').toLowerCase();
     const mentioned = lower.indexOf(brandL) !== -1 ? 1 : 0;
     let cited = 0;
-    if (pageUrl) {
-      try {
-        const host = new URL(pageUrl).hostname.replace(/^www\./, '').toLowerCase();
-        if (host && lower.indexOf(host) !== -1) cited = 1;
-      } catch (e) {}
+    let citeMethod = 'citations';
+    if (Array.isArray(out.citations)) {
+      cited = host && out.citations.some((u) => hostMatches(u, host)) ? 1 : 0;
+    } else {
+      // 出典URLの一覧が無い: 本文にドメインがあれば引用ありとし、無ければ判定できない（0 にしない）
+      citeMethod = 'text';
+      cited = host && lower.indexOf(host) !== -1 ? 1 : null;
     }
-    rows.push({
+    return {
       engine: engineLabel(engine),
       keyword: p.keyword || p.prompt,
       prompt: p.prompt,
       mentioned,
       cited,
+      citeMethod,
+      searched: !!out.searched,
+      citations: Array.isArray(out.citations) ? out.citations.slice(0, 10) : [],
       evidenceClass: 'Observed',
+      model: useGateway ? gatewayModel(engine) : engine,
       source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
-      answer_excerpt: String(answer || '').slice(0, 400)
-    });
-  }
+      answer_excerpt: String(out.answer || '').slice(0, 400)
+    };
+  }));
   return {
     rows,
     status: {
       ok: true,
       count: rows.length,
       evidenceClass: 'Observed',
+      search: withSearch || engine === 'perplexity',
+      citeMethod: withSearch ? 'citations' : 'text',
+      model: useGateway ? gatewayModel(engine) : engine,
       via: useGateway ? 'ai-gateway' : 'direct'
     }
   };
 }
 
+function hostMatches(url, host) {
+  try {
+    const h = new URL(url).hostname.replace(/^www\./, '').toLowerCase();
+    return h === host || h.endsWith('.' + host);
+  } catch (e) {
+    return false;
+  }
+}
+
+/** Responses API（Web検索つき）。引用は output_text の url_citation から取る */
+async function callResponsesWithSearch(model, key, prompt) {
+  const res = await fetch('https://ai-gateway.vercel.sh/v1/responses', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      input: prompt,
+      tools: [{ type: 'web_search', user_location: { type: 'approximate', country: 'JP' } }],
+      store: false
+    }),
+    signal: AbortSignal.timeout(120000)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(gatewayError(res.status, data, model));
+  let answer = '';
+  const citations = [];
+  let searched = false;
+  for (const o of data.output || []) {
+    if (o.type === 'web_search_call') searched = true;
+    if (o.type !== 'message') continue;
+    for (const c of o.content || []) {
+      if (c.type !== 'output_text') continue;
+      answer += c.text || '';
+      for (const a of c.annotations || []) {
+        if (a.type === 'url_citation' && a.url && citations.indexOf(a.url) < 0) citations.push(a.url);
+      }
+    }
+  }
+  return { answer, citations, searched };
+}
+
+function gatewayError(status, data, model) {
+  const msg = (data && data.error && (data.error.message || data.error)) || '';
+  if (status === 403 && /free tier/i.test(String(msg))) {
+    return model + ' は Vercel AI Gateway の無料枠では使えません（有料クレジットが必要）';
+  }
+  if (/not found/i.test(String(msg))) return model + ' が見つかりません（モデル名を確認）';
+  return String(msg || ('AI Gateway failed (' + status + ')')).slice(0, 200);
+}
+
 function gatewayModel(engine) {
-  if (engine === 'chatgpt') return process.env.OPENAI_MODEL || 'openai/gpt-4o-mini';
-  if (engine === 'claude') return process.env.ANTHROPIC_MODEL || 'anthropic/claude-3-5-haiku-latest';
-  if (engine === 'perplexity') return process.env.PERPLEXITY_MODEL || 'perplexity/sonar';
+  // 社内の計測スクリプト（月次レポート）と同じ ChatGPT のモデルにそろえる
+  if (engine === 'chatgpt') return process.env.AIRREACH_OPENAI_MODEL || 'openai/gpt-5-mini';
+  if (engine === 'claude') return process.env.AIRREACH_CLAUDE_MODEL || 'anthropic/claude-haiku-4.5';
+  if (engine === 'perplexity') return process.env.AIRREACH_PERPLEXITY_MODEL || 'perplexity/sonar';
   return null;
 }
 
@@ -346,12 +413,7 @@ async function callViaGateway(engine, key, prompt) {
     })
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(
-      (data && data.error && (data.error.message || data.error)) ||
-        ('AI Gateway failed (' + res.status + ')')
-    );
-  }
+  if (!res.ok) throw new Error(gatewayError(res.status, data, model));
   return data.choices && data.choices[0] && data.choices[0].message
     ? data.choices[0].message.content
     : '';
@@ -368,7 +430,7 @@ async function callProvider(engine, key, prompt) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+        model: process.env.AIRREACH_OPENAI_MODEL || 'gpt-5-mini',
         messages: [
           { role: 'system', content: system },
           { role: 'user', content: prompt }
@@ -391,7 +453,7 @@ async function callProvider(engine, key, prompt) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: process.env.ANTHROPIC_MODEL || 'claude-3-5-haiku-latest',
+        model: process.env.AIRREACH_CLAUDE_MODEL || 'claude-haiku-4-5',
         max_tokens: 800,
         system,
         messages: [{ role: 'user', content: prompt }]
@@ -410,7 +472,7 @@ async function callProvider(engine, key, prompt) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: process.env.PERPLEXITY_MODEL || 'sonar',
+        model: process.env.AIRREACH_PERPLEXITY_MODEL || 'sonar',
         messages: [
           { role: 'system', content: system },
           { role: 'user', content: prompt }
