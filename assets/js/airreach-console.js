@@ -105,7 +105,8 @@
       });
     }).catch(fail);
   }
-  window.addEventListener('hashchange', function () { if (sb) route(); });
+  // 画面を切り替えたら先頭から見せる（前の画面のスクロール位置のままだと、見出しと戻るがヘッダーの上に隠れる）
+  window.addEventListener('hashchange', function () { if (sb) { window.scrollTo(0, 0); route(); } });
 
   // ---- 顧客一覧 --------------------------------------------------------------
   function clientList() {

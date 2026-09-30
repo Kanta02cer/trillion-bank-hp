@@ -1,5 +1,6 @@
 <style>
-.arc-wrap,.arr-wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px;font-family:var(--sans,'Noto Sans JP',system-ui,sans-serif);color:#0f172a}
+/* サイト共通ヘッダー（#tbh）は position:fixed で高さ 80px。その分を上に空けないとボタンが隠れる */
+.arc-wrap,.arr-wrap{max-width:960px;margin:0 auto;padding:calc(var(--tbh-h,80px) + 28px) 20px 80px;font-family:var(--sans,'Noto Sans JP',system-ui,sans-serif);color:#0f172a}
 .arc-loading{color:#64748b}
 .arc-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:0 0 16px}
 .arc-h1{font-size:1.5rem;margin:4px 0 0}
@@ -26,7 +27,8 @@
 .arc-sub{font-size:.8rem;color:#64748b}
 .arc-empty{color:#94a3b8}
 .arc-note{font-size:.8rem;color:#64748b;margin:6px 0}
-.arc-msg{padding:10px 12px;border-radius:8px;background:#f1f5f9;margin:0 0 12px}
+/* 画面の下の方で保存しても結果が見えるよう、固定ヘッダーのすぐ下に貼り付ける */
+.arc-msg{padding:10px 12px;border-radius:8px;background:#f1f5f9;margin:0 0 12px;position:sticky;top:calc(var(--tbh-h,80px) + 8px);z-index:5;box-shadow:0 2px 8px rgba(15,23,42,.08)}
 .arc-msg.is-ok{background:#ecfdf5;color:#047857}
 .arc-msg.is-error{background:#fef2f2;color:#b91c1c}
 .arc-table,.arr-table{width:100%;border-collapse:collapse;font-size:.88rem;margin:8px 0}
