@@ -1,4 +1,4 @@
-import { GSC_SCOPE, hasScope } from './_lib/scopes.js';
+import { GA4_SCOPE, GSC_SCOPE, OAUTH_SCOPES, SCOPE_FEATURES, hasScope } from './_lib/scopes.js';
 
 function setCors(req, res) {
   const origin = req.headers.origin || '';
@@ -51,13 +51,22 @@ export default async function handler(req, res) {
   if (!tokenRes.ok) return res.status(400).json(tokens);
 
   const secure = 'Path=/; HttpOnly; Secure; SameSite=Lax';
-  // 同意画面で Search Console の権限を外された場合は、接続済みにしない（GSC 同期が必ず失敗するため）
-  if (tokens.scope && !hasScope(tokens.scope, GSC_SCOPE)) {
-    res.setHeader('Set-Cookie', [`airreach_google_state=; ${secure}; Max-Age=0`]);
+  // 同意画面で外された権限を確かめる（Google は許可された scope を空白区切りで返す）。
+  //   両方なし → 接続しない（scope_missing） / 片方だけ → 使える方だけ接続し、足りない方を知らせる（gsc_missing / ga4_missing）
+  const granted = tokens.scope;
+  const wantGa4 = OAUTH_SCOPES.includes(GA4_SCOPE);
+  const gscOk = !granted || hasScope(granted, GSC_SCOPE);
+  const ga4Ok = wantGa4 && (!granted || hasScope(granted, GA4_SCOPE));
+  // 画面が「どの機能が使えるか」を知るための Cookie（トークンではない。HttpOnly にしない）
+  const features = OAUTH_SCOPES.filter((s) => !granted || hasScope(granted, s)).map((s) => SCOPE_FEATURES[s]).filter(Boolean);
+  const scopesCookie = (v, age) => `airreach_google_scopes=${v}; Path=/; Secure; SameSite=Lax; Max-Age=${age}`;
+  if (!gscOk && !ga4Ok) {
+    res.setHeader('Set-Cookie', [`airreach_google_state=; ${secure}; Max-Age=0`, scopesCookie('', 0)]);
     res.writeHead(302, { Location: '/airreach/studio/?google=scope_missing#google' });
     res.end();
     return;
   }
+  const status = !gscOk ? 'gsc_missing' : (wantGa4 && !ga4Ok ? 'ga4_missing' : 'connected');
   const cookieHeaders = [
     `airreach_google_access=${encodeURIComponent(tokens.access_token || '')}; ${secure}; Max-Age=${Number(tokens.expires_in || 3600)}`,
     `airreach_google_state=; ${secure}; Max-Age=0`
@@ -65,8 +74,9 @@ export default async function handler(req, res) {
   if (tokens.refresh_token) {
     cookieHeaders.push(`airreach_google_refresh=${encodeURIComponent(tokens.refresh_token)}; ${secure}; Max-Age=2592000`);
   }
+  cookieHeaders.push(scopesCookie(features.join('.'), 2592000));
   res.setHeader('Set-Cookie', cookieHeaders);
-  res.writeHead(302, { Location: '/airreach/studio/?google=connected#google' });
+  res.writeHead(302, { Location: `/airreach/studio/?google=${status}#google` });
   res.end();
 }
 

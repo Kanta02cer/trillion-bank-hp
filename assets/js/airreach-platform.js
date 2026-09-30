@@ -196,6 +196,8 @@
         };
       }
       gsc.source = 'Studio localStorage';
+      var prevG = loadBaseline();
+      if (prevG && prevG.ga4Sites) gsc.ga4Sites = prevG.ga4Sites;
       // サイトごとの GSC 実測（GSCサイトURLを記録した行だけ）
       if (window.AirReachKeywordList) {
         var prevB = loadBaseline();
@@ -208,19 +210,34 @@
     }
   }
 
+  // この画面のサイト: 無料診断から引き継いだ URL > 「GA4 対象サイトURL」欄。分からなければ GA4 は使わない
+  function currentSiteUrl() {
+    var h = window.AirReachHandoff && window.AirReachHandoff.loadDiagnoseHandoff ? window.AirReachHandoff.loadDiagnoseHandoff() : null;
+    if (h && h.url) return h.url;
+    return (q('arp-ga4-site') && q('arp-ga4-site').value || '').trim();
+  }
+  // GA4 の実測は、このサイトと同じホストの ga4Sites だけ（サイト情報の無い baseline.ga4 は「サイト未紐付け」として使わない）
+  function siteGa4(baseline) {
+    var L = window.AirReachKeywordList;
+    var site = currentSiteUrl();
+    if (!L || !L.ga4FromBaseline || !site) return null;
+    return L.ga4FromBaseline(baseline, /^https?:\/\//i.test(site) ? site : 'https://' + site);
+  }
+
   function applyBaselineToForm(baseline) {
     if (!baseline) return;
     var visitorsEl = q('arp-visitors');
     var inqEl = q('arp-inquiries');
-    if (baseline.ga4 && baseline.ga4.monthlySessions > 0 && visitorsEl) {
-      visitorsEl.value = baseline.ga4.monthlySessions;
+    var g4 = siteGa4(baseline);
+    if (g4 && g4.monthlySessions > 0 && visitorsEl) {
+      visitorsEl.value = g4.monthlySessions;
       visitorsEl.dataset.evidence = 'Official';
     } else if (baseline.monthlyClicks > 0 && visitorsEl) {
       visitorsEl.value = baseline.monthlyClicks;
       visitorsEl.dataset.evidence = 'Official';
     }
-    if (baseline.ga4 && baseline.ga4.monthlyKeyEvents > 0 && inqEl && !inqEl.dataset.userTouched) {
-      inqEl.value = baseline.ga4.monthlyKeyEvents;
+    if (g4 && g4.monthlyKeyEvents > 0 && inqEl && !inqEl.dataset.userTouched) {
+      inqEl.value = g4.monthlyKeyEvents;
       inqEl.dataset.evidence = 'Official';
     }
   }
@@ -258,7 +275,7 @@
         ' · 表示 ' + count(baseline.monthlyImpressions) +
         ' / クリック ' + count(baseline.monthlyClicks) +
         ' / CTR ' + pct(baseline.avgCtr) +
-        (baseline.ga4 ? ' · GA4 sessions ' + count(baseline.ga4.monthlySessions) : '');
+        (siteGa4(baseline) ? ' · GA4 sessions ' + count(siteGa4(baseline).monthlySessions) : '');
     }
     body.innerHTML = baseline.keywords.slice(0, 20).map(function (row) {
       var opp = keywordOpportunity(row, cvr, close, order, margin);
@@ -284,11 +301,12 @@
       if (chip) chip.textContent = '条件付き試算 · Inferred';
       return;
     }
-    var visitSrc = baseline.ga4 && baseline.ga4.monthlySessions > 0
+    var g4b = siteGa4(baseline);
+    var visitSrc = g4b && g4b.monthlySessions > 0
       ? 'GA4 sessions (Official)'
       : 'GSC clicks (Official)';
     el.textContent = '基準値: ' + visitSrc + ' × 問い合わせは ' +
-      (baseline.ga4 && baseline.ga4.monthlyKeyEvents > 0 ? 'GA4 Key Events (Official)' : 'User Input') +
+      (g4b && g4b.monthlyKeyEvents > 0 ? 'GA4 Key Events (Official)' : 'User Input') +
       ' · 改善シナリオは Inferred';
     if (chip) chip.textContent = 'Official基準 × Inferredシナリオ';
   }
@@ -372,6 +390,7 @@
         if (!gsc.keywords.length) throw new Error('クエリ/ページ行が見つかりません');
         var prev = loadBaseline() || {};
         if (prev.ga4) gsc.ga4 = prev.ga4;
+        if (prev.ga4Sites) gsc.ga4Sites = prev.ga4Sites;
         // GSCプロパティ（任意）が指定されたときだけ、サイトごとの実測として記録する。無ければ無料診断の Google実測 には使わない
         var L = window.AirReachKeywordList;
         var propRaw = (q('arp-gsc-site') && q('arp-gsc-site').value || '').trim();
@@ -427,8 +446,25 @@
           monthlyImpressions: 0,
           avgCtr: 0
         };
-        baseline.ga4 = ga4;
+        baseline.ga4 = ga4; // 以前の形式（サイト未紐付け）。診断・この画面の実測には使わない
         if (!baseline.source) baseline.source = 'GA4 CSV';
+        // 対象サイトURLがあるときだけ、そのサイトの GA4 として ga4Sites に記録する（行にホスト名があれば一致する行だけ）
+        var L = window.AirReachKeywordList;
+        var siteRaw = currentSiteUrl();
+        var siteUrl = siteRaw ? (/^https?:\/\//i.test(siteRaw) ? siteRaw : 'https://' + siteRaw) : '';
+        var ga4Site = null;
+        if (L && siteUrl) {
+          ga4Site = L.ga4SiteFromRows(rows.map(function (r) {
+            return {
+              date: String(pick(r, ['date', 'Date', '日付']) || ''),
+              host: String(pick(r, ['hostName', 'Hostname', 'Host name', 'ホスト名']) || ''),
+              url: String(pick(r, ['landingPagePlusQueryString', 'Landing page + query string', 'landingPage', 'Landing page', 'ランディング ページ + クエリ文字列', 'ランディング ページ', 'url', 'URL']) || ''),
+              sessions: numCell(pick(r, ['sessions', 'Sessions', 'セッション'])),
+              keyEvents: numCell(pick(r, ['keyEvents', 'Key events', 'キーイベント', 'conversions', 'Conversions', 'コンバージョン']))
+            };
+          }), { siteUrl: siteUrl, periodDays: period, source: 'csv', allowHostless: true });
+          if (ga4Site && ga4Site.entry) baseline.ga4Sites = L.mergeGa4Sites(baseline.ga4Sites, [ga4Site.entry]);
+        }
         saveBaseline(baseline);
         applyBaselineToForm(baseline);
         if (window.AirReachHandoff) {
@@ -436,11 +472,16 @@
           if (q('arp-traffic-uplift')) q('arp-traffic-uplift').value = seedGa.trafficUpliftPct;
           if (q('arp-cvr-uplift')) q('arp-cvr-uplift').value = seedGa.cvrUpliftPct;
         }
-        setStatus(
-          'Official GA4取込: sessions ' + count(ga4.monthlySessions) +
-          ' / key events ' + count(ga4.monthlyKeyEvents) + '（月次換算）· 自動再計算済み',
-          'good'
-        );
+        if (ga4Site && ga4Site.entry) {
+          setStatus(
+            'Official GA4取込: ' + ga4Site.entry.host + ' の sessions ' + count(scaleToMonthly(ga4Site.entry.sessions, period)) +
+            ' / key events ' + count(scaleToMonthly(ga4Site.entry.keyEvents, period)) + '（月次換算）' +
+            (ga4Site.excludedRows ? ' · 別ホストの ' + ga4Site.excludedRows + ' 行は含めていません' : '') + ' · 自動再計算済み',
+            'good'
+          );
+        } else {
+          setStatus('GA4 CSV を取り込みました。対象サイトURLが無い（またはそのサイトの行が無い）ため、サイト未紐付けとして実測には使いません。「GA4 対象サイトURL」を入れて取り込み直してください。', 'warn');
+        }
         render();
       } catch (e) {
         setStatus('GA4 CSVを読めませんでした: ' + (e && e.message ? e.message : e), 'warn');
@@ -531,7 +572,7 @@
       var hasHandoff = !!(seed && seed.handoff);
       var hasOfficial = !!(seed && seed.baseline && (
         (seed.baseline.monthlyClicks > 0) ||
-        (seed.baseline.ga4 && seed.baseline.ga4.monthlySessions > 0)
+        (seed.ga4 && seed.ga4.monthlySessions > 0)
       ));
       if (!hasHandoff && !hasOfficial) {
         banner.hidden = true;

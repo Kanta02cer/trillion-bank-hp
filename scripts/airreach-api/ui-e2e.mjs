@@ -364,6 +364,38 @@ try {
     await g.ctx.close();
   }
 
+  // ---- GA: GA4 の実測は診断したサイトと同じホストの ga4Sites だけ（別サイト・www 違い・サイト未紐付けは未計測）----
+  const SITE_HOST = new URL(SITE_URL).host;
+  const ga4Entry = (host, siteUrl, extra = {}) => ({ propertyId: '123456789', siteUrl, host, periodDays: 28, sessions: 280, keyEvents: 14,
+    rows: [{ date: '2026-09-01', host, url: '/', sessions: 280, keyEvents: 14 }], rowsTotal: 1, source: 'api', updatedAt: '2026-09-30T00:00:00.000Z', ...extra });
+  const readBiz = async (pg) => ({ v: (await pg.textContent('#ba-now-v')).trim(), i: (await pg.textContent('#ba-now-i')).trim(), sum: await pg.textContent('#ar-sum-rows') });
+  // 同じサイト → 月次換算 280/28*30 = 300 セッション、14/28*30 = 15 キーイベント
+  let gA = await runWithBaseline('GA', { evidenceClass: 'Official', periodDays: 28, keywords: [], ga4Sites: [ga4Entry(SITE_HOST, SITE_URL)] });
+  let biz = await readBiz(gA.pg);
+  expect('GA same-site: GA4 sessions / key events used for the diagnosed site', biz.v === '300 人' && biz.i === '15 件', JSON.stringify(biz));
+  expect('GA same-site: inquiries forecast is computed from the site\'s own key events', /\+\d+〜\d+/.test(biz.sum), biz.sum.slice(0, 200));
+  expect('GA same-site: no page errors', gA.errs.length === 0, gA.errs.join(' | '));
+  await gA.ctx.close();
+  const ga4None = async (label, baseline) => {
+    const g = await runWithBaseline('GA2', baseline);
+    const b = await readBiz(g.pg);
+    expect(`GA ${label} → 未計測 (visitors / key events not filled, no fallback)`, /^—/.test(b.v) && /^—/.test(b.i) && !/5,000|300 人/.test(b.v + b.i) && !/\+\d+〜\d+ 件/.test(b.sum), JSON.stringify(b).slice(0, 200));
+    expect(`GA ${label} → no page errors`, g.errs.length === 0, g.errs.join(' | '));
+    await g.ctx.close();
+  };
+  await ga4None('other-site', { evidenceClass: 'Official', periodDays: 28, keywords: [], ga4Sites: [ga4Entry('other.example', 'https://other.example/')] });
+  await ga4None('www variant (www.<host>) is a different site', { evidenceClass: 'Official', periodDays: 28, keywords: [], ga4Sites: [ga4Entry('www.' + SITE_HOST, 'http://www.' + SITE_HOST + '/')] });
+  await ga4None('legacy baseline.ga4 without site', { evidenceClass: 'Official', periodDays: 28, keywords: [], ga4: { evidenceClass: 'Official', monthlySessions: 5000, monthlyKeyEvents: 50 } });
+  await ga4None('entry whose siteUrl does not match its host', { evidenceClass: 'Official', periodDays: 28, keywords: [], ga4Sites: [ga4Entry(SITE_HOST, 'https://other.example/')] });
+  await ga4None('OAuth not connected (no baseline)', null);
+  // GSC + GA4 が両方そろっていれば、どちらも使われる
+  gA = await runWithBaseline('GA3', { ...baselineSame, ga4: { monthlySessions: 5000, monthlyKeyEvents: 50 }, ga4Sites: [ga4Entry(SITE_HOST, SITE_URL)] });
+  biz = await readBiz(gA.pg);
+  expect('GA GSC + GA4 both: GSC 表示回数 (Google実測) and GA4 sessions both used', /「町田 焼肉 予約」での表示回数/.test(biz.sum) && /1,240/.test(biz.sum) && biz.v === '300 人' && biz.i === '15 件', JSON.stringify(biz).slice(0, 300));
+  await openDetails(gA.pg);
+  expect('GA GSC + GA4 both: keyword comparison still shows Google実測', (await kwcRows(gA.pg))[0].kind === 'Google実測');
+  await gA.ctx.close();
+
   // G3: 実際の取り込み経路で site 情報が保存され、同じサイトの診断にだけ使われる
   // (a) /api/google/gsc 同期の経路（Studio → AirReachOrchestrator.importGscRows(rows, { property })）
   const ctxS = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -419,7 +451,7 @@ try {
   await expectGoogleMeasured('G3 sync → diagnosis', { pg: pageS2, errs: [] }, '8.5');
   await ctxS.close();
 
-  // ---- O: Google 連携（Search Console のみ。GA4 は準備中）----
+  // ---- O: Google 連携（Search Console・GA4 の読み取り）----
   const ctxO = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   track(ctxO, 'O');
   const pageO = await ctxO.newPage();
@@ -430,13 +462,13 @@ try {
   await pageO.waitForURL(/\/airreach\/studio\/#google$/, { timeout: 15000 });
   await pageO.waitForFunction(() => window.AirReachStudio && document.querySelector('[data-panel-view="google"].is-active'), null, { timeout: 15000 });
   expect('O: free tool 「Googleと連携」 opens Studio Google panel', true);
-  const ga4Btn = await pageO.$eval('#sync-ga4', (b) => ({ disabled: b.disabled, text: b.textContent, title: b.title }));
-  expect('O: GA4 sync button disabled and labelled 準備中', ga4Btn.disabled && /準備中/.test(ga4Btn.text) && /準備中/.test(ga4Btn.title), JSON.stringify(ga4Btn));
-  expect('O: status says Search Console only / GA4 準備中', /Search Console のみ/.test(await pageO.textContent('#google-status')) && /GA4（準備中）/.test(await pageO.textContent('label[for="ga-property"]')));
-  const ga4Calls = [];
-  await pageO.route((u) => u.pathname.startsWith('/api/google/ga4'), (route) => { ga4Calls.push(route.request().url()); route.fulfill({ status: 503, body: '{}' }); });
-  await pageO.evaluate(() => document.getElementById('sync-ga4').click()); // disabled: 何も起きない
-  expect('O: clicking disabled GA4 does not call /api/google/ga4', ga4Calls.length === 0);
+  const ga4Btn = await pageO.$eval('#sync-ga4', (b) => ({ disabled: b.disabled, text: b.textContent.trim() }));
+  expect('O: GA4 sync button enabled and labelled GA4 (no 準備中)', !ga4Btn.disabled && ga4Btn.text === 'GA4' && !/準備中/.test(await pageO.textContent('[data-panel-view="google"]')), JSON.stringify(ga4Btn));
+  const ga4Label = await pageO.textContent('label[for="ga-property"]');
+  const ga4Help = await pageO.textContent('#ga-property-help');
+  expect('O: GA4 field asks for the numeric Property ID, not the G- Measurement ID', /プロパティID（数字）/.test(ga4Label) && /123456789/.test(ga4Help) && /G-/.test(ga4Help) && /測定ID/.test(ga4Help) &&
+    (await pageO.getAttribute('#ga-property', 'inputmode')) === 'numeric' && (await pageO.getAttribute('#ga-property', 'placeholder')) === '例: 123456789', ga4Label + ' | ' + ga4Help);
+  expect('O: not connected yet → GA4 reconnect notice shown', !(await pageO.$eval('#google-ga4-note', (e) => e.hidden)) && /Search Console だけで接続した場合も/.test(await pageO.textContent('#google-ga4-note')));
   // GSC 同期: POST /api/google/gsc（Cookie 付き）→ 行に siteUrl を記録 → gscSites
   const gscReqs = [];
   const gscHosts = [];
@@ -460,6 +492,79 @@ try {
   expect('O: sync message shows 完了 (not 「API未接続」)', /GSC同期完了: 2 行/.test(await pageO.textContent('#sync-message')), await pageO.textContent('#sync-message'));
   const syncedSite = await pageO.evaluate(() => (JSON.parse(localStorage.getItem('airreach_official_baseline_v1') || '{}').gscSites || []).find((x) => x.property === 'sc-domain:gsc-sync.example'));
   expect('O: synced rows stored for that site only (other-site row dropped)', !!syncedSite && syncedSite.scope === 'domain' && syncedSite.keywords.length === 1 && syncedSite.keywords[0].impressions === 1240, JSON.stringify(syncedSite));
+  // GA4 同期: POST /api/google/ga4/（同一オリジン・対象サイト必須）→ そのホストの行だけ → ga4Sites
+  const GA4_SITE = 'https://ga4-site.example/';
+  const ga4Reqs = [];
+  await pageO.route((u) => u.pathname.startsWith('/api/google/ga4'), async (route) => {
+    const req = route.request();
+    if (req.method() !== 'POST') return route.fulfill({ status: 204 });
+    const b = req.postDataJSON();
+    ga4Reqs.push({ body: b, url: req.url() });
+    if (b.propertyId === '403403403') return route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ code: 'scope_insufficient', error: 'Google アナリティクスの権限がありません。Studio の「接続」からもう一度 Google に接続し、アナリティクス（読み取り）を許可してください。' }) });
+    if (b.propertyId === '403000000') return route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ code: 'forbidden', error: 'このプロパティを見る権限がありません。' }) });
+    if (b.propertyId === '401401401') return route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ code: 'not_connected', error: 'Google connection required' }) });
+    const h = new URL(b.siteUrl).host;
+    // 画面側でもホストを確かめることを見るため、www 違いの行も1行まぜて返す
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ count: 3, propertyId: b.propertyId, siteUrl: b.siteUrl, host: h, excluded: { rows: 1, hosts: ['other.example'] }, rows: [
+      { date: '2026-09-01', host: h, url: '/menu', sessions: 120, keyEvents: 7, source: 'ga4' },
+      { date: '2026-09-02', host: h, url: '/', sessions: 80, keyEvents: 3, source: 'ga4' },
+      { date: '2026-09-02', host: 'www.' + h, url: '/', sessions: 999, keyEvents: 99, source: 'ga4' },
+    ] }) });
+  });
+  const ga4Sync = async (pid, site = GA4_SITE) => {
+    await pageO.fill('#ga-property', pid);
+    await pageO.fill('#ga4-site', site);
+    const before = ga4Reqs.length;
+    await pageO.click('#sync-ga4');
+    await pageO.waitForFunction(() => /GA4同期完了|GA4同期に失敗|GA4同期:|プロパティID|対象サイトURL|期間を入力/.test((document.getElementById('sync-message') || {}).textContent || ''), null, { timeout: 10000 }).catch(() => {});
+    return { msg: await pageO.textContent('#sync-message'), sent: ga4Reqs.length - before };
+  };
+  let g4 = await ga4Sync('G-ABCDE12345');
+  expect('O: GA4 with Measurement ID (G-…) → guidance, no API call', g4.sent === 0 && /測定ID/.test(g4.msg) && /123456789/.test(g4.msg), g4.msg);
+  await pageO.fill('#ga-property', 'G-ABCDE12345');
+  await pageO.click('#save-google-settings');
+  expect('O: saving a G- Measurement ID is refused with guidance', /測定ID/.test(await pageO.textContent('#google-status')));
+  g4 = await ga4Sync('123456789', '');
+  expect('O: GA4 sync without target site → guidance, no API call', g4.sent === 0 && /対象サイトURL/.test(g4.msg), g4.msg);
+  await pageO.fill('#ga-property', '123456789');
+  await pageO.fill('#ga4-site', GA4_SITE);
+  const targetLine = await pageO.textContent('#ga4-target');
+  expect('O: confirmation line shows GA4 プロパティID and 対象サイト', /GA4 プロパティID：123456789/.test(targetLine) && /対象サイト：https:\/\/ga4-site\.example\/（ga4-site\.example）/.test(targetLine), targetLine);
+  g4 = await ga4Sync('123456789');
+  expect('O: GA4 sync is same-origin and POSTs numeric propertyId + siteUrl + dates', g4.sent === 1 && new URL(ga4Reqs.at(-1).url).host === new URL(BASE).host &&
+    ga4Reqs.at(-1).body.propertyId === '123456789' && ga4Reqs.at(-1).body.siteUrl === GA4_SITE && ga4Reqs.at(-1).body.startDate === '2026-09-01' && ga4Reqs.at(-1).body.endDate === '2026-09-28', JSON.stringify(ga4Reqs.at(-1)));
+  expect('O: GA4 sync success shows host, sessions + keyEvents (www row not counted)', /GA4同期完了: ga4-site\.example の 2 行（セッション 200 · キーイベント 10）/.test(g4.msg) && /別ホストの 1 行/.test(g4.msg), g4.msg);
+  const ga4Base = await pageO.evaluate(() => {
+    const b = JSON.parse(localStorage.getItem('airreach_official_baseline_v1') || '{}');
+    const m = window.AirReachStudio.getState().measurements.filter((x) => x.ga4Host === 'ga4-site.example');
+    return { sites: b.ga4Sites || [], sessions: m.reduce((s, x) => s + x.sessions, 0), urls: m.map((x) => x.url) };
+  });
+  const siteG = ga4Base.sites.find((x) => x.host === 'ga4-site.example');
+  expect('O: ga4Sites entry saved with propertyId / siteUrl / host / totals / rows', !!siteG && siteG.propertyId === '123456789' && siteG.siteUrl === GA4_SITE && siteG.sessions === 200 && siteG.keyEvents === 10 &&
+    siteG.rows.length === 2 && siteG.rows.every((r) => r.host === 'ga4-site.example') && siteG.source === 'api' && !!siteG.updatedAt, JSON.stringify(siteG));
+  expect('O: GA4 sessions stored in Studio tagged with the site (landing page kept)', ga4Base.sessions === 200 && ga4Base.urls.includes('/menu'), JSON.stringify(ga4Base).slice(0, 200));
+  // Studio の GA4 CSV: 対象サイトありなら ga4Sites、なしなら Studio 内だけ（診断には使わない）
+  const ga4csv = 'Date,Hostname,Landing page + query string,Sessions,Key events\n20260903,ga4-csv.example,/a,40,2\n20260903,www.ga4-csv.example,/a,999,99\n';
+  await pageO.fill('#ga4-site', 'https://ga4-csv.example/');
+  await pageO.setInputFiles('#ga4-csv', { name: 'ga4.csv', mimeType: 'text/csv', buffer: Buffer.from(ga4csv) });
+  await pageO.waitForFunction(() => /GA4 CSV/.test((document.getElementById('sync-message') || {}).textContent || ''), null, { timeout: 8000 }).catch(() => {});
+  const csvMsg = await pageO.textContent('#sync-message');
+  const ga4CsvSite = await pageO.evaluate(() => (JSON.parse(localStorage.getItem('airreach_official_baseline_v1') || '{}').ga4Sites || []).find((x) => x.host === 'ga4-csv.example'));
+  expect('O: Studio GA4 CSV + site URL → ga4Sites (hostname column checked, www row excluded)', !!ga4CsvSite && ga4CsvSite.sessions === 40 && ga4CsvSite.keyEvents === 2 && ga4CsvSite.source === 'csv' && /ga4-csv\.example のデータとして取り込みました/.test(csvMsg), JSON.stringify(ga4CsvSite) + ' ' + csvMsg);
+  await pageO.fill('#ga4-site', '');
+  const nSites = await pageO.evaluate(() => (JSON.parse(localStorage.getItem('airreach_official_baseline_v1') || '{}').ga4Sites || []).length);
+  await pageO.setInputFiles('#ga4-csv', { name: 'ga4b.csv', mimeType: 'text/csv', buffer: Buffer.from('Date,Landing page,Sessions,Key events\n20260904,/b,70,1\n') });
+  await pageO.waitForFunction(() => /サイト未紐付け/.test((document.getElementById('sync-message') || {}).textContent || ''), null, { timeout: 8000 }).catch(() => {});
+  expect('O: Studio GA4 CSV without site URL → kept in Studio only, no ga4Sites entry', /サイト未紐付け/.test(await pageO.textContent('#sync-message')) &&
+    (await pageO.evaluate(() => (JSON.parse(localStorage.getItem('airreach_official_baseline_v1') || '{}').ga4Sites || []).length)) === nSites);
+  g4 = await ga4Sync('403403403');
+  expect('O: GA4 403 (GSC-only token) → reconnect guidance', /GA4同期に失敗/.test(g4.msg) && /接続/.test(g4.msg) && /アナリティクス/.test(g4.msg), g4.msg);
+  g4 = await ga4Sync('403000000');
+  expect('O: GA4 403 (no property access) → permission message', /GA4同期に失敗/.test(g4.msg) && /権限がありません/.test(g4.msg), g4.msg);
+  g4 = await ga4Sync('401401401');
+  expect('O: GA4 401 → connect guidance', /GA4同期に失敗/.test(g4.msg) && /接続/.test(g4.msg), g4.msg);
+  expect('O: all /api/google/* calls stay on the same origin', gscHosts.every((h) => h === new URL(BASE).host), JSON.stringify([...new Set(gscHosts)]));
+
   // 「接続」は同一オリジンの /api/google/auth/ へ（戻り先と同じドメインで state Cookie を発行するため）
   let authNav = '';
   await pageO.route((u) => u.pathname.startsWith('/api/google/auth'), (route) => { authNav = route.request().url(); route.fulfill({ status: 200, contentType: 'text/plain', body: 'stub' }); });
@@ -469,13 +574,49 @@ try {
   // OAuth から戻ったときの表示
   await pageO.goto(`${BASE}/airreach/studio/?google=connected#google`, { waitUntil: 'load' });
   await pageO.waitForFunction(() => /接続しました/.test((document.getElementById('google-status') || {}).textContent || ''), null, { timeout: 10000 }).catch(() => {});
-  expect('O: ?google=connected → 接続しました（Search Console のみ）', /Googleと接続しました（Search Console のみ）/.test(await pageO.textContent('#google-status')));
+  expect('O: ?google=connected → 接続しました（Search Console・GA4）', /Googleと接続しました（Search Console・GA4）/.test(await pageO.textContent('#google-status')));
   await (await pageO.$('[data-panel-view="google"]')).screenshot({ path: path.join(OUT, 'o-studio-google-connected.png') });
-  await pageO.goto(`${BASE}/airreach/studio/?google=scope_missing#google`, { waitUntil: 'load' });
-  await pageO.waitForFunction(() => /許可されなかった/.test((document.getElementById('google-status') || {}).textContent || ''), null, { timeout: 10000 }).catch(() => {});
-  expect('O: ?google=scope_missing → 権限を許可するよう案内', /Search Console へのアクセスが許可されなかった/.test(await pageO.textContent('#google-status')));
+  const statusFor = async (gp) => {
+    await pageO.goto(`${BASE}/airreach/studio/?google=${gp}#google`, { waitUntil: 'load' });
+    await pageO.waitForFunction(() => /接続|許可/.test((document.getElementById('google-status') || {}).textContent || '') && !/^未接続/.test(document.getElementById('google-status').textContent), null, { timeout: 10000 }).catch(() => {});
+    return pageO.textContent('#google-status');
+  };
+  let st2 = await statusFor('ga4_missing');
+  expect('O: ?google=ga4_missing → GSC connected, GA4 refused (not shown as full success)', /Search Console は接続しました/.test(st2) && /GA4 は使えません/.test(st2) && !/Googleと接続しました/.test(st2), st2);
+  st2 = await statusFor('gsc_missing');
+  expect('O: ?google=gsc_missing → GA4 connected, GSC refused', /GA4 は接続しました/.test(st2) && /GSC は使えません/.test(st2), st2);
+  st2 = await statusFor('scope_missing');
+  expect('O: ?google=scope_missing → not connected, asks to allow', /許可されなかったため、接続していません/.test(st2), st2);
+  // 再接続の案内: 許可された機能（airreach_google_scopes）に ga4 が無ければ表示、あれば隠す
+  const origin = new URL(BASE).origin;
+  await ctxO.addCookies([{ name: 'airreach_google_scopes', value: 'gsc', url: origin }]);
+  await pageO.goto(`${BASE}/airreach/studio/?v=gsc#google`, { waitUntil: 'load' });
+  await pageO.waitForFunction(() => window.AirReachStudio, null, { timeout: 10000 });
+  expect('O: connected with GSC only (older connection) → reconnect notice for GA4', !(await pageO.$eval('#google-ga4-note', (e) => e.hidden)));
+  await ctxO.addCookies([{ name: 'airreach_google_scopes', value: 'gsc.ga4', url: origin }]);
+  // 同じ URL（#google 付き）への goto は再読み込みにならないので、クエリで別の URL にする
+  await pageO.goto(`${BASE}/airreach/studio/?v=gscga4#google`, { waitUntil: 'load' });
+  await pageO.waitForFunction(() => window.AirReachStudio, null, { timeout: 10000 });
+  expect('O: connected with GSC + GA4 → reconnect notice hidden', await pageO.$eval('#google-ga4-note', (e) => e.hidden));
   expect('O: no page errors', errorsO.length === 0, errorsO.join(' | ').slice(0, 300));
   await ctxO.close();
+  // Studio の Google 画面 390px（横にはみ出さない）
+  const ctxOm = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const pageOm = await ctxOm.newPage();
+  await pageOm.goto(`${BASE}/airreach/studio/#google`, { waitUntil: 'load' });
+  await pageOm.waitForFunction(() => document.querySelector('[data-panel-view="google"].is-active'), null, { timeout: 15000 });
+  const overO = await pageOm.evaluate(() => {
+    const W = document.documentElement.clientWidth; let max = 0;
+    document.querySelectorAll('[data-panel-view="google"] *').forEach((el) => {
+      if (el.closest('.ar-tip-bubble')) return;
+      const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.display === 'none') return;
+      const r = el.getBoundingClientRect(); if (r.width > 0) max = Math.max(max, r.right - W);
+    });
+    return Math.round(max);
+  });
+  expect('O: Studio Google panel at 390px has no horizontal overflow', overO <= 1, `overflow=${overO}px`);
+  await (await pageOm.$('[data-panel-view="google"]')).screenshot({ path: path.join(OUT, 'o-studio-google-mobile.png') });
+  await ctxOm.close();
 
   // (b) 実数ベースライン画面の CSV 取り込み（GSCプロパティを指定したときだけ記録）
   const csv = 'クエリ,クリック数,表示回数,CTR,掲載順位\n町田 焼肉 予約,38,1240,3.06%,8.44\n';
@@ -500,6 +641,26 @@ try {
   imp = await importCsv('sc-domain:');
   expect('G3 CSV: unreadable property → not recorded', (imp.b.gscSites || []).length === 0 && /読めなかった/.test(imp.status), imp.status);
   expect('G3 CSV: no page errors on platform', imp.errs.length === 0, imp.errs.join(' | ').slice(0, 300));
+  // 実数ベースライン画面の GA4 CSV: 対象サイトURLありなら ga4Sites（ホスト名の列が違う行は除外）、なしなら実測に使わない
+  const importGa4Csv = async (site) => {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    const pg = await ctx.newPage();
+    const errs = []; pg.on('pageerror', (e) => errs.push(String(e)));
+    await pg.goto(`${BASE}/airreach/platform/`, { waitUntil: 'load' });
+    await pg.waitForFunction(() => window.AirReachKeywordList, null, { timeout: 15000 });
+    await pg.fill('#arp-ga4-site', site);
+    await pg.setInputFiles('#arp-ga4-file', { name: 'ga4.csv', mimeType: 'text/csv', buffer: Buffer.from('Date,Hostname,Landing page,Sessions,Key events\n20260901,plat.example,/,56,4\n20260901,www.plat.example,/,999,99\n') });
+    await pg.waitForFunction(() => /GA4/.test((document.getElementById('arp-import-status') || {}).textContent || ''), null, { timeout: 8000 });
+    const out = await pg.evaluate(() => ({ status: document.getElementById('arp-import-status').textContent, visitors: document.getElementById('arp-visitors').value, b: JSON.parse(localStorage.getItem('airreach_official_baseline_v1') || 'null') }));
+    await ctx.close();
+    return { ...out, errs };
+  };
+  let gi = await importGa4Csv('https://plat.example/');
+  const platSite = (gi.b.ga4Sites || []).find((x) => x.host === 'plat.example');
+  expect('G3 GA4 CSV + site URL → ga4Sites (www row excluded), used on the page', !!platSite && platSite.sessions === 56 && platSite.keyEvents === 4 && platSite.source === 'csv' && /plat\.example の sessions/.test(gi.status) && /別ホストの 1 行/.test(gi.status) && gi.visitors === '60', JSON.stringify(platSite) + ' ' + gi.status + ' v=' + gi.visitors);
+  gi = await importGa4Csv('');
+  expect('G3 GA4 CSV without site URL → サイト未紐付け, not used as measurement', (gi.b.ga4Sites || []).length === 0 && /サイト未紐付け/.test(gi.status) && gi.visitors !== String(Math.round(1055 / 28 * 30)), gi.status + ' v=' + gi.visitors);
+  expect('G3 GA4 CSV: no page errors on platform', gi.errs.length === 0, gi.errs.join(' | '));
 
   // G4: 以前の保存（文字列から計算した「探している人 約◯回」）が営業の案件画面に出ない
   const ctxL = await browser.newContext({ viewport: { width: 1280, height: 900 } });
@@ -611,6 +772,7 @@ try {
   expect('D3: shared new scan → keywords restored', restoredNew.keyword === '町田 焼肉 個室' && JSON.stringify(restoredNew.keywords) === JSON.stringify(kws), JSON.stringify(restoredNew.keywords));
   expect('D3: shared new scan → #ar-keyword is the primary', (await pageE.inputValue('#ar-keyword')) === '町田 焼肉 個室');
   const rowsE = await kwcRows(pageE);
+  expect('D3: shared result without viewer GA4 → visitors / key events 未計測', /^—/.test((await pageE.textContent('#ba-now-v')).trim()) && /^—/.test((await pageE.textContent('#ba-now-i')).trim()));
   expect('D3: shared new scan → comparison has 3 rows, main = primary', rowsE.length === 3 && rowsE.filter((r) => r.primary).map((r) => r.text).join() === '町田 焼肉 個室' && rowsE[2].type === 'Google実測', JSON.stringify(rowsE.map((r) => [r.text, r.type])));
   const restoredOld = await openShared(sharedOld.shareToken);
   expect('D3: shared legacy scan → [{legacy, primary}]', restoredOld.keyword === '町田 焼肉' &&
