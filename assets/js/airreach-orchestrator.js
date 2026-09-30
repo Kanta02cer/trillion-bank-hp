@@ -1325,11 +1325,12 @@
   /** 下書きのファイルから、ダッシュボードの「施策（予定）」の候補を作る */
   function actionItemsFromFiles(job) {
     var f = (job && job.files) || {}, food = job && job.industry === 'restaurant', out = [];
-    if (f['schema/organization.jsonld']) out.push({ file: 'schema/organization.jsonld', title: food ? 'お店の構造化データ（Restaurant）を公式サイトに設置する' : '会社情報の構造化データ（Organization）を公式サイトに設置する' });
-    if (f['schema/service.jsonld']) out.push({ file: 'schema/service.jsonld', title: 'サービスの構造化データ（Service）を公式サイトに設置する' });
+    // 施策の名前はお客様の画面とレポートにも出るので、専門用語を使わない（正式なファイル名は file に残す）
+    if (f['schema/organization.jsonld']) out.push({ file: 'schema/organization.jsonld', title: food ? 'お店の基本情報（店名・住所・電話番号・営業時間など）を、検索やAIが読み取れる形でサイトに埋め込む' : '会社の基本情報を、検索やAIが読み取れる形でサイトに埋め込む' });
+    if (f['schema/service.jsonld']) out.push({ file: 'schema/service.jsonld', title: '提供しているサービスの内容を、検索やAIが読み取れる形でサイトに埋め込む' });
     if (f['content/restaurant-info.md']) out.push({ file: 'content/restaurant-info.md', title: '店舗情報（営業時間・予約・駐車場など）を公式ページに書き足す' });
-    if (f['content/faq.md'] || f['schema/faq.jsonld']) out.push({ file: 'content/faq.md・schema/faq.jsonld', title: 'よくある質問を公式ページに追加し、FAQの構造化データ（FAQPage）を設置する' });
-    if (f['public/llms.txt']) out.push({ file: 'public/llms.txt', title: 'llms.txt をサイトの一番上の階層に設置する' });
+    if (f['content/faq.md'] || f['schema/faq.jsonld']) out.push({ file: 'content/faq.md・schema/faq.jsonld', title: 'よくある質問をページに追加し、検索やAIが読み取れる形でも埋め込む' });
+    if (f['public/llms.txt']) out.push({ file: 'public/llms.txt', title: 'AI向けのサイト案内ファイルを置く' });
     return out;
   }
   function renderDashboardButton(job) {

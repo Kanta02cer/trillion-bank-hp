@@ -83,7 +83,7 @@
       t2 += '<div class="arv-ai">' + ai.providers.map(function (p) {
         var s = series(p.provider);
         return '<div class="arv-ai-row"><span class="arv-key" style="background:' + s.color + '"></span><span class="arv-ai-name">' + esc(s.label) + '</span>' +
-          '<span class="arv-ai-val">' + (p.citeRate == null ? '—' : esc(p.citeRate) + '%') + '</span>' + deltaHtml(p.citeDelta, 'pt') + '</div>';
+          '<span class="arv-ai-val">' + (p.citeRate == null ? '—' : esc(p.citeRate) + '%') + '</span>' + deltaHtml(p.citeDelta, 'ポイント') + '</div>';
       }).join('') + '</div>';
     } else t2 += '<div class="arv-big"><span class="arv-na">未計測</span></div>';
     t2 += '<div class="arv-tile-f">AIに同じ質問をして、公式サイトが出典に入った回答の割合</div></div>';
@@ -96,7 +96,7 @@
     var cv = tr.ga4 ? tr.ga4.conversions : null, cvPrev = tr.ga4Prev ? tr.ga4Prev.conversions : null;
     var t4 = '<div class="arv-tile"><div class="arv-tile-h">問い合わせ・予約</div>' +
       '<div class="arv-big">' + (cv == null ? '<span class="arv-na">未計測</span>' : esc(cv) + '<small>件</small>') + '</div>' +
-      deltaHtml(diff(cv, cvPrev), '件') + '<div class="arv-tile-f">サイト経由の問い合わせ・予約の件数（GA4）</div></div>';
+      deltaHtml(diff(cv, cvPrev), '件') + '<div class="arv-tile-f">サイト経由の問い合わせ・予約の件数（Google アナリティクス）</div></div>';
 
     return '<div class="arv-tiles">' + t1 + t2 + t3 + t4 + '</div>';
   }
@@ -299,11 +299,15 @@
       var studio = t.studio ? (opts.audience === 'staff'
         ? '<a class="arv-todo-studio" href="' + esc(opts.studioHref || '/airreach/studio/') + '">直す材料で下書きを作る →</a>'
         : '<span class="arv-todo-studio">Trillion Bank で下書きを用意できます</span>') : '';
+      // お客様には専門用語を使わない言い方を出し、制作会社に伝えるための正式な用語は小さく添える
+      var client = opts.audience !== 'staff';
+      var title = client ? (t.plainText || t.text) : t.text, how = client ? (t.plainHow || t.how) : t.how, why = client ? (t.plainWhy || t.why) : t.why;
       return '<li class="arv-todo is-' + pr.key + '"><span class="arv-todo-no">' + ((opts.start || 0) + i + 1) + '</span><div class="arv-todo-b">' +
-        '<div class="arv-todo-h"><b>' + esc(t.text) + '</b><span class="arv-prio is-' + pr.key + '">' + pr.label + '</span>' + (t.factorLabel ? '<span class="arv-todo-f">' + esc(t.factorLabel) + '</span>' : '') + '</div>' +
-        (t.how ? '<div class="arv-todo-how"><span>直し方</span>' + esc(t.how) + '</div>' : '') +
-        (t.why ? '<div class="arv-todo-why">' + esc(t.why) + '</div>' : '') +
-        '<div class="arv-todo-foot">' + studio + (opts.pick ? '<button type="button" class="arc-btn-sm" data-pick-todo="' + esc(t.how || t.text) + '">次の3施策に入れる</button>' : '') + '</div>' +
+        '<div class="arv-todo-h"><b>' + esc(title) + '</b><span class="arv-prio is-' + pr.key + '">' + pr.label + '</span>' + (t.factorLabel ? '<span class="arv-todo-f">' + esc(t.factorLabel) + '</span>' : '') + '</div>' +
+        (how ? '<div class="arv-todo-how"><span>直し方</span>' + esc(how) + '</div>' : '') +
+        (why ? '<div class="arv-todo-why">' + esc(why) + '</div>' : '') +
+        (client && t.plainText && t.plainText !== t.text ? '<div class="arv-todo-tech">制作会社の方へ：' + esc(t.text) + '</div>' : '') +
+        '<div class="arv-todo-foot">' + studio + (opts.pick ? '<button type="button" class="arc-btn-sm" data-pick-todo="' + esc(t.plainHow || t.how || t.text) + '">次の3施策に入れる</button>' : '') + '</div>' +
         '</div></li>';
     }).join('') + '</ol>' + (opts.limit && items.length > opts.limit ? '<p class="arv-todo-more">ほか ' + (items.length - opts.limit) + '件' + esc(opts.moreText || '') + '</p>' : '');
   }

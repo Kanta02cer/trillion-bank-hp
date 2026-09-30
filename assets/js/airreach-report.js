@@ -55,6 +55,39 @@
     '主要AIボットの記載': { factor: 'discover', points: 2, why: 'AIのクローラーへの方針（読んでよいか）が明示されます。', how: 'robots.txt に GPTBot などAIボットへの方針を書く。' },
     'sitemap案内': { factor: 'discover', points: 2, why: 'クローラーがページの一覧を見つけやすくなります。', how: 'robots.txt に Sitemap: の行でサイトマップのURLを書く。' }
   };
+  // お客様向けの言い方（専門用語を使わない）。社内の画面は FIX_INFO / GAP_TEXT の正確な用語のまま。
+  // t: 足りないこと / how: 直し方 / why: 直すと何がよいか。効果を約束する言い方はしない
+  var PLAIN = {
+    'ページタイトルがある': { ok: 'ページの題名が入った', t: '検索結果に出るページの題名が無い', how: 'ページの題名に、店名・会社名と何のページかを入れる', why: '検索やAIが、何のページかを最初に判断する手がかりになります。' },
+    'H1が1つ': { ok: 'ページの一番大きな見出しが1つにそろった', t: 'ページの一番大きな見出しが無いか、2つ以上ある', how: 'ページの一番大きな見出しを1つにし、店名・サービス名を入れる', why: '何のページかが一目で伝わり、内容を取り違えられにくくなります。' },
+    '説明文（meta）が十分': { ok: '検索結果に出る紹介文が入った', t: '検索結果に出る紹介文が無いか、短い', how: '検索結果に出る紹介文（40文字以上）に、誰向けの何のお店・サービスかと場所を書く', why: '検索結果を見た人に、どんなお店・サービスかが伝わります。' },
+    'canonicalがある': { ok: 'ページの正式なURLが指定された', t: 'ページの正式なURLが指定されていない', how: '同じページが複数のURLで開ける場合に、正式なURLを指定する（制作会社に依頼）', why: '検索やAIが、どのURLを正式なページとして扱うか迷わなくなります。' },
+    'og:titleがある': { ok: 'SNSやLINEで共有されたときの題名が入った', t: 'SNSやLINEで共有されたときの題名が無い', how: 'SNSやLINEで共有されたときに表示される題名を設定する', why: '共有されたときに、何のページかが伝わります。' },
+    '本文量がある': { ok: 'ページの説明の文章が十分になった', t: 'ページの説明の文章が少ない', how: 'メニュー・料金の目安・場所・予約方法など、来店や相談の前に知りたいことを書き足す', why: '文章が少ないと、検索やAIがお店の内容を判断できません。' },
+    '会社情報（Organization等）': { ok: 'お店・会社の基本情報が、検索やAIが読み取れる形になった', t: 'お店・会社の基本情報が、検索やAIが読み取れる形になっていない', how: '店名・住所・電話番号・営業時間などを、検索やAIが読み取れる形式でサイトに埋め込む', why: '誰のサイトかを正しく認識され、ほかのお店・会社と取り違えられにくくなります。' },
+    'WebSite / WebPage': { ok: 'サイト名やページの種類が、検索やAIが読み取れる形になった', t: 'サイト名やページの種類が、検索やAIが読み取れる形になっていない', how: 'サイト名やページの種類を、検索やAIが読み取れる形式で埋め込む', why: 'サイトとページの関係が伝わりやすくなります。' },
+    'Service / Product': { ok: '提供しているサービス・商品が、検索やAIが読み取れる形になった', t: '提供しているサービス・商品が、検索やAIが読み取れる形になっていない', how: 'サービス・商品の名前と内容を、検索やAIが読み取れる形式で埋め込む', why: '何を提供しているお店・会社かが伝わりやすくなります。' },
+    'BreadcrumbList': { ok: 'サイトの中でのページの位置が、読み取れる形になった', t: 'サイトの中でのページの位置が、読み取れる形になっていない', how: 'ページの位置（トップ ＞ メニュー など）を、検索やAIが読み取れる形式で埋め込む', why: 'どこの何のページかが伝わります。' },
+    '問い合わせ導線': { ok: '予約・問い合わせの案内が入った', t: '予約・問い合わせの案内が見当たらない', how: '予約・問い合わせのボタンやリンクを、目立つ位置に置く', why: '興味を持った人が、次に何をすればよいか分かります。' },
+    'FAQPageがある': { ok: 'よくある質問が、検索やAIが読み取れる形になった', t: 'よくある質問が、検索やAIが読み取れる形になっていない', how: 'ページに載せている「よくある質問」と同じ内容を、検索やAIが読み取れる形式でも埋め込む', why: 'AIが回答するときに参考にできる、お店の公式の答えになります。' },
+    'FAQが3問以上': { ok: 'よくある質問が3問以上になった', t: 'よくある質問が3問より少ない', how: '予約・料金・駐車場・支払い方法など、よく聞かれる質問と答えを3問以上書く', why: '来店や相談の前に知りたいことに、お店が公式に答えている状態になります。' },
+    '画面上のFAQらしき領域': { ok: 'ページに「よくある質問」のまとまりができた', t: 'ページに「よくある質問」のまとまりが無い', how: 'ページに「よくある質問」の見出しを作り、質問と答えをまとめて載せる', why: 'お客様が自分で答えを見つけやすくなります。' },
+    'llms.txtがある': { ok: 'AI向けのサイト案内のファイルが置かれた', t: 'AI向けのサイト案内のファイルが無い', how: 'サイトの概要と主なページを書いた、AI向けの案内ファイルを置く（制作会社に依頼）', why: 'AIがサイトの内容を把握するための補助になります。' },
+    'robots.txtがある': { ok: '検索やAIの巡回ロボット向けの案内ファイルが置かれた', t: '検索やAIの巡回ロボット向けの案内ファイルが無い', how: 'サイトのどこを読んでよいかを伝える案内ファイルを置く（制作会社に依頼）', why: '検索やAIの巡回ロボットに、読んでよい範囲を伝えられます。' },
+    '主要AIボットの記載': { ok: 'AIの巡回ロボットへの方針が書かれた', t: 'AIの巡回ロボットへの方針が書かれていない', how: '巡回ロボット向けの案内ファイルに、ChatGPT などのAIのロボットを受け入れるかどうかを書く（制作会社に依頼）', why: 'AIの巡回ロボットが、サイトを読んでよいか判断できます。' },
+    'sitemap案内': { ok: 'サイトのページ一覧の場所が案内された', t: 'サイトのページ一覧の場所が案内されていない', how: '巡回ロボット向けの案内ファイルに、ページ一覧（サイトマップ）の場所を書く（制作会社に依頼）', why: '検索やAIが、サイトのページを見つけやすくなります。' }
+  };
+  /** お客様向けの「直ったこと」（前月から解消した不足）。肯定の言い方にする */
+  function plainResolved(labelOrText) {
+    var k = PLAIN[labelOrText] ? labelOrText : TEXT_TO_KEY[labelOrText];
+    return k && PLAIN[k] && PLAIN[k].ok ? PLAIN[k].ok : labelOrText;
+  }
+  /** お客様向けの「足りないこと」。チェック名でも、社内向けの言い方でも受け付ける */
+  function plainGap(labelOrText) {
+    var k = PLAIN[labelOrText] ? labelOrText : TEXT_TO_KEY[labelOrText];
+    return k && PLAIN[k] ? PLAIN[k].t : labelOrText;
+  }
+
   var TEXT_TO_KEY = {};
   Object.keys(GAP_TEXT).forEach(function (k) { TEXT_TO_KEY[GAP_TEXT[k]] = k; });
 
@@ -69,7 +102,9 @@
     var order = ['entity', 'faq', 'discover', 'structure'];
     return keys.map(function (k) {
       var f = FIX_INFO[k] || {};
-      return { key: k, text: gapText(k), factor: f.factor || '', factorLabel: FACTOR_LABEL[f.factor] || '', points: f.points || 0, why: f.why || '', how: f.how || '', studio: !!f.studio };
+      var pl = PLAIN[k] || {};
+      return { key: k, text: gapText(k), factor: f.factor || '', factorLabel: FACTOR_LABEL[f.factor] || '', points: f.points || 0, why: f.why || '', how: f.how || '', studio: !!f.studio,
+        plainText: pl.t || gapText(k), plainHow: pl.how || f.how || '', plainWhy: pl.why || f.why || '' };
     }).sort(function (a, b) { return (b.points - a.points) || (order.indexOf(a.factor) - order.indexOf(b.factor)); });
   }
 
@@ -329,7 +364,7 @@
     };
   }
 
-  var api = { gapText: gapText, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
+  var api = { gapText: gapText, plainGap: plainGap, plainResolved: plainResolved, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachReport = api;
 })(typeof window !== 'undefined' ? window : null);
