@@ -1245,9 +1245,11 @@ document.addEventListener('DOMContentLoaded', function () {
   // 作れなければ空（未設定）にする。業種ごとの固定語では埋めない。店の方の入力は呼び出し側で優先する。
   function autoKeyword(diagnose, industry) {
     var page = (diagnose && diagnose.page) || {};
-    if (industry === 'restaurant') {
-      return (page.keywordAuto && page.keywordAuto.keyword) || '';
-    }
+    var kwa = page.keywordAuto || null;
+    // 全業種: サイトの住所・業態・名前から作る。作れなければ空（未設定）。見出しそのままや固定語は使わない
+    if (kwa && kwa.industries && kwa.industries[industry || 'other']) return kwa.industries[industry || 'other'].keyword || '';
+    if (industry === 'restaurant' && kwa) return kwa.keyword || '';
+    if (kwa) return '';
     var raw = String(page.h1 || page.title || '').trim();
     raw = raw.replace(/\s*[|｜\-–—].*$/, '').replace(/\s+/g, ' ').trim();
     if (raw && raw.length >= 2 && raw.length <= 40) return raw;
@@ -1397,7 +1399,8 @@ document.addEventListener('DOMContentLoaded', function () {
     $('sum-url').textContent = survey.url || '—';
     $('sum-goal').textContent = OUTCOME_LABELS[survey.outcomeGoal] || (survey.goal === 'visibility' ? '認知を広げたい' : '新しいお客さん向け');
     var kwDiag = survey.previewDiagnose || lastDiagnose;
-    var kwSrc = kwDiag && kwDiag.page && kwDiag.page.keywordAuto;
+    var kwAll = kwDiag && kwDiag.page && kwDiag.page.keywordAuto;
+    var kwSrc = kwAll && kwAll.industries && kwAll.industries[industryId] ? kwAll.industries[industryId] : kwAll;
     $('sum-keyword').textContent = survey.keyword
       ? survey.keyword + (kwSrc && kwSrc.keyword === survey.keyword && kwSrc.sourceLabel ? '（' + kwSrc.sourceLabel + '）' : '')
       : '未設定（住所や業態がサイトから読み取れませんでした）';
@@ -1552,7 +1555,10 @@ document.addEventListener('DOMContentLoaded', function () {
       revealPanel('brand-panel');
       var tb = $('brand-sources');
       tb.innerHTML = '';
-      report.brand.sources.forEach(function (s) {
+      if (!report.brand.sources || !report.brand.sources.length) {
+        tb.innerHTML = '<tr><td colspan="3">未計測です。AIの回答を質問ごとに調べると、どの情報源が引用されているかが分かります。</td></tr>';
+      }
+      (report.brand.sources || []).forEach(function (s) {
         var tr = document.createElement('tr');
         tr.innerHTML = '<td>' + s.name + '</td><td><b>' + s.share + '%</b></td><td>' + (s.used ? '使われやすい' : '使われにくい') + '</td>';
         tb.appendChild(tr);
@@ -1898,13 +1904,13 @@ document.addEventListener('DOMContentLoaded', function () {
     var kwqSet = (report.headline4 || []).reduce(function (acc, h) { return acc || (h.id === 'demand' && h.keywordSet) || null; }, null);
     if (kwqWrap && kwqList) {
       if (kwqSet && kwqSet.length) {
-        var GROUP = { base: '地域＋業態', condition: '条件をつけて探すとき', brand: '店名で調べるとき' };
+        var GROUP = { base: '地域＋業種', condition: '条件をつけて探すとき', brand: '名前で調べるとき' };
         var lastGroup = '', html = '';
         kwqSet.forEach(function (c) {
           if (c.group !== lastGroup) { lastGroup = c.group; html += '<li class="ar-kwq-group">' + tipAttr(GROUP[c.group] || '') + '</li>'; }
           var st = c.answered === true ? 'ok' : (c.answered === false ? 'ng' : 'na');
           var mark = st === 'ok' ? '✓' : (st === 'ng' ? '!' : '–');
-          var stLabel = st === 'ok' ? '書いてある' : (st === 'ng' ? '書いていない' : '判定なし');
+          var stLabel = st === 'ok' ? '書いてある' : (st === 'ng' ? '書いていない' : (c.reason === 'unreadable' ? '本文を読み取れず未判定' : '判定なし'));
           html += '<li class="ar-dchk is-' + st + '"><span class="ar-dchk-mark" aria-hidden="true">' + mark + '</span>' +
             '<span class="ar-dchk-lab">' + tipAttr(c.text) + '<span class="ar-dchk-state">' + stLabel + '</span>' +
             (c.evidence ? '<span class="ar-dchk-ev">' + tipAttr(c.evidence) + '</span>' : '') + '</span><span></span></li>';

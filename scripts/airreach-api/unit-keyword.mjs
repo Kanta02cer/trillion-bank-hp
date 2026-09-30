@@ -54,7 +54,7 @@ expect('source label', K.derive({ title: '炭火焼肉 さくら 神楽坂店', 
 
 // 調べそうな言葉の一覧（Studio と同じ組み立て・飲食店の付け足す言葉）
 {
-  const src = { title: '[公式] 炭火焼肉 さくら | 神楽坂', ldAddress: ['東京都新宿区神楽坂3-1-2'], text: 'ランチ営業 11:30〜 ご予約はこちら 個室あり 1,200円' };
+  const src = { title: '[公式] 炭火焼肉 さくら | 神楽坂', ldAddress: ['東京都新宿区神楽坂3-1-2'], text: 'ランチ営業 11:30〜 ご予約はこちら 個室あり 1,200円 ' + '炭火で焼き上げる国産牛の焼肉をお楽しみください。'.repeat(12) };
   const set = K.candidates(K.derive(src), src, 'restaurant', 20);
   const by = Object.fromEntries(set.map((c) => [c.text, c]));
   expect('set: base keyword first', set[0].text, '神楽坂 焼肉');
@@ -77,6 +77,29 @@ expect('駅のそば is not そば', K.genreIn('駅のそばにあるホテル')
 expect('real バー still found', K.genreIn('神楽坂のワインバー 〇〇'), 'ワインバー');
 expect('real パン still found', K.genreIn('手作りパンの店'), 'パン');
 expect('Bistro inside word ignored', K.genreIn('MyBistroApp'), '');
+
+// 業種別
+{
+  const clinic = K.derive({ title: '【公式】テスト美容クリニック｜美容皮膚科', text: '〒220-0000 神奈川県横浜市西区1-2-3' }, 'clinic');
+  expect('clinic: area + treatment', clinic.keyword, '横浜 美容皮膚科');
+  const other = K.derive({ title: 'パーソナルジム テスト 渋谷店', ldAddress: ['東京都渋谷区道玄坂1-2'] }, 'other');
+  expect('other: area + business', other.keyword, '渋谷 パーソナルジム');
+  expect('b2b: name without 株式会社', K.derive({ title: '株式会社テスト｜クラウド会計' }, 'b2b').keyword, 'テスト');
+  expect('media: name in 「」', K.derive({ title: 'IT総合情報ポータル「テストメディア」Home' }, 'media').keyword, 'テストメディア');
+  expect('b2b: trailing （…） removed', K.derive({ title: 'テストSaaS（営業支援サービス）' }, 'b2b').keyword, 'テストSaaS');
+  const all = K.deriveAll({ title: '株式会社テスト｜会計ソフト', text: '料金プラン 月額1,000円 導入事例' });
+  expect('b2b set: 料金 answered', all.b2b.candidates.find((c) => c.modifier === '料金').answered, true);
+  expect('b2b set: no area keyword', all.b2b.candidates.some((c) => c.group === 'base'), false);
+  expect('restaurant unchanged in deriveAll', all.restaurant.keyword, '');
+}
+
+// 本文を読めないサイト（JavaScript で表示）は「書いていない」にしない
+{
+  const src = { title: 'テスト（営業支援）', text: '' };
+  const set = K.deriveAll(src).b2b.candidates;
+  expect('unreadable: not judged as missing', set.find((c) => c.modifier === '問い合わせ').answered, null);
+  expect('unreadable: reason set', set.find((c) => c.modifier === '問い合わせ').reason, 'unreadable');
+}
 
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);

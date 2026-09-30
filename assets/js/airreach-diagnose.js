@@ -201,6 +201,8 @@
         // 調べそうな言葉の一覧（飲食店の付け足す言葉）。サイトに答えが書いてあるかの判定つき
         keywordAuto.candidates = window.AirReachKeyword.candidates(keywordAuto, kwSrc, 'restaurant', 20);
         keywordAuto.shopName = window.AirReachKeyword.shopName(kwSrc);
+        // 業種ごとの「調べた言葉」と一覧（診断時点では業種が未確定のため全業種分）
+        if (window.AirReachKeyword.deriveAll) keywordAuto.industries = window.AirReachKeyword.deriveAll(kwSrc, 20);
       } catch (e) { keywordAuto = null; }
     }
     var hasContact = /お問い合わせ|contact|inquiry|相談|予約/i.test(text) || !!doc.querySelector('a[href*="contact"], a[href*="meeting"], form');
