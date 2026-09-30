@@ -69,6 +69,15 @@ expect('source label', K.derive({ title: '炭火焼肉 さくら 神楽坂店', 
   expect('shopName prefers structured name', K.shopName({ ldName: 'そば処 テスト', ogSiteName: 'TEST', title: 'TOP | x' }), 'そば処 テスト');
 }
 
+// 語の一部を業態にしない
+expect('サーバー is not バー', K.genreIn('クラウドサーバーの会社'), '');
+expect('ジャパン is not パン', K.genreIn('〇〇ジャパン株式会社'), '');
+expect('アドバイス is not アイス', K.genreIn('無料アドバイス'), '');
+expect('駅のそば is not そば', K.genreIn('駅のそばにあるホテル'), '');
+expect('real バー still found', K.genreIn('神楽坂のワインバー 〇〇'), 'ワインバー');
+expect('real パン still found', K.genreIn('手作りパンの店'), 'パン');
+expect('Bistro inside word ignored', K.genreIn('MyBistroApp'), '');
+
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);

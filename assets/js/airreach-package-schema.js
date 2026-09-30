@@ -158,9 +158,15 @@
     var extra = [];
     var map = files || {};
     var i;
-    for (i = 0; i < REQUIRED_FILES.length; i++) {
-      if (map[REQUIRED_FILES[i]] == null || map[REQUIRED_FILES[i]] === '') {
-        missing.push(REQUIRED_FILES[i]);
+    // 飲食店は Service ではなく Restaurant（organization.jsonld）に業態を書くので service.jsonld を求めない
+    var mf = parseJsonMaybe(map['MANIFEST.json']) || {};
+    var industry = (opts && opts.industry) || mf.industry || '';
+    var required = (industry === 'restaurant')
+      ? REQUIRED_FILES.filter(function (f) { return f !== 'schema/service.jsonld'; })
+      : REQUIRED_FILES;
+    for (i = 0; i < required.length; i++) {
+      if (map[required[i]] == null || map[required[i]] === '') {
+        missing.push(required[i]);
       }
     }
     Object.keys(map).forEach(function (k) {

@@ -421,23 +421,183 @@
     return base;
   }
 
+  // ---- 飲食店: 業種の判定と、飲食店用のキーワード・直す材料 ----
+  var FOOD_TYPES = /Restaurant|FoodEstablishment|CafeOrCoffeeShop|BarOrPub|Bakery|IceCreamShop|FastFoodRestaurant/;
+  function detectIndustry(input, diagnose) {
+    if (input && input.industry) return input.industry;
+    var page = (diagnose && diagnose.page) || {};
+    var kw = page.keywordAuto || null;
+    if ((page.types || []).some(function (t) { return FOOD_TYPES.test(String(t)); })) return 'restaurant';
+    if (kw && kw.genre && kw.genre.source === 'title' && kw.area && kw.area.value) return 'restaurant';
+    return '';
+  }
+
+  var RESTAURANT_ACTION = {
+    '': 'トップに「地域・業態・店名」を1文で書く',
+    'おすすめ': 'お店の特徴・おすすめメニューを写真つきで書く',
+    '人気': '人気メニューや選ばれている理由を書く',
+    'ランチ': 'ランチの有無・時間・価格帯を書く',
+    'ディナー': 'ディナーの時間・コース・価格帯を書く',
+    '個室': '個室の有無・席数・人数を書く',
+    '予約': '予約方法（電話・予約サイトのリンク）を目立つ位置に置く',
+    '子連れ': '子連れの可否（子ども椅子・メニュー）を書く',
+    '駐車場': '駐車場の有無・台数・近くの駐車場を書く',
+    'テイクアウト': 'テイクアウトの有無・受け取り方法を書く',
+    '宴会': '宴会・貸切・コースの人数と料金を書く',
+    '安い': 'メニューと料金を載せる',
+    '口コミ': 'お客様の声を載せる（掲載の同意を取る）',
+    'メニュー': 'メニューと料金を載せる',
+    '営業時間': '営業時間・定休日を載せる',
+    'アクセス': '最寄り駅からの道順・徒歩分数を書く'
+  };
+
+  function buildRestaurantKeywords(diagnose, limit, gscMap) {
+    var kwa = (diagnose && diagnose.page && diagnose.page.keywordAuto) || {};
+    var cands = (kwa.candidates || []).slice();
+    var out = [], seen = {};
+    // GSC の実クエリ（あれば先頭）
+    Object.keys(gscMap || {}).map(function (k) { return gscMap[k]; })
+      .filter(function (g) { return g && g.impressions > 0 && g.keyword; })
+      .sort(function (a, b) { return b.impressions - a.impressions; })
+      .slice(0, Math.ceil(limit * 0.4))
+      .forEach(function (g) {
+        var nk = normKw(g.keyword);
+        if (seen[nk]) return;
+        seen[nk] = 1;
+        out.push({ id: uid(), keyword: g.keyword, volume: null, volume_source: 'Unavailable',
+          gsc_impressions: Math.round(g.impressions), gsc_clicks: Math.round(g.clicks || 0),
+          gsc_position: g.positionWeight ? Math.round((g.positionSum / g.positionWeight) * 10) / 10 : null,
+          intent: 'Commercial', priority: g.impressions >= 50 ? 'P0' : 'P1', gap: '—', cluster: 'GSC',
+          action: 'この言葉で表示されているページの内容を確認する', seed_source: 'GSC',
+          why: 'Search Console で実際に表示された言葉（表示 ' + Math.round(g.impressions) + ' 回）', prompts: [] });
+      });
+    cands.forEach(function (c) {
+      if (out.length >= limit) return;
+      var nk = normKw(c.text);
+      if (!nk || seen[nk]) return;
+      seen[nk] = 1;
+      var gsc = lookupGsc(gscMap, c.text);
+      var fromGsc = !!(gsc && gsc.impressions > 0);
+      var priority = c.answered === false ? 'P0' : (c.answered === null ? 'P1' : 'P2');
+      var why = c.answered === false ? '答え（' + (c.modifier || c.text) + '）がトップページに書いていない'
+        : c.answered === true ? 'トップページに書いてある：' + (c.evidence || '')
+        : 'サイトの記載では判定しない言葉';
+      out.push({ id: uid(), keyword: c.text, volume: null, volume_source: 'Unavailable',
+        gsc_impressions: fromGsc ? Math.round(gsc.impressions) : null, gsc_clicks: fromGsc ? Math.round(gsc.clicks || 0) : null,
+        gsc_position: fromGsc && gsc.positionWeight ? Math.round((gsc.positionSum / gsc.positionWeight) * 10) / 10 : null,
+        intent: c.group === 'brand' ? 'Navigational' : 'Commercial',
+        priority: priority, gap: c.answered === false ? '大' : (c.answered === true ? '小' : '—'),
+        cluster: c.group === 'brand' ? 'Brand' : (c.group === 'base' ? 'Core' : 'Condition'),
+        action: RESTAURANT_ACTION[c.modifier] || RESTAURANT_ACTION[''],
+        seed_source: fromGsc ? 'GSC' : 'Site', why: why, answered: c.answered, evidence: c.evidence || '', prompts: [] });
+    });
+    // 直す対象（P0）を先頭に。同じ優先度の中は元の並び（基本→条件→店名）を保つ
+    return out.map(function (k, i) { return { k: k, i: i }; })
+      .sort(function (a, b) { return (prioRank(a.k.priority) - prioRank(b.k.priority)) || (a.i - b.i); })
+      .map(function (x) { return x.k; });
+  }
+
+  // 推定値が1つも無いときは null（「0回」「約◯回」と出さない）
+  function sumDemand(keywords) {
+    var vals = (keywords || []).map(function (k) { return k.volume; }).filter(function (v) { return v != null && isFinite(Number(v)); });
+    return vals.length ? vals.reduce(function (s, v) { return s + Number(v); }, 0) : null;
+  }
+
+  function restaurantPrompts(kw) {
+    var k = kw.keyword;
+    var list = kw.cluster === 'Brand'
+      ? [k + 'はどんなお店？', k + 'の営業時間と予約方法は？']
+      : [k + 'でおすすめのお店は？', k + 'で予約できるお店は？'];
+    return list.map(function (p) { return { prompt: p, intent: kw.cluster === 'Brand' ? 'Navigational' : 'Comparison', commercial_score: '' }; });
+  }
+
+  // 飲食店の FAQ: お客様が来店前に聞くこと。サイトに記載があれば、その抜粋を回答の下書きに添える
+  var RESTAURANT_FAQ = [
+    { q: '予約はできますか？', mod: '予約' },
+    { q: '営業時間と定休日を教えてください。', mod: '営業時間' },
+    { q: '駐車場はありますか？', mod: '駐車場' },
+    { q: '個室はありますか？', mod: '個室' },
+    { q: '子ども連れでも利用できますか？', mod: '子連れ' },
+    { q: 'テイクアウトはできますか？', mod: 'テイクアウト' },
+    { q: '宴会や貸切はできますか？', mod: '宴会' },
+    { q: '支払い方法（カード・電子マネー）は何が使えますか？', mod: null },
+    { q: 'アレルギーへの対応はできますか？', mod: null },
+    { q: '最寄り駅からの行き方を教えてください。', mod: 'アクセス' }
+  ];
+  function restaurantFaq(diagnose) {
+    var cands = ((diagnose && diagnose.page && diagnose.page.keywordAuto) || {}).candidates || [];
+    return RESTAURANT_FAQ.map(function (f) {
+      var hit = f.mod ? cands.filter(function (c) { return c.modifier === f.mod && c.answered === true; })[0] : null;
+      return {
+        q: f.q,
+        found: !!hit,
+        a: hit ? '（下書き）サイトの記載「' + hit.evidence.replace(/…/g, '').trim() + '」をもとに、正確な回答文に整えてください。'
+          : '（下書き）サイトに記載が見つかりませんでした。事実を確認して記入してください（該当しない場合はこの質問を削除）。'
+      };
+    });
+  }
+
+  function restaurantActionRows(job, faqItems, org) {
+    var kws = job.keywords || [];
+    var missingAns = kws.filter(function (k) { return k.answered === false; }).length;
+    var faqTodo = faqItems.filter(function (f) { return !f.found; }).length;
+    var schemaTodo = ['address', 'servesCuisine'].filter(function (k) { return !org[k]; }).length + 2; // telephone / openingHours は常に要確認
+    return [
+      { type: 'existing_page', count: missingAns, note: 'トップページに答えを足す言葉の数（keywords.csv の P0）' },
+      { type: 'faq', count: faqTodo, note: 'サイトに記載が無く、確認して書くFAQの数' },
+      { type: 'schema', count: schemaTodo, note: 'Restaurant 構造化データで確認・追記する項目の数（電話・営業時間を含む）' }
+    ];
+  }
+
+  function restaurantInfoMd(job, org, faqItems) {
+    var lines = ['# お店の基本情報チェックリスト（下書き）', '', 'サイトから読めた値だけを入れています。空欄は推測で埋めず、お店に確認して記入してください。', ''];
+    function row(label, v) { lines.push('- ' + label + '：' + (v || '（未確認・要記入）')); }
+    row('店名', org.name);
+    row('業態（servesCuisine）', org.servesCuisine);
+    row('住所', org.address ? [org.address.addressRegion, org.address.addressLocality].filter(Boolean).join('') + '（番地は要記入）' : '');
+    var byMod = {};
+    (job.keywords || []).forEach(function (k) {
+      var mod = String(k.keyword || '').split(' ').pop();
+      if (k.answered === true && k.evidence && !byMod[mod]) byMod[mod] = k.evidence;
+    });
+    function seen(mod) { return byMod[mod] ? 'サイトに記載あり（抜粋：' + byMod[mod] + '）→ 正確な値を記入' : ''; }
+    row('電話番号', '');
+    row('営業時間・定休日', seen('営業時間'));
+    row('予約方法（電話・予約サイトURL）', seen('予約'));
+    row('価格帯', '');
+    lines.push('', '## FAQ で記載が見つからなかった質問');
+    faqItems.filter(function (f) { return !f.found; }).forEach(function (f) { lines.push('- ' + f.q); });
+    return lines.join('\n') + '\n';
+  }
+
   function buildPackageFiles(job) {
     var p = job.profile || {};
     var brand = p.brand || hostOf(job.url);
     var service = p.service || 'サービス';
-    var faq = [
+    var isFood = job.industry === 'restaurant';
+    var faqItems = isFood ? restaurantFaq(job.diagnose) : [
       service + 'の対象者は誰ですか？',
       '費用の目安は？',
       '予約・相談の流れは？',
       '他社との違いは？'
-    ];
-    var org = {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: brand,
-      url: job.url
-    };
-    var svc = {
+    ].map(function (q) { return { q: q, a: '（下書き）公開前に事実確認してください。' }; });
+    var faq = faqItems.map(function (f) { return f.q; });
+    var kwa = (job.diagnose && job.diagnose.page && job.diagnose.page.keywordAuto) || {};
+    var area = kwa.area || {};
+    var org;
+    if (isFood) {
+      // 飲食店は Restaurant 型。サイトから読めた値だけを入れ、推測で埋めない
+      org = { '@context': 'https://schema.org', '@type': 'Restaurant', name: brand, url: job.url };
+      if (kwa.genre && kwa.genre.value) org.servesCuisine = kwa.genre.value;
+      if (area.pref || area.city) {
+        org.address = { '@type': 'PostalAddress', addressCountry: 'JP' };
+        if (area.pref) org.address.addressRegion = area.pref;
+        if (area.city) org.address.addressLocality = area.city + (area.town || '');
+      }
+    } else {
+      org = { '@context': 'https://schema.org', '@type': 'Organization', name: brand, url: job.url };
+    }
+    var svc = isFood ? null : {
       '@context': 'https://schema.org',
       '@type': 'Service',
       name: service,
@@ -446,11 +606,11 @@
     var faqLd = {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: faq.map(function (q) {
+      mainEntity: faqItems.map(function (f) {
         return {
           '@type': 'Question',
-          name: q,
-          acceptedAnswer: { '@type': 'Answer', text: '（下書き）公開前に事実確認してください。' }
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a }
         };
       })
     };
@@ -484,7 +644,7 @@
       });
     });
     var c = job.compression || {};
-    var actionRows = [
+    var actionRows = isFood ? restaurantActionRows(job, faqItems, org) : [
       { type: 'existing_page', count: c.existingPages || 0, note: '既存ページ改善' },
       { type: 'new_page', count: c.newPages || 0, note: '新規ページ候補' },
       { type: 'faq', count: c.faqCount || 0, note: 'FAQ追加' },
@@ -497,11 +657,13 @@
       generated_at: new Date().toISOString(),
       url: job.url,
       goal: job.goal,
+      industry: job.industry || '',
       brand: brand,
       service: service,
       keyword_count: (job.keywords || []).length,
       evidence: {
-        market_demand: (job.keywords || []).some(function (k) { return k.volume_source === 'Official'; }) ? 'Official (partial) + Estimated' : 'Estimated',
+        market_demand: isFood ? ((job.keywords || []).some(function (k) { return k.gsc_impressions > 0; }) ? 'GSC impressions only (no market volume)' : 'Unavailable (no search volume shown)')
+          : ((job.keywords || []).some(function (k) { return k.volume_source === 'Official'; }) ? 'Official (partial) + Estimated' : 'Estimated'),
         acquisition_score: job.diagnose_source === 'Observed' ? 'Observed' : 'Estimated',
         gsc: gscKeys ? 'Official (partial)' : 'Unavailable',
         hack2: job.hack2_imported ? 'Observed (imported JSON)' : 'Unavailable',
@@ -598,18 +760,18 @@
     var llms = [
       '# ' + brand,
       '',
-      '> ' + (p.summary || service),
+      '> ' + (isFood ? ((kwa.keyword || service) + 'のお店') : (p.summary || service)),
       '',
       '## Primary',
       '- Home: ' + job.url,
-      '- Service: ' + service,
+      (isFood ? '- 業態: ' + service + (area.value ? '（' + area.value + '）' : '') : '- Service: ' + service),
       '',
       '## Notes',
       '- Draft generated by AirReach Tools Studio. Verify before publish.'
     ].join('\n');
 
-    var faqMd = '# FAQ draft\n\n' + faq.map(function (q, i) {
-      return '## Q' + (i + 1) + '. ' + q + '\n\n（下書き）公開前に事実確認してください。\n';
+    var faqMd = '# FAQ draft\n\n' + faqItems.map(function (f, i) {
+      return '## Q' + (i + 1) + '. ' + f.q + '\n\n' + f.a + '\n';
     }).join('\n');
 
     var files = {
@@ -620,15 +782,19 @@
       'strategy/prompts.csv': toCsv(promptRows, (window.AirReachPackageSchema && window.AirReachPackageSchema.PROMPT_CSV_COLUMNS) || ['keyword', 'prompt', 'intent', 'commercial_score']),
       'strategy/actions.csv': toCsv(actionRows, (window.AirReachPackageSchema && window.AirReachPackageSchema.ACTION_CSV_COLUMNS) || ['type', 'count', 'note']),
       'schema/organization.jsonld': JSON.stringify(org, null, 2),
-      'schema/service.jsonld': JSON.stringify(svc, null, 2),
+      'schema/service.jsonld': svc ? JSON.stringify(svc, null, 2) : '',
       'schema/faq.jsonld': JSON.stringify(faqLd, null, 2),
       'public/llms.txt': llms,
       'public/llms-full.txt': llms + '\n## FAQ\n' + faq.map(function (q) { return '- ' + q; }).join('\n') + '\n',
       'content/faq.md': faqMd,
       'validation/VALIDATION.md': validation
     };
+    if (isFood) {
+      delete files['schema/service.jsonld'];
+      files['content/restaurant-info.md'] = restaurantInfoMd(job, org, faqItems);
+    }
     if (window.AirReachPackageSchema && window.AirReachPackageSchema.validatePackageFiles) {
-      var check = window.AirReachPackageSchema.validatePackageFiles(files);
+      var check = window.AirReachPackageSchema.validatePackageFiles(files, { targetUrl: job.url, industry: job.industry || '' });
       if (!check.ok) {
         console.warn('[AirReachPackage] blueprint validation failed', check);
       }
@@ -845,7 +1011,7 @@
       });
     job.keywords.forEach(function (k) {
       if (!k.prompts || !k.prompts.length) {
-        k.prompts = promptsForKeyword(k);
+        k.prompts = job.industry === 'restaurant' ? restaurantPrompts(k) : promptsForKeyword(k);
         k.prompt_count = k.prompts.length;
       }
     });
@@ -857,7 +1023,7 @@
       return (b.volume || 0) - (a.volume || 0);
     });
     job.keywords = job.keywords.slice(0, limit);
-    job.totalDemand = job.keywords.reduce(function (s, k) { return s + k.volume; }, 0);
+    job.totalDemand = sumDemand(job.keywords);
     job.compression = compressActions(job.keywords, job.diagnose);
     job.conclusion = buildConclusion(job);
     job.headline4 = {
@@ -904,26 +1070,22 @@
       diagnose = null;
     }
     if (!diagnose) {
-      diagnose = {
-        overall: 42,
-        structure: 45,
-        entity: 40,
-        faq: 35,
-        discover: 48,
-        gaps: ['FAQが不足', '比較情報が不足'],
-        evidenceClass: 'Estimated',
-        page: { title: '', h1: '', types: [], faqCount: 0 }
-      };
-      diagnoseSource = 'Estimated';
+      // 取得できなかったときに仮の診断結果で続けない（以前は固定の42点などで最後まで進んでいた）
+      throw new Error('サイトを取得できませんでした。「診断のための取得に同意」にチェックを入れて、もう一度お試しください。');
     }
     job.diagnose = diagnose;
     job.diagnose_source = diagnoseSource;
+    job.industry = detectIndustry(input, diagnose);
+    var kwa = (diagnose.page && diagnose.page.keywordAuto) || {};
+    var isFood = job.industry === 'restaurant';
     job.profile = profileFromDiagnose(diagnose, job.url, {
-      brand: (input.profile && input.profile.brand) || '',
-      service: (input.profile && input.profile.service) || '',
+      brand: (input.profile && input.profile.brand) || (isFood ? (kwa.shopName || '') : ''),
+      // 飲食店のサービス名は業態（焼肉・そば など）。入力が無ければサイトから読んだ業態を使う
+      service: (isFood && kwa.genre && kwa.genre.value && !(input.profile && input.profile.serviceTyped)) ? kwa.genre.value : ((input.profile && input.profile.service) || ''),
       audience: (input.profile && input.profile.audience) || '',
       summary: (input.profile && input.profile.summary) || ''
     });
+    if (isFood && kwa.area && kwa.area.value) job.region = kwa.area.value;
     if (q('orch-service') && job.profile.service && !q('orch-service').value) {
       q('orch-service').value = job.profile.service;
     }
@@ -932,7 +1094,7 @@
 
     setStep(1, 'running', 40);
     var gaps = (diagnose.gaps || []).slice(0, 2);
-    job.competitors = [
+    job.competitors = isFood ? [] : [
       { url: 'https://competitor-a.example/', note: gaps[0] ? ('推定: ' + gaps[0]) : '比較・料金が強い（推定）', evidenceClass: 'Estimated' },
       { url: 'https://competitor-b.example/', note: gaps[1] ? ('推定: ' + gaps[1]) : 'FAQ・根拠が豊富（推定）', evidenceClass: 'Estimated' }
     ];
@@ -946,7 +1108,7 @@
     await sleep(200);
 
     setStep(3, 'running', 20);
-    var keywords = buildKeywords(job.profile.service, job.region, job.keyword_limit, gscMap, {
+    var keywords = isFood ? buildRestaurantKeywords(diagnose, job.keyword_limit, gscMap) : buildKeywords(job.profile.service, job.region, job.keyword_limit, gscMap, {
       brand: job.profile.brand,
       url: job.url || job.profile.url
     });
@@ -960,12 +1122,12 @@
       }
     }
     job.keywords = keywords;
-    job.totalDemand = keywords.reduce(function (s, k) { return s + k.volume; }, 0);
+    job.totalDemand = sumDemand(keywords);
     setStep(3, 'done', 100);
     await sleep(180);
 
     setStep(4, 'running', 30);
-    keywords.forEach(function (k) { k.prompts = promptsForKeyword(k); k.prompt_count = k.prompts.length; });
+    keywords.forEach(function (k) { k.prompts = isFood ? restaurantPrompts(k) : promptsForKeyword(k); k.prompt_count = k.prompts.length; });
     setStep(4, 'done', 100);
     await sleep(180);
 
@@ -1057,7 +1219,11 @@
     wrap.hidden = false;
     var h = job.headline4 || {};
     if (q('orch-n-kw')) q('orch-n-kw').textContent = String(h.keywords || 0);
-    if (q('orch-n-demand')) {
+    if (q('orch-n-demand') && h.demand == null) {
+      q('orch-n-demand').textContent = '—';
+      var dUnit0 = q('orch-n-demand').parentElement && q('orch-n-demand').parentElement.querySelector('.unit');
+      if (dUnit0) dUnit0.textContent = '検索回数は Search Console の取り込み時だけ表示';
+    } else if (q('orch-n-demand')) {
       q('orch-n-demand').textContent = '約 ' + Number(h.demand || 0).toLocaleString('ja-JP');
       var dUnit = q('orch-n-demand').parentElement && q('orch-n-demand').parentElement.querySelector('.unit');
       var hasOfficialVol = (job.keywords || []).some(function (k) { return k.volume_source === 'Official'; });
@@ -1115,6 +1281,14 @@
     return raw || '問い合わせを増やす';
   }
 
+  var prefillIndustry = '';
+  var prefillIndustryHost = '';
+  function outcomeToGoal(o) {
+    if (o === 'reservation' || o === 'visit') return '予約を増やす';
+    if (o === 'awareness' || o === 'citation') return '見え方を整える';
+    return o ? '問い合わせを増やす' : '';
+  }
+
   function prefillLaunch() {
     var url = '';
     var service = '';
@@ -1124,7 +1298,8 @@
       var params = new URLSearchParams(location.search);
       url = params.get('url') || params.get('site') || '';
       service = params.get('service') || params.get('keyword') || '';
-      goal = mapGoal(params.get('goal') || params.get('mode') || '');
+      var goalParam = params.get('goal') || params.get('mode') || '';
+      goal = goalParam ? mapGoal(goalParam) : '';
       region = params.get('region') || '';
     } catch (e) {}
 
@@ -1132,7 +1307,10 @@
       var survey = JSON.parse(localStorage.getItem('airreach_onboard_survey_v1') || 'null');
       if (survey) {
         if (!url && survey.url) url = survey.url;
-        if (!service && survey.keyword) service = survey.keyword;
+        if (survey.industryId === 'restaurant') { prefillIndustry = 'restaurant'; prefillIndustryHost = hostOf(survey.url || ''); }
+        // 飲食店の「調べる言葉」は地域＋業態なので、サービス名には使わない（業態は下の handoff から入れる）
+        if (!service && survey.keyword && prefillIndustry !== 'restaurant') service = survey.keyword;
+        if (!goal && survey.outcomeGoal) goal = outcomeToGoal(survey.outcomeGoal);
         if (!goal && survey.goal) goal = mapGoal(survey.goal);
       }
     } catch (e) {}
@@ -1140,6 +1318,9 @@
     try {
       var handoff = JSON.parse(localStorage.getItem('airreach_diagnose_handoff_v1') || 'null');
       if (handoff && !url && handoff.url) url = handoff.url;
+      if (handoff && handoff.keywordAuto && handoff.keywordAuto.genre && (prefillIndustry === 'restaurant' || !service)) {
+        if (!service || prefillIndustry === 'restaurant') service = handoff.keywordAuto.genre;
+      }
     } catch (e) {}
 
     try {
@@ -1299,6 +1480,10 @@
       var region = (q('orch-region') && q('orch-region').value) || '全国';
       var service = (q('orch-service') && q('orch-service').value || '').trim();
 
+      if (q('orch-proxy') && !q('orch-proxy').checked) {
+        alert('「診断のための取得に同意」にチェックを入れてから分析してください。サイトを取得できないと分析できません。');
+        return;
+      }
       q('orch-progress-wrap').hidden = false;
       q('orch-result').hidden = true;
       runBtn.disabled = true;
@@ -1321,7 +1506,9 @@
             service: service || (q('service-name') && q('service-name').value) || '',
             summary: (q('service-summary') && q('service-summary').value) || ''
           },
-          proxyConsent: !!(q('orch-proxy') && q('orch-proxy').checked)
+          proxyConsent: !!(q('orch-proxy') && q('orch-proxy').checked),
+          // 無料診断で選んだ業種は、同じサイトを分析するときだけ使う
+          industry: (prefillIndustry && prefillIndustryHost && hostOf(url) === prefillIndustryHost) ? prefillIndustry : ''
         }, function (j) { renderProgress(j); });
         renderResult(job);
         window.__orchLastJob = job;
@@ -1355,7 +1542,7 @@
 
   function refreshJobArtifacts(job) {
     if (!job) return job;
-    job.totalDemand = (job.keywords || []).reduce(function (s, k) { return s + (Number(k.volume) || 0); }, 0);
+    job.totalDemand = sumDemand(job.keywords || []);
     if (job.headline4) {
       job.headline4.keywords = (job.keywords || []).length;
       job.headline4.demand = job.totalDemand;
