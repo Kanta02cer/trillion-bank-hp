@@ -595,6 +595,54 @@
         }
       });
     }
+    // GA4 同期: POST /api/google/ga4/（同一オリジン。Google のトークンは開いているドメインの HttpOnly Cookie にある）
+    var syncGa4 = q('sync-ga4');
+    if (syncGa4 && !syncGa4._phase2) {
+      syncGa4._phase2 = true;
+      syncGa4.addEventListener('click', async function () {
+        var check = (window.AirReachStudio && window.AirReachStudio.ga4PropertyCheck)
+          ? window.AirReachStudio.ga4PropertyCheck(q('ga-property') && q('ga-property').value)
+          : { id: (q('ga-property') && q('ga-property').value || '').trim() };
+        var start = q('sync-start') && q('sync-start').value;
+        var end = q('sync-end') && q('sync-end').value;
+        function msg(cls, text) { if (syncMsg) { syncMsg.className = 'ars-note' + (cls ? ' ' + cls : ''); syncMsg.textContent = text; } }
+        // どのサイトの GA4 として保存するかを必ず確定させる（別サイトの診断に使わないため）
+        var site = (window.AirReachStudio && window.AirReachStudio.ga4SiteCheck)
+          ? window.AirReachStudio.ga4SiteCheck(q('ga4-site') && q('ga4-site').value)
+          : { error: 'GA4 対象サイトURLを確認できません。' };
+        if (check.error) { msg('warn', check.error); return; }
+        if (site.error) { msg('warn', site.error); return; }
+        if (!check.id || !site.url || !start || !end) { msg('warn', 'GA4 プロパティID（数字）・GA4 対象サイトURL・期間を入力するか、「GA4 CSV」を使ってください。'); return; }
+        msg('', '/api/google/ga4 に接続中…');
+        try {
+          var res = await fetch('/api/google/ga4/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ propertyId: check.id, siteUrl: site.url, startDate: start, endDate: end })
+          });
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok) {
+            var hint = data.code === 'not_connected' || data.code === 'unauthorized' || data.code === 'scope_insufficient'
+              ? '（Google への「接続」が必要です）' : '';
+            throw new Error((data.error || data.message || ('HTTP ' + res.status)) + hint);
+          }
+          var rows = data.rows || [];
+          // サーバーは対象ホストの行だけを返す。画面側でも同じ規則でもう一度確かめて ga4Sites に記録する
+          var r2 = (window.AirReachStudio && window.AirReachStudio.importGa4Rows)
+            ? window.AirReachStudio.importGa4Rows(rows, { propertyId: check.id, siteUrl: site.url, source: 'api' })
+            : null;
+          var e = r2 && r2.entry;
+          var ex = (data.excluded && data.excluded.rows) || 0;
+          msg(e ? 'good' : 'warn', e
+            ? ('GA4同期完了: ' + e.host + ' の ' + r2.used + ' 行（セッション ' + e.sessions.toLocaleString('ja-JP') + ' · キーイベント ' + e.keyEvents.toLocaleString('ja-JP') + '）' +
+               (ex ? ' · 別ホストの ' + ex + ' 行（' + (data.excluded.hosts || []).slice(0, 3).join(', ') + '）は含めていません' : ''))
+            : ('GA4同期: ' + site.host + ' の行がありませんでした' + (ex ? '（別ホストの ' + ex + ' 行: ' + (data.excluded.hosts || []).slice(0, 3).join(', ') + '）' : '') + '。GA4 対象サイトURL（www の有無を含む）を確認してください。'));
+        } catch (err) {
+          msg('warn', 'GA4同期に失敗しました: ' + (err && err.message ? err.message : err) + '。「GA4 CSV」でも取り込めます。');
+        }
+      });
+    }
   }
 
   window.AirReachOrchPhase2 = {

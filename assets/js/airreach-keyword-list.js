@@ -241,6 +241,113 @@
     return null;
   }
 
+  // ---- GA4（サイト単位）----
+  // GA4 の sessions / keyEvents は、診断したサイトと同じホストのデータだけを使う（gscSites と同じ考え方）。
+  // ホストの正規化は siteHost と同じ（小文字・末尾の点を除く・既定ポートは付けない）。www の有無は区別する。
+  // 保存先: airreach_official_baseline_v1.ga4Sites = [{ propertyId, siteUrl, host, periodDays, sessions, keyEvents, rows, updatedAt, source }]
+  // サイト情報の無い baseline.ga4（以前の形式）は、診断の実測としては使わない。
+
+  var GA4_ROWS_KEEP = 2000; // 端末の保存容量を守るため、行は先頭 2000 行だけ残す（合計は全行から計算）
+
+  /** GA4 の hostName（または URL・「host:port」）を siteHost と同じ規則で正規化する */
+  function ga4Host(v) {
+    var s = String(v == null ? '' : v).trim();
+    if (!s || s === '(not set)') return '';
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(s)) return siteHost(s);
+    return siteHost('https://' + s.replace(/\/.*$/, ''));
+  }
+
+  function num0(v) { var x = Number(String(v == null ? '' : v).replace(/[,，\s]/g, '')); return isFinite(x) ? x : 0; }
+
+  /**
+   * GA4 の行（API または CSV）から、指定サイトの ga4Sites の要素を作る。
+   * 行のホスト: host / hostName 列 > url（絶対 URL のとき）> なし。
+   *   ホストが分かる行 … サイトのホストと完全一致する行だけ使う（www の有無も一致）
+   *   ホストが分からない行（CSV のパスだけの行）… opts.allowHostless のときだけ、指定サイトの行として使う
+   * @param {Array} rows { date, host|hostName, url, sessions, keyEvents }
+   * @param {object} opts { propertyId, siteUrl, periodDays, source: 'api'|'csv', allowHostless, now }
+   * @returns {{ entry, used, excludedRows, excludedHosts } | { error }}
+   */
+  function ga4SiteFromRows(rows, opts) {
+    opts = opts || {};
+    var host = siteHost(opts.siteUrl);
+    if (!host || host.indexOf('.') < 0) return { error: 'site_required' };
+    var kept = [], excluded = 0, exHosts = {}, sessions = 0, keyEvents = 0;
+    (rows || []).forEach(function (r) {
+      if (!r) return;
+      var hv = r.host != null ? r.host : (r.hostName != null ? r.hostName : (r.Hostname != null ? r.Hostname : r['ホスト名']));
+      var rowHost = hv != null && String(hv).trim() !== '' ? ga4Host(hv) : '';
+      var url = String(r.url != null ? r.url : (r.landingPagePlusQueryString || r['Landing page + query string'] || r.landingPage || r['Landing page'] || ''));
+      if (!rowHost && /^https?:\/\//i.test(url)) rowHost = siteHost(url);
+      if (rowHost ? rowHost !== host : !opts.allowHostless) {
+        excluded++;
+        var label = rowHost || (hv != null ? String(hv) : '(ホスト不明)');
+        exHosts[label] = (exHosts[label] || 0) + 1;
+        return;
+      }
+      var se = num0(r.sessions != null ? r.sessions : r.Sessions);
+      var ke = num0(r.keyEvents != null ? r.keyEvents : (r['Key events'] != null ? r['Key events'] : (r.conversions != null ? r.conversions : r.Conversions)));
+      sessions += se; keyEvents += ke;
+      kept.push({ date: String(r.date || r.Date || ''), host: rowHost || host, url: url, sessions: se, keyEvents: ke });
+    });
+    var pid = String(opts.propertyId == null ? '' : opts.propertyId).trim().replace(/^properties\//, '');
+    return {
+      used: kept.length,
+      excludedRows: excluded,
+      excludedHosts: Object.keys(exHosts).sort(function (a, b) { return exHosts[b] - exHosts[a]; }).slice(0, 10),
+      entry: kept.length ? {
+        propertyId: /^\d{1,20}$/.test(pid) ? pid : '',
+        siteUrl: String(opts.siteUrl),
+        host: host,
+        periodDays: opts.periodDays || 28,
+        sessions: sessions,
+        keyEvents: keyEvents,
+        rows: kept.slice(0, GA4_ROWS_KEEP),
+        rowsTotal: kept.length,
+        source: opts.source || 'api',
+        updatedAt: opts.now || new Date().toISOString()
+      } : null
+    };
+  }
+
+  /** ga4Sites に新しい要素を足す（同じホスト＋同じプロパティは置き換え、ほかは残す） */
+  function mergeGa4Sites(prev, next) {
+    var out = [], seen = {};
+    (next || []).concat(prev || []).forEach(function (x) {
+      if (!x || !x.host) return;
+      var k = x.host + '|' + (x.propertyId || '');
+      if (seen[k]) return;
+      seen[k] = true;
+      out.push(x);
+    });
+    return out;
+  }
+
+  /**
+   * 診断したサイトの GA4 実測（ga4Sites のうちホストが完全一致するもの）。無ければ null（= 未計測）。
+   * サイト情報の無い baseline.ga4 は見ない。同じホストが複数あれば新しい方。
+   * @returns {{ sessions, keyEvents, periodDays, monthlySessions, monthlyKeyEvents, propertyId, host, siteUrl } | null}
+   */
+  function ga4FromBaseline(baseline, siteUrl) {
+    var host = siteHost(siteUrl);
+    if (!host || !baseline || !Array.isArray(baseline.ga4Sites)) return null;
+    var best = null;
+    baseline.ga4Sites.forEach(function (x) {
+      if (!x || x.host !== host) return;
+      // 保存された host と siteUrl から読み直したホストが食い違うものは使わない
+      if (siteHost(x.siteUrl) !== x.host) return;
+      if (!best || String(x.updatedAt || '') > String(best.updatedAt || '')) best = x;
+    });
+    if (!best) return null;
+    var days = best.periodDays > 0 ? best.periodDays : 28;
+    var se = num0(best.sessions), ke = num0(best.keyEvents);
+    return {
+      sessions: se, keyEvents: ke, periodDays: days,
+      monthlySessions: Math.round((se / days) * 30), monthlyKeyEvents: Math.round((ke / days) * 30),
+      propertyId: best.propertyId || '', host: best.host, siteUrl: best.siteUrl
+    };
+  }
+
   // null / 空文字は 0 ではなく「値なし」
   function finiteOrNull(v) {
     if (v === null || v === undefined || (typeof v === 'string' && !v.trim())) return null;
@@ -306,7 +413,8 @@
     add: add, remove: remove, setPrimary: setPrimary, cleanText: cleanText,
     matchKey: matchKey, siteHost: siteHost, gscProperty: gscProperty, propertyCoversHost: propertyCoversHost,
     aggregateGsc: aggregateGsc, gscSitesFromRows: gscSitesFromRows, mergeGscSites: mergeGscSites,
-    gscFromBaseline: gscFromBaseline, compare: compare
+    gscFromBaseline: gscFromBaseline, compare: compare,
+    ga4Host: ga4Host, ga4SiteFromRows: ga4SiteFromRows, mergeGa4Sites: mergeGa4Sites, ga4FromBaseline: ga4FromBaseline
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachKeywordList = api;

@@ -147,6 +147,40 @@ expect('compare: legacy keyword list', L.compare(L.normalize('町田 焼肉', un
 expect('compare: empty → []', L.compare([], {}), []);
 expect('compare: position 0 → null', L.compare([kw('abc 焼肉', 'user', true)], { gsc: { rows: [{ query: 'ABC 焼肉', impressions: 5, clicks: 0, position: 0 }], periodDays: 28 } })[0].searchData.gsc.position, null);
 
+// ---- GA4（サイト単位）: 診断したサイトと同じホストだけ ----
+expect('ga4Host: lowercase / trailing dot / default port / (not set)', [L.ga4Host('WWW.Example.com.'), L.ga4Host('example.com:443'), L.ga4Host('example.com:8080'), L.ga4Host('(not set)'), L.ga4Host('https://Shop.Example.com/x')], ['www.example.com', 'example.com', 'example.com:8080', '', 'shop.example.com']);
+const G4NOW = '2026-09-30T00:00:00.000Z';
+const multi = [
+  { date: '2026-09-01', host: 'example.com', url: '/menu', sessions: 100, keyEvents: 5 },
+  { date: '2026-09-01', host: 'EXAMPLE.COM.', url: '/', sessions: 20, keyEvents: 1 },
+  { date: '2026-09-01', host: 'www.example.com', url: '/', sessions: 999, keyEvents: 99 },
+  { date: '2026-09-01', host: 'shop.example.com', url: '/', sessions: 500, keyEvents: 50 },
+  { date: '2026-09-01', host: '(not set)', url: '/', sessions: 7, keyEvents: 0 },
+];
+let g4 = L.ga4SiteFromRows(multi, { propertyId: '123456789', siteUrl: 'https://example.com/', periodDays: 28, now: G4NOW });
+expect('ga4SiteFromRows: property with several hosts → only the target host is summed', [g4.used, g4.entry.sessions, g4.entry.keyEvents], [2, 120, 6]);
+expect('ga4SiteFromRows: www / other subdomain / (not set) excluded and reported', [g4.excludedRows, g4.excludedHosts.includes('www.example.com'), g4.excludedHosts.includes('shop.example.com')], [3, true, true]);
+expect('ga4SiteFromRows: entry shape', { ...g4.entry, rows: g4.entry.rows.length }, { propertyId: '123456789', siteUrl: 'https://example.com/', host: 'example.com', periodDays: 28, sessions: 120, keyEvents: 6, rows: 2, rowsTotal: 2, source: 'api', updatedAt: G4NOW });
+const gWww = L.ga4SiteFromRows(multi, { propertyId: '123456789', siteUrl: 'https://www.example.com/' });
+expect('ga4SiteFromRows: www site takes only www rows (not mixed with apex)', [gWww.entry.host, gWww.entry.sessions], ['www.example.com', 999]);
+expect('ga4SiteFromRows: no site URL → not recorded', L.ga4SiteFromRows(multi, { propertyId: '1' }), { error: 'site_required' });
+const csvRows = [{ date: '2026-09-01', url: '/menu', sessions: 10, keyEvents: 1 }, { date: '2026-09-01', url: 'https://other.example/x', sessions: 5, keyEvents: 1 }];
+expect('ga4SiteFromRows: path-only CSV rows need allowHostless (API rows never)', L.ga4SiteFromRows(csvRows, { siteUrl: 'https://example.com/' }).entry, null);
+const gCsv = L.ga4SiteFromRows(csvRows, { siteUrl: 'https://example.com/', source: 'csv', allowHostless: true });
+expect('ga4SiteFromRows: CSV with site URL → path rows attributed, absolute other-host URL excluded', [gCsv.entry.sessions, gCsv.excludedRows, gCsv.entry.source, gCsv.entry.propertyId], [10, 1, 'csv', '']);
+expect('mergeGa4Sites: same host+property replaced, others kept', L.mergeGa4Sites([{ host: 'a.test', propertyId: '1', v: 'old' }, { host: 'b.test', propertyId: '2' }], [{ host: 'a.test', propertyId: '1', v: 'new' }]).map((x) => [x.host, x.v]), [['a.test', 'new'], ['b.test', undefined]]);
+const baseG4 = { ga4: { monthlySessions: 5000, monthlyKeyEvents: 50 }, ga4Sites: [g4.entry, gWww.entry] };
+const used = L.ga4FromBaseline(baseG4, 'https://example.com/menu');
+expect('ga4FromBaseline: same site → its data, monthly scaled', used && [used.sessions, used.keyEvents, used.monthlySessions, used.monthlyKeyEvents, used.host], [120, 6, Math.round(120 / 28 * 30), Math.round(6 / 28 * 30), 'example.com']);
+expect('ga4FromBaseline: www site → only the www entry', L.ga4FromBaseline(baseG4, 'https://www.example.com/')?.sessions, 999);
+expect('ga4FromBaseline: other site → null (never another site\'s GA4)', L.ga4FromBaseline(baseG4, 'https://other.example/'), null);
+expect('ga4FromBaseline: subdomain → null', L.ga4FromBaseline(baseG4, 'https://shop.example.com/'), null);
+expect('ga4FromBaseline: legacy baseline.ga4 only (no site) → null', L.ga4FromBaseline({ ga4: { monthlySessions: 5000, monthlyKeyEvents: 50 } }, 'https://example.com/'), null);
+expect('ga4FromBaseline: no baseline / bad URL → null', [L.ga4FromBaseline(null, 'https://example.com/'), L.ga4FromBaseline(baseG4, 'not a url')], [null, null]);
+expect('ga4FromBaseline: tampered host (siteUrl says another host) → ignored', L.ga4FromBaseline({ ga4Sites: [{ ...g4.entry, host: 'third.test' }] }, 'https://third.test/'), null);
+const older = { ...g4.entry, propertyId: '999', sessions: 1, updatedAt: '2026-01-01T00:00:00.000Z' };
+expect('ga4FromBaseline: several properties for the same host → newest', L.ga4FromBaseline({ ga4Sites: [older, g4.entry] }, 'https://example.com/')?.propertyId, '123456789');
+
 const failed = results.filter((p) => !p).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);

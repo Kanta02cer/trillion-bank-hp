@@ -116,9 +116,14 @@
       seed.url = handoff.url;
     }
 
+    // GA4 は診断したサイト（handoff.url）と同じホストの ga4Sites だけ。サイトが分からないとき・以前の baseline.ga4 は使わない
+    var siteGa4 = (baseline && handoff && handoff.url && window.AirReachKeywordList && window.AirReachKeywordList.ga4FromBaseline)
+      ? window.AirReachKeywordList.ga4FromBaseline(baseline, handoff.url)
+      : null;
+    seed.ga4 = siteGa4;
     if (baseline) {
-      if (baseline.ga4 && baseline.ga4.monthlySessions > 0) {
-        seed.monthlyVisitors = baseline.ga4.monthlySessions;
+      if (siteGa4 && siteGa4.monthlySessions > 0) {
+        seed.monthlyVisitors = siteGa4.monthlySessions;
         seed.sources.visitors = 'Official（GA4 sessions）';
         seed.autoReady = true;
       } else if (baseline.monthlyClicks > 0) {
@@ -126,8 +131,8 @@
         seed.sources.visitors = 'Official（GSC clicks）';
         seed.autoReady = true;
       }
-      if (baseline.ga4 && baseline.ga4.monthlyKeyEvents > 0) {
-        seed.monthlyInquiries = baseline.ga4.monthlyKeyEvents;
+      if (siteGa4 && siteGa4.monthlyKeyEvents > 0) {
+        seed.monthlyInquiries = siteGa4.monthlyKeyEvents;
         seed.sources.inquiries = 'Official（GA4 key events）';
         seed.autoReady = true;
       }

@@ -13,11 +13,10 @@ AirReach Studio separates three data classes so the UI never presents estimates 
 - `/airreach/` — free URL readiness check.
 - `/airreach/studio/` — remediation workbench.
 - `assets/js/airreach-studio.js` — browser-side MVP: gap analysis, generator, keyword registry, CSV import, time series, HackⅡ JSON import.
-- `api/google/auth.js` — Google OAuth start endpoint for Vercel. **Scope: Search Console only** (`webmasters.readonly`). Scopes are defined in `api/google/_lib/scopes.js`.
-- `api/google/callback.js` — exchanges the code, stores HttpOnly cookies and returns to `/airreach/studio/?google=connected#google`. If the user did not grant the Search Console scope, it does not connect and returns `?google=scope_missing`.
-- `api/google/callback.js` — OAuth callback.
+- `api/google/auth.js` — Google OAuth start endpoint for Vercel. **Scopes (read-only):** Search Console `webmasters.readonly` and GA4 `analytics.readonly`. No write scopes. Defined in `api/google/_lib/scopes.js`.
+- `api/google/callback.js` — exchanges the code, stores HttpOnly token cookies and a readable `airreach_google_scopes` cookie (`gsc.ga4`, feature names only — not a token). Checks the granted scopes: both → `?google=connected`; Search Console only → `?google=ga4_missing`; GA4 only → `?google=gsc_missing` (the granted one works); neither → `?google=scope_missing` (no tokens stored). Returns to `/airreach/studio/?google=…#google`.
 - `api/google/gsc.js` — Search Console `date + query + page` sync.
-- `api/google/ga4.js` — GA4 `date + landingPagePlusQueryString` with sessions/keyEvents sync. **GA4 is on hold**: OAuth does not request `analytics.readonly`, so this endpoint returns `503 { code: 'ga4_not_enabled' }` without calling Google, and Studio shows 「GA4（準備中）」. GA4 CSV import still works. To re-enable (separate PR): add `GA4_SCOPE` to `OAUTH_SCOPES` in `_lib/scopes.js` (users must reconnect to grant the new scope).
+- `api/google/ga4.js` — GA4 Data API `properties/{propertyId}:runReport`, dimensions `date` + `landingPagePlusQueryString` + `hostName`, metrics `sessions` + `keyEvents`. Requires `propertyId` (numeric Property ID, e.g. `123456789`; a Measurement ID `G-XXXXXXXXXX` is rejected with `400 measurement_id`), `siteUrl`, `startDate`, `endDate`. **Returns only rows whose `hostName` equals the site host** (other domains, the other www variant and `(not set)` are dropped and counted in `excluded`). Google errors are mapped: missing analytics scope → `403 scope_insufficient` (reconnect), no access to the property → `403 forbidden`, expired → `401 unauthorized`.
 
 ## Environment variables for Vercel
 
@@ -26,6 +25,38 @@ AirReach Studio separates three data classes so the UI never presents estimates 
 - `GOOGLE_REDIRECT_URI` (optional; defaults to `/api/google/callback` on the active origin)
 
 The OAuth client must allow the production callback URL, e.g. `https://trillion-bank.jp/api/google/callback` when the site/API is served by Vercel.
+
+## Google OAuth same-origin
+
+The OAuth state and token cookies are host-only cookies on the page's domain, and the callback is `https://trillion-bank.jp/api/google/callback`. So Studio calls `/api/google/auth/`, `/api/google/gsc/` and `/api/google/ga4/` on the **same origin** (not the `tb-api-base` Vercel host). Users who connected before GA4 was enabled must reconnect to grant `analytics.readonly`; Studio shows a notice while the `airreach_google_scopes` cookie lacks `ga4`.
+
+## GA4 data in the free diagnosis (site matching)
+
+GA4 sessions / key events are used only for the same site as the diagnosed URL — the same idea as `gscSites`.
+
+Storage: `localStorage.airreach_official_baseline_v1.ga4Sites` (existing fields, including the old `ga4`, are kept for compatibility):
+
+```js
+ga4Sites: [{
+  propertyId: '123456789',            // '' for a CSV import without a Property ID
+  siteUrl: 'https://example.com/',
+  host: 'example.com',                // normalized
+  periodDays: 28,
+  sessions: 1234, keyEvents: 45,      // totals over the period (from all matching rows)
+  rows: [{ date, host, url, sessions, keyEvents }],  // first 2000 rows kept
+  rowsTotal, source: 'api' | 'csv', updatedAt
+}]
+```
+
+Writers: Studio GA4 sync (`/api/google/ga4` with `siteUrl`; the 「GA4 対象サイトURL」 field defaults to the profile URL), Studio GA4 CSV and platform GA4 CSV (only when a target site URL is given). Same host + same property replaces the previous entry.
+
+Matching (`assets/js/airreach-keyword-list.js` `ga4FromBaseline`, server `api/google/_lib/host.js`):
+
+- Host normalization: lowercase, trailing dot removed, default port dropped. **`www` is a different host** (example.com ≠ www.example.com).
+- API rows: only rows whose `hostName` equals the site host.
+- CSV rows: a Hostname column or an absolute landing-page URL must match the host; path-only rows are attributed to the site URL the user gave.
+- The diagnosis and the platform simulator use GA4 only when the diagnosed host equals `ga4Sites[].host` (and matches its `siteUrl`). Otherwise sessions / key events stay 「未計測」 — there is no fallback to another site.
+- The old `baseline.ga4` and GA4 CSV imports without a site URL are treated as 「サイト未紐付け」 and are not used as measurements.
 
 ## Metric definitions
 
