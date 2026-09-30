@@ -86,6 +86,10 @@ expect('report: 推移は6か月（古い順）', compiled.history.map((h) => h.
 expect('report: 推移の点数（材料の無い月は null・翌月の診断は入れない）', compiled.history.map((h) => h.score), [null, null, null, null, 40, 48]);
 expect('report: 推移の引用率', compiled.history.slice(4).map((h) => h.cite), [{ openai: 0, gemini: 0 }, { openai: 10, gemini: 20 }]);
 expect('report: 推移のクリック', compiled.history.slice(4).map((h) => h.clicks), [5, 30]);
+const todo = R.todoList(compiled);
+expect('todo: 配点の大きい順（llms.txt 4点 → robots.txt 2点）', todo.map((t) => [t.key, t.points]), [['llms.txtがある', 4], ['robots.txtがある', 2]]);
+expect('todo: 直し方と直す材料の有無', [todo[0].studio, todo[1].studio, !!todo[0].how], [true, false, true]);
+expect('todo: 旧レポート（gapKeys なし）でも言い方から戻せる', R.todoList({ site: { current: { gaps: ['FAQの構造化データ（FAQPage）が無い'] } } }).map((t) => t.key), ['FAQPageがある']);
 
 // 質問の版が違う月は比較しない
 const c2 = R.compileReport({ periodMonth: '2026-09-01', scans: [], runs: [

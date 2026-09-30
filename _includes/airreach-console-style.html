@@ -50,6 +50,28 @@
 .arc-client-r{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
 .arc-client-r small{color:#64748b;font-size:.72rem}
 .arv-spark{width:120px;height:34px;display:block}
+/* 直すこと */
+.arv-todos{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.arv-todo{display:flex;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;background:#fff}
+.arv-todo.is-high .arv-todo-no{background:#fef2f2;color:#b91c1c}
+.arv-todo.is-mid .arv-todo-no{background:#fffbeb;color:#b45309}
+.arv-todo-no{flex:none;width:1.6em;height:1.6em;border-radius:50%;background:#f1f5f9;color:#334155;font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center}
+.arv-todo-b{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+.arv-todo-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.arv-todo-h b{color:#b91c1c}
+.arv-prio{font-size:.7rem;font-weight:700;border-radius:999px;padding:1px 8px;background:#f1f5f9;color:#475569}
+.arv-prio.is-high{background:#fef2f2;color:#b91c1c}
+.arv-prio.is-mid{background:#fffbeb;color:#b45309}
+.arv-todo-f{font-size:.72rem;color:#64748b}
+.arv-todo-how{font-size:.88rem;color:#0f172a}
+.arv-todo-how span{display:inline-block;font-size:.7rem;font-weight:700;color:#1d4ed8;background:#eff6ff;border-radius:4px;padding:0 6px;margin-right:6px}
+.arv-todo-why{font-size:.78rem;color:#64748b}
+.arv-todo-foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.arv-todo-foot:empty{display:none}
+.arv-todo-studio{font-size:.78rem;font-weight:700;color:#047857}
+a.arv-todo-studio{text-decoration:none}
+.arv-todo-none{color:#047857;font-weight:700;margin:4px 0}
+.arv-todo-more{font-size:.78rem;color:#64748b;margin:6px 0 0}
 /* 社内: 材料のカードの折りたたみ */
 .arc-fold{padding:0}
 .arc-fold>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 20px}
@@ -142,7 +164,8 @@
   .arr-wrap{padding:0;max-width:none}
   .arr-page{border:0;padding:0;margin:0}
   .arr-break{break-before:page}
-  .arr-table,section,.arv-fig,.arv-tile{break-inside:avoid}
+  .arr-table,section,.arv-fig,.arv-tile,.arv-todo{break-inside:avoid}
+  .arv-todo{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .arv-tiles{grid-template-columns:repeat(4,minmax(0,1fr))!important}
   .arv-trends{grid-template-columns:repeat(3,minmax(0,1fr))!important}
   .arv-tile,.arv-fig{-webkit-print-color-adjust:exact;print-color-adjust:exact}

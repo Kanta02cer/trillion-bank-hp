@@ -168,6 +168,7 @@
           C.tiles(top.compiled || {}) +
           ((top.conclusions || []).length ? '<h3 class="arc-h3">今月の結論</h3><ol class="arr-ol arr-concl">' + top.conclusions.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ol>' : '') +
           '</section>' +
+          todoCard(window.AirReachReport ? window.AirReachReport.todoList(top.compiled || {}) : [], top.compiled || {}, 'client') +
           '<section class="arc-card"><h2 class="arc-h2">推移（直近6か月）</h2>' + C.trends(top.compiled || {}) + '</section>';
       }
       body += '<section class="arc-card"><h2 class="arc-h2">これまでのレポート</h2><ul class="arc-list">' +
@@ -176,6 +177,14 @@
       shell(c.name, body, '#/');
     });
   }
+  function todoCard(items, compiled, audience) {
+    var C = window.AirReachCharts, cur = compiled && compiled.site && compiled.site.current;
+    if (!C || !cur) return '';
+    return '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">直すこと' + (items.length ? '（' + items.length + '件）' : '') + '</h2>' +
+      '<span class="arc-sub">' + esc(String(cur.createdAt || '').slice(0, 10)) + ' の診断で見つかった不足・優先度の高い順</span></div>' +
+      C.todos(items, { audience: audience }) + '</section>';
+  }
+
   // 材料のカードは折りたたむ（開いた状態は再描画しても保つ）
   var openFolds = {};
   function fold(key, title, count) {
@@ -215,6 +224,7 @@
             { label: 'レポート', ok: !!(repNow && repNow.status === 'published'), note: repNow ? (repNow.status === 'published' ? '公開済み' : '下書き') : '未作成' }
           ]) +
           C.tiles(live) + '</section>' +
+          todoCard(R.todoList(live), live, 'staff') +
           '<section class="arc-card"><h2 class="arc-h2">推移（直近6か月）</h2>' + C.trends(live) + '</section>';
       }
 
@@ -359,6 +369,7 @@
         ((cmp.missing || []).length ? '<p class="arc-note">未計測: ' + esc(cmp.missing.join('、')) + '（レポートには「未計測」と表示されます）</p>' : '') + '</section>' +
         '<form id="arc-report-form"><section class="arc-card"><h2 class="arc-h2">今月の結論（3点）</h2>' +
         concl.map(function (t, i) { return '<textarea class="arc-input arc-ta" data-concl="' + i + '" rows="2" placeholder="結論 ' + (i + 1) + '">' + esc(t) + '</textarea>'; }).join('') + '</section>' +
+        (window.AirReachCharts && cmp.site && cmp.site.current ? '<section class="arc-card"><h2 class="arc-h2">施策の候補（診断の不足・優先度の高い順）</h2>' + window.AirReachCharts.todos(window.AirReachReport.todoList(cmp), { audience: 'staff', limit: 6, pick: true }) + '</section>' : '') +
         '<section class="arc-card"><h2 class="arc-h2">次にやる3施策</h2>' +
         next.map(function (a, i) {
           return '<div class="arc-row"><input class="arc-input" data-next-title="' + i + '" placeholder="施策 ' + (i + 1) + '" value="' + esc(a.title || '') + '">' +
@@ -370,6 +381,17 @@
         (r.status === 'published' ? '<button class="arc-btn arc-btn-line" type="button" id="arc-unpublish">非公開に戻す</button>' : '<button class="arc-btn arc-btn-line" type="button" id="arc-publish">公開する（お客様が見られる）</button>') +
         '<a class="arc-btn arc-btn-line" href="/airreach/app/report/?id=' + r.id + '">表示・PDF</a></div></form>',
         '#/c/' + r.client_id);
+
+      // 候補の「次の3施策に入れる」: 空いている最初の欄に直し方を入れる
+      Array.prototype.forEach.call(root.querySelectorAll('[data-pick-todo]'), function (b) {
+        b.addEventListener('click', function () {
+          var slot = [0, 1, 2].map(function (i) { return $('[data-next-title="' + i + '"]'); }).filter(function (el) { return !el.value.trim(); })[0];
+          if (!slot) { msg('次の3施策は埋まっています。入れ替える場合は欄を空にしてください。', 'error'); return; }
+          slot.value = b.getAttribute('data-pick-todo');
+          slot.focus();
+          b.disabled = true; b.textContent = '入れました';
+        });
+      });
 
       function collect() {
         var c3 = [0, 1, 2].map(function (i) { return $('[data-concl="' + i + '"]').value.trim(); }).filter(Boolean);

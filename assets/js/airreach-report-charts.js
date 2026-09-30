@@ -282,5 +282,31 @@
     }).join('') + '</ul>';
   }
 
-  window.AirReachCharts = { tiles: tiles, trends: trends, factors: factors, aiCompare: aiCompare, sparkline: sparkline, readiness: readiness, band: band, series: series };
+  // ---- 直すこと（最新の診断の不足を、配点の大きい順に）-------------------------
+  function priority(points) {
+    return points >= 4 ? { key: 'high', label: '優先度 高' } : points >= 3 ? { key: 'mid', label: '優先度 中' } : { key: 'low', label: '優先度 低' };
+  }
+  /**
+   * items: AirReachReport.todoList() の結果
+   * opts: { audience: 'staff'|'client', limit, pick: true（「次の3施策に入れる」ボタン） }
+   */
+  function todos(items, opts) {
+    opts = opts || {};
+    if (!items || !items.length) return '<p class="arv-todo-none">✓ 診断で見つかった不足はありません。</p>';
+    var list = opts.limit ? items.slice(0, opts.limit) : items;
+    return '<ol class="arv-todos">' + list.map(function (t, i) {
+      var pr = priority(t.points);
+      var studio = t.studio ? (opts.audience === 'staff'
+        ? '<a class="arv-todo-studio" href="/airreach/studio/" target="_blank" rel="noopener">直す材料で下書きを作る ↗</a>'
+        : '<span class="arv-todo-studio">Trillion Bank で下書きを用意できます</span>') : '';
+      return '<li class="arv-todo is-' + pr.key + '"><span class="arv-todo-no">' + (i + 1) + '</span><div class="arv-todo-b">' +
+        '<div class="arv-todo-h"><b>' + esc(t.text) + '</b><span class="arv-prio is-' + pr.key + '">' + pr.label + '</span>' + (t.factorLabel ? '<span class="arv-todo-f">' + esc(t.factorLabel) + '</span>' : '') + '</div>' +
+        (t.how ? '<div class="arv-todo-how"><span>直し方</span>' + esc(t.how) + '</div>' : '') +
+        (t.why ? '<div class="arv-todo-why">' + esc(t.why) + '</div>' : '') +
+        '<div class="arv-todo-foot">' + studio + (opts.pick ? '<button type="button" class="arc-btn-sm" data-pick-todo="' + esc(t.how || t.text) + '">次の3施策に入れる</button>' : '') + '</div>' +
+        '</div></li>';
+    }).join('') + '</ol>' + (opts.limit && items.length > opts.limit ? '<p class="arv-todo-more">ほか ' + (items.length - opts.limit) + '件</p>' : '');
+  }
+
+  window.AirReachCharts = { tiles: tiles, trends: trends, factors: factors, aiCompare: aiCompare, sparkline: sparkline, readiness: readiness, todos: todos, band: band, series: series };
 })();
