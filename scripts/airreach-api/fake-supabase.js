@@ -45,8 +45,11 @@
         if (this.ord) { var k = this.ord[0], asc = this.ord[1]; out.sort(function (a, b) { return (String(a[k]) < String(b[k]) ? -1 : 1) * (asc ? 1 : -1); }); }
         if (this.embed) out = out.map(function (r) { var c = db.clients.filter(function (x) { return x.id === r.client_id; })[0]; var o = Object.assign({}, r); o[self.embed[1]] = c ? { name: c.name } : null; return o; });
       } else if (this.op === 'insert') {
-        var row = Object.assign({ id: uuid(), created_at: new Date().toISOString(), status: this.t === 'reports' ? 'draft' : (this.t === 'action_items' ? 'done' : (this.t === 'clients' ? 'active' : undefined)) }, this.row);
-        t.push(row); out = [row];
+        var tbl = this.t;
+        out = (Array.isArray(this.row) ? this.row : [this.row]).map(function (r) {
+          var row = Object.assign({ id: uuid(), created_at: new Date().toISOString(), status: tbl === 'reports' ? 'draft' : (tbl === 'action_items' ? 'done' : (tbl === 'clients' ? 'active' : undefined)) }, r);
+          t.push(row); return row;
+        });
       } else if (this.op === 'update') {
         out = t.filter(function (r) { return self.match(r); }); out.forEach(function (r) { Object.assign(r, self.row, { updated_at: new Date().toISOString() }); });
       } else if (this.op === 'upsert') {
