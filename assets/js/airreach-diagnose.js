@@ -133,9 +133,81 @@
     try { return new URL(path, base).href; } catch (e) { return null; }
   }
 
+  function buildKeywordAuto(kwSrc) {
+    if (typeof window === 'undefined' || !window.AirReachKeyword) return null;
+    try {
+      var k = window.AirReachKeyword.derive(kwSrc);
+      // 調べそうな言葉の一覧（飲食店の付け足す言葉）。サイトに答えが書いてあるかの判定つき
+      k.candidates = window.AirReachKeyword.candidates(k, kwSrc, 'restaurant', 20);
+      k.shopName = window.AirReachKeyword.shopName(kwSrc);
+      // 業種ごとの「調べた言葉」と一覧（診断時点では業種が未確定のため全業種分）
+      if (window.AirReachKeyword.deriveAll) k.industries = window.AirReachKeyword.deriveAll(kwSrc, 20);
+      k.pagesRead = (kwSrc.pages || []).map(function (p) { return p.url; });
+      return k;
+    } catch (e) { return null; }
+  }
+
+  // 下層ページ: 役割ごとに1枚（メニュー・アクセス/店舗情報・予約・よくある質問）、最大4枚。同じサイト内だけ
+  var SUBPAGE_ROLES = [
+    { key: 'menu', re: /メニュー|お品書き|料理|料金|価格|プラン|menu|price|plan/i },
+    { key: 'access', re: /アクセス|地図|所在地|店舗情報|店舗案内|会社概要|医院案内|クリニック案内|access|map|shop|store|about|company/i },
+    { key: 'reserve', re: /予約|reserve|reservation|booking/i },
+    { key: 'faq', re: /よくある質問|よくあるご質問|ご質問|faq|q&a/i }
+  ];
+  function pickSubpages(links, baseUrl, max) {
+    var base;
+    try { base = new URL(baseUrl); } catch (e) { return []; }
+    var chosen = [], seen = {};
+    seen[base.href.replace(/#.*$/, '')] = 1;
+    SUBPAGE_ROLES.forEach(function (role) {
+      if (chosen.length >= (max || 4)) return;
+      for (var i = 0; i < links.length; i++) {
+        var l = links[i];
+        if (!l.href || /^(#|mailto:|tel:|javascript:)/i.test(l.href)) continue;
+        var u;
+        try { u = new URL(l.href, base); } catch (e) { continue; }
+        if (u.host !== base.host || !/^https?:$/.test(u.protocol)) continue;
+        if (/\.(pdf|jpe?g|png|gif|webp|zip|docx?|xlsx?)$/i.test(u.pathname)) continue;
+        var key = u.href.replace(/#.*$/, '');
+        if (seen[key]) continue;
+        if (role.re.test(l.text) || role.re.test(decodeURIComponent(u.pathname))) {
+          seen[key] = 1;
+          chosen.push({ role: role.key, url: key });
+          return;
+        }
+      }
+    });
+    return chosen;
+  }
+
+  function withTimeout(p, ms) {
+    return Promise.race([p, new Promise(function (resolve) { setTimeout(function () { resolve({ state: 'failed', text: '', error: 'timeout' }); }, ms); })]);
+  }
+
+  function pageText(html) {
+    try {
+      var d = new DOMParser().parseFromString(html, 'text/html');
+      if (!d.body) return '';
+      Array.prototype.forEach.call(d.body.querySelectorAll('script,style,noscript,template'), function (n) { n.remove(); });
+      return (d.body.textContent || '').replace(/\s+/g, ' ').trim();
+    } catch (e) { return ''; }
+  }
+
   function parseHtml(html) {
     var doc = new DOMParser().parseFromString(html, 'text/html');
-    var text = (doc.body && doc.body.innerText ? doc.body.innerText : '').replace(/\s+/g, ' ').trim();
+    // 本文は script / style を除いて数える（DOMParser の innerText は script の中身も含むため）
+    var cleanText = '';
+    if (doc.body) {
+      var bodyClone = doc.body.cloneNode(true);
+      Array.prototype.forEach.call(bodyClone.querySelectorAll('script,style,noscript,template'), function (n) { n.remove(); });
+      cleanText = (bodyClone.textContent || '').replace(/\s+/g, ' ').trim();
+    }
+    var text = cleanText;
+    // 本文を JavaScript で後から表示するサイトは、取得した HTML に本文がほぼ無い
+    var unreadable = cleanText.replace(/\s+/g, '').length < 300 && html.length > 20000;
+    var links = Array.prototype.slice.call(doc.querySelectorAll('a[href]'), 0, 400).map(function (a) {
+      return { href: a.getAttribute('href') || '', text: (a.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40) };
+    });
     var title = (doc.querySelector('title') || {}).textContent || '';
     var h1 = Array.prototype.map.call(doc.querySelectorAll('h1'), function (n) { return n.textContent.trim(); }).filter(Boolean);
     var metaDesc = (doc.querySelector('meta[name="description"]') || {}).content || '';
@@ -183,28 +255,13 @@
     }
     var ids = Array.prototype.slice.call(doc.querySelectorAll('[id]'), 0, 300).map(function (n) { return n.id; }).filter(Boolean);
     // 「調べた言葉」の自動候補（地域＋業態）。script/style を除いた本文から作る
-    var keywordAuto = null;
-    if (typeof window !== 'undefined' && window.AirReachKeyword) {
-      var cleanText = '';
-      if (doc.body) {
-        var bodyClone = doc.body.cloneNode(true);
-        Array.prototype.forEach.call(bodyClone.querySelectorAll('script,style,noscript,template'), function (n) { n.remove(); });
-        cleanText = (bodyClone.textContent || '').replace(/\s+/g, ' ').trim();
-      }
-      var ogSiteName = (doc.querySelector('meta[property="og:site_name"]') || {}).content || '';
-      var kwSrc = {
-        title: title.trim(), ogTitle: ogTitle, metaDesc: metaDesc.trim(), text: cleanText,
-        ldAddress: ldAddress, ldCuisine: ldCuisine, types: Object.keys(types), ldName: ldName, ogSiteName: ogSiteName
-      };
-      try {
-        keywordAuto = window.AirReachKeyword.derive(kwSrc);
-        // 調べそうな言葉の一覧（飲食店の付け足す言葉）。サイトに答えが書いてあるかの判定つき
-        keywordAuto.candidates = window.AirReachKeyword.candidates(keywordAuto, kwSrc, 'restaurant', 20);
-        keywordAuto.shopName = window.AirReachKeyword.shopName(kwSrc);
-        // 業種ごとの「調べた言葉」と一覧（診断時点では業種が未確定のため全業種分）
-        if (window.AirReachKeyword.deriveAll) keywordAuto.industries = window.AirReachKeyword.deriveAll(kwSrc, 20);
-      } catch (e) { keywordAuto = null; }
-    }
+    var ogSiteName = (doc.querySelector('meta[property="og:site_name"]') || {}).content || '';
+    // 「調べた言葉」の材料。下層ページを読んだあとに diagnose() で keywordAuto を作る
+    var kwSrc = {
+      title: title.trim(), ogTitle: ogTitle, metaDesc: metaDesc.trim(), text: cleanText,
+      ldAddress: ldAddress, ldCuisine: ldCuisine, types: Object.keys(types), ldName: ldName, ogSiteName: ogSiteName, pages: []
+    };
+    var keywordAuto = buildKeywordAuto(kwSrc);
     var hasContact = /お問い合わせ|contact|inquiry|相談|予約/i.test(text) || !!doc.querySelector('a[href*="contact"], a[href*="meeting"], form');
     return {
       title: title.trim(),
@@ -221,6 +278,9 @@
       hasContact: hasContact,
       textLen: text.length,
       htmlLen: html.length,
+      unreadable: unreadable,
+      links: links,
+      kwSrc: kwSrc,
       keywordAuto: keywordAuto
     };
   }
@@ -287,21 +347,21 @@
     var checks = [
       // structure (max 12)
       check('structure', 'ページタイトルがある', '検索結果やAIが主題を読む最初の手がかりです。', true, !!page.title, 2, 2, pageEv),
-      check('structure', 'H1が1つ', '主題が一目で分かる見出しが1つあるか。', true, page.h1.length === 1, 3, 3, pageEv, page.h1.length > 1 ? 1 : 0),
+      check('structure', 'H1が1つ', '主題が一目で分かる見出しが1つあるか。', !page.unreadable, page.h1.length === 1, 3, 3, pageEv, page.h1.length > 1 ? 1 : 0),
       check('structure', '説明文（meta）が十分', 'サービスの対象が短い説明で伝わるか。', true, !!(page.metaDesc && page.metaDesc.length >= 40), 2, 2, pageEv),
       check('structure', 'canonicalがある', '正規URLが明示されているか。', true, !!page.canonical, 2, 2, pageEv),
       check('structure', 'og:titleがある', 'SNS・共有時のタイトルが定義されているか。', true, !!page.ogTitle, 1, 1, pageEv),
-      check('structure', '本文量がある', '案内の厚みの目安です。', true, page.textLen > 800, 2, 2, pageEv),
+      check('structure', '本文量がある', '案内の厚みの目安です。', !page.unreadable, page.textLen > 800, 2, 2, pageEv),
       // entity (max 10)
       check('entity', '会社情報（Organization等）', '誰のサイトかを機械が読めるか。', true, !!(page.types.Organization || page.types.LocalBusiness), 4, 4, pageEv),
       check('entity', 'WebSite / WebPage', 'サイト種別の構造化があるか。', true, !!(page.types.WebSite || page.types.WebPage), 2, 2, pageEv),
       check('entity', 'Service / Product', '何のサービスかを定義しているか。', true, !!(page.types.Service || page.types.Product), 2, 2, pageEv),
       check('entity', 'BreadcrumbList', 'ページ階層の構造化があるか。', true, !!page.types.BreadcrumbList, 1, 1, pageEv),
-      check('entity', '問い合わせ導線', '相談・予約・問い合わせの文言があるか。', true, !!page.hasContact, 1, 1, pageEv),
+      check('entity', '問い合わせ導線', '相談・予約・問い合わせの文言があるか。', !page.unreadable, !!page.hasContact, 1, 1, pageEv),
       // faq (max 8)
       check('faq', 'FAQPageがある', 'FAQの構造化データがあるか。', true, !!page.types.FAQPage, 3, 3, faqEv),
       check('faq', 'FAQが3問以上', '購入前の疑問に答えられる量があるか。', true, page.faqCount >= 3, 3, 3, faqEv, page.faqCount > 0 ? 1 : 0),
-      check('faq', '画面上のFAQらしき領域', '人が読めるFAQブロックがあるか。', true, !!page.visibleFaq, 2, 2, faqEv),
+      check('faq', '画面上のFAQらしき領域', '人が読めるFAQブロックがあるか。', !page.unreadable, !!page.visibleFaq, 2, 2, faqEv),
       // discover (max 10)
       check('discover', 'llms.txtがある', 'AI向けの案内ファイルがあるか。', llmsKnown, !!(llmsText && llmsText.length > 80), 4, 4, llmsEv),
       check('discover', 'robots.txtがある', 'クローラ向けの案内があるか。', robotsKnown, !!robotsText, 2, 2, robotsEv),
@@ -441,7 +501,8 @@
         hasRobots: robotsKnown ? !!robotsText : null,
         baseHref: baseHref,
         finalUrl: pageRes.finalUrl || baseHref,
-        keywordAuto: page.keywordAuto || null
+        keywordAuto: page.keywordAuto || null,
+        unreadable: !!page.unreadable
       },
       modelPlaceholders: [
         { name: 'Google AI Overviews', status: '要AirReach Consulting測定', note: '実回答の引用率は本ツールでは取得しません' },
@@ -467,7 +528,18 @@
       if (pageRes.state === 'failed') throw new Error(pageRes.error || 'ページを取得できませんでした。');
       if (pageRes.state === 'missing') throw new Error('ページが見つかりませんでした（HTTP ' + (pageRes.status || '—') + '）。URLを確認してください。');
       if (!pageRes.text || pageRes.text.length < 40) throw new Error('ページ内容を取得できませんでした。');
-      return analyze(parseHtml(pageRes.text), pageRes, parts[1], parts[2], url.href);
+      var parsed = parseHtml(pageRes.text);
+      var subs = options.subpages === false ? [] : pickSubpages(parsed.links || [], pageRes.finalUrl || url.href, 4);
+      // 下層ページは「調べた言葉」と「答えが書いてあるか」にだけ使う（点数の計算には使わない）
+      return Promise.all(subs.map(function (sp) {
+        return withTimeout(fetchResource(sp.url, allowProxy), 6000).then(function (r) {
+          return r && r.state === 'ok' && r.text ? { url: sp.url, role: sp.role, text: pageText(r.text).slice(0, 15000) } : null;
+        }).catch(function () { return null; });
+      })).then(function (pages) {
+        parsed.kwSrc.pages = pages.filter(function (x) { return x && x.text; });
+        parsed.keywordAuto = buildKeywordAuto(parsed.kwSrc);
+        return analyze(parsed, pageRes, parts[1], parts[2], url.href);
+      });
     });
   }
 

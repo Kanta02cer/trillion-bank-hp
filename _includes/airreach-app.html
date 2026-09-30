@@ -1113,7 +1113,7 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <details class="ar-fold" id="ar-kwq-wrap" hidden>
             <summary>お客さんが調べそうな言葉<span class="ar-fold-count" id="ar-kwq-count"></span></summary>
             <div class="ar-fold-body">
-            <p class="ar-kwq-note">言葉ごとに、答えがトップページに書いてあるかを見ています。「書いていない」は、その店に無いという意味ではありません。検索回数は Search Console などを接続したときだけ出します。</p>
+            <p class="ar-kwq-note">言葉ごとに、答えがトップページと下層ページ（メニュー・アクセス・予約・よくある質問、最大4枚）に書いてあるかを見ています。「書いていない」は、その店に無いという意味ではありません。検索回数は Search Console などを接続したときだけ出します。</p>
             <ul class="ar-detail-checks" id="ar-kwq-list"></ul>
             </div>
           </details>
@@ -1663,7 +1663,8 @@ document.addEventListener('DOMContentLoaded', function () {
       $('ar-gauge-band').innerHTML = '<span class="ar-band is-' + tipAttr(band.tone || 'muted') + '">' + tipAttr(band.label || '未確認') + '</span>' +
         (nowRow && nowRow.badge ? ' <span class="ar-badge-e ' + badgeClass(nowRow.badge) + '" data-tip="' + tipAttr(evidenceTip(nowRow.badge)) + '" data-tip-icon>' + tipAttr(AirReachSales.badgeLabel ? AirReachSales.badgeLabel(nowRow.badge) : nowRow.badge) + '</span>' : '');
     }
-    if ($('ar-gauge-note')) $('ar-gauge-note').textContent = window.AirReachDisplay ? AirReachDisplay.scopeSentence() : '点数はホームページの情報整備の区分です。';
+    if ($('ar-gauge-note')) $('ar-gauge-note').textContent = (window.AirReachDisplay ? AirReachDisplay.scopeSentence() : '点数はホームページの情報整備の区分です。') +
+      (lastDiagnose && lastDiagnose.page && lastDiagnose.page.unreadable ? ' このサイトは本文を JavaScript で表示しているため、本文に関わる4項目は「未確認」として点数に入れていません。' : '');
     // verdict: band + number of items that were fetched and found missing (never counts 未確認)
     var gapCount = (lastDiagnose && lastDiagnose.gaps) ? lastDiagnose.gaps.length : 0;
     var goalWord = report.displayLabel || 'お客様';
@@ -1926,12 +1927,14 @@ document.addEventListener('DOMContentLoaded', function () {
           var stLabel = st === 'ok' ? '書いてある' : (st === 'ng' ? '書いていない' : (c.reason === 'unreadable' ? '本文を読み取れず未判定' : '判定なし'));
           html += '<li class="ar-dchk is-' + st + '"><span class="ar-dchk-mark" aria-hidden="true">' + mark + '</span>' +
             '<span class="ar-dchk-lab">' + tipAttr(c.text) + '<span class="ar-dchk-state">' + stLabel + '</span>' +
-            (c.evidence ? '<span class="ar-dchk-ev">' + tipAttr(c.evidence) + '</span>' : '') + '</span><span></span></li>';
+            (c.evidence ? '<span class="ar-dchk-ev">' + tipAttr(c.evidence) + '</span>' : '') + '</span>' +
+            (c.evidenceUrl ? '<a class="ar-dchk-link" href="' + tipAttr(c.evidenceUrl) + '" target="_blank" rel="noopener noreferrer" title="書いてあったページを開く" aria-label="' + tipAttr(c.text) + ' の答えが書いてあったページを開く">›</a>' : '<span></span>') + '</li>';
         });
         kwqList.innerHTML = html;
         var kwJudged = kwqSet.filter(function (c) { return c.answered !== null; });
         var kwYes = kwJudged.filter(function (c) { return c.answered; }).length;
-        if ($('ar-kwq-count')) $('ar-kwq-count').textContent = '全' + kwqSet.length + '語 · ' + kwYes + '/' + kwJudged.length + ' 個に答えあり';
+        var nPages = 1 + ((lastDiagnose && lastDiagnose.page && lastDiagnose.page.keywordAuto && lastDiagnose.page.keywordAuto.pagesRead) || []).length;
+        if ($('ar-kwq-count')) $('ar-kwq-count').textContent = '全' + kwqSet.length + '語 · ' + kwYes + '/' + kwJudged.length + ' 個に答えあり · ' + nPages + 'ページを確認';
         kwqWrap.open = false;
         kwqWrap.hidden = false;
       } else {

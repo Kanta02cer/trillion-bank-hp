@@ -101,6 +101,23 @@ expect('Bistro inside word ignored', K.genreIn('MyBistroApp'), '');
   expect('unreadable: reason set', set.find((c) => c.modifier === '問い合わせ').reason, 'unreadable');
 }
 
+// 下層ページ: トップに無い答えを下層で見つけ、見つけたページを記録する
+{
+  const long = '炭火焼肉の店です。'.repeat(40);
+  const src = { title: '炭火焼肉 テスト', ldAddress: ['東京都新宿区神楽坂1-1'], text: long,
+    pages: [{ url: 'https://example.jp/access/', text: '駐車場はございません。近隣のコインパーキングをご利用ください。' + long }] };
+  const set = K.candidates(K.derive(src), src, 'restaurant', 20);
+  const park = set.find((c) => c.modifier === '駐車場');
+  expect('subpage: answer found on subpage', park.answered, true);
+  expect('subpage: evidence url recorded', park.evidenceUrl, 'https://example.jp/access/');
+  const addr = K.derive({ title: 'そば処 テスト', text: long, pages: [{ url: 'https://example.jp/shop/', text: '所在地 〒270-0000 千葉県松戸市常盤平1-2-3' }] });
+  expect('subpage: address found on subpage', addr.keyword, '松戸 そば');
+}
+
+// 県名と同じ名前の市（長野市・静岡市）
+expect('長野市川中島町 is 長野', K.derive({ title: 'そば処 テスト', text: '〒381-2221 長野市川中島町1-2 営業時間 11時から' }).keyword, '長野 そば');
+expect('静岡県静岡市 is 静岡', K.derive({ title: 'テスト寿司', text: '住所 静岡県静岡市葵区1-2-3' }).keyword, '静岡 寿司');
+
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);
