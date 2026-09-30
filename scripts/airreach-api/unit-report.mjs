@@ -91,6 +91,18 @@ expect('todo: 配点の大きい順（llms.txt 4点 → robots.txt 2点）', tod
 expect('todo: 直し方と直す材料の有無', [todo[0].studio, todo[1].studio, !!todo[0].how], [true, false, true]);
 expect('todo: 旧レポート（gapKeys なし）でも言い方から戻せる', R.todoList({ site: { current: { gaps: ['FAQの構造化データ（FAQPage）が無い'] } } }).map((t) => t.key), ['FAQPageがある']);
 
+// お客様向けの言い方（専門用語を使わない）
+expect('plain: チェック名から', R.plainGap('llms.txtがある'), 'AI向けのサイト案内のファイルが無い');
+expect('plain: 社内向けの言い方から', R.plainGap('robots.txt が無い'), '検索やAIの巡回ロボット向けの案内ファイルが無い');
+expect('plain: 知らない言い方はそのまま', R.plainGap('その他の不足'), 'その他の不足');
+expect('plain: todo にお客様向けの言い方と、制作会社向けの正式な用語が両方ある', [todo[0].plainText, todo[0].text], ['AI向けのサイト案内のファイルが無い', 'llms.txt が無いか、80文字以下']);
+const allPlain = Object.keys({ 'ページタイトルがある': 1, 'H1が1つ': 1, '説明文（meta）が十分': 1, 'canonicalがある': 1, 'og:titleがある': 1, '本文量がある': 1, '会社情報（Organization等）': 1, 'WebSite / WebPage': 1, 'Service / Product': 1, 'BreadcrumbList': 1, '問い合わせ導線': 1, 'FAQPageがある': 1, 'FAQが3問以上': 1, '画面上のFAQらしき領域': 1, 'llms.txtがある': 1, 'robots.txtがある': 1, '主要AIボットの記載': 1, 'sitemap案内': 1 });
+const jargon = /Organization|LocalBusiness|WebSite|WebPage|Service \/|Product|Breadcrumb|FAQPage|llms\.txt|robots\.txt|canonical|og:title|meta|H1|構造化データ|Sitemap/;
+expect('plain: 18項目すべて、お客様向けの言い方に専門用語が入っていない', allPlain.filter((k) => jargon.test(R.plainGap(k))), []);
+
+expect('plain: 直ったことは肯定の言い方', R.plainResolved('FAQの構造化データ（FAQPage）が無い'), 'よくある質問が、検索やAIが読み取れる形になった');
+expect('plain: 18項目すべてに直ったときの言い方がある', allPlain.filter((k) => R.plainResolved(k) === k), []);
+
 // 質問の版が違う月は比較しない
 const c2 = R.compileReport({ periodMonth: '2026-09-01', scans: [], runs: [
   { measured_on: '2026-08-20', summary: summary(0, 0, 'v1') },
