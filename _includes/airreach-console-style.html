@@ -36,6 +36,68 @@
 .arc-table th,.arc-table td,.arr-table th,.arr-table td{border-top:1px solid #e2e8f0;padding:7px 6px;text-align:left;vertical-align:top}
 .arc-chip{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#475569}
 .arc-chip.is-ok{background:#ecfdf5;color:#047857}
+.arc-chip.is-warn{background:#fffbeb;color:#b45309}
+.arc-chip.is-ng{background:#fef2f2;color:#b91c1c}
+.arc-studio-in{border-color:#93c5fd;background:#f5f9ff}
+.arc-done-form{margin:6px 0 0}
+.arc-done-form .arc-input{flex:1 1 140px;padding:5px 8px;font-size:.85rem}
+/* 社内: 顧客一覧のカード */
+.arc-clients{display:flex;flex-direction:column;gap:8px;margin:0 0 12px}
+.arc-client{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) 130px minmax(0,1fr);gap:14px;align-items:center;padding:12px 14px;border:1px solid #e2e8f0;border-radius:10px;text-decoration:none;color:#0f172a;background:#fbfcfe}
+.arc-client:hover{border-color:#93c5fd;background:#f5f9ff}
+.arc-client-n{font-weight:700;color:#1d4ed8;display:flex;flex-direction:column;min-width:0}
+.arc-client-n small{font-weight:500;color:#64748b;font-size:.75rem}
+.arc-client-s{display:flex;align-items:baseline;gap:4px;flex-wrap:wrap}
+.arc-client-s b{font-size:1.4rem;font-variant-numeric:tabular-nums}
+.arc-client-s small{color:#64748b;font-size:.75rem}
+.arc-client-r{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.arc-client-r small{color:#64748b;font-size:.72rem}
+.arv-spark{width:120px;height:34px;display:block}
+/* 直すこと */
+.arv-todos{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.arv-todo{display:flex;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;background:#fff}
+.arv-todo.is-high .arv-todo-no{background:#fef2f2;color:#b91c1c}
+.arv-todo.is-mid .arv-todo-no{background:#fffbeb;color:#b45309}
+.arv-todo-no{flex:none;width:1.6em;height:1.6em;border-radius:50%;background:#f1f5f9;color:#334155;font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center}
+.arv-todo-b{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+.arv-todo-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.arv-todo-h b{color:#b91c1c}
+.arv-prio{font-size:.7rem;font-weight:700;border-radius:999px;padding:1px 8px;background:#f1f5f9;color:#475569}
+.arv-prio.is-high{background:#fef2f2;color:#b91c1c}
+.arv-prio.is-mid{background:#fffbeb;color:#b45309}
+.arv-todo-f{font-size:.72rem;color:#64748b}
+.arv-todo-how{font-size:.88rem;color:#0f172a}
+.arv-todo-how span{display:inline-block;font-size:.7rem;font-weight:700;color:#1d4ed8;background:#eff6ff;border-radius:4px;padding:0 6px;margin-right:6px}
+.arv-todo-why{font-size:.78rem;color:#64748b}
+.arv-todo-foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.arv-todo-foot:empty{display:none}
+.arv-todo-studio{font-size:.78rem;font-weight:700;color:#047857}
+a.arv-todo-studio{text-decoration:none}
+.arv-todo-none{color:#047857;font-weight:700;margin:4px 0}
+.arv-todo-more{font-size:.78rem;color:#64748b;margin:6px 0 0}
+.arc-more{margin:8px 0 0}
+.arc-more>summary{cursor:pointer;color:#1d4ed8;font-weight:700;font-size:.88rem;padding:6px 0}
+/* 社内: 材料のカードの折りたたみ */
+.arc-fold{padding:0}
+.arc-fold>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 20px}
+.arc-fold>summary::-webkit-details-marker{display:none}
+.arc-fold>summary .arc-h2{margin:0;font-weight:700}
+.arc-fold>summary::after{content:"開く ▾";font-size:.78rem;color:#2563eb;margin-left:auto;white-space:nowrap}
+.arc-fold[open]>summary::after{content:"閉じる ▴"}
+.arc-fold>summary .arc-sub{margin-left:8px}
+.arc-fold-b{padding:0 20px 18px}
+/* 社内: 材料のそろい具合 */
+.arv-ready{list-style:none;margin:4px 0 12px;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.arv-ready li{display:flex;gap:6px;align-items:flex-start;border-radius:8px;padding:7px 8px;font-size:.8rem;border:1px solid #e2e8f0}
+.arv-ready li span:last-child{display:flex;flex-direction:column;min-width:0}
+.arv-ready li small{font-size:.7rem;color:#64748b}
+.arv-ready .is-ok{background:#f0fdf4;border-color:#bbf7d0}
+.arv-ready .is-ng{background:#fff;border-style:dashed}
+.arv-ready-i{font-weight:700;width:1em;flex:none}
+.arv-ready .is-ok .arv-ready-i{color:#15803d}
+.arv-ready .is-ng .arv-ready-i{color:#94a3b8}
+@media(max-width:860px){.arc-client{grid-template-columns:1fr auto;row-gap:6px}.arc-client-g{grid-column:1}.arv-ready{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:480px){.arv-ready{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .arr-tools{display:flex;gap:12px;align-items:center;margin:0 0 16px}
 .arr-btn{font:inherit;font-weight:700;padding:9px 16px;border-radius:8px;border:0;background:#1d4ed8;color:#fff;cursor:pointer}
 .arr-draft{font-size:.85rem;font-weight:700;color:#b45309;background:#fffbeb;padding:4px 10px;border-radius:6px}
@@ -107,7 +169,16 @@
   .arr-wrap{padding:0;max-width:none}
   .arr-page{border:0;padding:0;margin:0}
   .arr-break{break-before:page}
-  .arr-table,section,.arv-fig,.arv-tile{break-inside:avoid}
+  /* 長い節（直すこと等）は途中で改ページしてよい。小さい部品だけ分割しない */
+  .arr-table,.arv-fig,.arv-tile,.arv-todo,.arv-trends,.arv-tiles,.arv-facs,.arv-cmp{break-inside:avoid}
+  .arr-h2,.arr-h3{break-after:avoid}
+  /* 印刷では「直すこと」を詰める（理由の行は画面で見られる） */
+  .arv-todo-why{display:none}
+  .arv-todo{padding:6px 10px}
+  .arv-todos{gap:5px}
+  .arr-page .arr-table th,.arr-page .arr-table td{padding:4px 6px}
+  .arv-trends .arv-chart{max-height:150px}
+  .arv-todo{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .arv-tiles{grid-template-columns:repeat(4,minmax(0,1fr))!important}
   .arv-trends{grid-template-columns:repeat(3,minmax(0,1fr))!important}
   .arv-tile,.arv-fig{-webkit-print-color-adjust:exact;print-color-adjust:exact}

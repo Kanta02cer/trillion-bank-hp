@@ -1226,6 +1226,7 @@
     var wrap = q('orch-result');
     if (!wrap || !job || job.status !== 'completed') return;
     wrap.hidden = false;
+    renderDashboardButton(job);
     var h = job.headline4 || {};
     if (q('orch-n-kw')) q('orch-n-kw').textContent = String(h.keywords || 0);
     // ② 探している人: 月間検索数は Keyword Planner の値（volume_source=Official）だけを合計する。
@@ -1297,6 +1298,56 @@
 
   var prefillIndustry = '';
   var prefillIndustryHost = '';
+
+  // ---- ダッシュボードとの受け渡し -------------------------------------------------
+  var STUDIO_CLIENT_KEY = 'airreach_studio_client_v1';
+  var STUDIO_ACTIONS_KEY = 'airreach_studio_actions_v1';
+  var studioClient = null;
+  function renderClientBanner() {
+    var launch = document.querySelector('.ars-orch-launch');
+    if (!launch || !studioClient) return;
+    var el = q('orch-client-banner');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'orch-client-banner';
+      el.className = 'ars-note';
+      el.style.marginBottom = '12px';
+      launch.parentNode.insertBefore(el, launch);
+    }
+    el.innerHTML = 'ダッシュボードの顧客「<strong>' + escHtml(studioClient.name || '（名前なし）') + '</strong>」の作業として開いています。' +
+      '下書きを作ったあと「ダッシュボードに施策として登録」で、施策の予定として登録できます。 ' +
+      '<a href="/airreach/app/#/c/' + studioClient.id + '">ダッシュボードに戻る</a>' +
+      ' · <button type="button" class="ars-btn ars-btn-secondary" id="orch-client-clear" style="padding:2px 10px;font-size:12px">この顧客の作業をやめる</button>';
+    var clr = q('orch-client-clear');
+    if (clr) clr.onclick = function () { try { sessionStorage.removeItem(STUDIO_CLIENT_KEY); } catch (e) {} studioClient = null; el.remove(); var b = q('orch-to-dashboard'); if (b) b.hidden = true; };
+  }
+  function escHtml(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  /** 下書きのファイルから、ダッシュボードの「施策（予定）」の候補を作る */
+  function actionItemsFromFiles(job) {
+    var f = (job && job.files) || {}, food = job && job.industry === 'restaurant', out = [];
+    if (f['schema/organization.jsonld']) out.push({ file: 'schema/organization.jsonld', title: food ? 'お店の構造化データ（Restaurant）を公式サイトに設置する' : '会社情報の構造化データ（Organization）を公式サイトに設置する' });
+    if (f['schema/service.jsonld']) out.push({ file: 'schema/service.jsonld', title: 'サービスの構造化データ（Service）を公式サイトに設置する' });
+    if (f['content/restaurant-info.md']) out.push({ file: 'content/restaurant-info.md', title: '店舗情報（営業時間・予約・駐車場など）を公式ページに書き足す' });
+    if (f['content/faq.md'] || f['schema/faq.jsonld']) out.push({ file: 'content/faq.md・schema/faq.jsonld', title: 'よくある質問を公式ページに追加し、FAQの構造化データ（FAQPage）を設置する' });
+    if (f['public/llms.txt']) out.push({ file: 'public/llms.txt', title: 'llms.txt をサイトの一番上の階層に設置する' });
+    return out;
+  }
+  function renderDashboardButton(job) {
+    var b = q('orch-to-dashboard');
+    if (!b) return;
+    var ok = !!(studioClient && job && job.files);
+    // 別のサイトの下書きを誤って登録しないよう、顧客から開いたときのURLと同じサイトのときだけ出す
+    if (ok && studioClient.url && job.url && hostOf(studioClient.url) !== hostOf(job.url)) ok = false;
+    b.hidden = !ok;
+    if (!ok) return;
+    b.onclick = function () {
+      var items = actionItemsFromFiles(job);
+      try {
+        sessionStorage.setItem(STUDIO_ACTIONS_KEY, JSON.stringify({ clientId: studioClient.id, clientName: studioClient.name, url: job.url, createdAt: new Date().toISOString(), items: items }));
+      } catch (e) {}
+      location.href = '/airreach/app/#/c/' + studioClient.id;
+    };
+  }
   function outcomeToGoal(o) {
     if (o === 'reservation' || o === 'visit') return '予約を増やす';
     if (o === 'awareness' || o === 'citation') return '見え方を整える';
@@ -1315,7 +1366,19 @@
       var goalParam = params.get('goal') || params.get('mode') || '';
       goal = goalParam ? mapGoal(goalParam) : '';
       region = params.get('region') || '';
+      // ダッシュボードの顧客から開いたとき（airreach-console.js の studioHref）
+      var cid = params.get('client') || '';
+      if (/^[0-9a-f-]{36}$/.test(cid)) {
+        studioClient = { id: cid, name: params.get('client_name') || '', url: url };
+        try { sessionStorage.setItem(STUDIO_CLIENT_KEY, JSON.stringify(studioClient)); } catch (e2) {}
+        var ind = params.get('industry') || '';
+        if (ind === 'restaurant' && url) { prefillIndustry = 'restaurant'; prefillIndustryHost = hostOf(url); }
+      }
     } catch (e) {}
+    if (!studioClient) {
+      try { studioClient = JSON.parse(sessionStorage.getItem(STUDIO_CLIENT_KEY) || 'null'); } catch (e) { studioClient = null; }
+    }
+    renderClientBanner();
 
     try {
       var survey = JSON.parse(localStorage.getItem('airreach_onboard_survey_v1') || 'null');
@@ -1345,7 +1408,9 @@
       }
     } catch (e) {}
 
-    if (url && q('orch-url') && !q('orch-url').value) q('orch-url').value = url;
+    // ダッシュボードの顧客から開いたときは、前回の入力より顧客のURLを優先する
+    var forceClientUrl = !!(studioClient && studioClient.url && url === studioClient.url);
+    if (url && q('orch-url') && (forceClientUrl || !q('orch-url').value)) q('orch-url').value = url;
     if (service && q('orch-service') && !q('orch-service').value) q('orch-service').value = service;
     if (goal && q('orch-goal')) {
       var opts = q('orch-goal').options || [];
@@ -1368,6 +1433,8 @@
       var data = JSON.parse(raw);
       var job = data && data.lastJob;
       if (!job || job.status !== 'completed') return;
+      // 顧客の作業として開いているときは、別のサイトの前回結果を出さない
+      if (studioClient && studioClient.url && hostOf(job.url || '') !== hostOf(studioClient.url)) return;
       window.__orchLastJob = job;
       if (q('orch-progress-wrap')) q('orch-progress-wrap').hidden = true;
       renderResult(job);
