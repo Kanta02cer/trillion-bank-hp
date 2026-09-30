@@ -1059,13 +1059,14 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
         </div>
 
         <div id="impact" hidden aria-hidden="true">
-          <input id="biz-visitors" type="hidden" value="5000">
-          <input id="biz-inq" type="hidden" value="20">
-          <input id="biz-line" type="hidden" value="10">
-          <input id="biz-fee" type="hidden" value="200000">
-          <input id="biz-close" type="hidden" value="20">
-          <input id="biz-deal" type="hidden" value="500000">
-          <input id="biz-margin" type="hidden" value="60">
+          <!-- お店・会社の実数（GA4 や入力で分かったときだけ入る）。架空の既定値は入れない -->
+          <input id="biz-visitors" type="hidden" value="">
+          <input id="biz-inq" type="hidden" value="">
+          <input id="biz-line" type="hidden" value="">
+          <input id="biz-fee" type="hidden" value="">
+          <input id="biz-close" type="hidden" value="">
+          <input id="biz-deal" type="hidden" value="">
+          <input id="biz-margin" type="hidden" value="">
           <span id="biz-inq-label" hidden></span>
           <span id="biz-inq-why" hidden></span>
           <span id="ba-now-i-label" hidden></span>
@@ -1443,14 +1444,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function readBiz() {
+    // 空欄は「入力なし」。0 として扱わない
+    function v(id) { var x = ($(id) && $(id).value || '').trim(); return x === '' ? undefined : x; }
     return {
-      monthlyVisitors: $('biz-visitors').value,
-      monthlyInquiries: $('biz-inq').value,
-      monthlyLine: $('biz-line').value,
-      monthlyFee: $('biz-fee').value,
-      closeRatePct: $('biz-close').value,
-      avgDeal: $('biz-deal').value,
-      grossMarginPct: $('biz-margin').value
+      monthlyVisitors: v('biz-visitors'),
+      monthlyInquiries: v('biz-inq'),
+      monthlyLine: v('biz-line'),
+      monthlyFee: v('biz-fee'),
+      closeRatePct: v('biz-close'),
+      avgDeal: v('biz-deal'),
+      grossMarginPct: v('biz-margin')
     };
   }
 
@@ -1771,8 +1774,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var inq = report.inquiries;
     $('ba-now-i').textContent = AirReachSales.cnt(inq.currentInquiries) + ' 件';
     $('ba-now-v').textContent = AirReachSales.cnt(inq.currentVisitors) + ' 人';
-    var close = Number($('biz-close').value) / 100;
-    var deal = Number($('biz-deal').value);
+    var close = Number($('biz-close').value || 0) / 100;
+    var deal = Number($('biz-deal').value || 0);
     var nowRev = (close > 0 && deal > 0 && inq.currentInquiries != null) ? inq.currentInquiries * close * deal : null;
     $('ba-now-rev').textContent = AirReachSales.yen(nowRev);
     $('ba-aft-i').textContent = inq.afterLow == null ? '—' : AirReachSales.cnt(inq.afterLow) + '〜' + AirReachSales.cnt(inq.afterHigh) + ' 件';
