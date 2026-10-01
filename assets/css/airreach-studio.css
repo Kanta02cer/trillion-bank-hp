@@ -287,7 +287,7 @@
 @media (max-width:620px){.ars-google-sync{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.ars-google-sync .ars-btn{width:100%;white-space:nowrap;padding-left:8px;padding-right:8px}}
 
 /* 競合と比べる */
-.ars-cmp{table-layout:auto;width:100%}
+.ars-cmp{table-layout:auto;width:100%;min-width:560px}
 .ars-cmp th,.ars-cmp td{vertical-align:top;padding:10px 8px}
 .ars-cmp th{font-size:12px;line-height:1.35;white-space:normal}
 .ars-cmp td:first-child{white-space:normal;min-width:140px}
