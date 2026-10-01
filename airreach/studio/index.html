@@ -14,23 +14,51 @@ robots: "noindex, follow"
 <link rel="stylesheet" href="/assets/css/airreach-studio.css">
 <link rel="stylesheet" href="/assets/css/airreach-system.css">
 <link rel="stylesheet" href="/assets/css/airreach-tip.css">
+<link rel="stylesheet" href="/assets/css/airreach-studio-app.css">
 </head>
-<body class="ars-page ars-orch">
-{% include tb-header.html %}
+<body class="ars-page ars-orch ars-app">
+<a class="ars-skip" href="#ars-main">本文へ移動</a>
+<header class="ars-appbar">
+  <a class="ars-appbar-brand" href="/airreach/studio/">AirReach Studio</a>
+  <div class="ars-appbar-context" id="ars-context" aria-live="polite"></div>
+  <nav class="ars-appbar-links" aria-label="関連画面">
+    <a href="/airreach/app/">ダッシュボード</a>
+    <a href="/airreach/">無料診断</a>
+    <details class="ars-appbar-menu">
+      <summary>その他</summary>
+      <div class="ars-appbar-pop">
+        <button type="button" id="ars-demo">サンプルを読み込む</button>
+        <button type="button" id="ars-reset" class="is-danger">この端末の保存データを消す</button>
+      </div>
+    </details>
+  </nav>
+</header>
 <main id="main">
-  <section class="ars-hero ars-hero-compact">
-    <div class="ars-wrap">
-      <div class="ars-kicker" data-tip="AirReach Tools Studio。分析から実装パッケージまでを1画面で進めます。">AirReach Tools Studio</div>
-      <h1>このサイトを改善する</h1>
-    </div>
-  </section>
+  <div id="orch-expert" class="ars-shell">
+    <aside class="ars-side" aria-label="作業の段階">
+      <div class="group">準備</div>
+      <button class="is-active" data-panel="start"><span class="n">1</span>対象サイト</button>
+      <div class="group">分析</div>
+      <button data-panel="result" data-needs-job-dot><span class="n">2</span>分析結果</button>
+      <button data-panel="keywords"><span class="n">3</span>キーワード</button>
+      <button data-panel="gaps"><span class="n">4</span>足りない情報</button>
+      <div class="group">作る</div>
+      <button data-panel="generator"><span class="n">5</span>直す材料</button>
+      <div class="group">測る・比べる</div>
+      <button data-panel="competitors"><span class="n">6</span>競合</button>
+      <button data-panel="hack2"><span class="n">7</span>AI計測</button>
+      <button data-panel="google"><span class="n">8</span>Google 連携</button>
+      <button data-panel="timeseries"><span class="n">9</span>推移</button>
+    </aside>
 
-  <div class="ars-wrap ars-orch-shell">
+    <section class="ars-main" id="ars-main" tabindex="-1">
+      <div class="ars-panel is-active" data-panel-view="start">
+        <div class="ars-title-row"><div><h2>対象サイト</h2><p class="ars-sub">分析するサイトと条件を入れて「サイト全体を分析する」を押します。分析は1〜2分かかります。</p></div></div>
     <section class="ars-card ars-orch-launch" aria-labelledby="orch-launch-title">
       <h2 id="orch-launch-title" class="visually-hidden">分析の開始</h2>
       <div class="ars-form ars-orch-form">
         <div class="ars-field">
-          <label for="orch-url"><span data-tip="診断する公式サイトのURL">対象サイト</span></label>
+          <label for="orch-url">対象サイト</label>
           <input class="ars-input" id="orch-url" type="url" inputmode="url" placeholder="https://example.com/" autocomplete="url">
         </div>
         <div class="ars-field">
@@ -38,7 +66,7 @@ robots: "noindex, follow"
           <input class="ars-input" id="orch-service" type="text" placeholder="例: AI検索対策" autocomplete="organization-title">
         </div>
         <div class="ars-field">
-          <label for="orch-goal"><span data-tip="この分析で増やしたい成果">目標</span></label>
+          <label for="orch-goal">目標</label>
           <select class="ars-select" id="orch-goal">
             <option value="問い合わせを増やす">問い合わせを増やす</option>
             <option value="予約を増やす">予約を増やす</option>
@@ -46,7 +74,7 @@ robots: "noindex, follow"
           </select>
         </div>
         <div class="ars-field">
-          <span class="ars-label" data-tip="対策候補として選定するキーワード件数">対策するキーワード数</span>
+          <span class="ars-label">対策するキーワード数</span>
           <div class="orch-kw-pills" role="radiogroup" aria-label="キーワード件数">
             <label class="orch-kw-pill"><input type="radio" name="orch-kw-count" value="20"> 20件</label>
             <label class="orch-kw-pill"><input type="radio" name="orch-kw-count" value="50"> 50件</label>
@@ -54,18 +82,13 @@ robots: "noindex, follow"
           </div>
         </div>
         <div class="ars-field">
-          <label for="orch-region"><span data-tip="キーワードに付与する地域の目安">対象地域</span></label>
+          <label for="orch-region">対象地域</label>
           <select class="ars-select" id="orch-region">
             <option value="東京">東京</option>
             <option value="全国" selected>全国</option>
             <option value="大阪">大阪</option>
             <option value="指定">指定（URLから推定）</option>
           </select>
-        </div>
-        <div class="ars-field">
-          <label for="orch-gsc-csv"><span data-tip="Search ConsoleのパフォーマンスCSV。キーワードごとの表示回数・クリック（Google実測）を別列で紐づけます。表示回数は検索回数ではありません。">GSC CSV（任意・実測）</span></label>
-          <input id="orch-gsc-csv" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values">
-          <p id="orch-gsc-status" class="orch-gsc-status" hidden></p>
         </div>
         <label class="ars-consent-row">
           <input id="orch-proxy" type="checkbox">
@@ -74,14 +97,38 @@ robots: "noindex, follow"
         <button type="button" class="ars-btn ars-btn-primary ars-btn-xl" id="orch-run">サイト全体を分析する</button>
       </div>
     </section>
-
     <section class="ars-card" id="orch-progress-wrap" hidden>
-      <h2 data-tip="1本のジョブとして進みます。画面を切り替えません。">分析中</h2>
+      <h2>分析中</h2>
       <div id="orch-progress" class="orch-progress" aria-live="polite"></div>
     </section>
+        <details class="ars-card ars-more">
+          <summary>詳しい基本情報（任意・AI計測と直す材料に使う）</summary>
+          <div class="ars-more-body">
+<div class="ars-card">
+              <div class="ars-form">
+                <div class="ars-grid">
+                  <div class="ars-field ars-c6"><label for="site-url">対象URL</label><input class="ars-input" id="site-url" type="url" placeholder="https://example.com/" inputmode="url"></div>
+                  <div class="ars-field ars-c6"><label for="brand-name">ブランド / 会社名</label><input class="ars-input" id="brand-name" placeholder="株式会社Example"></div>
+                  <div class="ars-field ars-c6"><label for="service-name">サービス名</label><input class="ars-input" id="service-name" placeholder="サービス名"></div>
+                  <div class="ars-field ars-c6"><label for="target-audience">主な顧客</label><input class="ars-input" id="target-audience" placeholder="例：BtoBマーケティング担当者"></div>
+                  <div class="ars-field ars-c12"><label for="service-summary">何を提供し、何が強いか</label><textarea class="ars-textarea" id="service-summary" placeholder="サービスの概要・独自性・実績・対応範囲など"></textarea></div>
+                </div>
+                <div class="ars-row"><button id="save-profile" class="ars-btn ars-btn-primary" type="button">基本情報を保存</button></div>
+              </div>
+              <div class="ars-hidden-kpis" aria-hidden="true" hidden>
+                <span id="kpi-readiness">--</span><span id="kpi-faq">--</span><span id="kpi-keywords">0</span><span id="kpi-rows">0</span>
+              </div>
+              <div id="priority-actions" hidden></div>
+            </div>
+          
+          </div>
+        </details>
+      </div>
 
-    <section class="ars-orch-result" id="orch-result" hidden>
-      <h2>分析が完了しました</h2>
+      <div class="ars-panel" data-panel-view="result">
+        <div class="ars-title-row"><div><h2>分析結果</h2></div></div>
+        <div class="ars-empty-job ars-note">まだ分析していません。「1 対象サイト」で分析すると、ここに結論と数字が出ます。</div>
+        <section class="ars-orch-result" id="orch-result" hidden>
       <p class="orch-metric-legend">数字の見方：①対策に使う言葉の数　②Keyword Planner の月間検索数（無ければ未計測）　③公開ページの準備度（100点・AI掲載率ではない）　④いま着手すべき改善の件数</p>
       <div class="orch-four">
         <div class="orch-four-card">
@@ -105,14 +152,27 @@ robots: "noindex, follow"
           <div class="unit">件（優先）</div>
         </div>
       </div>
-
       <div class="ars-card orch-conclusion-card">
         <h3>結論</h3>
         <p id="orch-conclusion" class="orch-conclusion"></p>
       </div>
-
       <div class="ars-card">
-        <h3 data-tip="このサイト向けに個別最適化した対策候補です。他社ブランド語は除外します。">このサイト向けキーワード</h3>
+        <h3>直す箇所のまとめ</h3>
+        <div id="orch-compress"></div>
+      </div>
+          <div class="ars-next">
+            <button type="button" class="ars-btn ars-btn-primary" data-goto="keywords">キーワードと直すことを見る</button>
+            <button type="button" class="ars-btn ars-btn-secondary" data-goto="generator">直す材料を作る</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="ars-panel" data-panel-view="keywords">
+        <div class="ars-title-row"><div><h2>キーワード</h2></div></div>
+        <div class="ars-empty-job ars-note">分析すると、このサイト向けのキーワードと「やること」がここに出ます。</div>
+        <div data-needs-job>
+      <div class="ars-card">
+        <h3>このサイト向けキーワード</h3>
         <p class="orch-kw-lead">優先度の高いものから、理由と次の一手だけを表示します。詳細数値はCSVで確認できます。</p>
         <p id="orch-gsc-note" class="orch-gsc-note" hidden></p>
         <div class="orch-kw-toolbar">
@@ -121,10 +181,10 @@ robots: "noindex, follow"
             <button type="button" class="orch-filter" data-orch-filter="P0" title="Search Console で表示が多い語、料金・比較など申し込みに近い語">必須</button>
             <button type="button" class="orch-filter" data-orch-filter="P1" title="伸ばしやすい語">推奨</button>
             <button type="button" class="orch-filter" data-orch-filter="P2" title="関連する語（後回しでよい）">任意</button>
-            <button type="button" class="orch-filter" data-orch-filter="gsc">GSCあり</button>
+            <button type="button" class="orch-filter" data-orch-filter="gsc" title="Search Console で表示の実績がある語">実績あり</button>
           </div>
           <div class="ars-row">
-            <button type="button" class="ars-btn ars-btn-secondary" id="orch-kw-csv" data-tip="対策キーワード表をCSVで書き出します。">キーワードCSV</button>
+            <button type="button" class="ars-btn ars-btn-secondary" id="orch-kw-csv">キーワードCSV</button>
             <button type="button" class="ars-btn ars-btn-secondary" id="orch-kw-more" hidden>さらに表示</button>
           </div>
         </div>
@@ -143,38 +203,67 @@ robots: "noindex, follow"
         </div>
         <p id="orch-kw-count" class="orch-kw-count" hidden></p>
       </div>
-
-      <div class="ars-card">
-        <h3 data-tip="100キーワードを、実際に直す箇所へ圧縮した結果です。">今回の変更</h3>
-        <div id="orch-compress"></div>
+        </div>
+        <details class="ars-card ars-more">
+          <summary>キーワードを手で追加・管理する</summary>
+          <div class="ars-more-body">
+            <div class="ars-row" style="margin-bottom:12px"><div class="ars-row"><button id="seed-keywords" class="ars-btn ars-btn-soft" type="button">自社向けに生成</button><button id="export-keywords" class="ars-btn ars-btn-secondary" type="button">CSV</button></div></div>
+            <div id="kw-scope-note" class="ars-note">Overviewで分析するか、「自社向けに生成」で候補を作ります。</div>
+            <div class="ars-card ars-kw-add"><div class="ars-grid"><div class="ars-field ars-c6"><label for="kw-text">追加するキーワード</label><input id="kw-text" class="ars-input" placeholder="例: AI検索対策 費用"></div><div class="ars-field ars-c3"><label for="kw-priority">優先度</label><select id="kw-priority" class="ars-select"><option value="P0">必須</option><option value="P1" selected>推奨</option><option value="P2">任意</option></select></div><div class="ars-field ars-c3"><label for="kw-intent">意図</label><select id="kw-intent" class="ars-select"><option>Informational</option><option>Commercial</option><option>Comparison</option></select></div></div><div class="ars-row" style="margin-top:12px"><button id="add-keyword" class="ars-btn ars-btn-primary" type="button">追加</button><label class="ars-btn ars-btn-secondary" style="cursor:pointer">CSV取込<input id="keyword-csv" type="file" accept=".csv,text/csv" hidden></label><input id="kw-cluster" type="hidden" value="Core"></div></div>
+            <div id="keyword-body" class="ars-kw-cards" style="margin-top:16px"></div>
+          
+          </div>
+        </details>
       </div>
 
+      <div class="ars-panel" data-panel-view="gaps">
+        <div class="ars-title-row"><div><h2>足りない情報</h2><p class="ars-sub">料金・事例・FAQ・根拠など、サイトに足りない情報を洗い出します（推定）。チェックは今ある情報の目安です。</p></div><button id="run-gap-analysis" class="ars-btn ars-btn-primary" type="button">不足を分析</button></div>
+            <div class="ars-grid">
+              <div class="ars-card ars-c5"><h3>現在ある情報</h3><div class="ars-form">
+                <label class="ars-row"><input type="checkbox" class="gap-check" value="pricing">料金 / プラン</label>
+                <label class="ars-row"><input type="checkbox" class="gap-check" value="case">導入事例 / Before After</label>
+                <label class="ars-row"><input type="checkbox" class="gap-check" value="comparison">比較 / 選び方</label>
+                <label class="ars-row"><input type="checkbox" class="gap-check" value="faq">FAQ</label>
+                <label class="ars-row"><input type="checkbox" class="gap-check" value="evidence">独自データ / 数値根拠</label>
+                <label class="ars-row"><input type="checkbox" class="gap-check" value="author">監修者 / 運営主体</label>
+                <label class="ars-row"><input type="checkbox" class="gap-check" value="schema">JSON-LD / Schema</label>
+                <label class="ars-row"><input type="checkbox" class="gap-check" value="cta">問い合わせ / CV導線</label>
+                <label class="ars-row"><input type="checkbox" class="gap-check" value="policy">利用条件 / ポリシー</label>
+              </div></div>
+              <div class="ars-card ars-c7"><h3>優先ギャップ</h3><ul id="gap-results" class="ars-list bad"><li>「不足を分析」を押すと表示します。</li></ul></div>
+              <div class="ars-card ars-c12"><h3>FAQ Gap</h3><div class="ars-grid"><div class="ars-field ars-c6"><label for="existing-faq">既存FAQ</label><textarea id="existing-faq" class="ars-textarea"></textarea></div><div class="ars-field ars-c6"><label for="faq-context">よく聞かれる論点</label><textarea id="faq-context" class="ars-textarea"></textarea></div></div><div class="ars-row" style="margin-top:12px"><button id="generate-faq-gap" class="ars-btn ars-btn-primary" type="button">不足FAQを生成</button></div><div id="faq-gap-output" class="ars-grid" style="margin-top:14px"></div></div>
+            </div>
+          
+      </div>
+
+      <div class="ars-panel" data-panel-view="generator">
+        <div class="ars-title-row"><div><h2>直す材料</h2><p class="ars-sub">分析結果から、FAQ・構造化データ・llms.txt などの下書きを作ります。自動で公開はしません。</p></div></div>
+        <div class="ars-empty-job ars-note">分析すると、下書き一式（ZIP）とダッシュボードへの施策登録が使えます。</div>
+        <div data-needs-job>
       <div class="ars-card orch-pack-card">
-        <h3>実装パッケージ</h3>
+        <h3>下書き一式</h3>
         <div class="ars-row">
-          <button type="button" class="ars-btn ars-btn-primary" id="orch-zip" data-tip="MANIFEST・AGENT_PROMPT・schema・strategyを含むZIPをダウンロードします。">ZIPを生成</button>
-          <button type="button" class="ars-btn ars-btn-primary" id="orch-to-dashboard" hidden data-tip="この下書きでやることを、ダッシュボードの顧客に「施策（予定）」として登録します。">ダッシュボードに施策として登録</button>
-          <button type="button" class="ars-btn ars-btn-secondary" id="orch-pr" data-tip="GitHubに下書きPRを作ります。PATはsessionStorageのみ。マージは人間承認が必要です。">GitHubに下書きPR</button>
-          <button type="button" class="ars-btn ars-btn-secondary" id="orch-deploy" data-tip="自動Deployはありません。公開前チェックリストを表示します。">公開前チェック</button>
+          <button type="button" class="ars-btn ars-btn-primary" id="orch-zip">ダウンロード（ZIP）</button>
+          <button type="button" class="ars-btn ars-btn-secondary" id="orch-to-dashboard" hidden>ダッシュボードに施策として登録</button>
+          <button type="button" class="ars-btn ars-btn-secondary" id="orch-pr">GitHubに下書きPR</button>
+          <button type="button" class="ars-btn ars-btn-secondary" id="orch-deploy">公開前チェック</button>
         </div>
+        <p class="ars-gnote">ZIP には FAQ・構造化データ・llms.txt・作業手順が入ります。「ダッシュボードに施策として登録」は、ダッシュボードの顧客から Studio を開いたときに出ます。GitHub の下書きPRは、トークンをこの画面だけで使い、マージは人が行います。</p>
         <p id="orch-phase2-status" class="orch-phase2-status" hidden></p>
       </div>
-
-      <div class="ars-card" id="orch-phase2-data">
-        <h3 data-tip="公式・実測データは推定と混ぜず、行単位で併記します。">公式・実測データ（任意）</h3>
-        <div class="orch-phase2-grid">
-          <div class="ars-field">
-            <label for="orch-planner-csv"><span data-tip="Google Ads Keyword PlannerのエクスポートCSV。該当キーワードの月間需要を公式値に置き換えます。">Keyword Planner CSV</span></label>
-            <input id="orch-planner-csv" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values">
-          </div>
-          <div class="ars-field">
-            <label for="orch-hack2-file"><span data-tip="AirReach Consulting測定JSON。言及・引用をキーワード行に併記します。準備度スコアとは別です。">AirReach Consulting測定 JSON</span></label>
-            <input id="orch-hack2-file" type="file" accept=".json,application/json,.txt">
-          </div>
         </div>
-        <p id="orch-phase2-data-status" class="orch-gsc-status" hidden></p>
-      </div>
-
+        <details class="ars-card ars-more">
+          <summary>ファイルを個別に作る・プレビューする</summary>
+          <div class="ars-more-body">
+            <div class="ars-row" style="margin-bottom:12px"><button id="generate-files" class="ars-btn ars-btn-primary" type="button">一括生成</button></div>
+            <div class="ars-grid">
+              <div class="ars-card ars-c5"><h3>生成対象</h3><div id="generated-files" class="ars-files"><div class="ars-note">まだ生成されていません。</div></div></div>
+              <div class="ars-card ars-c7"><h3>プレビュー</h3><div class="ars-row" style="margin-bottom:8px"><select id="file-preview-select" class="ars-select" style="max-width:320px"></select><button id="download-current-file" class="ars-btn ars-btn-secondary" type="button">保存</button><button id="download-all-files" class="ars-btn ars-btn-soft" type="button">すべて保存</button></div><textarea id="file-preview" class="ars-code" spellcheck="false"></textarea></div>
+              <div class="ars-card ars-c12"><div id="implementation-guide" class="ars-note">生成後に手順を表示します。</div></div>
+            </div>
+          
+          </div>
+        </details>
       <dialog id="orch-pr-dialog" class="orch-dialog">
         <form method="dialog" id="orch-pr-form" class="orch-dialog-inner">
           <h3>GitHubに下書きPR</h3>
@@ -211,104 +300,35 @@ robots: "noindex, follow"
           <p class="orch-gsc-status is-warn">自動マージ・Pages自動公開・Deployボタンからの本番反映は提供しません。</p>
         </div>
       </dialog>
-    </section>
+      </div>
 
-    <div class="ars-row" style="margin:24px 0">
-      <button type="button" class="ars-btn ars-btn-secondary" id="orch-expert-toggle" aria-expanded="false">Expert View</button>
-      <a class="ars-btn ars-btn-secondary" href="/airreach/">無料診断へ</a>
-      <button type="button" class="ars-btn ars-btn-danger" id="ars-reset">初期化</button>
-      <button type="button" class="ars-btn ars-btn-secondary" id="ars-demo">サンプル</button>
-    </div>
-
-    <div id="orch-expert" class="ars-orch-expert" hidden>
-      <div class="ars-shell">
-        <aside class="ars-side" aria-label="Expert navigation">
-          <div class="group">見る</div>
-          <button class="is-active" data-panel="overview-expert">基本情報</button>
-          <button data-panel="gaps" data-tip="足りない案内・FAQ・根拠を洗い出します。">不足</button>
-          <button data-panel="competitors" data-tip="競合URLと差を登録します。">競合</button>
-          <div class="group">作る</div>
-          <button data-panel="generator" data-tip="FAQ・構造化データなどを生成します。">ファイル生成</button>
-          <button data-panel="keywords" data-tip="調べたい言葉やPromptを登録します。">言葉</button>
-          <div class="group">測る</div>
-          <button data-panel="timeseries" data-tip="期間ごとの数字を見ます。">時系列</button>
-          <button data-panel="google" data-tip="Search Console と GA4 との連携です（読み取りのみ）。">Google</button>
-          <button data-panel="hack2" data-tip="AirReach Consultingの実測データを取り込みます。">実測</button>
-        </aside>
-
-        <section class="ars-main">
-          <div class="ars-panel is-active" data-panel-view="overview-expert">
-            <div class="ars-title-row"><div><h2>サイト / サービス基本情報</h2></div></div>
-            <div class="ars-card">
-              <div class="ars-form">
-                <div class="ars-grid">
-                  <div class="ars-field ars-c6"><label for="site-url">対象URL</label><input class="ars-input" id="site-url" type="url" placeholder="https://example.com/" inputmode="url"></div>
-                  <div class="ars-field ars-c6"><label for="brand-name">ブランド / 会社名</label><input class="ars-input" id="brand-name" placeholder="株式会社Example"></div>
-                  <div class="ars-field ars-c6"><label for="service-name">サービス名</label><input class="ars-input" id="service-name" placeholder="サービス名"></div>
-                  <div class="ars-field ars-c6"><label for="target-audience">主な顧客</label><input class="ars-input" id="target-audience" placeholder="例：BtoBマーケティング担当者"></div>
-                  <div class="ars-field ars-c12"><label for="service-summary">何を提供し、何が強いか</label><textarea class="ars-textarea" id="service-summary" placeholder="サービスの概要・独自性・実績・対応範囲など"></textarea></div>
-                </div>
-                <div class="ars-row"><button id="save-profile" class="ars-btn ars-btn-primary" type="button">基本情報を保存</button></div>
-              </div>
-              <div class="ars-hidden-kpis" aria-hidden="true" hidden>
-                <span id="kpi-readiness">--</span><span id="kpi-faq">--</span><span id="kpi-keywords">0</span><span id="kpi-rows">0</span>
-              </div>
-              <div id="priority-actions" hidden></div>
-            </div>
-          </div>
-
-          <div class="ars-panel" data-panel-view="gaps">
-            <div class="ars-title-row"><div><h2>不足分析</h2><p class="ars-sub">Jevがページ概要から不足項目を判定（Estimated）。チェックは初期ヒントです。</p></div><button id="run-gap-analysis" class="ars-btn ars-btn-primary" type="button">不足を分析</button></div>
-            <div class="ars-grid">
-              <div class="ars-card ars-c5"><h3>現在ある情報</h3><div class="ars-form">
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="pricing">料金 / プラン</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="case">導入事例 / Before After</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="comparison">比較 / 選び方</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="faq">FAQ</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="evidence">独自データ / 数値根拠</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="author">監修者 / 運営主体</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="schema">JSON-LD / Schema</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="cta">問い合わせ / CV導線</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="policy">利用条件 / ポリシー</label>
-              </div></div>
-              <div class="ars-card ars-c7"><h3>優先ギャップ</h3><ul id="gap-results" class="ars-list bad"><li>「不足を分析」を押すと表示します。</li></ul></div>
-              <div class="ars-card ars-c12"><h3>FAQ Gap</h3><div class="ars-grid"><div class="ars-field ars-c6"><label for="existing-faq">既存FAQ</label><textarea id="existing-faq" class="ars-textarea"></textarea></div><div class="ars-field ars-c6"><label for="faq-context">よく聞かれる論点</label><textarea id="faq-context" class="ars-textarea"></textarea></div></div><div class="ars-row" style="margin-top:12px"><button id="generate-faq-gap" class="ars-btn ars-btn-primary" type="button">不足FAQを生成</button></div><div id="faq-gap-output" class="ars-grid" style="margin-top:14px"></div></div>
-            </div>
-          </div>
-
-          <div class="ars-panel" data-panel-view="competitors">
-            <div class="ars-title-row"><div><h2>競合分析</h2></div></div>
+      <div class="ars-panel" data-panel-view="competitors">
+        <div class="ars-title-row"><div><h2>競合</h2><p class="ars-sub">競合の名前とURLを登録し、AIの回答でどちらが出るかを比べます。</p></div></div>
             <div class="ars-grid">
               <div class="ars-card ars-c5"><h3>競合を追加</h3><div class="ars-form"><div class="ars-field"><label for="comp-name">競合の名前</label><input id="comp-name" class="ars-input" autocomplete="off" placeholder="例: ○○株式会社／サービス名"><p class="ars-gnote">AIの回答に出てくる呼び方で入れます（AI計測で競合と比べるときに使います）。</p></div><div class="ars-field"><label for="comp-url">競合URL</label><input id="comp-url" class="ars-input" type="url" inputmode="url" autocomplete="off" placeholder="https://example.jp/"></div><div class="ars-field"><label for="comp-note">強い点</label><textarea id="comp-note" class="ars-textarea"></textarea></div><button id="add-competitor" class="ars-btn ars-btn-primary" type="button">追加</button></div></div>
               <div class="ars-card ars-c7"><h3>競合リスト</h3><div id="competitor-list" class="ars-files"></div></div>
               <div class="ars-card ars-c12 ars-aicmp"><h3>AIの回答で比べる</h3><p class="ars-gnote" style="margin:0 0 10px">同じ質問をAIに聞き、回答に自社と競合のどちらの名前が出たか、どちらのサイトが出典になったかを比べます。競合比較はこの結果で判断します。</p><div class="ars-row" style="align-items:center;flex-wrap:wrap;gap:12px"><label><input type="checkbox" data-cmp-engine value="perplexity" checked> Perplexity（検索あり）</label><label><input type="checkbox" data-cmp-engine value="chatgpt" checked> ChatGPT（検索なし・名前だけ）</label><label><input type="checkbox" data-cmp-engine value="claude"> Claude（検索あり・出典URLまで・有料クレジットが必要）</label><button id="run-ai-compare" class="ars-btn ars-btn-primary" type="button">AIの回答で比べる</button></div><div id="ai-compare-status" class="ars-note" style="margin-top:10px" hidden></div><div id="ai-compare-result" style="margin-top:12px"></div></div>
               <div class="ars-card ars-c12"><h3>参考：サイトの形式の点検</h3><p class="ars-gnote" style="margin:0 0 6px">自社と競合（最大5件）のトップページを、無料診断と同じ基準で点検します。<b>AIの回答に出るかどうかとは別物</b>で、点数が高いほどAIに引用されるという裏付けはありません。業種によっては当てはまらない項目もあります。</p><ul class="ars-gnote ars-cmp-legend"><li><b>ページの骨格</b>：ページのタイトル、大見出し、説明文、本文の量など</li><li><b>会社・サービス情報</b>：運営者・サービスを機械が読める形（構造化データ）で書いているか、問い合わせの案内</li><li><b>よくある質問</b>：FAQ（3問以上・画面に見える欄・構造化データ）</li><li><b>見つけやすさ</b>：llms.txt・robots.txt・サイトマップの案内などのファイル</li><li><b>総合</b>：4つの重み付き平均（骨格30%・会社情報25%・FAQ20%・見つけやすさ25%）</li></ul><div class="ars-row" style="align-items:center;flex-wrap:wrap;gap:10px"><label class="ars-consent-row" style="margin:0"><input id="compare-proxy" type="checkbox"> <span>診断のための取得に同意（直接取得できない場合、公開ページを取得サーバー経由で読み込みます）</span></label><label class="ars-consent-row" style="margin:0"><input id="compare-asis" type="checkbox"> <span>入力したページのまま診断する（個別ページどうしで比べるとき）</span></label><button id="run-compare" class="ars-btn ars-btn-secondary" type="button">形式を点検して並べる</button></div><div id="compare-status" class="ars-note" style="margin-top:10px" hidden></div><div id="compare-result" style="margin-top:12px"></div></div>
             </div>
-          </div>
+          
+      </div>
 
-          <div class="ars-panel" data-panel-view="generator">
-            <div class="ars-title-row"><div><h2>対策ファイル</h2></div><button id="generate-files" class="ars-btn ars-btn-primary" type="button">一括生成</button></div>
-            <div class="ars-grid">
-              <div class="ars-card ars-c5"><h3>生成対象</h3><div id="generated-files" class="ars-files"><div class="ars-note">まだ生成されていません。</div></div></div>
-              <div class="ars-card ars-c7"><h3>プレビュー</h3><div class="ars-row" style="margin-bottom:8px"><select id="file-preview-select" class="ars-select" style="max-width:320px"></select><button id="download-current-file" class="ars-btn ars-btn-secondary" type="button">保存</button><button id="download-all-files" class="ars-btn ars-btn-soft" type="button">すべて保存</button></div><textarea id="file-preview" class="ars-code" spellcheck="false"></textarea></div>
-              <div class="ars-card ars-c12"><div id="implementation-guide" class="ars-note">生成後に手順を表示します。</div></div>
+      <div class="ars-panel" data-panel-view="hack2">
+        <div class="ars-title-row"><div><h2>AI計測</h2><p class="ars-sub">キーワードから作った質問を実際のAIに聞き、自社の名前・サイトが回答に出るかを測ります。</p></div><button id="run-hack2-measure" class="ars-btn ars-btn-primary" type="button">計測実行</button></div>
+            <div id="hack2-status" class="ars-note">まだ計測していません。AIを選んで「計測実行」を押します。</div>
+            <div class="ars-row" style="margin:12px 0;flex-wrap:wrap;gap:10px">
+              <label><input type="checkbox" data-hack2-engine value="jev"> 推定（Jev・実際のAIには聞かない）</label>
+              <label><input type="checkbox" data-hack2-engine value="chatgpt"> ChatGPT（検索なし・言及率のみ）</label>
+              <label><input type="checkbox" data-hack2-engine value="claude"> Claude（検索あり・有料クレジットが必要）</label>
+              <label><input type="checkbox" data-hack2-engine value="perplexity" checked> Perplexity（検索あり）</label>
             </div>
-          </div>
+            <div class="ars-model-grid" id="hack2-models"></div>
+            <div class="ars-grid" style="margin-top:16px"><div class="ars-card ars-c6"><h3>JSON取込</h3><textarea id="hack2-json" class="ars-code" style="min-height:200px"></textarea><button id="import-hack2" class="ars-btn ars-btn-primary" type="button" style="margin-top:10px">取込</button></div><div class="ars-card ars-c6"><h3>ルール</h3><ul class="ars-list"><li><strong>準備度 ≠ 引用率</strong></li><li><strong>0% ≠ 失敗</strong></li><li><strong>同一条件で再計測</strong></li><li><strong>Jevは推定</strong>：ページ本文から「引用されそうか」を推定した値で、実際のAIの回答ではない。引用率には含めない</li><li>ChatGPTは検索なし（gpt-4o-mini）で、店名・サービス名が回答に出た割合（言及率）だけを測る。引用は測らない</li><li>Claudeは検索ありで回答させ、返ってきた引用URLに公式サイトがあるかで判定</li><li>Perplexityは引用URLの一覧が取れないため、回答本文に公式サイトのドメインがあるときだけ「引用あり」。無いときは判定できない（0%にしない）</li><li>GitHub Pages上でも計測APIはVercelへ接続します</li></ul></div></div>
+          
+      </div>
 
-          <div class="ars-panel" data-panel-view="keywords">
-            <div class="ars-title-row"><div><h2>言葉</h2><p class="ars-sub">基本情報のブランド／サービス向けに絞った対策候補</p></div><div class="ars-row"><button id="seed-keywords" class="ars-btn ars-btn-soft" type="button">自社向けに生成</button><button id="export-keywords" class="ars-btn ars-btn-secondary" type="button">CSV</button></div></div>
-            <div id="kw-scope-note" class="ars-note">Overviewで分析するか、「自社向けに生成」で候補を作ります。</div>
-            <div class="ars-card ars-kw-add"><div class="ars-grid"><div class="ars-field ars-c6"><label for="kw-text">追加するキーワード</label><input id="kw-text" class="ars-input" placeholder="例: AI検索対策 費用"></div><div class="ars-field ars-c3"><label for="kw-priority">優先度</label><select id="kw-priority" class="ars-select"><option value="P0">必須</option><option value="P1" selected>推奨</option><option value="P2">任意</option></select></div><div class="ars-field ars-c3"><label for="kw-intent">意図</label><select id="kw-intent" class="ars-select"><option>Informational</option><option>Commercial</option><option>Comparison</option></select></div></div><div class="ars-row" style="margin-top:12px"><button id="add-keyword" class="ars-btn ars-btn-primary" type="button">追加</button><label class="ars-btn ars-btn-secondary" style="cursor:pointer">CSV取込<input id="keyword-csv" type="file" accept=".csv,text/csv" hidden></label><input id="kw-cluster" type="hidden" value="Core"></div></div>
-            <div id="keyword-body" class="ars-kw-cards" style="margin-top:16px"></div>
-          </div>
-
-          <div class="ars-panel" data-panel-view="timeseries">
-            <div class="ars-title-row"><div><h2>時系列</h2></div><div class="ars-row"><select id="timeseries-keyword" class="ars-select" style="min-width:220px"></select><button id="export-measurements" class="ars-btn ars-btn-secondary" type="button">CSV</button></div></div>
-            <div class="ars-grid"><div class="ars-card ars-c8"><h3>推移</h3><div id="timeseries-chart" class="ars-chart"></div></div><div class="ars-card ars-c4"><div class="ars-inline-kpi"><div><b id="ts-imp">0</b><span>Imp</span></div><div><b id="ts-ctr">0%</b><span>CTR</span></div><div><b id="ts-cvr">0%</b><span>CVR</span></div><div><b id="ts-pos">-</b><span>Pos</span></div></div></div><div class="ars-card ars-c12"><div class="ars-table-wrap"><table class="ars-table"><thead><tr><th>Date</th><th>Keyword</th><th>URL</th><th>Imp</th><th>Clicks</th><th>CTR</th><th>Pos</th><th>Sessions</th><th>Key</th><th>CVR</th><th>Mention</th><th>Citation</th></tr></thead><tbody id="measurement-body"></tbody></table></div></div></div>
-          </div>
-
-          <div class="ars-panel" data-panel-view="google">
-            <div class="ars-title-row"><div><h2>Google連携</h2></div><button id="google-connect" class="ars-btn ars-btn-primary" type="button">接続</button></div>
+      <div class="ars-panel" data-panel-view="google">
+        <div class="ars-title-row"><div><h2>Google 連携・データの取り込み</h2><p class="ars-sub">Search Console と GA4 の数字（読み取りのみ）と、CSV・JSON の取り込み。</p></div><button id="google-connect" class="ars-btn ars-btn-primary" type="button">接続</button></div>
             <div class="ars-grid ars-google">
               <div class="ars-card ars-c12"><h3>① 接続の状態</h3><div id="google-status" class="ars-note">未接続（Search Console・GA4 の読み取り）</div><div id="google-ga4-note" class="ars-note warn" style="margin-top:8px" hidden>GA4 を使うには「接続」で Google アナリティクス（読み取り）の権限を許可してください。以前に Search Console だけで接続した場合も、もう一度「接続」が必要です。</div></div>
               <div class="ars-card ars-c12"><h3>② 取得するサイト</h3>
@@ -325,26 +345,37 @@ robots: "noindex, follow"
                 <div class="ars-row" style="margin-top:10px;align-items:center"><span class="ars-gnote" style="margin:0">CSV で取り込む:</span><label class="ars-btn ars-btn-secondary">GSC CSV<input id="gsc-csv" type="file" accept=".csv,text/csv" hidden></label><label class="ars-btn ars-btn-secondary">GA4 CSV<input id="ga4-csv" type="file" accept=".csv,text/csv" hidden></label></div>
               </div>
             </div>
-          </div>
+          
+        <div class="ars-card" id="orch-phase2-data" style="margin-top:16px">
+          <h3>ファイルで取り込む</h3>
+          <div class="orch-phase2-grid">
+        <div class="ars-field">
+          <label for="orch-gsc-csv"><span data-tip="Search ConsoleのパフォーマンスCSV。キーワードごとの表示回数・クリック（Google実測）を別列で紐づけます。表示回数は検索回数ではありません。">GSC CSV（任意・実測）</span></label>
+          <input id="orch-gsc-csv" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values">
+          <p id="orch-gsc-status" class="orch-gsc-status" hidden></p>
+        </div>
 
-          <div class="ars-panel" data-panel-view="hack2">
-            <div class="ars-title-row"><div><h2>AirReach Consulting実測</h2></div><button id="run-hack2-measure" class="ars-btn ars-btn-primary" type="button">計測実行</button></div>
-            <div id="hack2-status" class="ars-note">未測定 — JSON取込または計測実行</div>
-            <div class="ars-row" style="margin:12px 0;flex-wrap:wrap;gap:10px">
-              <label><input type="checkbox" data-hack2-engine value="jev" checked> Jev（推定）</label>
-              <label><input type="checkbox" data-hack2-engine value="chatgpt"> ChatGPT（検索なし・言及率のみ）</label>
-              <label><input type="checkbox" data-hack2-engine value="claude"> Claude（検索あり・有料クレジットが必要）</label>
-              <label><input type="checkbox" data-hack2-engine value="perplexity"> Perplexity（検索あり）</label>
-            </div>
-            <div class="ars-model-grid" id="hack2-models"></div>
-            <div class="ars-grid" style="margin-top:16px"><div class="ars-card ars-c6"><h3>JSON取込</h3><textarea id="hack2-json" class="ars-code" style="min-height:200px"></textarea><button id="import-hack2" class="ars-btn ars-btn-primary" type="button" style="margin-top:10px">取込</button></div><div class="ars-card ars-c6"><h3>ルール</h3><ul class="ars-list"><li><strong>準備度 ≠ 引用率</strong></li><li><strong>0% ≠ 失敗</strong></li><li><strong>同一条件で再計測</strong></li><li><strong>Jevは推定</strong>：ページ本文から「引用されそうか」を推定した値で、実際のAIの回答ではない。引用率には含めない</li><li>ChatGPTは検索なし（gpt-4o-mini）で、店名・サービス名が回答に出た割合（言及率）だけを測る。引用は測らない</li><li>Claudeは検索ありで回答させ、返ってきた引用URLに公式サイトがあるかで判定</li><li>Perplexityは引用URLの一覧が取れないため、回答本文に公式サイトのドメインがあるときだけ「引用あり」。無いときは判定できない（0%にしない）</li><li>GitHub Pages上でも計測APIはVercelへ接続します</li></ul></div></div>
+          <div class="ars-field">
+            <label for="orch-planner-csv"><span data-tip="Google Ads Keyword PlannerのエクスポートCSV。該当キーワードの月間需要を公式値に置き換えます。">Keyword Planner CSV</span></label>
+            <input id="orch-planner-csv" type="file" accept=".csv,text/csv,.tsv,text/tab-separated-values">
           </div>
-        </section>
+          <div class="ars-field">
+            <label for="orch-hack2-file"><span data-tip="以前の AI計測の結果（JSON）。言及・引用をキーワードの行に併記します。">AI計測の結果（JSON）</span></label>
+            <input id="orch-hack2-file" type="file" accept=".json,application/json,.txt">
+          </div>
+        </div>
+        <p id="orch-phase2-data-status" class="orch-gsc-status" hidden></p>
       </div>
-    </div>
+      </div>
+
+      <div class="ars-panel" data-panel-view="timeseries">
+        <div class="ars-title-row"><div><h2>推移</h2><p class="ars-sub">キーワードごとの表示・クリック・AI計測の推移。</p></div><div class="ars-row"><select id="timeseries-keyword" class="ars-select" style="min-width:220px"></select><button id="export-measurements" class="ars-btn ars-btn-secondary" type="button">CSV</button></div></div>
+            <div class="ars-grid"><div class="ars-card ars-c8"><h3>推移</h3><div id="timeseries-chart" class="ars-chart"></div></div><div class="ars-card ars-c4"><div class="ars-inline-kpi"><div><b id="ts-imp">0</b><span>Imp</span></div><div><b id="ts-ctr">0%</b><span>CTR</span></div><div><b id="ts-cvr">0%</b><span>CVR</span></div><div><b id="ts-pos">-</b><span>Pos</span></div></div></div><div class="ars-card ars-c12"><div class="ars-table-wrap"><table class="ars-table"><thead><tr><th>Date</th><th>Keyword</th><th>URL</th><th>Imp</th><th>Clicks</th><th>CTR</th><th>Pos</th><th>Sessions</th><th>Key</th><th>CVR</th><th>Mention</th><th>Citation</th></tr></thead><tbody id="measurement-body"></tbody></table></div></div></div>
+          
+      </div>
+    </section>
   </div>
 </main>
-{% include tb-footer.html %}
 <script src="/assets/js/airreach-api.js" defer></script>
 <script src="/assets/js/airreach-think.js" defer></script>
 <script src="/assets/js/airreach-tip.js" defer></script>
