@@ -54,8 +54,30 @@ export default async function handler(req, res) {
     position: row.position || 0,
     source: 'gsc'
   }));
+  // サイト全体の合計は日付だけで取り直す。検索語句つきの行は Google が伏せた語句（匿名クエリ）の分が落ち、
+  // 合計が実際より小さくなる（2026-10-01 実測: 表示 24,091 に対し語句つきの合計は 14,958）
+  let totals = null;
+  const t = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ startDate, endDate, dimensions: ['date'], rowLimit: 1000, dataState: 'final' })
+  });
+  if (t.ok) {
+    const td = await t.json();
+    const days = (td.rows || []).map(row => row.keys?.[0] || '').filter(Boolean).sort();
+    // 日数は開始日から「データのある最後の日」まで（直近の確定前の日を分母に入れない）
+    const last = days.length ? days[days.length - 1] : endDate;
+    const span = Math.round((Date.parse(last < endDate ? last : endDate) - Date.parse(startDate)) / 86400000) + 1;
+    totals = {
+      impressions: (td.rows || []).reduce((s, row) => s + (row.impressions || 0), 0),
+      clicks: (td.rows || []).reduce((s, row) => s + (row.clicks || 0), 0),
+      days: span > 0 ? span : 0,
+      startDate,
+      endDate: last < endDate ? last : endDate
+    };
+  }
   // siteUrl: どの Search Console プロパティのデータか（クライアントは各行に記録し、同じサイトの診断にだけ使う）
-  return res.status(200).json({ rows, count: rows.length, siteUrl });
+  return res.status(200).json({ rows, count: rows.length, siteUrl, totals });
 }
 
 async function getAccessToken(req) {

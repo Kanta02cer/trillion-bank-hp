@@ -137,6 +137,13 @@ res = mkRes(); await gsc(mkReq({ method: 'POST', body: { siteUrl: 'x' }, cookie:
 expect('gsc: missing dates → 400', res.statusCode === 400);
 mockFetch((url, init) => {
   if (url.startsWith(gscApi)) {
+    // サイト全体の合計（日付だけ）。伏せられた語句の分を含むので、語句つきの行の合計より大きい。データは 9/26 まで
+    if (JSON.parse(init.body || '{}').dimensions.length === 1) {
+      return { json: { rows: [
+        { keys: ['2026-09-01'], clicks: 50, impressions: 2000 },
+        { keys: ['2026-09-26'], clicks: 10, impressions: 500 },
+      ] } };
+    }
     return { json: { rows: [
       { keys: ['2026-09-01', '町田 焼肉 予約', 'https://example.com/menu'], clicks: 38, impressions: 1240, ctr: 0.0306, position: 8.44 },
       { keys: ['2026-09-02', '町田 個室', 'https://www.example.com/'], clicks: 2, impressions: 90, ctr: 0.022, position: 12.1 },
@@ -151,6 +158,10 @@ const sentBody = JSON.parse(sent.init.body || '{}');
 expect('gsc: request = date/query/page, final data, dates passed through', JSON.stringify(sentBody.dimensions) === JSON.stringify(['date', 'query', 'page']) && sentBody.dataState === 'final' && sentBody.startDate === body.startDate && sentBody.endDate === body.endDate);
 expect('gsc: 200 with mapped rows (keyword / url / impressions / clicks / position) and siteUrl', res.statusCode === 200 && res.body.count === 2 && res.body.siteUrl === body.siteUrl &&
   JSON.stringify(res.body.rows[0]) === JSON.stringify({ date: '2026-09-01', keyword: '町田 焼肉 予約', url: 'https://example.com/menu', clicks: 38, impressions: 1240, ctr: 0.0306, position: 8.44, source: 'gsc' }), JSON.stringify(res.body).slice(0, 300));
+const totReq = JSON.parse((calls[1] || { init: {} }).init.body || '{}');
+expect('gsc: site totals requested with date only (keeps anonymized queries)', JSON.stringify(totReq.dimensions) === JSON.stringify(['date']) && totReq.startDate === body.startDate && totReq.dataState === 'final', JSON.stringify(totReq));
+expect('gsc: totals = whole site (not the sum of query rows), days up to the last day with data',
+  JSON.stringify(res.body.totals) === JSON.stringify({ impressions: 2500, clicks: 60, days: 26, startDate: '2026-09-01', endDate: '2026-09-26' }), JSON.stringify(res.body.totals));
 // アクセストークン切れ → refresh
 mockFetch((url, init) => {
   if (url === 'https://oauth2.googleapis.com/token') return new URLSearchParams(init.body).get('refresh_token') === 'RT' ? { json: { access_token: 'AT2' } } : { status: 400 };

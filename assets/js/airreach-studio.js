@@ -39,8 +39,11 @@ function seedKeywords(){profileFromForm();var s=state.profile.service||'';var br
 
 function publishOfficialBaseline(){
   try{
-    var periodDays=28;
     var byQuery={};
+    // 期間は取り込んだ行の日付から数える（同期した期間を変えても 28 日扱いにしない）
+    function spanDays(pick){var ds=(state.measurements||[]).filter(pick).map(function(m){return m.date}).filter(Boolean).sort();if(!ds.length)return 0;var d=Math.round((Date.parse(ds[ds.length-1])-Date.parse(ds[0]))/86400000)+1;return d>0?d:0}
+    var gscTot=currentGscTotals();
+    var periodDays=gscTot?gscTot.days:(spanDays(function(m){return n(m.impressions)||n(m.clicks)})||28);
     (state.measurements||[]).forEach(function(m){
       var key=(m.keyword||m.url||'').trim();
       if(!key) return;
@@ -55,12 +58,17 @@ function publishOfficialBaseline(){
       row.ctr=row.impressions?row.clicks/row.impressions:0;
       row.missedClicks=Math.max(0,Math.round(row.impressions*Math.max(0.06-row.ctr,0)));
       return row;
-    }).sort(function(a,b){return (b.missedClicks-a.missedClicks)||(b.impressions-a.impressions)}).slice(0,50);
-    var totalImp=keywords.reduce(function(s,r){return s+r.impressions},0);
-    var totalClicks=keywords.reduce(function(s,r){return s+r.clicks},0);
+    }).sort(function(a,b){return (b.missedClicks-a.missedClicks)||(b.impressions-a.impressions)});
+    // 合計はサイト全体の数字を使う。上位50語だけの合計にしない（2026-10-01: クリックが実際の約8分の1になっていた）
+    // API 同期ならサイト全体（日付だけの集計＝伏せられた語句も含む）、CSV なら全行の合計
+    var totalImp=gscTot?gscTot.impressions:keywords.reduce(function(s,r){return s+r.impressions},0);
+    var totalClicks=gscTot?gscTot.clicks:keywords.reduce(function(s,r){return s+r.clicks},0);
+    keywords=keywords.slice(0,50);
     var sessions=(state.measurements||[]).reduce(function(s,m){return s+n(m.sessions)},0);
     var keyEvents=(state.measurements||[]).reduce(function(s,m){return s+n(m.keyEvents)},0);
-    function scale(v){return Math.round((v/periodDays)*30)}
+    var ga4Days=spanDays(function(m){return n(m.sessions)||n(m.keyEvents)})||28;
+    function scaleBy(v,days){return Math.round((v/days)*30)}
+    function scale(v){return scaleBy(v,periodDays)}
     var baseline={
       evidenceClass:'Official',
       source:'Studio localStorage',
@@ -74,7 +82,7 @@ function publishOfficialBaseline(){
       importedAt:new Date().toISOString()
     };
     if(sessions||keyEvents){
-      baseline.ga4={evidenceClass:'Official',source:'Studio measurements',monthlySessions:scale(sessions),monthlyKeyEvents:scale(keyEvents)};
+      baseline.ga4={evidenceClass:'Official',source:'Studio measurements',monthlySessions:scaleBy(sessions,ga4Days),monthlyKeyEvents:scaleBy(keyEvents,ga4Days)};
     }
     // サイトごとの GSC 実測（gscProperty を記録した行だけ）。以前の取り込み（別の画面で入れたサイト）は残す
     if(window.AirReachKeywordList){
@@ -86,6 +94,10 @@ function publishOfficialBaseline(){
     localStorage.setItem('airreach_official_baseline_v1', JSON.stringify(baseline));
   }catch(e){}
 }
+// API 同期で受け取ったサイト全体の合計（プロパティごと）。いま選んでいる GSC サイトの分、無ければ最後に同期した分
+function currentGscTotals(){var all=state.gscTotals||{};var t=all[gscPropertyInput()];if(!t){Object.keys(all).forEach(function(k){if(!t||String(all[k].updatedAt||'')>String(t.updatedAt||''))t=all[k]})}return t&&t.days>0?t:null}
+// 同期の前に呼ぶ。同じサイト・同じ期間の行を消してから入れ直す（同期し直すたびに数字が積み上がらないように）
+function beginGscSync(prop,start,end,totals){prop=String(prop||'').trim();state.measurements=(state.measurements||[]).filter(function(m){return !(m.gscProperty===prop&&m.date>=start&&m.date<=end)});state.gscTotals=state.gscTotals||{};if(totals&&totals.days>0)state.gscTotals[prop]=Object.assign({},totals,{updatedAt:new Date().toISOString()});else delete state.gscTotals[prop];save()}
 
 // GSC の行を測定データに足す。property（GSC のサイト URL）が分かれば各行に記録する（診断結果の Google実測 は同じサイトの行だけを使う）
 function gscPropertyInput(){return String(val('gsc-site')||(state.google&&state.google.gscSite)||'').trim()}
@@ -132,6 +144,7 @@ window.AirReachStudio={
   ga4SiteCheck:ga4SiteCheck,
   ga4PropertyCheck:ga4PropertyCheck,
   publishBaseline:function(){publishOfficialBaseline()},
+  beginGscSync:beginGscSync,
   gscPropertyInput:function(){return gscPropertyInput()},
   setProfile:function(p){state.profile=Object.assign({},state.profile,p||{});fillProfile();save()},
   seedKeywords:seedKeywords,

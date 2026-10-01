@@ -575,6 +575,10 @@
           });
           var data = await res.json().catch(function () { return {}; });
           if (!res.ok) throw new Error(data.error || data.message || ('HTTP ' + res.status));
+          // 同じサイト・期間の古い行を消し、サイト全体の合計（data.totals）を記録してから取り込む
+          if (window.AirReachStudio && window.AirReachStudio.beginGscSync) {
+            window.AirReachStudio.beginGscSync(data.siteUrl || site, start, end, data.totals);
+          }
           if (window.AirReachOrchestrator && window.AirReachOrchestrator.importGscRows) {
             // 同期したサイト（GSC の siteUrl）を各行に記録する
             window.AirReachOrchestrator.importGscRows(data.rows || [], { property: data.siteUrl || site });
@@ -585,7 +589,10 @@
           }
           if (syncMsg) {
             syncMsg.className = 'ars-note good';
-            syncMsg.textContent = 'GSC同期完了: ' + (data.count || (data.rows && data.rows.length) || 0) + ' 行';
+            var tot = data.totals;
+            syncMsg.textContent = 'GSC同期完了: ' + (data.count || (data.rows && data.rows.length) || 0) + ' 行' +
+              (tot ? '（サイト全体 ' + tot.days + ' 日間: 表示 ' + Number(tot.impressions).toLocaleString('ja-JP') +
+                ' · クリック ' + Number(tot.clicks).toLocaleString('ja-JP') + '）' : '');
           }
         } catch (err) {
           if (syncMsg) {
@@ -630,7 +637,11 @@
           var rows = data.rows || [];
           // サーバーは対象ホストの行だけを返す。画面側でも同じ規則でもう一度確かめて ga4Sites に記録する
           var r2 = (window.AirReachStudio && window.AirReachStudio.importGa4Rows)
-            ? window.AirReachStudio.importGa4Rows(rows, { propertyId: check.id, siteUrl: site.url, source: 'api' })
+            ? window.AirReachStudio.importGa4Rows(rows, {
+              propertyId: check.id, siteUrl: site.url, source: 'api',
+              // 月次換算の分母は同期した期間の日数（28 日固定にしない）
+              periodDays: Math.round((Date.parse(end) - Date.parse(start)) / 86400000) + 1
+            })
             : null;
           var e = r2 && r2.entry;
           var ex = (data.excluded && data.excluded.rows) || 0;
