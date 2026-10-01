@@ -114,6 +114,8 @@ load();document.addEventListener('DOMContentLoaded',function(){fillProfile();bin
     else if(gs&&gp==='ga4_missing'){gs.className='ars-note warn';gs.textContent='Search Console は接続しました。Google アナリティクスの権限が許可されなかったため、GA4 は使えません。GA4 を使う場合は、もう一度「接続」を押してアナリティクス（読み取り）を許可してください。'}
     else if(gs&&gp==='gsc_missing'){gs.className='ars-note warn';gs.textContent='GA4 は接続しました。Search Console の権限が許可されなかったため、GSC は使えません。GSC を使う場合は、もう一度「接続」を押して Search Console を許可してください。'}
     else if(gs&&gp==='scope_missing'){gs.className='ars-note warn';gs.textContent='Search Console・Google アナリティクスへのアクセスが許可されなかったため、接続していません。もう一度「接続」を押し、権限を許可してください。'}
+    // 接続から戻った直後でなくても、接続済みなら状態を出す（Cookie airreach_google_scopes は callback が付ける。トークン本体ではない）
+    else if(gs&&!gp){var fs=((document.cookie.match(/(?:^|;\s*)airreach_google_scopes=([^;]*)/)||[])[1]||'').split('.').filter(Boolean);var names=[];if(fs.indexOf('gsc')>=0)names.push('Search Console');if(fs.indexOf('ga4')>=0)names.push('GA4');if(names.length){gs.className='ars-note good';gs.textContent='接続済み（'+names.join('・')+'）。同期でエラーになる場合は、もう一度「接続」を押してください。'}}
   }catch(e){}
   // GA4 の権限が無いとき（未接続・Search Console だけで接続済み・GA4 を許可しなかった）は再接続を案内する
   try{var sc=(document.cookie.match(/(?:^|;\s*)airreach_google_scopes=([^;]*)/)||[])[1]||'';var gn=q('google-ga4-note');if(gn)gn.hidden=sc.split('.').indexOf('ga4')>=0}catch(e){}

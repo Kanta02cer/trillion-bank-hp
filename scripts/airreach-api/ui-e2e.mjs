@@ -587,17 +587,23 @@ try {
   expect('O: ?google=gsc_missing → GA4 connected, GSC refused', /GA4 は接続しました/.test(st2) && /GSC は使えません/.test(st2), st2);
   st2 = await statusFor('scope_missing');
   expect('O: ?google=scope_missing → not connected, asks to allow', /許可されなかったため、接続していません/.test(st2), st2);
+  // 接続していない（Cookie なし・?google なし）ときは「未接続」のまま
+  await pageO.goto(`${BASE}/airreach/studio/?v=none#google`, { waitUntil: 'load' });
+  await pageO.waitForFunction(() => window.AirReachStudio, null, { timeout: 10000 });
+  expect('O: no connection cookie → status stays 未接続', /^未接続/.test(await pageO.textContent('#google-status')));
   // 再接続の案内: 許可された機能（airreach_google_scopes）に ga4 が無ければ表示、あれば隠す
   const origin = new URL(BASE).origin;
   await ctxO.addCookies([{ name: 'airreach_google_scopes', value: 'gsc', url: origin }]);
   await pageO.goto(`${BASE}/airreach/studio/?v=gsc#google`, { waitUntil: 'load' });
   await pageO.waitForFunction(() => window.AirReachStudio, null, { timeout: 10000 });
   expect('O: connected with GSC only (older connection) → reconnect notice for GA4', !(await pageO.$eval('#google-ga4-note', (e) => e.hidden)));
+  expect('O: reopened later with GSC only → status 接続済み（Search Console）', /^接続済み（Search Console）/.test(await pageO.textContent('#google-status')));
   await ctxO.addCookies([{ name: 'airreach_google_scopes', value: 'gsc.ga4', url: origin }]);
   // 同じ URL（#google 付き）への goto は再読み込みにならないので、クエリで別の URL にする
   await pageO.goto(`${BASE}/airreach/studio/?v=gscga4#google`, { waitUntil: 'load' });
   await pageO.waitForFunction(() => window.AirReachStudio, null, { timeout: 10000 });
   expect('O: connected with GSC + GA4 → reconnect notice hidden', await pageO.$eval('#google-ga4-note', (e) => e.hidden));
+  expect('O: reopened later with GSC + GA4 → status 接続済み（Search Console・GA4）', /^接続済み（Search Console・GA4）/.test(await pageO.textContent('#google-status')));
   expect('O: no page errors', errorsO.length === 0, errorsO.join(' | ').slice(0, 300));
   await ctxO.close();
   // Studio の Google 画面 390px（横にはみ出さない）
