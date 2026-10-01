@@ -102,6 +102,10 @@
   function pathOf(u) {
     try { var x = new URL(u); return decodeURI(x.pathname + x.search) || '/'; } catch (e) { return String(u || ''); }
   }
+  // 順位ごとのクリック率のおおよその目安（これの半分未満なら、検索結果での見え方＝タイトル・説明文に問題があるとみる）
+  function expectedCtr(pos) {
+    return pos <= 1.5 ? 0.25 : pos <= 2.5 ? 0.12 : pos <= 3.5 ? 0.08 : pos <= 5.5 ? 0.05 : pos <= 10 ? 0.025 : 0.01;
+  }
   // Search Console の実績（順位・CTR・表示ページ）から、その語で「どのページの何をするか」を決める
   function gscActionFor(k, g) {
     var pos = k.gsc_position, imp = k.gsc_impressions || 0, clk = k.gsc_clicks || 0;
@@ -109,29 +113,29 @@
     var pages = Object.keys((g && g.pages) || {}).map(function (u) { return g.pages[u]; })
       .sort(function (a, b) { return b.impressions - a.impressions; });
     var top = pages[0] || null, second = pages[1] || null;
-    var kw = '「' + k.keyword + '」';
     var r = { page: top ? top.url : '', pages: pages.length };
+    var pct = function (v) { return (v * 100).toFixed(1) + '%'; };
     if (second && imp && second.impressions >= imp * 0.2) {
       r.title = 'ページを1つにまとめる';
-      r.detail = kw + 'で ' + pathOf(top.url) + ' と ' + pathOf(second.url) + ' が分かれて表示されています。片方に情報を集め、もう片方からリンクする';
+      r.detail = pathOf(top.url) + ' と ' + pathOf(second.url) + ' に表示が分かれています。片方に情報を集め、もう片方からリンクする';
     } else if (pos == null) {
-      r.title = 'この語に答える見出しを足す';
-      r.detail = kw + 'の答えを見出しと最初の段落に書く';
-    } else if (pos <= 3 && ctr < 0.05) {
+      r.title = '答えを見出しにする';
+      r.detail = 'この語の答えを見出しと最初の段落に書く';
+    } else if (pos <= 10 && imp >= 50 && ctr < expectedCtr(pos) * 0.5) {
       r.title = 'タイトルと説明文を直す';
-      r.detail = '平均 ' + pos + ' 位なのにクリック率 ' + (ctr * 100).toFixed(1) + '%。検索結果で' + kw + 'の答えが見えるよう、タイトルと説明文（meta description）に入れる';
+      r.detail = '平均 ' + pos + ' 位でクリック率 ' + pct(ctr) + '（この順位の目安 ' + pct(expectedCtr(pos)) + ' の半分未満）。検索結果のタイトルと説明文に、この語の答えを入れる';
     } else if (pos <= 3) {
-      r.title = '上位を守る（内容を新しく）';
-      r.detail = '平均 ' + pos + ' 位。更新日・最新の情報・一次情報（出典や実例）を足して順位を守る';
+      r.title = '上位を守る';
+      r.detail = '平均 ' + pos + ' 位。更新日・最新の情報・出典を足して順位を守る';
     } else if (pos <= 10) {
-      r.title = '冒頭に答えを書き、関連ページからリンク';
-      r.detail = '1ページ目の下位（平均 ' + pos + ' 位）。' + kw + 'に答える見出しを冒頭近くに置き、関連する記事からこのページへリンクする';
+      r.title = '冒頭に答え＋内部リンク';
+      r.detail = '平均 ' + pos + ' 位（1ページ目の下位）。この語に答える見出しを冒頭近くに置き、関連記事からリンクする';
     } else if (pos <= 20) {
-      r.title = 'この語の段落を足して内容を厚く';
-      r.detail = '2ページ目（平均 ' + pos + ' 位）。' + kw + 'で知りたいこと（比較・理由・具体例）を見出しごとに足す';
+      r.title = '段落を足して内容を厚く';
+      r.detail = '平均 ' + pos + ' 位（2ページ目）。この語で知りたいこと（理由・比較・具体例）を見出しごとに足す';
     } else {
       r.title = '専用の記事を作る';
-      r.detail = '平均 ' + pos + ' 位で、いまのページでは届いていません。' + kw + 'を主題にした記事を新しく作るか、近い記事の主題をこの語に合わせる';
+      r.detail = '平均 ' + pos + ' 位。今のページでは届いていません。この語を主題にした記事を作るか、近い記事の主題を合わせる';
     }
     return r;
   }
@@ -1256,6 +1260,9 @@
     if (!body || !job) return;
     var list = filteredKeywords(job);
     var shown = list.slice(0, uiState.shown);
+    // 同じページを対象にする語の数（まとめて直せる）
+    var pageCount = {};
+    (job.keywords || []).forEach(function (k) { if (k.gsc_page) pageCount[k.gsc_page] = (pageCount[k.gsc_page] || 0) + 1; });
     body.innerHTML = shown.map(function (k) {
       var why = k.why || whyForKeyword(k);
       var meta = [];
@@ -1266,7 +1273,9 @@
       if (k.ai_mention_rate != null) meta.push('AI言及 ' + k.ai_mention_rate + '%');
       var metaHtml = meta.length ? ('<div class="orch-kw-meta">' + meta.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div>') : '';
       var hasGsc = k.gsc_impressions != null && k.gsc_impressions > 0;
-      var pageHtml = k.gsc_page ? '<a class="orch-kw-page" href="' + esc(k.gsc_page) + '" target="_blank" rel="noopener noreferrer">' + esc(pathOf(k.gsc_page)) + ' ↗</a>' : '';
+      var same = k.gsc_page ? (pageCount[k.gsc_page] || 1) - 1 : 0;
+      var pageHtml = k.gsc_page ? '<a class="orch-kw-page" href="' + esc(k.gsc_page) + '" target="_blank" rel="noopener noreferrer">' + esc(pathOf(k.gsc_page)) + ' ↗</a>' +
+        (same > 0 ? '<span class="orch-kw-same">同じページで他 ' + same + ' 語</span>' : '') : '';
       var whyHtml = hasGsc
         ? '<div class="orch-kw-facts">' + gscFacts(k).map(function (f) { return '<span>' + esc(f) + '</span>'; }).join('') + '</div><div class="orch-kw-src">Search Console（実測）</div>'
         : esc(why);
