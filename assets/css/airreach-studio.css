@@ -285,3 +285,19 @@
 .ars-google-sync{display:grid;grid-template-columns:minmax(0,180px) minmax(0,180px) auto auto;gap:10px 12px;align-items:end}
 .ars-google-sync .ars-input{min-width:0}
 @media (max-width:620px){.ars-google-sync{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.ars-google-sync .ars-btn{width:100%;white-space:nowrap;padding-left:8px;padding-right:8px}}
+
+/* 競合と比べる */
+.ars-cmp{table-layout:auto;width:100%;min-width:560px}
+.ars-cmp th,.ars-cmp td{vertical-align:top;padding:10px 8px}
+.ars-cmp th{font-size:12px;line-height:1.35;white-space:normal}
+.ars-cmp td:first-child{white-space:normal;min-width:140px}
+.ars-cmp tr.is-self td{background:#f8fafc}
+.ars-cmp-self{display:inline-block;padding:1px 7px;border-radius:999px;background:#1d4ed8;color:#fff;font-size:11px;font-weight:700}
+.ars-cmp-url{font-size:11.5px;color:#64748b;word-break:break-all}
+.ars-cmp-na{color:#94a3b8}
+.ars-cmp-up{display:block;margin-top:2px;font-size:11px;color:#b91c1c;font-weight:700}
+.ars-cmp-h{margin:18px 0 8px;font-size:14px;color:#0f172a}
+.ars-cmp-gaps{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ars-cmp-gaps strong{font-size:14px}
+.ars-cmp-gaps li{padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;background:#fff}
+.ars-cmp-tag{margin-left:8px;font-size:11px;color:#64748b}

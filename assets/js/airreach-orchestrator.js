@@ -994,7 +994,9 @@
           serviceScope: (job.profile && job.profile.service) || ''
         };
       });
-      st.competitors = job.competitors;
+      // 分析は競合を調べない（job.competitors は常に空）。手で登録した競合を空で上書きしない
+      if (job.competitors && job.competitors.length) st.competitors = job.competitors;
+      else st.competitors = st.competitors || [];
       st.generated = {};
       Object.keys(job.files || {}).forEach(function (k) {
         if (k === '_validation') return;
@@ -1005,7 +1007,8 @@
         var live = window.AirReachStudio.getState();
         live.profile = st.profile;
         live.keywords = st.keywords;
-        live.competitors = st.competitors;
+        if (job.competitors && job.competitors.length) live.competitors = job.competitors;
+        else st.competitors = live.competitors || st.competitors;
         live.generated = st.generated;
         if (window.AirReachStudio.save) window.AirReachStudio.save();
       }
