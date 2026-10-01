@@ -1366,7 +1366,7 @@
     if (gscNote) {
       gscNote.textContent = hasGsc
         ? 'GSC の表示回数（Impressions）がある行だけ Google 実測を別列で表示しています。表示回数は検索回数ではありません。月間検索数は Keyword Planner の取り込み時だけ表示します。'
-        : '検索回数は出していません。上の「GSC CSV」を取り込むと、Google 実測の表示回数・クリックが別列で付きます（表示回数は検索回数ではありません）。';
+        : '検索回数は出していません。「8 Google 連携」で Search Console を取り込むと、Google 実測の表示回数・クリックが別列で付きます（表示回数は検索回数ではありません）。';
       gscNote.hidden = false;
     }
 
