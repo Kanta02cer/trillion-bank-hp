@@ -55,6 +55,11 @@ export default async function handler(req, res) {
   }
 
   const engines = normalizeEngines(body.engines);
+  // 競合（名前は必須・最大5件）。回答に競合の名前が出たか・競合のサイトが出典になったかも数える（SOV 用）
+  const competitors = (Array.isArray(body.competitors) ? body.competitors : [])
+    .map((c) => ({ name: String((c && c.name) || '').trim().slice(0, 80), url: String((c && c.url) || '').trim() }))
+    .filter((c) => c.name.length >= 2)
+    .slice(0, 5);
   let pageText = body.text ? String(body.text) : '';
   let pageUrl = body.url ? String(body.url) : null;
   let pageTitle = body.title ? String(body.title) : null;
@@ -98,7 +103,7 @@ export default async function handler(req, res) {
         });
         engineStatus.jev = { ok: true, count: judged.length, evidenceClass: 'Estimated' };
       } else {
-        const live = await measureWithProvider(engine, brand, prompts, pageUrl);
+        const live = await measureWithProvider(engine, brand, prompts, pageUrl, competitors);
         live.rows.forEach((r) => {
           rows.push(Object.assign({ measurement_date: date, url: pageUrl || '' }, r));
         });
@@ -140,6 +145,7 @@ export default async function handler(req, res) {
     ok: rows.length > 0,
     brand,
     url: pageUrl,
+    competitors: competitors.map((c) => c.name),
     engines,
     engineStatus,
     judgments,
@@ -260,7 +266,30 @@ async function measureWithJev(opts) {
   });
 }
 
-async function measureWithProvider(engine, brand, prompts, pageUrl) {
+function hostOf(u) {
+  try { return new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) { return ''; }
+}
+// 1つの回答について、各競合の名前が出たか・競合サイトが出典になったか
+// 名前の照合は空白（全角を含む）を無視する（「総本家 更科堀井」と回答の「総本家更科堀井」を同じとみなす）
+export function nameIn(text, name) {
+  const t = String(text || '').toLowerCase().replace(/[\s\u3000]+/g, '');
+  const n = String(name || '').toLowerCase().replace(/[\s\u3000]+/g, '');
+  return !!n && t.indexOf(n) !== -1;
+}
+export function competitorHits(answer, citations, competitors) {
+  const lower = String(answer || '').toLowerCase();
+  return (competitors || []).map((c) => {
+    const host = hostOf(c.url);
+    let cited = null;
+    if (host) {
+      if (Array.isArray(citations)) cited = citations.some((u) => hostMatches(u, host)) ? 1 : 0;
+      else cited = lower.indexOf(host) !== -1 ? 1 : null;
+    }
+    return { name: c.name, mentioned: nameIn(answer, c.name) ? 1 : 0, cited };
+  });
+}
+
+async function measureWithProvider(engine, brand, prompts, pageUrl, competitors) {
   const gatewayKey = process.env.AI_GATEWAY_API_KEY || '';
   const keyMap = {
     chatgpt: process.env.OPENAI_API_KEY,
@@ -287,7 +316,6 @@ async function measureWithProvider(engine, brand, prompts, pageUrl) {
   if (pageUrl) {
     try { host = new URL(pageUrl).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) {}
   }
-  const brandL = brand.toLowerCase();
   // 検索つき（Responses API）は Claude だけ。ChatGPT は費用を抑えるため検索なしで言及率だけを測る（引用は判定しない）。
   // Perplexity は出典URLが gateway から返らないため本文で判定
   const withSearch = useGateway && engine === 'claude';
@@ -302,11 +330,12 @@ async function measureWithProvider(engine, brand, prompts, pageUrl) {
         engine: engineLabel(engine),
         keyword: p.keyword || p.prompt,
         prompt: p.prompt,
-        mentioned: String(out.answer || '').toLowerCase().indexOf(brandL) !== -1 ? 1 : 0,
+        mentioned: nameIn(out.answer, brand) ? 1 : 0,
         cited: null,
         citeMethod: 'none',
         searched: false,
         citations: [],
+        competitors: competitorHits(out.answer, null, competitors).map((h) => ({ name: h.name, mentioned: h.mentioned, cited: null })),
         evidenceClass: 'Observed',
         model: useGateway ? gatewayModel(engine) : engine,
         source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
@@ -314,7 +343,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl) {
       };
     }
     const lower = String(out.answer || '').toLowerCase();
-    const mentioned = lower.indexOf(brandL) !== -1 ? 1 : 0;
+    const mentioned = nameIn(out.answer, brand) ? 1 : 0;
     let cited = 0;
     let citeMethod = 'citations';
     if (Array.isArray(out.citations)) {
@@ -333,6 +362,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl) {
       citeMethod,
       searched: !!out.searched,
       citations: Array.isArray(out.citations) ? out.citations.slice(0, 10) : [],
+      competitors: competitorHits(out.answer, out.citations, competitors),
       evidenceClass: 'Observed',
       model: useGateway ? gatewayModel(engine) : engine,
       source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',

@@ -36,6 +36,7 @@
     if (ai) ai.providers.forEach(function (p) {
       kpi.push('<tr><th>AIの回答で公式サイトが出典になった割合（' + esc(prov(p.provider)) + '）</th><td>' + v(p.prevCiteRate, '%') + '</td><td>' + v(p.citeRate, '%') + '</td><td>' + d(p.citeDelta, 'ポイント') + '</td></tr>');
       kpi.push('<tr><th>AIの回答に店名・社名が出た割合（' + esc(prov(p.provider)) + '）</th><td>' + v(p.prevMentionRate, '%') + '</td><td>' + v(p.mentionRate, '%') + '</td><td>' + d(p.mentionDelta, 'ポイント') + '</td></tr>');
+      if (p.sov != null || p.prevSov != null) kpi.push('<tr><th>競合と比べて、AIの回答に名前が出た割合（' + esc(prov(p.provider)) + '）</th><td>' + v(p.prevSov, '%') + '</td><td>' + v(p.sov, '%') + '</td><td>' + d(p.sovDelta, 'ポイント') + '</td></tr>');
     });
     else kpi.push('<tr><th>AIの引用率・言及率</th><td colspan="3"><span class="arr-na">未計測</span></td></tr>');
     kpi.push('<tr><th>検索からのクリック</th><td>' + v(tr.gscPrev && tr.gscPrev.clicks) + '</td><td>' + v(tr.gsc && tr.gsc.clicks) + '</td><td>' + d(diff(tr.gsc && tr.gsc.clicks, tr.gscPrev && tr.gscPrev.clicks)) + '</td></tr>');
