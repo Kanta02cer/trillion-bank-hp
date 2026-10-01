@@ -99,6 +99,8 @@
     return '関連候補（優先度は低め）';
   }
 
+  // 画面に出す優先度の言い方（データの値 P0/P1/P2 はそのまま）
+  function prioLabel(p) { return { P0: '最優先', P1: '次に', P2: '余裕があれば' }[p || 'P2'] || p; }
   function pathOf(u) {
     try { var x = new URL(u); return decodeURI(x.pathname + x.search) || '/'; } catch (e) { return String(u || ''); }
   }
@@ -1284,7 +1286,7 @@
         ? '<strong>' + esc(actTitle) + '</strong>' + (k.action_detail ? '<p>' + esc(k.action_detail) + '</p>' : '')
         : '<span class="orch-kw-muted">Search Console を取り込むと、対象ページと直し方を出します</span>';
       return '<tr class="orch-kw-row">' +
-        '<td data-label="優先"><span class="orch-prio">' + esc(k.priority || 'P2') + '</span></td>' +
+        '<td data-label="優先"><span class="orch-prio orch-prio-' + esc(k.priority || 'P2') + '">' + esc(prioLabel(k.priority)) + '</span></td>' +
         '<td data-label="対策キーワード"><div class="orch-kw-main"><strong>' + esc(k.keyword) + '</strong>' + pageHtml + metaHtml + '</div></td>' +
         '<td data-label="根拠" class="orch-kw-why">' + whyHtml + '</td>' +
         '<td data-label="やること" class="orch-kw-act">' + actHtml + '</td>' +
