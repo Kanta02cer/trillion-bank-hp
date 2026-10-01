@@ -154,6 +154,9 @@
         mentionRate: num(b.service_mention_rate),
         mediaDomainRate: num(b.media_domain_rate),
         searchRate: num(b.search_execution_rate),
+        // 競合と比べた名前の出やすさ（SOV・%）と、競合ごとの名前が出た割合。無い summary では null
+        sov: num(b.sov),
+        competitorMentionRates: b.competitor_mention_rates && typeof b.competitor_mention_rates === 'object' ? b.competitor_mention_rates : null,
         errors: num(b.error_count) || 0
       };
     }).filter(function (r) { return r.provider && r.group; });
@@ -237,7 +240,7 @@
       measuredOn: run.measured_on,
       querySetVersion: parsed.querySetVersion || run.query_set_version || '',
       providers: use.map(function (r) {
-        return { provider: r.provider, model: r.model, answers: r.answers, citeRate: r.citeRate, mentionRate: r.mentionRate, errors: r.errors };
+        return { provider: r.provider, model: r.model, answers: r.answers, citeRate: r.citeRate, mentionRate: r.mentionRate, sov: r.sov, competitorMentionRates: r.competitorMentionRates, errors: r.errors };
       })
     };
   }
@@ -297,9 +300,10 @@
           var prev = aiPrev ? aiPrev.providers.filter(function (x) { return x.provider === r.provider; })[0] : null;
           var comparable = !!(aiPrev && aiPrev.querySetVersion === aiNow.querySetVersion && prev);
           return Object.assign({}, r, {
-            prevCiteRate: prev ? prev.citeRate : null, prevMentionRate: prev ? prev.mentionRate : null,
+            prevCiteRate: prev ? prev.citeRate : null, prevMentionRate: prev ? prev.mentionRate : null, prevSov: prev ? prev.sov : null,
             citeDelta: comparable ? delta(r.citeRate, prev.citeRate) : null,
-            mentionDelta: comparable ? delta(r.mentionRate, prev.mentionRate) : null
+            mentionDelta: comparable ? delta(r.mentionRate, prev.mentionRate) : null,
+            sovDelta: comparable ? delta(r.sov, prev.sov) : null
           });
         })
       };
@@ -325,6 +329,10 @@
     if (ai) ai.providers.forEach(function (r) {
       if (r.citeRate == null) return;
       facts.push('AIの引用率（' + ({ openai: 'ChatGPT', gemini: 'Gemini' }[r.provider] || r.provider) + '）：' + (r.citeDelta != null ? (r.prevCiteRate + '% → ') : '') + r.citeRate + '%' + (r.citeDelta != null ? '（' + (r.citeDelta >= 0 ? '+' : '') + r.citeDelta + 'pt）' : (ai.comparable ? '' : '（前月と質問の版が違う、または前月の計測なし）')));
+    });
+    if (ai) ai.providers.forEach(function (r) {
+      if (r.sov == null) return;
+      facts.push('競合と比べた名前の出やすさ・SOV（' + ({ openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity' }[r.provider] || r.provider) + '）：' + (r.sovDelta != null ? (r.prevSov + '% → ') : '') + r.sov + '%' + (r.sovDelta != null ? '（' + (r.sovDelta >= 0 ? '+' : '') + r.sovDelta + 'pt）' : ''));
     });
     if (traffic.gsc && traffic.gsc.clicks != null) {
       facts.push('検索からのクリック：' + (traffic.gscPrev && traffic.gscPrev.clicks != null ? traffic.gscPrev.clicks + ' → ' : '') + traffic.gsc.clicks);

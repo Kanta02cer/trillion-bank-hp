@@ -219,6 +219,24 @@
       return d && d.clientId === clientId && Array.isArray(d.items) && d.items.length ? d : null;
     } catch (e) { return null; }
   }
+  // Studio の AI 計測（競合と比べた SOV を含む）を、この顧客の「AI回答の計測」として保存する
+  var STUDIO_MEASURE_KEY = 'airreach_studio_measure_v1';
+  function studioMeasureFor(clientId) {
+    try {
+      var d = JSON.parse(sessionStorage.getItem(STUDIO_MEASURE_KEY) || 'null');
+      return d && d.clientId === clientId && d.summary && Array.isArray(d.summary.by) && d.summary.by.length ? d : null;
+    } catch (e) { return null; }
+  }
+  function studioMeasureCard(d) {
+    var rows = d.summary.by.map(function (b) {
+      return '<tr><td>' + esc(PROVIDER_LABEL[b.provider] || b.provider) + '</td><td>' + (b.either && b.either.rate != null ? esc(b.either.rate) + '%' : '—') + '</td><td>' + (b.service_mention_rate != null ? esc(b.service_mention_rate) + '%' : '—') + '</td><td>' + (b.sov != null ? esc(b.sov) + '%' : '—') + '</td></tr>';
+    }).join('');
+    var comps = (d.summary.competitors || []).length ? '競合: ' + esc(d.summary.competitors.join('、')) : '競合なし（SOV は出ません）';
+    return '<section class="arc-card arc-studio-in"><h2 class="arc-h2">Studio の AI計測があります（' + esc(d.measuredOn) + '）</h2>' +
+      '<p class="arc-note">' + comps + '。保存すると「AI回答の計測」に入り、月次レポートの引用率・言及率・競合と比べた割合（SOV）に使われます。質問の版: ' + esc(d.summary.query_set_version || '') + '</p>' +
+      '<table class="arc-table"><thead><tr><th>AI</th><th>引用率</th><th>言及率</th><th>SOV</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<div class="arc-row"><input class="arc-input" type="date" id="arc-measure-date" value="' + esc(d.measuredOn) + '"><button type="button" class="arc-btn" id="arc-measure-add">AI計測として保存</button><button type="button" class="arc-btn arc-btn-line" id="arc-measure-discard">保存しない</button></div></section>';
+  }
   function localTime(iso) {
     var t = new Date(iso); if (isNaN(t)) return '';
     function p2(n) { return (n < 10 ? '0' : '') + n; }
@@ -355,7 +373,7 @@
 
       var runRows = runs.map(function (r) {
         var k = '';
-        try { k = R.parseMeasurementSummary(r.summary).rows.filter(function (x) { return x.group === 'main'; }).map(function (x) { return esc(PROVIDER_LABEL[x.provider] || x.provider) + ' 引用' + esc(x.citeRate) + '% / 言及' + esc(x.mentionRate) + '%'; }).join('、'); } catch (e) { k = '（集計を読めません）'; }
+        try { k = R.parseMeasurementSummary(r.summary).rows.filter(function (x) { return x.group === 'main'; }).map(function (x) { return esc(PROVIDER_LABEL[x.provider] || x.provider) + ' 引用' + (x.citeRate == null ? '—' : esc(x.citeRate) + '%') + ' / 言及' + esc(x.mentionRate) + '%' + (x.sov != null ? ' / SOV' + esc(x.sov) + '%' : ''); }).join('、'); } catch (e) { k = '（集計を読めません）'; }
         return '<tr><td>' + esc(r.measured_on) + '</td><td>' + esc(r.query_set_version || '') + '</td><td>' + k + '</td><td><button class="arc-btn-sm" data-del-run="' + r.id + '">削除</button></td></tr>';
       }).join('');
       var trRows = traffic.map(function (t) {
@@ -376,8 +394,8 @@
         return '<tr><td>' + esc(ym(r.period_month)) + '</td><td>' + (r.status === 'published' ? '<span class="arc-chip is-ok">公開</span>' : '<span class="arc-chip">下書き</span>') + '</td><td><a href="#/r/' + r.id + '">編集</a> · <a href="/airreach/app/report/?id=' + r.id + '">表示・PDF</a></td></tr>';
       }).join('');
 
-      var fromStudio = studioActionsFor(id);
-      shell(c.name, (fromStudio ? studioActionsCard(fromStudio) : '') + overview +
+      var fromStudio = studioActionsFor(id), fromMeasure = studioMeasureFor(id);
+      shell(c.name, (fromMeasure ? studioMeasureCard(fromMeasure) : '') + (fromStudio ? studioActionsCard(fromStudio) : '') + overview +
         '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">月次レポート</h2><a class="arc-btn arc-btn-line" href="' + esc(studioHref(c, sites)) + '">直す材料を作る（Studio）</a></div>' +
         '<form id="arc-make-report" class="arc-row"><input class="arc-input" type="month" id="arc-report-month" value="' + thisMonth() + '" required>' +
         '<button class="arc-btn" type="submit">この月の下書きを作る</button></form>' +
@@ -423,6 +441,17 @@
         d.addEventListener('toggle', function () { openFolds[d.getAttribute('data-fold')] = d.open; });
       });
       function done(p) { return p.then(function (res) { q(res); return clientStaff(id); }).catch(fail); }
+      if (fromMeasure) {
+        $('#arc-measure-add').addEventListener('click', function () {
+          var sm = fromMeasure.summary;
+          sb.from('measurement_runs').insert({ client_id: id, measured_on: $('#arc-measure-date').value || fromMeasure.measuredOn, run_label: sm.run_id,
+            query_set_version: sm.query_set_version || null, source: 'manual', summary: sm, created_by: me.email }).then(function (res) {
+            q(res); sessionStorage.removeItem(STUDIO_MEASURE_KEY); openFolds.runs = true;
+            return clientStaff(id).then(function () { msg('AI計測を保存しました', 'ok'); });
+          }).catch(fail);
+        });
+        $('#arc-measure-discard').addEventListener('click', function () { sessionStorage.removeItem(STUDIO_MEASURE_KEY); clientStaff(id); });
+      }
       if (fromStudio) {
         $('#arc-studio-add').addEventListener('click', function () {
           var rows = fromStudio.items.filter(function (it, i) { var cb = $('[data-studio-item="' + i + '"]'); return cb && cb.checked; })
