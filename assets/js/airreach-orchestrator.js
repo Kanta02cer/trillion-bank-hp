@@ -100,7 +100,7 @@
   }
 
   // 画面に出す優先度の言い方（データの値 P0/P1/P2 はそのまま）
-  function prioLabel(p) { return { P0: '最優先', P1: '次に', P2: '余裕があれば' }[p || 'P2'] || p; }
+  function prioLabel(p) { return { P0: '必須', P1: '推奨', P2: '任意' }[p || 'P2'] || p; }
   function pathOf(u) {
     try { var x = new URL(u); return decodeURI(x.pathname + x.search) || '/'; } catch (e) { return String(u || ''); }
   }
