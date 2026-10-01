@@ -170,8 +170,24 @@
 /* Simplified keyword proposals */
 .orch-kw-lead{margin:0 0 12px;color:var(--ars-muted,#64748b);font-size:14px;line-height:1.5}
 .orch-kw-table th:nth-child(1),.orch-kw-table td:nth-child(1){width:64px}
-.orch-kw-table th:nth-child(3),.orch-kw-table td:nth-child(3){min-width:180px}
-.orch-kw-table th:nth-child(4),.orch-kw-table td:nth-child(4){min-width:160px}
+.orch-kw-table th:nth-child(2),.orch-kw-table td:nth-child(2){width:30%}
+.orch-kw-table th:nth-child(3),.orch-kw-table td:nth-child(3){width:24%;min-width:180px}
+.orch-kw-table th:nth-child(4),.orch-kw-table td:nth-child(4){min-width:240px}
+.orch-kw-page{display:inline-block;margin-top:4px;font-size:12px;color:#1d4ed8;text-decoration:none;word-break:break-all}
+.orch-kw-page:hover{text-decoration:underline}
+.orch-kw-same{display:block;margin:2px 0 0;font-size:11px;color:#64748b}
+.orch-kw-facts{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;color:#0f172a;font-variant-numeric:tabular-nums}
+.orch-kw-src{margin-top:4px;font-size:11px;color:#64748b}
+.orch-kw-act strong{display:block;font-size:14px;color:#0f172a;line-height:1.4}
+.orch-kw-act p{margin:4px 0 0;font-size:12.5px;line-height:1.55;color:#475569}
+.orch-kw-muted{font-size:12px;color:#94a3b8}
+@media (max-width:720px){
+  .orch-kw-table thead{display:none}
+  .orch-kw-table,.orch-kw-table tbody,.orch-kw-table tr,.orch-kw-table td{display:block;width:auto!important;min-width:0!important}
+  .orch-kw-table tr{padding:12px 4px;border-bottom:1px solid #e2e8f0}
+  .orch-kw-table td{border:0;padding:4px 0}
+  .orch-kw-table td[data-label="根拠"]::before,.orch-kw-table td[data-label="やること"]::before{content:attr(data-label);display:block;font-size:11px;color:#64748b;margin-bottom:2px}
+}
 .orch-kw-main strong{display:block;font-size:15px;line-height:1.35;color:#0f172a}
 .orch-kw-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .orch-kw-meta span{font-size:11px;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#475569}
