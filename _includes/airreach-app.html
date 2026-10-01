@@ -600,6 +600,16 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 .ar-sum-val .unit{font-size:.85rem;font-weight:600;color:var(--ar-muted);margin-left:5px}
 .ar-sum-row.is-accent .ar-sum-val{color:var(--ar-accent)}
 .ar-sum-note{font-size:.8rem;color:var(--ar-muted);margin-top:3px;line-height:1.5}
+.ar-inq-form{margin-top:10px;padding:12px;border:1px solid var(--ar-line,#e2e8f0);border-radius:10px;background:#fff}
+.ar-inq-form label{display:block;font-size:.85rem;font-weight:700;color:#0f172a;margin-bottom:6px}
+.ar-inq-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.ar-inq-row input{width:120px;min-height:40px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;font-size:1rem;font-variant-numeric:tabular-nums}
+.ar-inq-row input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.18)}
+.ar-inq-row span{font-size:.85rem;color:#475569}
+.ar-inq-row .ar-btn{min-height:40px;padding:0 14px;font-size:.9rem}
+.ar-inq-clear{border:0;background:none;color:#64748b;font:inherit;font-size:.85rem;text-decoration:underline;cursor:pointer;padding:4px}
+.ar-inq-help{margin:6px 0 0;font-size:.78rem;line-height:1.5;color:#64748b}
+.ar-inq-help.is-err{color:#b91c1c}
 .ar-ind a{color:var(--ar-accent);text-decoration:none;font-weight:600;word-break:break-all}
 .ar-ind a:hover{text-decoration:underline}
 @media(max-width:520px){.ar-sum-row{grid-template-columns:36px 1fr;grid-template-rows:auto auto}.ar-sum-row .ar-badge-e{grid-column:2;justify-self:start}.ar-gauge-row{justify-content:center;text-align:center}.ar-gauge-band{justify-content:center}}
@@ -1705,12 +1715,18 @@ document.addEventListener('DOMContentLoaded', function () {
     if (aftLab) aftLab.textContent = label;
   }
 
+  // いまの月の件数（店・会社の方が入力した数）。サイトごとにこの端末に覚える
+  var INQ_KEY = 'airreach_inq_by_host_v1';
+  function hostKey(u) { try { return new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } }
+  function storedInq(u) { try { var m = JSON.parse(localStorage.getItem(INQ_KEY) || '{}') || {}; var n = m[hostKey(u)]; return n > 0 ? String(n) : undefined; } catch (e) { return undefined; } }
+  function storeInq(u, n) { try { var m = JSON.parse(localStorage.getItem(INQ_KEY) || '{}') || {}; var k = hostKey(u); if (!k) return; if (n > 0) m[k] = n; else delete m[k]; localStorage.setItem(INQ_KEY, JSON.stringify(m)); } catch (e) {} }
+
   function readBiz() {
     // 空欄は「入力なし」。0 として扱わない
     function v(id) { var x = ($(id) && $(id).value || '').trim(); return x === '' ? undefined : x; }
     return {
       monthlyVisitors: v('biz-visitors'),
-      monthlyInquiries: v('biz-inq'),
+      monthlyInquiries: v('biz-inq') || storedInq(lastUrl || ($('ar-url') && $('ar-url').value) || ''),
       monthlyLine: v('biz-line'),
       monthlyFee: v('biz-fee'),
       closeRatePct: v('biz-close'),
@@ -1957,11 +1973,13 @@ document.addEventListener('DOMContentLoaded', function () {
           '<div class="ar-sum-lab">' + tipAttr(h.id === 'outcome' ? '増やせる' + h.label : h.label) + '</div>' +
           '<div class="ar-sum-val">' + tipAttr(h.value) + '<span class="unit">' + tipAttr(h.unit || '') + '</span></div>' +
           (h.meaning ? '<div class="ar-sum-note">' + tipAttr(h.meaning) + '</div>' : '') +
+          (h.id === 'outcome' && h.inqFrom !== 'ga4' && !h.noDiagnose ? inqFormHtml(h) : '') +
           '</div>' +
           '<span class="ar-badge-e ' + badgeClass(h.badge) + '" data-tip="' + tipAttr(evidenceTip(h.badge)) + '" data-tip-icon>' + tipAttr(badge) + '</span>';
         rowsEl.appendChild(row);
       });
     }
+    bindInqForm();
     if (window.AirReachTip) { window.AirReachTip.enhance($('ar-sumcard')); }
 
     var factorsWrap = $('ar-factors');
@@ -2422,6 +2440,37 @@ document.addEventListener('DOMContentLoaded', function () {
         methodEl.innerHTML = html;
       }
     }
+  }
+
+  // 「増やせる件数」の行に、いまの月の件数の入力欄を出す（入れるとその場で目安を出し直す）
+  function inqEsc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function inqFormHtml(h) {
+    var tipAttr = inqEsc;
+    var cur = readBiz().monthlyInquiries;
+    var lab = (h.label || '件数');
+    return '<form class="ar-inq-form" id="ar-inq-form" novalidate>' +
+      '<label for="ar-inq-input">いまの月の' + tipAttr(lab) + 'の件数</label>' +
+      '<div class="ar-inq-row"><input id="ar-inq-input" type="number" inputmode="numeric" min="1" max="100000" step="1" placeholder="例: 30" value="' + tipAttr(cur || '') + '">' +
+      '<span>件 / 月</span><button type="submit" class="ar-btn ar-btn-primary">' + (cur ? '更新' : '目安を出す') + '</button>' +
+      (cur ? '<button type="button" class="ar-inq-clear" id="ar-inq-clear">消す</button>' : '') + '</div>' +
+      '<p class="ar-inq-help" id="ar-inq-help">予約台帳・問い合わせ管理などで分かる、直近の1か月の件数を入れます。この端末だけに保存し、送信はしません。</p>' +
+      '</form>';
+  }
+  function bindInqForm() {
+    var f = $('ar-inq-form'); if (!f) return;
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var n = Math.round(Number(($('ar-inq-input').value || '').trim()));
+      if (!(n >= 1 && n <= 100000)) { $('ar-inq-help').textContent = '1 以上の数を入れてください。'; $('ar-inq-help').classList.add('is-err'); $('ar-inq-input').focus(); return; }
+      storeInq(lastUrl || $('ar-url').value, n);
+      if (window.AirReachSales) renderReport(buildReport(lastDiagnose));
+      var again = $('ar-inq-input'); if (again) again.focus();
+    });
+    var c = $('ar-inq-clear');
+    if (c) c.addEventListener('click', function () {
+      storeInq(lastUrl || $('ar-url').value, 0);
+      if (window.AirReachSales) renderReport(buildReport(lastDiagnose));
+    });
   }
 
   function buildReport(diagnose) {
