@@ -282,4 +282,4 @@
 .ars-google-save .ars-gnote{margin:0;overflow-wrap:anywhere}
 .ars-google-sync{display:grid;grid-template-columns:minmax(0,180px) minmax(0,180px) auto auto;gap:10px 12px;align-items:end}
 .ars-google-sync .ars-input{min-width:0}
-@media (max-width:620px){.ars-google-sync{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.ars-google-sync .ars-btn{width:100%}}
+@media (max-width:620px){.ars-google-sync{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.ars-google-sync .ars-btn{width:100%;white-space:nowrap;padding-left:8px;padding-right:8px}}
