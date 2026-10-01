@@ -154,6 +154,19 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-error.is-on{display:block}
 .ar-sec{padding:clamp(28px,5vw,52px) 0}
 .ar-empty{padding:20px 0;color:#64748b;font-size:1.05rem}
+.ar-empty-idle p{margin:0 0 12px;line-height:1.6}
+.ar-loading{max-width:560px;padding:20px 22px;border:1px solid #dbeafe;border-radius:14px;background:#f8fbff;color:#0f172a}
+.ar-loading[hidden],.ar-empty-idle[hidden]{display:none}
+.ar-loading-head{display:flex;align-items:center;gap:10px;font-size:1.05rem}
+.ar-loading-dot{width:10px;height:10px;border-radius:50%;background:#2563eb;animation:ar-pulse 1.2s ease-in-out infinite}
+.ar-loading-bar{position:relative;height:6px;margin:14px 0 12px;border-radius:99px;background:#dbeafe;overflow:hidden}
+.ar-loading-bar i{position:absolute;inset:0 auto 0 0;width:35%;border-radius:99px;background:#2563eb;animation:ar-slide 1.6s cubic-bezier(.65,0,.35,1) infinite}
+.ar-loading-step{margin:0;font-size:.95rem;font-weight:700;color:#1e3a8a;min-height:1.5em;transition:opacity .2s}
+.ar-loading-step.is-swap{opacity:0}
+.ar-loading-note{margin:6px 0 0;font-size:.85rem;color:#64748b}
+@keyframes ar-slide{0%{transform:translateX(-100%)}100%{transform:translateX(290%)}}
+@keyframes ar-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.7);opacity:.5}}
+@media (prefers-reduced-motion:reduce){.ar-loading-dot,.ar-loading-bar i{animation:none}.ar-loading-bar i{width:100%;opacity:.35}.ar-loading-step{transition:none}}
 .ar-dash{display:none}
 .ar-dash.is-on{display:block}
 .ar-steps{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
@@ -1088,7 +1101,18 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
 
   <section class="ar-sec" id="result">
     <div class="ar-wrap">
-      <div id="ar-empty" class="ar-empty">上の質問に答えると、結論の4つが出ます。</div>
+      <div id="ar-empty" class="ar-empty">
+        <div id="ar-empty-idle" class="ar-empty-idle">
+          <p>まだ診断していません。いくつかの質問（業種・ホームページ・増やしたいこと）に答えると、ここに結果が出ます。</p>
+          <button type="button" class="ar-btn ar-btn-primary" id="ar-empty-start">質問に答えて診断する</button>
+        </div>
+        <div id="ar-loading" class="ar-loading" role="status" aria-live="polite" hidden>
+          <div class="ar-loading-head"><span class="ar-loading-dot" aria-hidden="true"></span><b id="ar-loading-title">診断しています</b></div>
+          <div class="ar-loading-bar" aria-hidden="true"><i></i></div>
+          <p class="ar-loading-step" id="ar-loading-step">ホームページを読み込んでいます</p>
+          <p class="ar-loading-note">サイトによって数秒〜40秒ほどかかります。このままお待ちください。</p>
+        </div>
+      </div>
 
       <div id="ar-dash" class="ar-dash" aria-live="polite">
         <div class="ar-toolbar">
@@ -2518,6 +2542,33 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // 診断中の表示。進み具合は測れないので割合は出さず、いま何をしているかの説明を順に出す
+  var loadingTimer = null;
+  var LOADING_STEPS = ['ホームページを読み込んでいます', '下層ページ（料金・メニュー・会社情報など）を確認しています', '構造化データ・FAQ・案内ファイルを点検しています', '調べそうな言葉の答えがあるかを確かめています', '結果をまとめています'];
+  function showLoading(url) {
+    var host = ''; try { host = new URL(/^https?:\/\//i.test(url) ? url : 'https://' + url).hostname.replace(/^www\./, ''); } catch (e) {}
+    if ($('ar-empty')) $('ar-empty').style.display = '';
+    if ($('ar-dash')) $('ar-dash').classList.remove('is-on');
+    if ($('ar-empty-idle')) $('ar-empty-idle').hidden = true;
+    var box = $('ar-loading'); if (!box) return;
+    box.hidden = false;
+    $('ar-loading-title').textContent = (host ? host + ' を' : '') + '診断しています';
+    var i = 0, step = $('ar-loading-step'); step.textContent = LOADING_STEPS[0];
+    clearInterval(loadingTimer);
+    loadingTimer = setInterval(function () {
+      if (i >= LOADING_STEPS.length - 1) return;
+      i++; step.classList.add('is-swap');
+      setTimeout(function () { step.textContent = LOADING_STEPS[i]; step.classList.remove('is-swap'); }, 200);
+    }, 5000);
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try { box.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); } catch (e) {}
+  }
+  function hideLoading() {
+    clearInterval(loadingTimer); loadingTimer = null;
+    if ($('ar-loading')) $('ar-loading').hidden = true;
+    if ($('ar-empty-idle')) $('ar-empty-idle').hidden = false;
+  }
+
   function runDiagnose() {
     clearError();
     if (!window.AirReach || !window.AirReachSales) {
@@ -2533,7 +2584,9 @@ document.addEventListener('DOMContentLoaded', function () {
       keywordState = { keyword: keyword, keywords: autoKeywordList(keyword) };
     }
     var allowProxy = !!$('ar-proxy-consent').checked;
+    showLoading(url);
     window.AirReach.diagnose(url, { allowProxy: allowProxy }).then(function (result) {
+      hideLoading();
       lastDiagnose = result;
       lastUrl = window.AirReach.normalizeUrl(url).href;
       // Keep user-selected industry from survey (do not overwrite with auto-detect)
@@ -2553,6 +2606,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       $('result').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
     }).catch(function (ex) {
+      hideLoading();
       lastDiagnose = null;
       lastUrl = url;
       industryDetect = {
@@ -2651,6 +2705,8 @@ document.addEventListener('DOMContentLoaded', function () {
     $('ar-empty').style.display = '';
     openGate();
   });
+
+  if ($('ar-empty-start')) $('ar-empty-start').addEventListener('click', function () { openGate(); });
 
   if ($('biz-run')) {
     $('biz-run').addEventListener('click', function () {
