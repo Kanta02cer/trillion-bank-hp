@@ -39,6 +39,9 @@ Adctor is a research and PoC program for connecting AI/RAG/MCP/Agent content use
 ## Reviewed guides
 
 - SEO・AEO・GEO・AIO・LLMOの違い: https://trillion-bank.jp/trillionbank/news/seo-aeo-geo-aio-llmo-difference/
+- AIOとは: https://trillion-bank.jp/trillionbank/news/aio-towa/
+- GEOとは: https://trillion-bank.jp/trillionbank/news/geo-towa/
+- Google AI要約とは: https://trillion-bank.jp/trillionbank/news/google-ai-summary/
 - AI検索の測定方法: https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/
 - Pay per CrawlとPay per Useの違い: https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/
 - AI検索対策の内製／外注 判断ガイド: https://trillion-bank.jp/trillionbank/guide/inhouse-or-outsource/

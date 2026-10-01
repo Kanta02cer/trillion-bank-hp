@@ -5,7 +5,7 @@ toc: true
 direct_answer: "Google AI Overviews（AIO）対策の本筋は、AI専用の特別な施策ではなく、従来SEOの基礎（クロール可能性・質の高いコンテンツ・エンティティの一貫性）の上に、AIが抽出しやすい構造を整えることです。"
 title: "Google AI Overviews対策とは？従来SEOとの関係と実務チェックリスト"
 date: 2026-09-06
-last_modified: 2026-09-06
+last_modified: 2026-10-01
 category: AI検索対策
 author: 井上 幹太
 tbdesc: "Google AI Overviews（AIO）対策の実務を、Google公式のAI最適化ガイドとAhrefs・5WPR・OtterlyAIの調査データに基づいて解説します。従来SEOとの関係、トップ10引用比率の変化、YouTube引用の台頭、実務チェックリストと限界をまとめます。"
@@ -43,6 +43,8 @@ faq_items:
 ---
 
 Google自身が公式ガイドで、AI機能のための特別なファイルやマークアップは不要だと明言しています。一方で観測データは、上位表示だけでは説明できない引用の構造変化も示しています。
+
+「Google AI要約とは何か」の定義は[Google AI要約とは](/trillionbank/news/google-ai-summary/)が代表です。このページは対策と観測データのチェックリストに限定します。略語の揺れは[AIOとは](/trillionbank/news/aio-towa/)を参照してください。
 ## Google公式「AI最適化ガイド」の要点
 
 Googleが公開している公式ガイド「Optimizing your website for generative AI features on Google Search」は、生成AI機能への最適化について次の点を明言しています。

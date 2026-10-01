@@ -127,6 +127,9 @@ jobs:
               '_tbnews/2026-09-26-cloudflare-pay-per-crawl.md': '/trillionbank/news/cloudflare-pay-per-crawl/',
               '_tbnews/2026-09-26-ai-newsroom-series.md': '/trillionbank/news/ai-newsroom-series/',
               '_tbnews/2026-09-27-pay-per-crawl-research-note.md': '/trillionbank/news/pay-per-crawl-research-note/',
+              '_tbnews/2026-09-25-aio-towa.md': '/trillionbank/news/aio-towa/',
+              '_tbnews/2026-09-25-geo-towa.md': '/trillionbank/news/geo-towa/',
+              '_tbnews/2026-09-25-google-ai-summary.md': '/trillionbank/news/google-ai-summary/',
           }
           site_origin = 'https://trillion-bank.jp'
 

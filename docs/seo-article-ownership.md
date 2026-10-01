@@ -1,6 +1,6 @@
 # SEO記事 Ownership Map
 
-Date: 2026-09-20
+Date: 2026-10-01
 Status: ACTIVE
 Companion: docs/eeat-media-authority-strategy.md / docs/seo-p0-site-architecture.md
 
@@ -30,6 +30,9 @@ Companion: docs/eeat-media-authority-strategy.md / docs/seo-p0-site-architecture
 | 意図 | 代表記事 | 支援・統合候補 |
 |---|---|---|
 | SEO/AEO/GEO/AIO/LLMOの違い | `/trillionbank/news/seo-aeo-geo-aio-llmo-difference/` | `llmo-geo-aeo`（旧）→ 代表へ誘導優先 |
+| AIOとは | `/trillionbank/news/aio-towa/` | 対策手順は `ai-overviews-optimization` |
+| GEOとは | `/trillionbank/news/geo-towa/` | 会社選定は `geo-consulting-company` |
+| Google AI要約とは | `/trillionbank/news/google-ai-summary/` | チェックリストは `ai-overviews-optimization` |
 | AI検索の効果測定 | `ai-search-effect-measurement` / `ai-search-measurement-method` | 重複見出しを代表1本に寄せる |
 | 引用率・引用分析 | `ai-citation-rate-calculation` / `generative-ai-citation-analysis` | 定義は前者、手順は後者 |
 | SOV | `ai-search-sov` | 調査レポートはデータ側 |
@@ -40,7 +43,7 @@ Companion: docs/eeat-media-authority-strategy.md / docs/seo-p0-site-architecture
 | PPCの意味の切り分け | `/trillionbank/news/ppc-two-meanings/` | Cloudflare実装は `cloudflare-pay-per-crawl`。概念入口は `pay-per-crawl-towa` |
 | Pay per Crawl研究整理 | `/trillionbank/news/pay-per-crawl-research-note/` | 事業定義は `/trillionbank/business/pay-per-crawl/`。件数は未公開 |
 | 解説ニュース一覧 | `/trillionbank/news/ai-newsroom-series/` | 上記の目次。量産記事の受け皿にはしない |
-| AI Overviews | `ai-overviews-optimization` | — |
+| AI Overviews対策 | `ai-overviews-optimization` | 定義は `google-ai-summary` |
 | ChatGPT検索 | `chatgpt-search-optimization` | — |
 | クローラー制御 | `ai-crawler-list-control` | — |
 

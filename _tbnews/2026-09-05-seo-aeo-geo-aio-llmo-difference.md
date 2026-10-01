@@ -3,7 +3,7 @@ layout: tb-article-authority
 title: SEO・AEO・GEO・AIO・LLMOの違いとは？企業が使い分けるための実務整理
 tbdesc: SEO、AEO、GEO、AIO、LLMOは重なる領域が多く、定義も統一されていません。企業が目的・対象面・測定指標・施策で使い分ける方法を整理します。
 date: 2026-09-05
-last_modified: 2026-09-06
+last_modified: 2026-10-01
 category: AI検索基礎
 insight: true
 toc: true
@@ -32,6 +32,13 @@ faq_items:
 SEO、AEO、GEO、AIO、LLMOは、完全に分離した標準規格ではありません。実務では、**どの検索・回答面を対象にし、何を測り、どの情報を改善するか**で使い分けるのが安全です。
 
 Googleは、AI OverviewsやAI Modeに表示されるための特別なAI用マークアップは不要で、従来のSEOの基本が引き続き重要だと案内しています。したがって「新しい略語だけを導入する」のではなく、検索可能な一次情報、技術的な健全性、明確な著者・更新日、内部リンク、正確な構造化データを土台にします。
+
+略語ごとの入口は分けています。横断比較はこのページが代表です。
+
+- [AIOとは](/trillionbank/news/aio-towa/)
+- [GEOとは](/trillionbank/news/geo-towa/)
+- [Google AI要約とは](/trillionbank/news/google-ai-summary/)
+- 対策手順は[Google AI Overviews対策](/trillionbank/news/ai-overviews-optimization/)
 
 ## 実務上の比較
 
