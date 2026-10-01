@@ -241,6 +241,83 @@
   function ymJa(d) { var s = String(d || ''); return s.slice(0, 4) + '年' + Number(s.slice(5, 7)) + '月'; }
 
   // ---- 顧客（社内向け）: 材料の登録とレポート作成 ------------------------------
+  // ---- Google（Search Console・GA4）から月の数値を取得して保存する ----
+  // 取得には、この端末で Studio の「接続」を済ませておく必要がある（Google のトークンは trillion-bank.jp の Cookie にある）。
+  // どの GSC サイト・GA4 プロパティを使うかは顧客ごとにこの端末に覚える（DB は変えない）
+  var GOOGLE_PROPS_KEY = 'airreach_google_props_v1';
+  function googleProps(clientId) {
+    try { return (JSON.parse(localStorage.getItem(GOOGLE_PROPS_KEY) || '{}') || {})[clientId] || {}; } catch (e) { return {}; }
+  }
+  function saveGoogleProps(clientId, v) {
+    try { var all = JSON.parse(localStorage.getItem(GOOGLE_PROPS_KEY) || '{}') || {}; all[clientId] = v; localStorage.setItem(GOOGLE_PROPS_KEY, JSON.stringify(all)); } catch (e) {}
+  }
+  function googleSyncForm(clientId, sites) {
+    var p = googleProps(clientId), host = sites[0] && sites[0].host;
+    return '<form id="arc-google-sync" class="arc-row"><input class="arc-input" type="month" id="arc-g-month" value="' + thisMonth() + '" required>' +
+      '<input class="arc-input" id="arc-g-gsc" placeholder="Search Console のサイト（例: sc-domain:example.jp）" value="' + esc(p.gsc != null ? p.gsc : (host ? 'sc-domain:' + host : '')) + '">' +
+      '<input class="arc-input" id="arc-g-ga4" inputmode="numeric" placeholder="GA4 プロパティID（数字）" value="' + esc(p.ga4 || '') + '">' +
+      '<button class="arc-btn" type="submit">Google から取得</button></form>' +
+      '<p class="arc-note">先に <a href="/airreach/studio/#google" target="_blank" rel="noopener">Studio の Google 画面</a>で「接続」してください。接続した Google アカウントが閲覧できるサイトだけ取得できます（顧客サイトは閲覧権限をもらう）。' +
+      'Search Console はサイト全体の表示・クリック、GA4 は ' + esc(host || '対象サイト') + ' のセッション・AI経由セッション（ChatGPT・Perplexity・Gemini 等からの流入）・キーイベントを取得します。対象ページ閲覧は手入力の値を使います。当月は昨日までの数値です。</p>';
+  }
+  function monthRange(ymStr) {
+    var y = Number(ymStr.slice(0, 4)), mo = Number(ymStr.slice(5, 7));
+    var start = ymStr + '-01', last = new Date(Date.UTC(y, mo, 0)).toISOString().slice(0, 10);
+    var yest = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    var end = last < yest ? last : yest;
+    return end < start ? null : { start: start, end: end };
+  }
+  function googlePost(path, body) {
+    return fetch(path, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (r.ok) return j;
+          var e = j.error && typeof j.error === 'object' ? (j.error.message || '') : (j.error || '');
+          if (r.status === 401) e = 'Google に接続していません（または接続が切れています）。Studio の Google 画面で「接続」してください';
+          else if (r.status === 403 && path.indexOf('gsc') >= 0) e = 'この Search Console のサイトを見る権限がありません。サイトの種類（sc-domain: か https://〜/ か）と、閲覧権限を確認してください';
+          throw new Error(e || ('HTTP ' + r.status));
+        });
+      });
+  }
+  function bindGoogleSync(clientId, sites) {
+    var form = $('#arc-google-sync'); if (!form) return;
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var month = $('#arc-g-month').value, gsc = $('#arc-g-gsc').value.trim(), ga4 = $('#arc-g-ga4').value.trim().replace(/^properties\//, '');
+      var range = monthRange(month);
+      if (!range) { msg('この月はまだ数値がありません', 'error'); return; }
+      if (!gsc && !ga4) { msg('Search Console のサイトか GA4 プロパティIDを入れてください', 'error'); return; }
+      if (ga4 && !/^\d{1,20}$/.test(ga4)) { msg('GA4 プロパティIDは数字だけです（「G-」で始まる測定IDではありません）', 'error'); return; }
+      if (ga4 && !sites[0]) { msg('GA4 を取得するには、先に「対象サイト」を登録してください', 'error'); return; }
+      saveGoogleProps(clientId, { gsc: gsc, ga4: ga4 });
+      msg('Google から取得しています…');
+      var period = month + '-01', jobs = [], got = [];
+      if (gsc) jobs.push(googlePost('/api/google/gsc/', { siteUrl: gsc, startDate: range.start, endDate: range.end, totalsOnly: true }).then(function (d) {
+        var t = d.totals; if (!t) throw new Error('Search Console の合計を取得できませんでした');
+        got.push('Search Console（' + t.days + '日間 クリック ' + t.clicks + ' / 表示 ' + t.impressions + '）');
+        return sb.from('traffic_snapshots').upsert({ client_id: clientId, period_month: period, source: 'gsc_api',
+          metrics: { clicks: t.clicks, impressions: t.impressions, ctr: t.ctr, position: t.position, days: t.days, start_date: t.startDate, end_date: t.endDate, property: gsc },
+          created_by: me.email }, { onConflict: 'client_id,period_month,source' }).then(q);
+      }));
+      if (ga4) jobs.push(googlePost('/api/google/ga4/', { propertyId: ga4, siteUrl: sites[0].url, startDate: range.start, endDate: range.end, summaryOnly: true }).then(function (d) {
+        var g = d.summary; if (!g) throw new Error('GA4 の合計を取得できませんでした');
+        got.push('GA4（セッション ' + g.sessions + ' / AI経由 ' + g.aiSessions + ' / キーイベント ' + g.keyEvents + '）');
+        return sb.from('traffic_snapshots').upsert({ client_id: clientId, period_month: period, source: 'ga4_api',
+          metrics: { sessions: g.sessions, ai_sessions: g.aiSessions, conversions: g.keyEvents, target_page_views: null, ai_sources: g.aiSources,
+            property_id: ga4, host: d.host, start_date: range.start, end_date: range.end },
+          created_by: me.email }, { onConflict: 'client_id,period_month,source' }).then(q);
+      }));
+      Promise.allSettled(jobs).then(function (rs) {
+        var errs = rs.filter(function (r) { return r.status === 'rejected'; }).map(function (r) { return (r.reason && r.reason.message) || String(r.reason); });
+        openFolds.traffic = true;
+        return clientStaff(clientId).then(function () {
+          if (errs.length) msg((got.length ? '保存: ' + got.join('、') + '。' : '') + '失敗: ' + errs.join(' / '), 'error');
+          else msg('保存しました: ' + got.join('、'), 'ok');
+        });
+      }).catch(fail);
+    });
+  }
+
   function clientStaff(id) {
     return Promise.all([
       sb.from('clients').select('*').eq('id', id).maybeSingle(),
@@ -327,6 +404,7 @@
         '<input class="arc-input" type="number" min="0" id="arc-ga4-pv" placeholder="対象ページ閲覧">' +
         '<input class="arc-input" type="number" min="0" id="arc-ga4-cv" placeholder="問い合わせ・予約">' +
         '<button class="arc-btn" type="submit">GA4 の数値を保存</button></form>' +
+        googleSyncForm(id, sites) +
         '<table class="arc-table"><thead><tr><th>月</th><th>取得元</th><th>数値</th><th></th></tr></thead><tbody>' + (trRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></details>' +
 
         fold('actions', '実施した施策', actions.length + '件') +
@@ -397,6 +475,7 @@
           metrics: { sessions: n('#arc-ga4-sessions'), ai_sessions: n('#arc-ga4-ai'), target_page_views: n('#arc-ga4-pv'), conversions: n('#arc-ga4-cv') }, created_by: me.email },
           { onConflict: 'client_id,period_month,source' }));
       });
+      bindGoogleSync(id, sites);
       root.querySelectorAll('[data-del-site]').forEach(function (b) { b.addEventListener('click', function () { done(sb.from('client_sites').delete().eq('id', b.getAttribute('data-del-site'))); }); });
       root.querySelectorAll('[data-del-member]').forEach(function (b) { b.addEventListener('click', function () { done(sb.from('client_members').delete().eq('client_id', id).eq('email', b.getAttribute('data-del-member'))); }); });
       root.querySelectorAll('[data-del-run]').forEach(function (b) { b.addEventListener('click', function () { done(sb.from('measurement_runs').delete().eq('id', b.getAttribute('data-del-run'))); }); });

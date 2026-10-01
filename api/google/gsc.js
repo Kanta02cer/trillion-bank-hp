@@ -31,29 +31,34 @@ export default async function handler(req, res) {
   if (!siteUrl || !startDate || !endDate) return res.status(400).json({ error: 'siteUrl, startDate, endDate are required' });
 
   const url = `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`;
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      startDate,
-      endDate,
-      dimensions: ['date', 'query', 'page'],
-      rowLimit: Math.min(Number(rowLimit) || 25000, 25000),
-      dataState: 'final'
-    })
-  });
-  const data = await r.json();
-  if (!r.ok) return res.status(r.status).json(data);
-  const rows = (data.rows || []).map(row => ({
-    date: row.keys?.[0] || '',
-    keyword: row.keys?.[1] || '',
-    url: row.keys?.[2] || '',
-    clicks: row.clicks || 0,
-    impressions: row.impressions || 0,
-    ctr: row.ctr || 0,
-    position: row.position || 0,
-    source: 'gsc'
-  }));
+  // totalsOnly: 月次レポート用。サイト全体の合計だけを返す（語句ごとの行は取らない）
+  const totalsOnly = !!(req.body && req.body.totalsOnly);
+  let rows = [];
+  if (!totalsOnly) {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        startDate,
+        endDate,
+        dimensions: ['date', 'query', 'page'],
+        rowLimit: Math.min(Number(rowLimit) || 25000, 25000),
+        dataState: 'final'
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) return res.status(r.status).json(data);
+    rows = (data.rows || []).map(row => ({
+      date: row.keys?.[0] || '',
+      keyword: row.keys?.[1] || '',
+      url: row.keys?.[2] || '',
+      clicks: row.clicks || 0,
+      impressions: row.impressions || 0,
+      ctr: row.ctr || 0,
+      position: row.position || 0,
+      source: 'gsc'
+    }));
+  }
   // サイト全体の合計は日付だけで取り直す。検索語句つきの行は Google が伏せた語句（匿名クエリ）の分が落ち、
   // 合計が実際より小さくなる（2026-10-01 実測: 表示 24,091 に対し語句つきの合計は 14,958）
   let totals = null;
@@ -62,15 +67,25 @@ export default async function handler(req, res) {
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ startDate, endDate, dimensions: ['date'], rowLimit: 1000, dataState: 'final' })
   });
+  if (!t.ok && totalsOnly) {
+    const te = await t.json().catch(() => ({}));
+    return res.status(t.status).json(te);
+  }
   if (t.ok) {
     const td = await t.json();
     const days = (td.rows || []).map(row => row.keys?.[0] || '').filter(Boolean).sort();
     // 日数は開始日から「データのある最後の日」まで（直近の確定前の日を分母に入れない）
     const last = days.length ? days[days.length - 1] : endDate;
     const span = Math.round((Date.parse(last < endDate ? last : endDate) - Date.parse(startDate)) / 86400000) + 1;
+    const impressions = (td.rows || []).reduce((s, row) => s + (row.impressions || 0), 0);
+    const clicks = (td.rows || []).reduce((s, row) => s + (row.clicks || 0), 0);
+    // 平均掲載順位は表示回数で重み付け（Search Console の画面の平均と同じ考え方）
+    const posW = (td.rows || []).reduce((s, row) => s + (row.position || 0) * (row.impressions || 0), 0);
     totals = {
-      impressions: (td.rows || []).reduce((s, row) => s + (row.impressions || 0), 0),
-      clicks: (td.rows || []).reduce((s, row) => s + (row.clicks || 0), 0),
+      impressions,
+      clicks,
+      ctr: impressions ? clicks / impressions : 0,
+      position: impressions ? Math.round((posW / impressions) * 10) / 10 : 0,
       days: span > 0 ? span : 0,
       startDate,
       endDate: last < endDate ? last : endDate

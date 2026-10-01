@@ -48,6 +48,12 @@ export default async function handler(req, res) {
   }
 
   const url = `https://analyticsdata.googleapis.com/v1beta/properties/${encodeURIComponent(pid)}:runReport`;
+  // summaryOnly: 月次レポート用。対象サイトの合計（セッション・キーイベント・AI経由）だけを返す
+  if (req.body.summaryOnly) {
+    const s = await fetchSummary(url, token, startDate, endDate, host);
+    if (s.error) return res.status(s.status).json(s.error);
+    return res.status(200).json({ summary: s.summary, propertyId: pid, siteUrl: String(siteUrl), host });
+  }
   const r = await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -61,19 +67,8 @@ export default async function handler(req, res) {
   });
   const data = await r.json().catch(() => ({}));
   if (!r.ok) {
-    // Google の応答を画面で扱える形にする（数値は作らない）
-    const e = (data && data.error) || {};
-    const scopeInsufficient = r.status === 403 && (/ACCESS_TOKEN_SCOPE_INSUFFICIENT/.test(JSON.stringify(e)) || /insufficient authentication scopes/i.test(e.message || ''));
-    if (scopeInsufficient) {
-      return res.status(403).json({ code: 'scope_insufficient', error: 'Google アナリティクスの権限がありません。Studio の「接続」からもう一度 Google に接続し、アナリティクス（読み取り）を許可してください。', google: e.message || '' });
-    }
-    if (r.status === 403) {
-      return res.status(403).json({ code: 'forbidden', error: 'このプロパティを見る権限がありません。接続した Google アカウントに、この GA4 プロパティの閲覧権限があるか確認してください。', google: e.message || '' });
-    }
-    if (r.status === 401) {
-      return res.status(401).json({ code: 'unauthorized', error: 'Google への接続が切れています。Studio の「接続」からもう一度接続してください。', google: e.message || '' });
-    }
-    return res.status(r.status).json({ code: 'google_error', error: e.message || ('GA4 API error ' + r.status), google: e.message || '' });
+    const ge = googleError(r.status, data);
+    return res.status(ge.status).json(ge.body);
   }
   const all = (data.rows || []).map(row => ({
     date: normalizeDate(row.dimensionValues?.[0]?.value || ''),
@@ -91,6 +86,55 @@ export default async function handler(req, res) {
     rows, count: rows.length, propertyId: pid, siteUrl: String(siteUrl), host,
     excluded: { rows: all.length - rows.length, hosts: Object.keys(excludedHosts).sort((a, b) => excludedHosts[b] - excludedHosts[a]).slice(0, 10) }
   });
+}
+
+// Google の失敗を、画面に出せる日本語の理由に置き換える（数値は作らない）
+function googleError(status, data) {
+  // Google の応答を画面で扱える形にする（数値は作らない）
+  const e = (data && data.error) || {};
+  const scopeInsufficient = status === 403 && (/ACCESS_TOKEN_SCOPE_INSUFFICIENT/.test(JSON.stringify(e)) || /insufficient authentication scopes/i.test(e.message || ''));
+  if (scopeInsufficient) {
+    return { status: 403, body: { code: 'scope_insufficient', error: 'Google アナリティクスの権限がありません。Studio の「接続」からもう一度 Google に接続し、アナリティクス（読み取り）を許可してください。', google: e.message || '' } };
+  }
+  if (status === 403) {
+    return { status: 403, body: { code: 'forbidden', error: 'このプロパティを見る権限がありません。接続した Google アカウントに、この GA4 プロパティの閲覧権限があるか確認してください。', google: e.message || '' } };
+  }
+  if (status === 401) {
+    return { status: 401, body: { code: 'unauthorized', error: 'Google への接続が切れています。Studio の「接続」からもう一度接続してください。', google: e.message || '' } };
+  }
+  return { status, body: { code: 'google_error', error: e.message || ('GA4 API error ' + status), google: e.message || '' } };
+}
+
+// AI サービスからの流入とみなす参照元（GA4 の sessionSource）
+// ドメイン（chatgpt.com 等）に加え、utm_source などで付く名前だけの値（openai・perplexity・gemini 等）も数える
+// （2026-10-01 実データ: 都市伝説ラボ 9月の AI 経由 99 のうち 17 は名前だけの値だった）
+const AI_SOURCE = /^(?:.*\.)?(chatgpt\.com|openai\.com|perplexity\.ai|gemini\.google\.com|bard\.google\.com|copilot\.microsoft\.com|copilot\.com|claude\.ai|deepseek\.com|grok\.com|you\.com|phind\.com|poe\.com|felo\.ai|genspark\.ai|doubao\.com|kimi\.com|meta\.ai)$|^(chatgpt|openai|perplexity|gemini|copilot|claude|deepseek|grok)$/i;
+export function isAiSource(src) { return AI_SOURCE.test(String(src || '').trim()); }
+
+// 対象ホストの合計。ページ別の行を足すのでなく、ホスト×参照元で取り直す
+async function fetchSummary(url, token, startDate, endDate, host) {
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      dateRanges: [{ startDate, endDate }],
+      dimensions: [{ name: 'hostName' }, { name: 'sessionSource' }],
+      metrics: [{ name: 'sessions' }, { name: 'keyEvents' }],
+      limit: '10000'
+    })
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) { const ge = googleError(r.status, data); return { status: ge.status, error: ge.body }; }
+  const summary = { sessions: 0, keyEvents: 0, aiSessions: 0, aiSources: {} };
+  (data.rows || []).forEach((row) => {
+    if (ga4Host(row.dimensionValues?.[0]?.value || '') !== host) return;
+    const src = row.dimensionValues?.[1]?.value || '';
+    const ses = Number(row.metricValues?.[0]?.value || 0);
+    summary.sessions += ses;
+    summary.keyEvents += Number(row.metricValues?.[1]?.value || 0);
+    if (isAiSource(src)) { summary.aiSessions += ses; summary.aiSources[src] = (summary.aiSources[src] || 0) + ses; }
+  });
+  return { summary };
 }
 
 function normalizeDate(v) {

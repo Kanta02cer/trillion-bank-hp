@@ -86,6 +86,19 @@ expect('report: 推移は6か月（古い順）', compiled.history.map((h) => h.
 expect('report: 推移の点数（材料の無い月は null・翌月の診断は入れない）', compiled.history.map((h) => h.score), [null, null, null, null, 40, 48]);
 expect('report: 推移の引用率', compiled.history.slice(4).map((h) => h.cite), [{ openai: 0, gemini: 0 }, { openai: 10, gemini: 20 }]);
 expect('report: 推移のクリック', compiled.history.slice(4).map((h) => h.clicks), [5, 30]);
+// 連携（*_api）と手入力が同じ月にあるとき: 連携を優先し、連携で取れない項目は手入力で埋める
+const merged = R.compileReport({
+  client: { name: 'テスト' }, periodMonth: '2026-09-01', now: new Date('2026-09-30T00:00:00Z'), scans: [], runs: [], actions: [],
+  traffic: [
+    { period_month: '2026-09-01', source: 'ga4_manual', metrics: { sessions: 100, ai_sessions: 2, target_page_views: 40, conversions: 3 } },
+    { period_month: '2026-09-01', source: 'ga4_api', metrics: { sessions: 120, ai_sessions: 5, target_page_views: null, conversions: 4 } },
+    { period_month: '2026-09-01', source: 'gsc_api', metrics: { clicks: 636, impressions: 24091 } },
+    { period_month: '2026-09-01', source: 'gsc_csv', metrics: { clicks: 351, impressions: 14958 } }
+  ]
+});
+expect('traffic: GA4 は連携の値を優先し、取れない対象ページ閲覧は手入力で埋める',
+  [merged.traffic.ga4.source, merged.traffic.ga4.sessions, merged.traffic.ga4.ai_sessions, merged.traffic.ga4.target_page_views, merged.traffic.ga4.conversions], ['ga4_api', 120, 5, 40, 4]);
+expect('traffic: GSC は連携（サイト全体）の値を使う（並び順に左右されない）', [merged.traffic.gsc.source, merged.traffic.gsc.clicks], ['gsc_api', 636]);
 const todo = R.todoList(compiled);
 expect('todo: 配点の大きい順（llms.txt 4点 → robots.txt 2点）', todo.map((t) => [t.key, t.points]), [['llms.txtがある', 4], ['robots.txtがある', 2]]);
 expect('todo: 直し方と直す材料の有無', [todo[0].studio, todo[1].studio, !!todo[0].how], [true, false, true]);
