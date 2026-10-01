@@ -328,7 +328,7 @@
     if (site.resolved.length) facts.push('前月から解消した不足：' + site.resolved.length + '件');
     if (ai) ai.providers.forEach(function (r) {
       if (r.citeRate == null) return;
-      facts.push('AIの引用率（' + ({ openai: 'ChatGPT', gemini: 'Gemini' }[r.provider] || r.provider) + '）：' + (r.citeDelta != null ? (r.prevCiteRate + '% → ') : '') + r.citeRate + '%' + (r.citeDelta != null ? '（' + (r.citeDelta >= 0 ? '+' : '') + r.citeDelta + 'pt）' : (ai.comparable ? '' : '（前月と質問の版が違う、または前月の計測なし）')));
+      facts.push('AIの引用率（' + ({ openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity' }[r.provider] || r.provider) + '）：' + (r.citeDelta != null ? (r.prevCiteRate + '% → ') : '') + r.citeRate + '%' + (r.citeDelta != null ? '（' + (r.citeDelta >= 0 ? '+' : '') + r.citeDelta + 'pt）' : (ai.comparable ? '' : '（前月と質問の版が違う、または前月の計測なし）')));
     });
     if (ai) ai.providers.forEach(function (r) {
       if (r.sov == null) return;
