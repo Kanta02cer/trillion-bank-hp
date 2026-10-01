@@ -140,8 +140,8 @@ mockFetch((url, init) => {
     // サイト全体の合計（日付だけ）。伏せられた語句の分を含むので、語句つきの行の合計より大きい。データは 9/26 まで
     if (JSON.parse(init.body || '{}').dimensions.length === 1) {
       return { json: { rows: [
-        { keys: ['2026-09-01'], clicks: 50, impressions: 2000 },
-        { keys: ['2026-09-26'], clicks: 10, impressions: 500 },
+        { keys: ['2026-09-01'], clicks: 50, impressions: 2000, position: 10 },
+        { keys: ['2026-09-26'], clicks: 10, impressions: 500, position: 20 },
       ] } };
     }
     return { json: { rows: [
@@ -161,7 +161,11 @@ expect('gsc: 200 with mapped rows (keyword / url / impressions / clicks / positi
 const totReq = JSON.parse((calls[1] || { init: {} }).init.body || '{}');
 expect('gsc: site totals requested with date only (keeps anonymized queries)', JSON.stringify(totReq.dimensions) === JSON.stringify(['date']) && totReq.startDate === body.startDate && totReq.dataState === 'final', JSON.stringify(totReq));
 expect('gsc: totals = whole site (not the sum of query rows), days up to the last day with data',
-  JSON.stringify(res.body.totals) === JSON.stringify({ impressions: 2500, clicks: 60, days: 26, startDate: '2026-09-01', endDate: '2026-09-26' }), JSON.stringify(res.body.totals));
+  JSON.stringify(res.body.totals) === JSON.stringify({ impressions: 2500, clicks: 60, ctr: 0.024, position: 12, days: 26, startDate: '2026-09-01', endDate: '2026-09-26' }), JSON.stringify(res.body.totals));
+calls = [];
+res = mkRes(); await gsc(mkReq({ method: 'POST', body: { ...body, totalsOnly: true }, cookie: 'airreach_google_access=AT' }), res);
+expect('gsc: totalsOnly → one Google call (date only), no query rows, totals returned',
+  calls.length === 1 && JSON.parse(calls[0].init.body).dimensions.length === 1 && res.body.count === 0 && res.body.totals && res.body.totals.clicks === 60, JSON.stringify(res.body).slice(0, 200));
 // アクセストークン切れ → refresh
 mockFetch((url, init) => {
   if (url === 'https://oauth2.googleapis.com/token') return new URLSearchParams(init.body).get('refresh_token') === 'RT' ? { json: { access_token: 'AT2' } } : { status: 400 };
@@ -243,5 +247,31 @@ await ga4Err(400, { code: 400, message: 'Invalid property ID', status: 'INVALID_
 expect('ga4: other Google errors passed through with message', res.statusCode === 400 && res.body.code === 'google_error' && /Invalid property/.test(res.body.error));
 
 const failed = results.filter((p) => !p).length;
+
+// ---- /api/google/ga4 summaryOnly（月次レポート用の合計と AI 経由） ----
+mockFetch((url, init) => {
+  if (url.startsWith(ga4Api)) {
+    const b = JSON.parse(init.body || '{}');
+    if (b.dimensions.map((d) => d.name).join(',') !== 'hostName,sessionSource') return { status: 400, json: { error: { message: 'unexpected dims' } } };
+    return { json: { rows: [
+      { dimensionValues: [{ value: 'example.com' }, { value: 'google' }], metricValues: [{ value: '100' }, { value: '5' }] },
+      { dimensionValues: [{ value: 'example.com' }, { value: 'chatgpt.com' }], metricValues: [{ value: '7' }, { value: '1' }] },
+      { dimensionValues: [{ value: 'EXAMPLE.com.' }, { value: 'perplexity.ai' }], metricValues: [{ value: '3' }, { value: '0' }] },
+      { dimensionValues: [{ value: 'example.com' }, { value: 'notchatgpt.com.evil' }], metricValues: [{ value: '2' }, { value: '0' }] },
+      { dimensionValues: [{ value: 'example.com' }, { value: 'openai' }], metricValues: [{ value: '4' }, { value: '0' }] },
+      { dimensionValues: [{ value: 'example.com' }, { value: 'copilot.com' }], metricValues: [{ value: '1' }, { value: '0' }] },
+      { dimensionValues: [{ value: 'example.com' }, { value: 'openai-news.example' }], metricValues: [{ value: '6' }, { value: '0' }] },
+      { dimensionValues: [{ value: 'other.example' }, { value: 'chatgpt.com' }], metricValues: [{ value: '999' }, { value: '9' }] },
+    ] } };
+  }
+  return { status: 404 };
+});
+res = mkRes(); await ga4(mkReq({ method: 'POST', body: { ...gbody, summaryOnly: true }, cookie: 'airreach_google_access=AT' }), res);
+expect('ga4 summaryOnly: totals for the target host only, AI sessions from AI referrers',
+  res.statusCode === 200 && res.body.summary.sessions === 123 && res.body.summary.keyEvents === 6 && res.body.summary.aiSessions === 15 &&
+  JSON.stringify(res.body.summary.aiSources) === JSON.stringify({ 'chatgpt.com': 7, 'perplexity.ai': 3, openai: 4, 'copilot.com': 1 }) && calls.length === 1, JSON.stringify(res.body));
+mockFetch((url) => url.startsWith(ga4Api) ? { status: 403, json: { error: { message: 'no access' } } } : { status: 404 });
+res = mkRes(); await ga4(mkReq({ method: 'POST', body: { ...gbody, summaryOnly: true }, cookie: 'airreach_google_access=AT' }), res);
+expect('ga4 summaryOnly: no access → 403 forbidden (no numbers)', res.statusCode === 403 && res.body.code === 'forbidden' && !res.body.summary, JSON.stringify(res.body));
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);

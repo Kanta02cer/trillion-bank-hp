@@ -243,10 +243,21 @@
   }
 
   function trafficFor(list, month) {
-    var out = {};
+    // 連携（*_api）の値を優先し、連携で取れない項目（対象ページ閲覧など）は CSV・手入力の値で埋める
+    var byKind = {};
     (list || []).filter(function (t) { return t.period_month === month; }).forEach(function (t) {
       var kind = /^gsc/.test(t.source) ? 'gsc' : 'ga4';
-      if (!out[kind] || /_api$/.test(t.source)) out[kind] = Object.assign({ source: t.source }, t.metrics || {});
+      byKind[kind] = byKind[kind] || {};
+      byKind[kind][/_api$/.test(t.source) ? 'api' : 'manual'] = t;
+    });
+    var out = {};
+    Object.keys(byKind).forEach(function (kind) {
+      var api = byKind[kind].api, manual = byKind[kind].manual, m = {};
+      [manual, api].forEach(function (t) {
+        if (!t) return;
+        Object.keys(t.metrics || {}).forEach(function (k) { if (t.metrics[k] != null) m[k] = t.metrics[k]; });
+      });
+      out[kind] = Object.assign({ source: (api || manual).source }, m);
     });
     return out;
   }
