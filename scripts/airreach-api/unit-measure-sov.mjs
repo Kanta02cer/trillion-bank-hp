@@ -8,7 +8,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const results = [];
 const expect = (name, cond, detail = '') => { results.push(!!cond); console.log(`${cond ? 'PASS' : 'FAIL'}  ${name}${cond || !detail ? '' : '  — ' + String(detail).slice(0, 300)}`); };
 
-const { competitorHits } = await import(pathToFileURL(path.join(ROOT, 'api/hack2-measure.js')).href);
+const { competitorHits, nameIn } = await import(pathToFileURL(path.join(ROOT, 'api/hack2-measure.js')).href);
 const comps = [{ name: '赤坂そば', url: 'https://akasaka-soba.example/' }, { name: 'Soba Lab', url: 'soba-lab.example' }];
 let h = competitorHits('おすすめは赤坂そばと SOBA LAB です', ['https://www.akasaka-soba.example/menu'], comps);
 expect('hits: 名前（大文字小文字を区別しない）と出典URLのホスト（www 付き）', JSON.stringify(h) === JSON.stringify([{ name: '赤坂そば', mentioned: 1, cited: 1 }, { name: 'Soba Lab', mentioned: 1, cited: 0 }]), JSON.stringify(h));
@@ -16,6 +16,9 @@ h = competitorHits('soba-lab.example が詳しい', null, comps);
 expect('hits: 出典URLが無いときは本文のドメインで判定、無ければ null（0 にしない）', h[0].cited === null && h[1].cited === 1 && h[1].mentioned === 0, JSON.stringify(h));
 h = competitorHits('回答', [], [{ name: 'X社', url: '' }]);
 expect('hits: URL の無い競合は cited=null', h[0].cited === null && h[0].mentioned === 0, JSON.stringify(h));
+
+h = competitorHits('総本家更科堀井 本店がおすすめ', null, [{ name: '総本家 更科堀井', url: '' }]);
+expect('hits: 空白の有無（全角含む）を無視して名前を照合', h[0].mentioned === 1 && nameIn('永坂　更科', '永坂更科') && !nameIn('更科', '永坂更科'), JSON.stringify(h));
 
 // レポート側
 const ctx = { window: {}, console };

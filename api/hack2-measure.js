@@ -270,6 +270,12 @@ function hostOf(u) {
   try { return new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) { return ''; }
 }
 // 1つの回答について、各競合の名前が出たか・競合サイトが出典になったか
+// 名前の照合は空白（全角を含む）を無視する（「総本家 更科堀井」と回答の「総本家更科堀井」を同じとみなす）
+export function nameIn(text, name) {
+  const t = String(text || '').toLowerCase().replace(/[\s\u3000]+/g, '');
+  const n = String(name || '').toLowerCase().replace(/[\s\u3000]+/g, '');
+  return !!n && t.indexOf(n) !== -1;
+}
 export function competitorHits(answer, citations, competitors) {
   const lower = String(answer || '').toLowerCase();
   return (competitors || []).map((c) => {
@@ -279,7 +285,7 @@ export function competitorHits(answer, citations, competitors) {
       if (Array.isArray(citations)) cited = citations.some((u) => hostMatches(u, host)) ? 1 : 0;
       else cited = lower.indexOf(host) !== -1 ? 1 : null;
     }
-    return { name: c.name, mentioned: lower.indexOf(c.name.toLowerCase()) !== -1 ? 1 : 0, cited };
+    return { name: c.name, mentioned: nameIn(answer, c.name) ? 1 : 0, cited };
   });
 }
 
@@ -310,7 +316,6 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
   if (pageUrl) {
     try { host = new URL(pageUrl).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) {}
   }
-  const brandL = brand.toLowerCase();
   // 検索つき（Responses API）は Claude だけ。ChatGPT は費用を抑えるため検索なしで言及率だけを測る（引用は判定しない）。
   // Perplexity は出典URLが gateway から返らないため本文で判定
   const withSearch = useGateway && engine === 'claude';
@@ -325,7 +330,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
         engine: engineLabel(engine),
         keyword: p.keyword || p.prompt,
         prompt: p.prompt,
-        mentioned: String(out.answer || '').toLowerCase().indexOf(brandL) !== -1 ? 1 : 0,
+        mentioned: nameIn(out.answer, brand) ? 1 : 0,
         cited: null,
         citeMethod: 'none',
         searched: false,
@@ -338,7 +343,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
       };
     }
     const lower = String(out.answer || '').toLowerCase();
-    const mentioned = lower.indexOf(brandL) !== -1 ? 1 : 0;
+    const mentioned = nameIn(out.answer, brand) ? 1 : 0;
     let cited = 0;
     let citeMethod = 'citations';
     if (Array.isArray(out.citations)) {
