@@ -281,4 +281,5 @@
 .ars-google-save{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:16px;padding-top:14px;border-top:1px solid var(--ars-line,#e2e8f0)}
 .ars-google-save .ars-help{margin:0;overflow-wrap:anywhere}
 .ars-google-sync{display:grid;grid-template-columns:minmax(0,180px) minmax(0,180px) auto auto;gap:10px 12px;align-items:end}
-@media (max-width:620px){.ars-google-sync{grid-template-columns:1fr 1fr}.ars-google-sync .ars-btn{width:100%}}
+.ars-google-sync .ars-input{min-width:0}
+@media (max-width:620px){.ars-google-sync{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.ars-google-sync .ars-btn{width:100%}}
