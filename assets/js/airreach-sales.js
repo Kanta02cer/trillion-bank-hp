@@ -881,8 +881,11 @@
     if (siteGa4 && siteGa4.monthlySessions > 0 && !inputs.monthlyVisitors) {
       inputs.monthlyVisitors = siteGa4.monthlySessions;
     }
+    // いまの件数がどこから来たか（入力 / GA4）。画面の説明に使う
+    var inqFrom = inputs.monthlyInquiries ? 'input' : null;
     if (siteGa4 && siteGa4.monthlyKeyEvents > 0 && !inputs.monthlyInquiries) {
       inputs.monthlyInquiries = siteGa4.monthlyKeyEvents;
+      inqFrom = 'ga4';
     }
 
     // 検索回数は推定しない（言葉の文字列から計算した値は使わない）。使うのは店の方が入力した数だけ
@@ -908,7 +911,8 @@
     var close = clamp(num(inputs.closeRatePct, 20) / 100, 0, 1);
     var deal = Math.max(0, num(inputs.avgDeal, 0));
     // いまの件数が入力も GA4 も無いとき、検索回数の推定から件数を作らない（以前は文字列から計算した回数 ×0.15% を「いま」にしていた）
-    var inqMeasured = inq.inquiriesSource !== 'Estimated' && inq.currentInquiries > 0;
+    // サイトを取得できなかった（診断が無い）ときは、仮の点数から件数を作らない
+    var inqMeasured = !!diagnose && inq.inquiriesSource !== 'Estimated' && inq.currentInquiries > 0;
     if (!inqMeasured) {
       inq.addLow = inq.addHigh = inq.afterLow = inq.afterHigh = null;
       inq.currentInquiries = null;
@@ -1020,7 +1024,10 @@
           value: '+' + inq.addLow + '〜' + inq.addHigh,
           unit: '件 / 月',
           badge: 'Inferred',
-          meaning: profile.outcome_meaning,
+          // 伸び幅は整備度の点数から置いた仮定（実測ではない）。どの件数にかけたかと「保証ではない」を必ず書く
+          meaning: (inqFrom === 'ga4' ? 'GA4 のキーイベント（月 ' + cnt(inq.currentInquiries) + ' 件）' : '入力した件数（月 ' + cnt(inq.currentInquiries) + ' 件）') +
+            'に、情報整備の点数から置いた伸び幅（+' + Math.round(inq.addLow / Math.max(1, inq.currentInquiries) * 100) + '〜' + Math.round(inq.addHigh / Math.max(1, inq.currentInquiries) * 100) + '%）をかけた目安です。保証ではありません',
+          inqFrom: inqFrom,
           sub: '現在 ' + cnt(inq.currentInquiries) + ' → ' + cnt(inq.afterLow) + '〜' + cnt(inq.afterHigh) + ' 件'
         } : {
           id: 'outcome',
@@ -1028,8 +1035,11 @@
           value: '—',
           unit: '',
           badge: 'Unmeasured',
-          meaning: 'いまの' + (profile.display_label || '件数') + 'の数が分からないため、増える件数は試算していません',
-          sub: '月の件数を入力するか GA4 を接続すると試算します'
+          meaning: !diagnose ? 'サイトを取得できなかったため、増やせる件数は試算していません（取得に同意して診断し直すと試算できます）'
+            : 'いまの月の' + (profile.display_label || '件数') + 'の件数を入れると、増やせる件数の目安を出します',
+          noDiagnose: !diagnose,
+          inqFrom: null,
+          sub: ''
         }
       ];
     }
