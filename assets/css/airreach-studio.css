@@ -275,11 +275,11 @@
 .orch-metric-legend{margin:0 0 12px;padding:12px 14px;border:1px solid #bfdbfe;border-radius:10px;background:#eff6ff;font-size:.9rem;line-height:1.55;color:#0f172a;font-weight:600}
 
 /* Google 連携: 3つのカードを全幅で縦に並べ、入力欄は横に並べる（狭い列に押し込まない） */
-.ars-help{margin:4px 0 0;font-size:12.5px;line-height:1.6;color:#64748b}
+.ars-gnote{margin:4px 0 0;font-size:12.5px;line-height:1.6;color:#64748b}
 .ars-google .ars-form,.ars-google .ars-field{min-width:0}
 .ars-google-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px 20px;align-items:start}
 .ars-google-save{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:16px;padding-top:14px;border-top:1px solid var(--ars-line,#e2e8f0)}
-.ars-google-save .ars-help{margin:0;overflow-wrap:anywhere}
+.ars-google-save .ars-gnote{margin:0;overflow-wrap:anywhere}
 .ars-google-sync{display:grid;grid-template-columns:minmax(0,180px) minmax(0,180px) auto auto;gap:10px 12px;align-items:end}
 .ars-google-sync .ars-input{min-width:0}
 @media (max-width:620px){.ars-google-sync{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.ars-google-sync .ars-btn{width:100%}}
