@@ -463,7 +463,7 @@ try {
   await pageO.waitForFunction(() => window.AirReachStudio && document.querySelector('[data-panel-view="google"].is-active'), null, { timeout: 15000 });
   expect('O: free tool 「Googleと連携」 opens Studio Google panel', true);
   const ga4Btn = await pageO.$eval('#sync-ga4', (b) => ({ disabled: b.disabled, text: b.textContent.trim() }));
-  expect('O: GA4 sync button enabled and labelled GA4 (no 準備中)', !ga4Btn.disabled && ga4Btn.text === 'GA4' && !/準備中/.test(await pageO.textContent('[data-panel-view="google"]')), JSON.stringify(ga4Btn));
+  expect('O: GA4 sync button enabled and labelled GA4 (no 準備中)', !ga4Btn.disabled && ga4Btn.text === 'GA4 を取得' && !/準備中/.test(await pageO.textContent('[data-panel-view="google"]')), JSON.stringify(ga4Btn));
   const ga4Label = await pageO.textContent('label[for="ga-property"]');
   const ga4Help = await pageO.textContent('#ga-property-help');
   expect('O: GA4 field asks for the numeric Property ID, not the G- Measurement ID', /プロパティID（数字）/.test(ga4Label) && /123456789/.test(ga4Help) && /G-/.test(ga4Help) && /測定ID/.test(ga4Help) &&

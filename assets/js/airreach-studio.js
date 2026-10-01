@@ -110,7 +110,7 @@ load();document.addEventListener('DOMContentLoaded',function(){fillProfile();bin
   // Google OAuth から戻ったとき（/api/google/callback → ?google=connected | scope_missing）
   try{
     var gp=new URLSearchParams(location.search).get('google');var gs=q('google-status');
-    if(gs&&gp==='connected'){gs.className='ars-note good';gs.textContent='Googleと接続しました（Search Console・GA4）。サイトURL・プロパティIDと期間を入れて「GSC」「GA4」で同期できます。'}
+    if(gs&&gp==='connected'){gs.className='ars-note good';gs.textContent='Googleと接続しました（Search Console・GA4）。サイトURL・プロパティIDと期間を入れて「GSC を取得」「GA4 を取得」で取り込めます。'}
     else if(gs&&gp==='ga4_missing'){gs.className='ars-note warn';gs.textContent='Search Console は接続しました。Google アナリティクスの権限が許可されなかったため、GA4 は使えません。GA4 を使う場合は、もう一度「接続」を押してアナリティクス（読み取り）を許可してください。'}
     else if(gs&&gp==='gsc_missing'){gs.className='ars-note warn';gs.textContent='GA4 は接続しました。Search Console の権限が許可されなかったため、GSC は使えません。GSC を使う場合は、もう一度「接続」を押して Search Console を許可してください。'}
     else if(gs&&gp==='scope_missing'){gs.className='ars-note warn';gs.textContent='Search Console・Google アナリティクスへのアクセスが許可されなかったため、接続していません。もう一度「接続」を押し、権限を許可してください。'}
