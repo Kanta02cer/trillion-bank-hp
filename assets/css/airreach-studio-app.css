@@ -1,0 +1,193 @@
+/*
+ * AirReach Studio — 作業台のレイアウトと見た目の決まり（2026-10-01）
+ * 運用担当が顧客ごとに「分析 → 直すこと → 材料 → 計測・比較」を順に進める社内ツール。
+ * 文字は 12 / 14 / 16 / 20 / 24 / 32px の6段階、余白は 4px 単位、奥行きは細い線だけ（影は使わない）。
+ * 主役は画面ごとに1つ（分析では結論、キーワードでは表）。色は青1色を「操作」と「いまの段階」にだけ使う。
+ */
+:root{
+  --ars-ink:#0f172a;        /* 本文・数字 */
+  --ars-ink-2:#334155;      /* ラベル・補足の強いもの */
+  --ars-muted:#64748b;      /* 補足・日時 */
+  --ars-faint:#94a3b8;      /* 未入力・— */
+  --ars-line:#e2e8f0;       /* 区切り・枠 */
+  --ars-line-strong:#cbd5e1;/* 入力欄の枠 */
+  --ars-canvas:#f8fafc;     /* 作業台の地 */
+  --ars-surface:#fff;       /* カード */
+  --ars-blue:#2563eb;       /* 操作・いまの段階 */
+  --ars-blue-deep:#1d4ed8;
+  --ars-soft:#eff6ff;
+  --ars-ring:rgba(37,99,235,.18);
+  --ars-r-sm:8px;--ars-r-md:12px;
+  --ars-bar:56px;
+}
+
+/* ---- 土台 ---- */
+body.ars-app{margin:0;background:var(--ars-canvas);color:var(--ars-ink);font:400 16px/1.6 'Noto Sans JP','Hiragino Sans','Hiragino Kaku Gothic ProN',Meiryo,sans-serif;-webkit-font-smoothing:antialiased}
+.ars-app *,.ars-app *::before,.ars-app *::after{box-sizing:border-box}
+.ars-app h2,.ars-app h3{text-wrap:balance}
+.ars-skip{position:absolute;left:-999px;top:8px;z-index:100;background:var(--ars-ink);color:#fff;padding:8px 12px;border-radius:var(--ars-r-sm)}
+.ars-skip:focus{left:8px}
+.ars-app :focus-visible{outline:2px solid var(--ars-blue);outline-offset:2px}
+
+/* ---- 上の帯（作業中の顧客とサイトを常に見せる） ---- */
+.ars-appbar{position:sticky;top:0;z-index:50;height:var(--ars-bar);display:flex;align-items:center;gap:16px;padding:0 24px;background:var(--ars-surface);border-bottom:1px solid var(--ars-line)}
+.ars-appbar-brand{font:700 16px/1 inherit;color:var(--ars-ink);text-decoration:none;white-space:nowrap}
+.ars-appbar-context{display:flex;align-items:center;gap:8px;min-width:0;flex:1;font-size:14px}
+.ars-appbar-context span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ars-ctx-client{font-weight:700;color:var(--ars-ink)}
+.ars-ctx-client+.ars-ctx-site::before{content:'／';margin-right:8px;color:var(--ars-faint)}
+.ars-ctx-site{color:var(--ars-ink-2)}
+.ars-ctx-empty{color:var(--ars-faint)}
+.ars-appbar-links{display:flex;align-items:center;gap:4px;font-size:14px}
+.ars-appbar-links>a,.ars-appbar-menu>summary{display:inline-flex;align-items:center;height:36px;padding:0 12px;border-radius:var(--ars-r-sm);color:var(--ars-ink-2);text-decoration:none;cursor:pointer;list-style:none}
+.ars-appbar-menu>summary::-webkit-details-marker{display:none}
+.ars-appbar-links>a:hover,.ars-appbar-menu>summary:hover{background:var(--ars-canvas)}
+.ars-appbar-menu{position:relative}
+.ars-appbar-pop{position:absolute;right:0;top:calc(100% + 4px);min-width:240px;padding:4px;background:var(--ars-surface);border:1px solid var(--ars-line);border-radius:var(--ars-r-md);box-shadow:0 8px 24px rgba(15,23,42,.08)}
+.ars-appbar-pop button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px;border-radius:var(--ars-r-sm);font:inherit;font-size:14px;color:var(--ars-ink);cursor:pointer}
+.ars-appbar-pop button:hover{background:var(--ars-canvas)}
+.ars-appbar-pop button.is-danger{color:#b91c1c}
+
+/* ---- 作業台：左に段階、右に作業 ---- */
+.ars-app .ars-shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:calc(100vh - var(--ars-bar));margin:0;border:0;padding:0}
+.ars-app .ars-side{position:sticky;top:var(--ars-bar);align-self:start;height:calc(100vh - var(--ars-bar));overflow:auto;padding:16px 12px;background:var(--ars-surface);border-right:1px solid var(--ars-line)}
+.ars-app .ars-side .group{margin:16px 8px 4px;font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--ars-muted)}
+.ars-app .ars-side .group:first-child{margin-top:0}
+.ars-app .ars-side button{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;margin:2px 0;padding:8px 10px;border:0;border-radius:var(--ars-r-sm);background:none;text-align:left;font:600 14px/1.3 inherit;color:var(--ars-ink-2);cursor:pointer}
+.ars-app .ars-side button:hover{background:var(--ars-canvas)}
+.ars-app .ars-side button.is-active{background:var(--ars-soft);color:var(--ars-blue-deep)}
+.ars-app .ars-side .n{display:inline-grid;place-items:center;flex:none;width:22px;height:22px;border-radius:50%;background:var(--ars-canvas);border:1px solid var(--ars-line);font-size:12px;font-weight:700;color:var(--ars-muted);font-variant-numeric:tabular-nums}
+.ars-app .ars-side button.is-active .n{background:var(--ars-blue);border-color:var(--ars-blue);color:#fff}
+body.has-job .ars-side button[data-needs-job-dot]::after{content:'';width:6px;height:6px;margin-left:auto;border-radius:50%;background:var(--ars-blue)}
+.ars-app .ars-main{padding:32px 40px 96px;min-width:0;outline:none}
+.ars-app .ars-panel{max-width:1080px}
+.ars-app .ars-panel>*+*{margin-top:16px}
+
+/* ---- 画面の見出し ---- */
+.ars-app .ars-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:0 0 24px}
+.ars-app .ars-title-row h2{margin:0;font-size:24px;line-height:1.3;font-weight:700;letter-spacing:-.01em;color:var(--ars-ink)}
+.ars-app .ars-title-row p,.ars-app .ars-sub{display:block;margin:4px 0 0;max-width:680px;font-size:14px;line-height:1.6;font-weight:400;color:var(--ars-muted)}
+.ars-app .ars-title-row .ars-row{flex-wrap:wrap;justify-content:flex-end}
+
+/* ---- カード・注記 ---- */
+.ars-app .ars-card{background:var(--ars-surface);border:1px solid var(--ars-line);border-radius:var(--ars-r-md);padding:20px 24px}
+.ars-app .ars-card h3{margin:0 0 12px;font-size:16px;line-height:1.4;font-weight:700;color:var(--ars-ink)}
+.ars-app .ars-note{padding:12px 14px;border:1px solid var(--ars-line);border-radius:var(--ars-r-sm);background:var(--ars-canvas);font-size:14px;line-height:1.6;color:var(--ars-ink-2)}
+.ars-app .ars-note.good{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+.ars-app .ars-note.warn{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
+.ars-app .ars-gnote,.ars-app .ars-help{display:block;margin:4px 0 0;font-size:14px;line-height:1.6;color:var(--ars-muted)}
+.ars-app .ars-muted{color:var(--ars-muted);font-weight:400;font-size:inherit}
+.ars-app .ars-grid{gap:16px}
+.ars-app .ars-list li{font-size:14px;padding:12px 14px}
+
+/* 分析前は「分析すると出るもの」を隠し、案内だけ出す */
+body.has-job .ars-empty-job{display:none}
+body:not(.has-job) [data-needs-job]{display:none}
+
+/* 折りたたみ（詳しい設定・手での操作は普段は閉じる） */
+.ars-app .ars-more{padding:0}
+.ars-app .ars-more>summary{display:flex;align-items:center;gap:8px;padding:14px 24px;cursor:pointer;list-style:none;font-size:14px;font-weight:600;color:var(--ars-ink-2)}
+.ars-app .ars-more>summary::-webkit-details-marker{display:none}
+.ars-app .ars-more>summary::before{content:'';width:8px;height:8px;border-right:2px solid var(--ars-muted);border-bottom:2px solid var(--ars-muted);transform:rotate(-45deg);transition:transform .15s cubic-bezier(.23,1,.32,1)}
+.ars-app .ars-more[open]>summary::before{transform:rotate(45deg)}
+.ars-app .ars-more-body{padding:0 24px 24px}
+.ars-app .ars-more-body>.ars-card{border:0;padding:0}
+
+/* ---- 入力 ---- */
+.ars-app .ars-form{display:grid;gap:16px}
+.ars-app .ars-field{gap:6px}
+.ars-app .ars-field label,.ars-app .ars-label{display:block;margin:0;font-size:14px;font-weight:600;color:var(--ars-ink-2)}
+.ars-app .ars-input,.ars-app .ars-select,.ars-app .ars-textarea{width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--ars-line-strong);border-radius:var(--ars-r-sm);background:var(--ars-surface);font:inherit;font-size:16px;color:var(--ars-ink)}
+.ars-app .ars-textarea{min-height:120px;line-height:1.6}
+.ars-app .ars-input:focus,.ars-app .ars-select:focus,.ars-app .ars-textarea:focus{border-color:var(--ars-blue);box-shadow:0 0 0 3px var(--ars-ring);outline:none}
+.ars-app input[type=checkbox],.ars-app input[type=radio]{width:18px;height:18px;accent-color:var(--ars-blue)}
+.ars-app .ars-consent-row{display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.5;color:var(--ars-ink-2)}
+.ars-app input[type=file]{font-size:14px}
+
+/* ---- ボタン ---- */
+.ars-app .ars-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 16px;border:1px solid transparent;border-radius:var(--ars-r-sm);font:700 14px/1.2 inherit;cursor:pointer;text-decoration:none;transition:background-color .15s,border-color .15s,transform .1s cubic-bezier(.23,1,.32,1)}
+.ars-app .ars-btn:active:not(:disabled){transform:scale(.98)}
+.ars-app .ars-btn-primary{background:var(--ars-blue);color:#fff}
+.ars-app .ars-btn-primary:hover{background:var(--ars-blue-deep)}
+.ars-app .ars-btn-secondary{background:var(--ars-surface);border-color:var(--ars-line-strong);color:var(--ars-ink-2)}
+.ars-app .ars-btn-secondary:hover{background:var(--ars-canvas)}
+.ars-app .ars-btn-soft{background:var(--ars-soft);color:var(--ars-blue-deep)}
+.ars-app .ars-btn-danger{background:#fff1f2;color:#be123c}
+.ars-app .ars-btn-xl{width:100%;min-height:48px;font-size:16px}
+.ars-app .ars-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ---- 表 ---- */
+.ars-app .ars-table-wrap{border:1px solid var(--ars-line);border-radius:var(--ars-r-md);background:var(--ars-surface)}
+.ars-app .ars-table{font-size:14px}
+.ars-app .ars-table th{background:var(--ars-canvas);font-size:12px;font-weight:700;color:var(--ars-muted)}
+.ars-app .ars-table th,.ars-app .ars-table td{padding:12px}
+
+/* ---- 1 対象サイト ---- */
+.ars-app .ars-orch-launch{max-width:760px;padding:24px}
+.ars-app .ars-orch-form{gap:20px}
+.ars-app .orch-kw-pills{gap:8px}
+.ars-app .orch-kw-pill{min-height:40px;padding:8px 14px;border:1px solid var(--ars-line-strong);border-radius:var(--ars-r-sm);font-size:14px;font-weight:600;color:var(--ars-ink-2)}
+.ars-app .orch-kw-pill.is-on,.ars-app .orch-kw-pill:has(input:checked){border-color:var(--ars-blue);background:var(--ars-soft);color:var(--ars-blue-deep)}
+.ars-app .orch-progress{gap:8px}
+.ars-app .orch-step{padding:10px 14px;border:1px solid var(--ars-line);border-radius:var(--ars-r-sm);font-size:14px;font-weight:600}
+.ars-app #orch-progress-wrap h2{margin:0;font-size:16px}
+.ars-app #orch-client-banner{max-width:760px}
+
+/* ---- 2 分析結果：結論が主役 ---- */
+.ars-app .ars-orch-result{display:grid;gap:16px}
+.ars-app .ars-orch-result[hidden]{display:none}
+.ars-app .orch-metric-legend{order:2;margin:0;padding:0;border:0;background:none;font-size:12px;font-weight:400;color:var(--ars-muted)}
+.ars-app .orch-conclusion-card{order:0;background:var(--ars-soft);border:1px solid #dbeafe}
+.ars-app .orch-conclusion-card h3{font-size:14px;color:var(--ars-muted);font-weight:600}
+.ars-app .orch-conclusion{font-size:20px;line-height:1.6;font-weight:600;color:var(--ars-ink)}
+.ars-app .orch-four{order:1;margin:0;gap:12px}
+.ars-app .orch-four-card{border:1px solid var(--ars-line);border-radius:var(--ars-r-md);padding:16px 20px}
+.ars-app .orch-four-card .lab{margin:0 0 8px;font-size:14px;font-weight:600;color:var(--ars-muted)}
+.ars-app .orch-four-card .val{font-size:32px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:var(--ars-ink);font-variant-numeric:tabular-nums}
+.ars-app .orch-four-card .unit{margin-top:4px;font-size:14px;font-weight:400;color:var(--ars-muted)}
+.ars-app .ars-orch-result>.ars-card:not(.orch-conclusion-card){order:3}
+.ars-app .orch-compress-grid>div{border:1px solid var(--ars-line);border-radius:var(--ars-r-sm)}
+.ars-app .orch-compress-grid b{font-size:24px}
+.ars-app .orch-compress-grid span{font-size:14px;font-weight:600}
+.ars-app .orch-impl-summary{font-size:16px;font-weight:700}
+.ars-app .ars-next{order:4;display:flex;flex-wrap:wrap;gap:8px}
+
+/* ---- 3 キーワード ---- */
+.ars-app .orch-filter{min-height:36px;padding:0 12px;border:1px solid var(--ars-line-strong);border-radius:var(--ars-r-sm);font-size:14px;font-weight:600}
+.ars-app .orch-filter.is-on{border-color:var(--ars-blue);background:var(--ars-soft);color:var(--ars-blue-deep)}
+.ars-app .orch-kw-lead{font-size:14px}
+.ars-app .orch-gsc-note,.ars-app .orch-kw-count,.ars-app .orch-gsc-status,.ars-app .orch-phase2-status{font-size:14px;font-weight:600}
+.ars-app .orch-kw-table th,.ars-app .orch-kw-table td{font-size:14px}
+
+/* ---- 7 AI計測 ---- */
+.ars-app .ars-model-grid{gap:12px}
+.ars-app .ars-model{border-radius:var(--ars-r-md);padding:16px}
+.ars-app .ars-model .mval{font-size:24px;font-weight:700}
+
+/* ---- ダイアログ ---- */
+.ars-app .orch-dialog-lead,.ars-app .orch-checklist label{font-size:14px}
+
+/* ---- 狭い画面：段階は上に横並び ---- */
+@media (max-width:900px){
+  .ars-appbar{padding:0 16px;gap:8px}
+  .ars-appbar-links>a{display:none}
+  .ars-app .ars-shell{grid-template-columns:1fr}
+  .ars-app .ars-side{position:sticky;top:var(--ars-bar);z-index:40;height:auto;display:flex;gap:4px;overflow-x:auto;padding:8px 12px;border-right:0;border-bottom:1px solid var(--ars-line)}
+  .ars-app .ars-side .group{display:none}
+  .ars-app .ars-side button{width:auto;flex:none;white-space:nowrap;min-height:36px}
+  .ars-app .ars-main{padding:24px 16px 80px}
+  .ars-app .orch-four{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+  .ars-appbar-context{font-size:12px}
+  .ars-app .ars-title-row{display:block}
+  .ars-app .ars-title-row .ars-row,.ars-app .ars-title-row>.ars-btn{margin-top:12px}
+  .ars-app .ars-card{padding:16px}
+  .ars-app .ars-more>summary{padding:14px 16px}
+  .ars-app .ars-more-body{padding:0 16px 16px}
+  .ars-app .orch-conclusion{font-size:16px}
+  .ars-app .orch-four-card .val{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){
+  .ars-app .ars-btn,.ars-app .ars-more>summary::before{transition:none}
+}
