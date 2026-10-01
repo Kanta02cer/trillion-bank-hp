@@ -184,7 +184,7 @@ robots: "noindex, follow"
             <button type="button" class="orch-filter" data-orch-filter="gsc" title="Search Console で表示の実績がある語">実績あり</button>
           </div>
           <div class="ars-row">
-            <button type="button" class="ars-btn ars-btn-secondary" id="orch-kw-csv" data-tip="対策キーワード表をCSVで書き出します。">キーワードCSV</button>
+            <button type="button" class="ars-btn ars-btn-secondary" id="orch-kw-csv">キーワードCSV</button>
             <button type="button" class="ars-btn ars-btn-secondary" id="orch-kw-more" hidden>さらに表示</button>
           </div>
         </div>
@@ -243,11 +243,12 @@ robots: "noindex, follow"
       <div class="ars-card orch-pack-card">
         <h3>下書き一式</h3>
         <div class="ars-row">
-          <button type="button" class="ars-btn ars-btn-primary" id="orch-zip" data-tip="FAQ・構造化データ・llms.txt・作業手順を含むZIPをダウンロードします。">ダウンロード（ZIP）</button>
-          <button type="button" class="ars-btn ars-btn-primary" id="orch-to-dashboard" hidden data-tip="この下書きでやることを、ダッシュボードの顧客に「施策（予定）」として登録します。">ダッシュボードに施策として登録</button>
-          <button type="button" class="ars-btn ars-btn-secondary" id="orch-pr" data-tip="GitHubに下書きPRを作ります。PATはsessionStorageのみ。マージは人間承認が必要です。">GitHubに下書きPR</button>
-          <button type="button" class="ars-btn ars-btn-secondary" id="orch-deploy" data-tip="自動Deployはありません。公開前チェックリストを表示します。">公開前チェック</button>
+          <button type="button" class="ars-btn ars-btn-primary" id="orch-zip">ダウンロード（ZIP）</button>
+          <button type="button" class="ars-btn ars-btn-secondary" id="orch-to-dashboard" hidden>ダッシュボードに施策として登録</button>
+          <button type="button" class="ars-btn ars-btn-secondary" id="orch-pr">GitHubに下書きPR</button>
+          <button type="button" class="ars-btn ars-btn-secondary" id="orch-deploy">公開前チェック</button>
         </div>
+        <p class="ars-gnote">ZIP には FAQ・構造化データ・llms.txt・作業手順が入ります。「ダッシュボードに施策として登録」は、ダッシュボードの顧客から Studio を開いたときに出ます。GitHub の下書きPRは、トークンをこの画面だけで使い、マージは人が行います。</p>
         <p id="orch-phase2-status" class="orch-phase2-status" hidden></p>
       </div>
         </div>
