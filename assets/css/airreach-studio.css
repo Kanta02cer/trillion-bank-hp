@@ -150,7 +150,9 @@
 .orch-kw-filters{display:flex;flex-wrap:wrap;gap:8px}
 .orch-filter{border:2px solid #cbd5e1;background:#fff;color:#334155;border-radius:10px;padding:8px 12px;font-weight:800;font-size:1rem;cursor:pointer}
 .orch-filter.is-on{border-color:#2563eb;background:#eff6ff;color:#1d4ed8}
-.orch-prio{display:inline-block;min-width:2.4em;font-weight:800;color:#1d4ed8}
+.orch-prio{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;background:#eff6ff;color:#1d4ed8}
+.orch-prio-P0{background:#fef2f2;color:#b91c1c}
+.orch-prio-P2{background:#f1f5f9;color:#64748b}
 .orch-seed{display:inline-block;margin-left:6px;font-size:.9rem;font-weight:800;color:#047857;border:1.5px solid #86efac;border-radius:6px;padding:1px 6px;background:#ecfdf5}
 .orch-kw-count{margin:10px 0 0;font-size:1.02rem;font-weight:700;color:#475569}
 #orch-gsc-csv{display:block;margin-top:6px;max-width:100%}
@@ -169,7 +171,7 @@
 
 /* Simplified keyword proposals */
 .orch-kw-lead{margin:0 0 12px;color:var(--ars-muted,#64748b);font-size:14px;line-height:1.5}
-.orch-kw-table th:nth-child(1),.orch-kw-table td:nth-child(1){width:64px}
+.orch-kw-table th:nth-child(1),.orch-kw-table td:nth-child(1){width:104px}
 .orch-kw-table th:nth-child(2),.orch-kw-table td:nth-child(2){width:30%}
 .orch-kw-table th:nth-child(3),.orch-kw-table td:nth-child(3){width:24%;min-width:180px}
 .orch-kw-table th:nth-child(4),.orch-kw-table td:nth-child(4){min-width:240px}
@@ -194,7 +196,7 @@
 .orch-kw-why,.orch-kw-act{font-size:13px;line-height:1.45;color:#334155}
 .ars-sub{margin:4px 0 0;font-size:13px;font-weight:400;color:#64748b}
 .ars-kw-cards{display:grid;gap:10px}
-.ars-kw-card{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:start;padding:14px 16px;border:1px solid #e2e8f0;border-radius:12px;background:#fff}
+.ars-kw-card{display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:start;padding:14px 16px;border:1px solid #e2e8f0;border-radius:12px;background:#fff}
 .ars-kw-card .prio{font-weight:700;font-size:13px;color:#1d4ed8}
 .ars-kw-card h4{margin:0;font-size:15px;line-height:1.35}
 .ars-kw-card p{margin:4px 0 0;font-size:13px;color:#475569;line-height:1.45}
