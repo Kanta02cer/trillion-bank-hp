@@ -64,6 +64,9 @@ jsonld: |
     ]
   }
   </script>
+note_links:
+  - title: "【AIOを外注しなくてもできる】0円から始めるAI検索対策・完全実践ガイド"
+    url: "https://note.com/trillion_bank/n/n27b93af68bed"
 ---
 
 **AI検索対策（AEO）の内製とは、ChatGPT・Perplexity・Google AI OverviewsなどのAI検索で自社が引用・推薦されるための施策を、外部ベンダーに頼らず自社の人員と工数で実行することです。** 結論からいえば、基礎施策の多くは内製で十分に可能です。一方で「継続的な計測と効果検証」だけは手作業での内製が難しく、ここが内製・外注の分岐点になります。

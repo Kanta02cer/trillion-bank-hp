@@ -32,6 +32,11 @@ faq_items:
     answer: "引用されやすい入口にはなり得ますが、保証ではありません。順位以外の関連サブクエリやコンテンツ適合も影響します。"
   - question: "自社の表示状況はどう測りますか？"
     answer: "重要クエリを固定し、要約の有無・引用URL・日付を記録するのが基本です。Search Consoleだけでは要約専用の完全切り出しは難しい場合があります。"
+note_links:
+  - title: "【100問実測】SEOはまだ現役？検索とAI検索の比較"
+    url: "https://note.com/trillion_bank/n/nb396e5059e81"
+  - title: "【2026年最新版】AIO対策とは？Google公式・調査・実測から「本当にやるべきこと」を全部解説"
+    url: "https://note.com/trillion_bank/n/nada1a75edb3d"
 ---
 
 ## 結論

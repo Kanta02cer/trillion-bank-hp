@@ -16,6 +16,7 @@ company:
     country: "JP"
   capital_jpy: 5504000
   website: "https://trillion-bank.jp/"
+  official_note: "https://note.com/trillion_bank"
   bank_disclaimer: "株式会社Trillion Bankは銀行業を営む会社ではありません。"
 positioning:
   short: "AI検索集客とAI情報利用管理に取り組むテクノロジー企業。"

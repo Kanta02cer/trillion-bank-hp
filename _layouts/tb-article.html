@@ -21,7 +21,7 @@
         "height": 318
       },
       "founder": {"@id": "https://trillion-bank.jp/#kanta-inoue"},
-      "sameAs": ["https://www.instagram.com/trillionbank_jp/"]
+      "sameAs": ["https://www.instagram.com/trillionbank_jp/", "https://note.com/trillion_bank"]
     },
     {
       "@type": "Person",
@@ -142,7 +142,8 @@
       </section>
       {% endif %}
 
-      {% if page.references %}
+      {% include tb-note-links.html %}
+{% if page.references %}
       <div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);">
         <h3 style="font-size:.92rem;font-weight:700;margin-bottom:12px;">参考文献・一次情報</h3>
         <ul style="font-size:.82rem;color:var(--muted,#6b7280);list-style:decimal;padding-left:20px;">

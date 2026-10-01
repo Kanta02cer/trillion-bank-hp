@@ -25,6 +25,9 @@ faq_items:
     answer: 不要にはなりません。GoogleはAI OverviewsやAI Modeにも従来のSEOの基本が有効で、追加の特別な要件はないと案内しています。
   - question: 構造化データを追加すればAIに引用されますか？
     answer: 引用は保証されません。構造化データは見えている内容と一致させ、ページの意味を明確にするために使います。
+note_links:
+  - title: "【AIO・GEO・LLMOの違い】結局何が違う？店舗集客で押さえるべき考え方を1枚でわかりやすく解説"
+    url: "https://note.com/trillion_bank/n/n582020206fc4"
 ---
 
 ## 結論

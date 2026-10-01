@@ -1,0 +1,11 @@
+{% if page.note_links %}
+<aside style="margin-top:40px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb)" aria-label="公式noteの関連記事">
+  <h2 style="font-size:1rem;margin:0 0 8px">公式noteの関連記事</h2>
+  <p style="font-size:.86rem;color:var(--muted,#6b7280);margin:0 0 12px">同じテーマを、<a href="https://note.com/trillion_bank">株式会社Trillion Bankの公式note</a>でも解説しています。定義の代表は当サイト、実務の解説はnoteです。note記事内の調査数字は、当サイトの測定結果としては転載していません。確認日：2026年10月1日。</p>
+  <ul style="margin:0;padding-left:1.2em;font-size:.9rem;line-height:1.7">
+    {% for item in page.note_links %}
+    <li><a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></li>
+    {% endfor %}
+  </ul>
+</aside>
+{% endif %}

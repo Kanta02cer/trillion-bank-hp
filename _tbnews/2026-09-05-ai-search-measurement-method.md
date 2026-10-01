@@ -22,6 +22,9 @@ faq_items:
     answer: 通常検索の固定順位と同じ扱いはできません。候補入り、言及、回答文脈、引用URLなどを質問単位で記録します。
   - question: 施策後に回答が変われば効果があったと言えますか？
     answer: 変化は確認できますが、モデル更新や外部情報などの影響もあるため、単独施策の因果関係は慎重に判断します。
+note_links:
+  - title: "【GA4新機能】ChatGPT・Geminiから何人来た？Google Analyticsで「AI検索流入」を見る方法"
+    url: "https://note.com/trillion_bank/n/n49c1882075fc"
 ---
 
 ## 結論
