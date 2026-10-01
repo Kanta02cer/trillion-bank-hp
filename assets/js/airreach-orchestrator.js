@@ -99,6 +99,62 @@
     return '関連候補（優先度は低め）';
   }
 
+  function pathOf(u) {
+    try { var x = new URL(u); return decodeURI(x.pathname + x.search) || '/'; } catch (e) { return String(u || ''); }
+  }
+  // Search Console の実績（順位・CTR・表示ページ）から、その語で「どのページの何をするか」を決める
+  function gscActionFor(k, g) {
+    var pos = k.gsc_position, imp = k.gsc_impressions || 0, clk = k.gsc_clicks || 0;
+    var ctr = imp ? clk / imp : 0;
+    var pages = Object.keys((g && g.pages) || {}).map(function (u) { return g.pages[u]; })
+      .sort(function (a, b) { return b.impressions - a.impressions; });
+    var top = pages[0] || null, second = pages[1] || null;
+    var kw = '「' + k.keyword + '」';
+    var r = { page: top ? top.url : '', pages: pages.length };
+    if (second && imp && second.impressions >= imp * 0.2) {
+      r.title = 'ページを1つにまとめる';
+      r.detail = kw + 'で ' + pathOf(top.url) + ' と ' + pathOf(second.url) + ' が分かれて表示されています。片方に情報を集め、もう片方からリンクする';
+    } else if (pos == null) {
+      r.title = 'この語に答える見出しを足す';
+      r.detail = kw + 'の答えを見出しと最初の段落に書く';
+    } else if (pos <= 3 && ctr < 0.05) {
+      r.title = 'タイトルと説明文を直す';
+      r.detail = '平均 ' + pos + ' 位なのにクリック率 ' + (ctr * 100).toFixed(1) + '%。検索結果で' + kw + 'の答えが見えるよう、タイトルと説明文（meta description）に入れる';
+    } else if (pos <= 3) {
+      r.title = '上位を守る（内容を新しく）';
+      r.detail = '平均 ' + pos + ' 位。更新日・最新の情報・一次情報（出典や実例）を足して順位を守る';
+    } else if (pos <= 10) {
+      r.title = '冒頭に答えを書き、関連ページからリンク';
+      r.detail = '1ページ目の下位（平均 ' + pos + ' 位）。' + kw + 'に答える見出しを冒頭近くに置き、関連する記事からこのページへリンクする';
+    } else if (pos <= 20) {
+      r.title = 'この語の段落を足して内容を厚く';
+      r.detail = '2ページ目（平均 ' + pos + ' 位）。' + kw + 'で知りたいこと（比較・理由・具体例）を見出しごとに足す';
+    } else {
+      r.title = '専用の記事を作る';
+      r.detail = '平均 ' + pos + ' 位で、いまのページでは届いていません。' + kw + 'を主題にした記事を新しく作るか、近い記事の主題をこの語に合わせる';
+    }
+    return r;
+  }
+  function applyGscAction(k, g) {
+    if (!k) return;
+    var a = gscActionFor(k, g);
+    k.gsc_page = a.page;
+    k.gsc_page_count = a.pages;
+    // 個別に決めたやること（料金を明記する等）は残し、汎用の「ページ改善」だけを実績にもとづく内容に置き換える
+    var generic = !k.action || k.action === 'ページ改善' || k.action_auto || k.seed_source === 'GSC';
+    if (!generic) return;
+    k.action = a.title;
+    k.action_detail = a.detail;
+    k.action_auto = true;
+  }
+  function gscFacts(k) {
+    var imp = k.gsc_impressions || 0, clk = k.gsc_clicks || 0;
+    var parts = ['表示 ' + Number(imp).toLocaleString('ja-JP'), 'クリック ' + Number(clk).toLocaleString('ja-JP')];
+    if (imp) parts.push('CTR ' + (clk / imp * 100).toFixed(1) + '%');
+    if (k.gsc_position != null) parts.push('平均 ' + k.gsc_position + ' 位');
+    return parts;
+  }
+
   function csvCell(v) {
     v = String(v == null ? '' : v);
     return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
@@ -169,9 +225,16 @@
     (measurements || []).forEach(function (m) {
       var k = normKw(m.keyword || m.query || '');
       if (!k) return;
-      if (!map[k]) map[k] = { keyword: (m.keyword || m.query || '').trim(), impressions: 0, clicks: 0, positionSum: 0, positionWeight: 0 };
+      if (!map[k]) map[k] = { keyword: (m.keyword || m.query || '').trim(), impressions: 0, clicks: 0, positionSum: 0, positionWeight: 0, pages: {} };
       map[k].impressions += Number(m.impressions) || 0;
       map[k].clicks += Number(m.clicks) || 0;
+      // どのページがこの語で表示されているか（やることを具体的にするため）
+      var pg = String(m.url || m.page || '').trim();
+      if (pg) {
+        var pp = map[k].pages[pg] || (map[k].pages[pg] = { url: pg, impressions: 0, clicks: 0 });
+        pp.impressions += Number(m.impressions) || 0;
+        pp.clicks += Number(m.clicks) || 0;
+      }
       var pos = Number(m.position) || 0;
       var w = Math.max(1, Number(m.impressions) || 1);
       if (pos > 0) {
@@ -222,6 +285,7 @@
         k.gsc_impressions = Math.round(g.impressions);
         k.gsc_clicks = Math.round(g.clicks || 0);
         k.gsc_position = g.positionWeight ? Math.round((g.positionSum / g.positionWeight) * 10) / 10 : null;
+        applyGscAction(k, g);
         if (k.gsc_impressions > 50) k.strength = '普通';
         if (k.gsc_impressions > 200 && k.priority === 'P2') k.priority = 'P1';
       }
@@ -1014,11 +1078,12 @@
           priority: g.impressions >= 200 ? 'P0' : 'P1',
           strength: g.impressions > 50 ? '普通' : '弱い',
           gap: g.impressions >= 200 ? '大' : '中',
-          action: 'ページ改善',
+          action: '',
           cluster: 'Core',
           seed_source: 'GSC',
           prompts: promptsForKeyword({ keyword: g.keyword })
         });
+        applyGscAction(job.keywords[job.keywords.length - 1], g);
       });
     job.keywords.forEach(function (k) {
       if (!k.prompts || !k.prompts.length) {
@@ -1200,11 +1265,20 @@
       if (k.volume_source === 'Official' && k.volume != null && isFinite(Number(k.volume))) meta.push('月間検索数 ' + Number(k.volume).toLocaleString('ja-JP') + '（Keyword Planner）');
       if (k.ai_mention_rate != null) meta.push('AI言及 ' + k.ai_mention_rate + '%');
       var metaHtml = meta.length ? ('<div class="orch-kw-meta">' + meta.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div>') : '';
+      var hasGsc = k.gsc_impressions != null && k.gsc_impressions > 0;
+      var pageHtml = k.gsc_page ? '<a class="orch-kw-page" href="' + esc(k.gsc_page) + '" target="_blank" rel="noopener noreferrer">' + esc(pathOf(k.gsc_page)) + ' ↗</a>' : '';
+      var whyHtml = hasGsc
+        ? '<div class="orch-kw-facts">' + gscFacts(k).map(function (f) { return '<span>' + esc(f) + '</span>'; }).join('') + '</div><div class="orch-kw-src">Search Console（実測）</div>'
+        : esc(why);
+      var actTitle = k.action && k.action !== 'ページ改善' ? k.action : '';
+      var actHtml = actTitle
+        ? '<strong>' + esc(actTitle) + '</strong>' + (k.action_detail ? '<p>' + esc(k.action_detail) + '</p>' : '')
+        : '<span class="orch-kw-muted">Search Console を取り込むと、対象ページと直し方を出します</span>';
       return '<tr class="orch-kw-row">' +
-        '<td><span class="orch-prio">' + esc(k.priority || 'P2') + '</span></td>' +
-        '<td><div class="orch-kw-main"><strong>' + esc(k.keyword) + '</strong>' + metaHtml + '</div></td>' +
-        '<td class="orch-kw-why">' + esc(why) + '</td>' +
-        '<td class="orch-kw-act">' + esc(k.action || 'ページ改善') + '</td>' +
+        '<td data-label="優先"><span class="orch-prio">' + esc(k.priority || 'P2') + '</span></td>' +
+        '<td data-label="対策キーワード"><div class="orch-kw-main"><strong>' + esc(k.keyword) + '</strong>' + pageHtml + metaHtml + '</div></td>' +
+        '<td data-label="根拠" class="orch-kw-why">' + whyHtml + '</td>' +
+        '<td data-label="やること" class="orch-kw-act">' + actHtml + '</td>' +
         '</tr>';
     }).join('');
 
@@ -1436,6 +1510,8 @@
       if (!job || job.status !== 'completed') return;
       // 顧客の作業として開いているときは、別のサイトの前回結果を出さない
       if (studioClient && studioClient.url && hostOf(job.url || '') !== hostOf(studioClient.url)) return;
+      // 保存済みの結果にも、いまの Search Console の実績（対象ページ・直し方）を付け直す
+      try { job = reattachGscToJob(job); } catch (e2) {}
       window.__orchLastJob = job;
       if (q('orch-progress-wrap')) q('orch-progress-wrap').hidden = true;
       renderResult(job);
