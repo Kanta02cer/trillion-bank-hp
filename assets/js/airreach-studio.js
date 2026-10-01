@@ -12,7 +12,7 @@ function download(name,text,type){var b=new Blob([text],{type:type||'text/plain;
 function csvCell(v){v=String(v==null?'':v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
 function toCsv(rows,cols){return [cols.join(',')].concat(rows.map(function(r){return cols.map(function(c){return csvCell(r[c])}).join(',')})).join('\n')}
 function parseCsv(text){var rows=[],row=[],cur='',quote=false;for(var i=0;i<text.length;i++){var ch=text[i],nx=text[i+1];if(ch==='"'&&quote&&nx==='"'){cur+='"';i++;continue}if(ch==='"'){quote=!quote;continue}if(ch===','&&!quote){row.push(cur);cur='';continue}if((ch==='\n'||ch==='\r')&&!quote){if(ch==='\r'&&nx==='\n')i++;row.push(cur);if(row.some(function(x){return x!==''}))rows.push(row);row=[];cur='';continue}cur+=ch}row.push(cur);if(row.some(function(x){return x!==''}))rows.push(row);if(!rows.length)return[];var head=rows.shift().map(function(x){return x.trim()});return rows.map(function(r){var o={};head.forEach(function(h,j){o[h]=r[j]||''});return o})}
-function prioLabel(p){return {P0:'最優先',P1:'次に',P2:'余裕があれば'}[p||'P2']||p}
+function prioLabel(p){return {P0:'必須',P1:'推奨',P2:'任意'}[p||'P2']||p}
 function n(v){var x=parseFloat(String(v||'').replace(/[% ,]/g,''));return isFinite(x)?x:0}
 function pct(a,b){return b?((a/b)*100):0}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}

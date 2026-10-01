@@ -118,9 +118,9 @@ robots: "noindex, follow"
         <div class="orch-kw-toolbar">
           <div class="orch-kw-filters" role="group" aria-label="優先度フィルタ">
             <button type="button" class="orch-filter is-on" data-orch-filter="all">すべて</button>
-            <button type="button" class="orch-filter" data-orch-filter="P0" title="Search Console で表示が多い語、料金・比較など申し込みに近い語">最優先</button>
-            <button type="button" class="orch-filter" data-orch-filter="P1" title="伸ばしやすい語">次に</button>
-            <button type="button" class="orch-filter" data-orch-filter="P2" title="関連する語（後回しでよい）">余裕があれば</button>
+            <button type="button" class="orch-filter" data-orch-filter="P0" title="Search Console で表示が多い語、料金・比較など申し込みに近い語">必須</button>
+            <button type="button" class="orch-filter" data-orch-filter="P1" title="伸ばしやすい語">推奨</button>
+            <button type="button" class="orch-filter" data-orch-filter="P2" title="関連する語（後回しでよい）">任意</button>
             <button type="button" class="orch-filter" data-orch-filter="gsc">GSCあり</button>
           </div>
           <div class="ars-row">
@@ -296,7 +296,7 @@ robots: "noindex, follow"
           <div class="ars-panel" data-panel-view="keywords">
             <div class="ars-title-row"><div><h2>言葉</h2><p class="ars-sub">基本情報のブランド／サービス向けに絞った対策候補</p></div><div class="ars-row"><button id="seed-keywords" class="ars-btn ars-btn-soft" type="button">自社向けに生成</button><button id="export-keywords" class="ars-btn ars-btn-secondary" type="button">CSV</button></div></div>
             <div id="kw-scope-note" class="ars-note">Overviewで分析するか、「自社向けに生成」で候補を作ります。</div>
-            <div class="ars-card ars-kw-add"><div class="ars-grid"><div class="ars-field ars-c6"><label for="kw-text">追加するキーワード</label><input id="kw-text" class="ars-input" placeholder="例: AI検索対策 費用"></div><div class="ars-field ars-c3"><label for="kw-priority">優先度</label><select id="kw-priority" class="ars-select"><option value="P0">最優先</option><option value="P1" selected>次に</option><option value="P2">余裕があれば</option></select></div><div class="ars-field ars-c3"><label for="kw-intent">意図</label><select id="kw-intent" class="ars-select"><option>Informational</option><option>Commercial</option><option>Comparison</option></select></div></div><div class="ars-row" style="margin-top:12px"><button id="add-keyword" class="ars-btn ars-btn-primary" type="button">追加</button><label class="ars-btn ars-btn-secondary" style="cursor:pointer">CSV取込<input id="keyword-csv" type="file" accept=".csv,text/csv" hidden></label><input id="kw-cluster" type="hidden" value="Core"></div></div>
+            <div class="ars-card ars-kw-add"><div class="ars-grid"><div class="ars-field ars-c6"><label for="kw-text">追加するキーワード</label><input id="kw-text" class="ars-input" placeholder="例: AI検索対策 費用"></div><div class="ars-field ars-c3"><label for="kw-priority">優先度</label><select id="kw-priority" class="ars-select"><option value="P0">必須</option><option value="P1" selected>推奨</option><option value="P2">任意</option></select></div><div class="ars-field ars-c3"><label for="kw-intent">意図</label><select id="kw-intent" class="ars-select"><option>Informational</option><option>Commercial</option><option>Comparison</option></select></div></div><div class="ars-row" style="margin-top:12px"><button id="add-keyword" class="ars-btn ars-btn-primary" type="button">追加</button><label class="ars-btn ars-btn-secondary" style="cursor:pointer">CSV取込<input id="keyword-csv" type="file" accept=".csv,text/csv" hidden></label><input id="kw-cluster" type="hidden" value="Core"></div></div>
             <div id="keyword-body" class="ars-kw-cards" style="margin-top:16px"></div>
           </div>
 
