@@ -1025,7 +1025,7 @@
           unit: '件 / 月',
           badge: 'Inferred',
           // 伸び幅は整備度の点数から置いた仮定（実測ではない）。どの件数にかけたかと「保証ではない」を必ず書く
-          meaning: (inqFrom === 'ga4' ? 'GA4 のキーイベント（月 ' + cnt(inq.currentInquiries) + ' 件）' : '入力した件数（月 ' + cnt(inq.currentInquiries) + ' 件）') +
+          meaning: (inqFrom === 'ga4' ? 'GA4 のキーイベント（月 ' + cnt(inq.currentInquiries) + ' 件）' : 'いまの件数（月 ' + cnt(inq.currentInquiries) + ' 件）') +
             'に、情報整備の点数から置いた伸び幅（+' + Math.round(inq.addLow / Math.max(1, inq.currentInquiries) * 100) + '〜' + Math.round(inq.addHigh / Math.max(1, inq.currentInquiries) * 100) + '%）をかけた目安です。保証ではありません',
           inqFrom: inqFrom,
           sub: '現在 ' + cnt(inq.currentInquiries) + ' → ' + cnt(inq.afterLow) + '〜' + cnt(inq.afterHigh) + ' 件'
@@ -1036,7 +1036,7 @@
           unit: '',
           badge: 'Unmeasured',
           meaning: !diagnose ? 'サイトを取得できなかったため、増やせる件数は試算していません（取得に同意して診断し直すと試算できます）'
-            : 'いまの月の' + (profile.display_label || '件数') + 'の件数を入れると、増やせる件数の目安を出します',
+            : 'いまの月の' + (profile.display_label || '件数') + 'のだいたいの件数を選ぶと、増やせる件数の目安を出します',
           noDiagnose: !diagnose,
           inqFrom: null,
           sub: ''
