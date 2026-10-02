@@ -41,5 +41,5 @@
     if (key) h['X-AirReach-Key'] = key;
     return token().then(function (t) { if (t) h.Authorization = 'Bearer ' + t; return h; });
   }
-  window.AirReachStaffAuth = { token: token, headers: headers, loginUrl: '/airreach/app/' };
+  window.AirReachStaffAuth = { token: token, headers: headers, client: client, loginUrl: '/airreach/app/' };
 })();

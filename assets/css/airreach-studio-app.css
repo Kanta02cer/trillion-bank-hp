@@ -205,3 +205,24 @@ body:not(.has-job) [data-needs-job]{display:none}
 .ars-input.is-invalid{border-color:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.15)}
 #hack2-status.is-err{color:#b91c1c;font-weight:700}
 .ars-hack2-help{display:block;margin-top:4px;font-size:.78rem;color:#64748b}
+
+/* 顧客の切り替え（上部）と顧客の状態 */
+.ars-client-pick{position:relative;margin-left:12px}
+.ars-client-pick>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #cbd5e1;border-radius:999px;font-size:13px;background:#fff;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.ars-client-pick>summary::-webkit-details-marker{display:none}
+.ars-client-pick-l{color:#64748b;font-size:12px}
+.ars-client-pick-menu{position:absolute;z-index:50;top:calc(100% + 6px);left:0;width:min(340px,calc(100vw - 32px));max-height:60vh;overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.14);padding:10px}
+.ars-client-pick-menu ul{list-style:none;margin:8px 0 0;padding:0}
+.ars-client-pick-menu li a{display:block;padding:8px 10px;border-radius:8px;color:#0f172a;text-decoration:none;font-weight:700;font-size:14px}
+.ars-client-pick-menu li a small{display:block;font-weight:400;font-size:12px;color:#64748b}
+.ars-client-pick-menu li a:hover,.ars-client-pick-menu li a[aria-current]{background:#eff6ff}
+.ars-client-pick-none{display:block;margin-top:8px;padding:8px 10px;font-size:13px;color:#475569}
+.ars-client-pick-note{margin:4px 2px;font-size:13px;color:#475569;line-height:1.6;white-space:normal}
+.ars-client-sum{margin-bottom:12px}
+.ars-client-sum-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.ars-client-sum-h h2{margin:0;font-size:18px}
+.ars-client-sum-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.ars-client-sum-c{border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px}
+.ars-client-sum-c span{display:block;font-size:12px;color:#64748b}.ars-client-sum-c b{display:block;font-size:20px}.ars-client-sum-c small{color:#64748b;font-size:12px}
+@media (max-width:640px){.ars-client-pick{margin-left:0}}
+@media (max-width:640px){.ars-client-pick~.ars-appbar-context{display:none}}
