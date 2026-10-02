@@ -115,11 +115,15 @@
       return Promise.all([
         s.rpc('airreach_client_scans', { p_client_id: client.id, p_limit: 1 }),
         s.from('measurement_runs').select('measured_on,source').eq('client_id', client.id).order('measured_on', { ascending: false }).limit(1),
-        s.from('reports').select('status').eq('client_id', client.id).eq('period_month', month).maybeSingle()
+        s.from('reports').select('status').eq('client_id', client.id).eq('period_month', month).maybeSingle(),
+        s.from('client_sites').select('url').eq('client_id', client.id)
       ]);
     }).then(function (rs) {
       if (rs[0].error) throw rs[0].error;
       var sc = (rs[0].data || [])[0], run = (rs[1].data || [])[0], rep = rs[2] && rs[2].data;
+      var siteUrl = client.url || (((rs[3] && rs[3].data) || [])[0] || {}).url || '';
+      fillUrl(siteUrl);
+      offerLegacy(siteUrl);
       var cell = function (label, value, sub) { return '<div class="ars-client-sum-c"><span>' + esc(label) + '</span><b>' + value + '</b><small>' + esc(sub || '') + '</small></div>'; };
       el.querySelector('.ars-note').outerHTML = '<div class="ars-client-sum-g">' +
         cell('最新の診断', sc && sc.overallScore != null ? esc(sc.overallScore) + '点' : '—', sc ? ymd(sc.createdAt) + ' に診断' : 'まだ診断していません') +
@@ -139,6 +143,37 @@
       var b = document.getElementById('orch-brand');
       if (b && !b.value.trim()) { b.value = client.name; b.dispatchEvent(new Event('input', { bubbles: true })); }
     }, 300);
+  }
+  // URL を受け取らずに開いたとき（ダッシュボードのレポート画面からなど）は、顧客のサイトを入れておく
+  function fillUrl(url) {
+    if (!url) return;
+    if (!client.url) { client.url = url; try { sessionStorage.setItem(CLIENT_KEY, JSON.stringify(client)); } catch (e) {} }
+    var u = document.getElementById('orch-url');
+    if (u && !u.value.trim()) { u.value = url; u.dispatchEvent(new Event('input', { bubbles: true })); }
+  }
+  function hostOf(u) { try { return new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) { return ''; } }
+  // 顧客ごとの保存を始める前に、顧客を選ばずに同じサイトで作業していた場合は、その作業を使えるようにする
+  function offerLegacy(siteUrl) {
+    var host = hostOf(siteUrl);
+    if (!host) return;
+    var cur = {};
+    try { cur = JSON.parse(get('airreach_studio_v1') || '{}') || {}; } catch (e) {}
+    if ((cur.keywords || []).length || Object.keys(cur.generated || {}).length || (cur.hack2 || []).length) return; // この顧客の作業がもうある
+    var none = null, prev = {};
+    try { none = JSON.parse(get(WS_PREFIX + NONE) || 'null'); prev = JSON.parse((none && none.airreach_studio_v1) || '{}') || {}; } catch (e) { return; }
+    if (!none || hostOf((prev.profile && prev.profile.url) || '') !== host) return;
+    if (!((prev.keywords || []).length || Object.keys(prev.generated || {}).length || (prev.hack2 || []).length)) return;
+    var el = document.getElementById('ars-client-sum');
+    if (!el) return;
+    var box = document.createElement('div');
+    box.className = 'ars-client-legacy';
+    box.innerHTML = '<p>顧客を選ばずに作った <b>' + esc(host) + '</b> の作業（キーワード ' + (prev.keywords || []).length + '件' + ((prev.hack2 || []).length ? '・AI計測あり' : '') + '）があります。この顧客の作業として使いますか？</p>' +
+      '<button type="button" class="ars-btn ars-btn-primary" id="ars-legacy-use">この顧客の作業として使う</button>';
+    el.appendChild(box);
+    document.getElementById('ars-legacy-use').onclick = function () {
+      WORK_KEYS.forEach(function (k) { set(k, none[k] != null ? none[k] : null); });
+      location.reload();
+    };
   }
   function init() { renderPicker(); renderSummary(); prefillBrand(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
