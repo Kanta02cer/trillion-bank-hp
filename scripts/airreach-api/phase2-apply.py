@@ -12,6 +12,7 @@ Change ID（DEV-YYYY-NNN）の承認後にだけ使う。各手順は単独で�
   python3 scripts/airreach-api/phase2-apply.py anon-key-to-vercel      # 公開用キーを Vercel 本番の SUPABASE_ANON_KEY に登録
   python3 scripts/airreach-api/phase2-apply.py apply-report-2026-10      # 10月の追加: レポートの根拠＋承認フロー（2本）を適用して検証
   python3 scripts/airreach-api/phase2-apply.py set-approver <email> on|off  # 月次レポートの承認者を設定（apply-report-2026-10 の後）
+  python3 scripts/airreach-api/phase2-apply.py apply-studio-workspaces   # Studio の作業の共有（studio_workspaces）を適用して検証
 
 Supabase のアクセストークン（Account → Access Tokens で発行・期限つき推奨）は、
 ~/.config/airreach/supabase_token（chmod 600）に置く。画面にもログにも出さない。
@@ -219,6 +220,30 @@ def cmd_apply_report_2026_10():
     print('承認者はまだいません。set-approver <email> on で設定してください')
 
 
+def cmd_apply_studio_workspaces():
+    confirm_project()
+    if 'clients' not in tables():
+        die('Phase 2 の clients がありません。先に apply-db を実行してください')
+    path = ROOT / 'supabase/migrations/20261003120000_airreach_studio_workspaces.sql'
+    call('POST', f'/projects/{REF}/database/migrations', {'name': 'airreach_studio_workspaces', 'query': path.read_text()})
+    print('migration を適用しました: airreach_studio_workspaces')
+    checks = [
+        ('studio_workspaces があり RLS が有効', "select relrowsecurity as ok from pg_class where oid = 'public.studio_workspaces'::regclass"),
+        ('anon は studio_workspaces に権限なし', "select not exists(select 1 from information_schema.role_table_grants where table_name = 'studio_workspaces' and grantee = 'anon') as ok"),
+        ('authenticated は読むだけ（書き込みは関数だけ）', "select not exists(select 1 from information_schema.role_table_grants where table_name = 'studio_workspaces' and grantee = 'authenticated' and privilege_type <> 'SELECT') as ok"),
+        ('保存の関数は search_path 固定・SECURITY DEFINER', "select prosecdef and proconfig is not null as ok from pg_proc where proname = 'airreach_studio_save'"),
+        ('anon は保存の関数を実行できない', "select not has_function_privilege('anon', 'public.airreach_studio_save(uuid,jsonb,integer)', 'EXECUTE') as ok"),
+    ]
+    bad = 0
+    for label, q in checks:
+        r = sql(q, True)
+        ok = bool(r and r[0].get('ok'))
+        bad += 0 if ok else 1
+        print(('OK  ' if ok else 'NG  ') + label)
+    if bad:
+        die(f'検証で {bad} 件が想定と違います。supabase/rollback/ の SQL で戻すか判断してください')
+
+
 def cmd_set_approver(email, flag):
     email = email.strip().lower()
     if flag not in ('on', 'off') or '@' not in email or "'" in email:
@@ -315,7 +340,7 @@ def cmd_anon_key_to_vercel():
 def main():
     a = sys.argv[1:]
     cmds = {'check': cmd_check, 'apply-db': cmd_apply_db, 'auth-config': cmd_auth_config, 'auth-hook': cmd_auth_hook,
-            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'verify': lambda: (confirm_project(), verify())}
+            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'verify': lambda: (confirm_project(), verify())}
     if a and a[0] in cmds and len(a) == 1:
         cmds[a[0]]()
     elif a and a[0] == 'add-staff' and len(a) == 3:
