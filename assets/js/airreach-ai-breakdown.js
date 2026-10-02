@@ -25,6 +25,34 @@
     return 'other';
   }
 
+  // 指名質問＝質問の文に自社の名前が入っている質問（空白と大文字・小文字は無視）。それ以外は一般質問
+  function norm(t) { return String(t || '').toLowerCase().replace(/[\s\u3000・･]+/g, ''); }
+  function isBranded(prompt, brand) {
+    var b = norm(brand);
+    if (!b) return false;
+    var p = norm(prompt);
+    if (p.indexOf(b) >= 0) return true;
+    // 「株式会社」「店」などを外した名前でも探す（例: 株式会社ライフスタジオ → ライフスタジオ）
+    var core = b.replace(/^(株式会社|有限会社|合同会社)|(株式会社|有限会社|合同会社)$/g, '').replace(/(本店|店)$/, '');
+    return core.length >= 2 && p.indexOf(core) >= 0;
+  }
+  // 質問の種類ごとのまとめ（言及割合・言及の順位・引用割合・引用された URL の上位）
+  function typeSummary(rows, ctx) {
+    var n = rows.length, mention = 0, citeN = 0, cite = 0, r1 = 0, r2 = 0, r3 = 0, none = 0, withOrder = 0, urls = {}, withSrc = 0;
+    rows.forEach(function (r) {
+      if (r.mentioned) mention += 1;
+      if (r.cited === 0 || r.cited === 1) { citeN += 1; if (r.cited === 1) cite += 1; }
+      if (Array.isArray(r.order)) { withOrder += 1; if (r.self_rank === 1) r1 += 1; else if (r.self_rank === 2) r2 += 1; else if (r.self_rank >= 3) r3 += 1; else none += 1; }
+      var list = (r.citations && r.citations.length ? r.citations : (r.urls_in_answer || [])).slice(0, 20), seen = {};
+      if (list.length) withSrc += 1;
+      list.forEach(function (u) { var k = String(u).replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''); if (seen[k]) return; seen[k] = 1; urls[k] = urls[k] || { url: u, n: 0, cat: classify(hostOf(u), ctx) }; urls[k].n += 1; });
+    });
+    var top = Object.keys(urls).map(function (k) { return { url: k, href: urls[k].url, cat: urls[k].cat, answers: urls[k].n, share: pct(urls[k].n, withSrc) }; })
+      .sort(function (a, b) { return b.answers - a.answers; }).slice(0, 3);
+    return { answers: n, mentionRate: pct(mention, n), mention: mention, citeRate: pct(cite, citeN), cite: cite, citeJudged: citeN,
+      ranks: { first: r1, second: r2, thirdPlus: r3, none: none, counted: withOrder }, topUrls: top, answersWithSource: withSrc };
+  }
+
   /** いちばん新しい計測（run_id）の、実際の AI の行だけ */
   function latestRows(state) {
     var rs = (state.hack2 || []).filter(function (r) { return r.run_id && !est(r); });
@@ -95,7 +123,9 @@
     var totalCites = domains.reduce(function (s, d) { return s + d.count; }, 0);
     Object.keys(cats).forEach(function (k) { cats[k].share = pct(cats[k].count, totalCites); });
 
-    return { answers: rows.length, answersWithOrder: withOrder.length, answersWithSource: answersWithSource, questions: questions, ranks: ranks, domains: domains, categories: cats, totalCites: totalCites };
+    var types = { general: typeSummary(rows.filter(function (r) { return !isBranded(r.prompt || r.keyword, brand); }), ctx),
+      branded: typeSummary(rows.filter(function (r) { return isBranded(r.prompt || r.keyword, brand); }), ctx) };
+    return { types: types, answers: rows.length, answersWithOrder: withOrder.length, answersWithSource: answersWithSource, questions: questions, ranks: ranks, domains: domains, categories: cats, totalCites: totalCites };
   }
 
   function bar(v, color) { return '<span class="aib-bar"><i style="width:' + Math.max(0, Math.min(100, v || 0)) + '%;background:' + color + '"></i></span>'; }
@@ -112,6 +142,20 @@
     var ms = rows[0] && rows[0].run_id ? Date.parse(String(rows[0].run_id).replace(/^studio-/, '')) : NaN;
     if (!isNaN(ms)) when = new Date(ms + 9 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' ');
     var h = '<div class="aib">';
+    var CAT2 = CAT;
+    function typeCard(key, title, note) {
+      var t = s.types[key];
+      if (!t.answers) return '<div class="ars-card aib-type"><h3>' + title + '</h3><p class="ars-gnote">' + note + '</p><p class="ars-gnote">この計測には、この種類の質問がありません。</p></div>';
+      var rk = t.ranks;
+      return '<div class="ars-card aib-type"><h3>' + title + ' <small>' + t.answers + '回答</small></h3><p class="ars-gnote">' + note + '</p>' +
+        '<div class="aib-kpis"><div><span>名前が出た割合</span><b>' + (t.mentionRate == null ? '—' : esc(t.mentionRate) + '%') + '</b><small>' + rate(t.mention, t.answers) + '</small></div>' +
+        '<div><span>自社が出典の割合</span><b>' + (t.citeRate == null ? '—' : esc(t.citeRate) + '%') + '</b><small>' + (t.citeJudged ? rate(t.cite, t.citeJudged) : '出典が返る回答なし') + '</small></div></div>' +
+        '<div class="aib-mini"><span>言及の順位</span>' + (rk.counted ? '<ul><li>1位 <b>' + rk.first + '</b>件</li><li>2位 <b>' + rk.second + '</b>件</li><li>3位以下 <b>' + rk.thirdPlus + '</b>件</li><li>言及なし <b>' + rk.none + '</b>件</li></ul>' : '<small>順位の記録なし（再計測で出ます）</small>') + '</div>' +
+        '<div class="aib-mini"><span>引用された URL（上位3）</span>' + (t.topUrls.length ? '<ol>' + t.topUrls.map(function (u) {
+          return '<li><a href="' + esc(u.href) + '" target="_blank" rel="noopener noreferrer">' + esc(u.url.length > 60 ? u.url.slice(0, 60) + '…' : u.url) + '</a> <span class="aib-chip is-' + u.cat + '">' + esc(CAT2[u.cat]) + '</span> ' + (u.share == null ? '' : esc(u.share) + '%') + '</li>';
+        }).join('') + '</ol>' : '<small>出典の URL なし</small>') + '</div></div>';
+    }
+    h += '<div class="aib-types">' + typeCard('general', '一般質問', '店名・社名を含まない質問（例：大宮でおすすめのフォトスタジオは？）') + typeCard('branded', '指名質問', '店名・社名を含む質問（例：〇〇の料金プランを教えて）') + '</div>';
     // 1. 質問ごと
     h += '<section class="ars-card aib-sec"><h3>質問ごとの結果 <small>（最新の計測' + (when ? '・' + esc(when) : '') + '・' + s.answers + '回答）</small></h3>' +
       '<p class="ars-gnote">自社の名前が出にくい質問から並べています。「出典」は出典の一覧が返る AI の回答だけで数えます。</p>' +
@@ -155,5 +199,5 @@
     el.innerHTML = h;
   }
 
-  window.AirReachAIBreakdown = { summarize: summarize, render: render, latestRows: latestRows, classify: classify, CAT: CAT };
+  window.AirReachAIBreakdown = { isBranded: isBranded, summarize: summarize, render: render, latestRows: latestRows, classify: classify, CAT: CAT };
 })();
