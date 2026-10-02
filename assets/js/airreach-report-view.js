@@ -49,6 +49,59 @@
       '</tbody></table></section>';
   }
 
+  // ---- 診断の根拠（範囲・内訳・項目ごとの結果・構造化データ・AIのロボット）-------------------
+  var STATE_JA = { ok: '○', ng: '×', unknown: '—' };
+  function siteEvidenceHtml(cur) {
+    var R = window.AirReachReport, dt = cur && cur.detail;
+    if (!dt) return '<p class="arr-note">この診断には項目ごとの記録がありません。診断し直すと、項目ごとの結果と根拠を表示できます。</p>';
+    var sc = dt.scope, bd = dt.breakdown;
+    var h = '<h3 class="arr-h3">診断の範囲</h3><table class="arr-table arr-ev"><tbody>' +
+      '<tr><th>診断日時</th><td>' + esc(R.jstTime(sc.diagnosedAt)) + '（日本時間）</td></tr>' +
+      '<tr><th>対象URL</th><td class="arr-url">' + esc(sc.topUrl) + '</td></tr>' +
+      '<tr><th>点数の対象</th><td>' + esc(sc.scored) + '</td></tr>' +
+      '<tr><th>確認したページ数</th><td>' + (sc.pagesRead != null ? esc(sc.pagesRead) + 'ページ（トップページ＋下層ページ ' + esc(sc.pagesRead - 1) + '）' : '<span class="arr-na">記録なし</span>') + '</td></tr>' +
+      (sc.subpages && sc.subpages.length ? '<tr><th>確認した下層ページ</th><td><ul class="arr-ul arr-urls">' + sc.subpages.map(function (p) {
+        return '<li><span class="arr-url">' + esc(p.url) + '</span>' + (p.role ? '（' + esc(p.role) + '）' : '') + (p.ok ? '' : ' <span class="arr-na">読めず' + (p.status ? '・HTTP ' + esc(p.status) : '') + '</span>') + '</li>';
+      }).join('') + '</ul></td></tr>' : '') +
+      '</tbody></table><p class="arr-note">' + esc(sc.note) + '</p>';
+    if (bd && bd.overall != null) {
+      h += '<h3 class="arr-h3">総合点の内訳</h3><table class="arr-table"><thead><tr><th>分類</th><th>分類の点数</th><th>重み</th><th>総合点への寄与</th></tr></thead><tbody>' +
+        bd.rows.map(function (r) { return '<tr><td>' + esc(r.label) + '</td><td>' + v(r.score, '点') + '</td><td>' + (r.share != null ? esc(r.share) + '%' : '<span class="arr-na">対象外</span>') + '</td><td>' + (r.contribution != null ? esc(r.contribution) + '点' : '—') + '</td></tr>'; }).join('') +
+        '<tr><th>総合点</th><td></td><td></td><td><b>' + esc(bd.overall) + '点</b>（' + esc(bd.total) + ' を四捨五入）</td></tr></tbody></table>' +
+        '<p class="arr-note">総合点＝各分類の点数 × 重み の合計。' + (bd.redistributed ? '判定できなかった分類があるため、残りの分類で重みを配り直しています。' : '重みは ページの骨格30%・会社・お店の情報25%・よくある質問20%・見つけやすさ25%。') + '</p>';
+    }
+    var groups = ['structure', 'entity', 'faq', 'discover'];
+    h += '<h3 class="arr-h3">項目ごとの結果と根拠</h3><table class="arr-table arr-checks"><thead><tr><th>判定の基準</th><th>結果</th><th>点数</th><th>理由</th></tr></thead><tbody>' +
+      groups.map(function (g) {
+        var rows = dt.checks.filter(function (c) { return c.factor === g; });
+        if (!rows.length) return '';
+        var adj = dt.adjustments.filter(function (a) { return a.factor === g; });
+        return '<tr class="arr-grp"><th colspan="4">' + esc(rows[0].factorLabel) + '</th></tr>' + rows.map(function (c) {
+          return '<tr class="is-' + esc(c.state) + '"><td>' + esc(c.rule || c.label) + '</td><td class="arr-mark">' + (STATE_JA[c.state] || '—') + '</td><td>' + (c.points == null ? '<span class="arr-na">判定なし</span>' : esc(c.points) + '／' + esc(c.max)) + '</td><td>' + esc(c.reason) + '</td></tr>';
+        }).join('') + adj.map(function (a) { return '<tr class="is-ng"><td>減点：' + esc(a.label) + '</td><td class="arr-mark">−</td><td>' + esc(a.points) + '</td><td>この分類の点数から差し引いています</td></tr>'; }).join('');
+      }).join('') + '</tbody></table><p class="arr-note">○＝満たしている／×＝満たしていない／—＝読み取れず判定していない（0点ではなく、計算から外しています）。分類の点数は、判定できた項目の合計 ÷ 満点 × 100。</p>';
+    // 構造化データ
+    h += '<h3 class="arr-h3">構造化データ（検索やAIが読み取る、お店・会社の情報）</h3>';
+    if (dt.ld && dt.ld.blocks.length) {
+      var LAB = { name: '名前', url: 'URL', telephone: '電話', address: '住所', openingHours: '営業時間', openingHoursSpecification: '営業時間', priceRange: '価格帯', servesCuisine: '料理', acceptsReservations: '予約', logo: 'ロゴ', image: '画像', description: '説明', sameAs: '関連リンク', questions: 'よくある質問' };
+      h += '<table class="arr-table"><thead><tr><th>種類</th><th>書かれていた主な項目</th></tr></thead><tbody>' + dt.ld.blocks.map(function (b) {
+        var ks = Object.keys(b.fields || {});
+        return '<tr><td>' + esc((b.types || []).join(' / ')) + '</td><td>' + (ks.length ? ks.map(function (k) { return '<b>' + esc(LAB[k] || k) + '</b>：' + esc(b.fields[k]); }).join('<br>') : '<span class="arr-na">主な項目なし</span>') + '</td></tr>';
+      }).join('') + '</tbody></table>' + (dt.ld.errors ? '<p class="arr-note">形式の誤りで読めない記述が ' + esc(dt.ld.errors) + 'か所ありました。</p>' : '');
+    } else if (dt.ld) h += '<p class="arr-sub">トップページに構造化データはありませんでした。</p>';
+    else h += '<p class="arr-sub">見つかった種類：' + (dt.types.length ? esc(dt.types.join('、')) : 'なし') + '</p>';
+    // AIのロボット
+    h += '<h3 class="arr-h3">AIのロボットへの許可（robots.txt）</h3>';
+    if (dt.robots && dt.robots.bots && dt.robots.bots.length) {
+      h += '<table class="arr-table"><thead><tr><th>ロボット</th><th>運営</th><th>判定</th><th>根拠の行</th></tr></thead><tbody>' + dt.robots.bots.map(function (b) {
+        return '<tr class="is-' + (b.verdict === 'blocked' ? 'ng' : 'ok') + '"><td>' + esc(b.name) + '</td><td>' + esc(b.org) + '</td><td>' + esc(b.verdictText) + (b.via === 'star' ? '<br><small class="arr-na">全ロボット共通の指定</small>' : '') + '</td><td class="arr-url">' + (b.lines.length ? b.lines.map(esc).join('<br>') : '—') + '</td></tr>';
+      }).join('') + '</tbody></table>';
+    } else if (dt.robots && dt.robots.state === 'missing') h += '<p class="arr-sub">robots.txt がないため、すべてのロボットに許可している状態です。</p>';
+    else h += '<p class="arr-sub"><span class="arr-na">この診断では記録していません。</span></p>';
+    h += '<p class="arr-sub">llms.txt：' + esc(dt.llms.text) + '</p>';
+    return h;
+  }
+
   function render(r) {
     var c = r.compiled || {};
     var site = c.site || {}, cur = site.current || null, prev = site.previous || null;
@@ -90,13 +143,14 @@
       '</article>' +
 
       '<article class="arr-page arr-break">' +
+      (c.first ? '<section><h2 class="arr-h2">初回の計測（基準値）</h2><p class="arr-sub">今回が最初の計測のため、前月との比較と推移はありません。この月の数字を基準にして、次回から変化を示します。</p></section>' :
       '<section><h2 class="arr-h2">推移（直近6か月）</h2>' + C.trends(c) +
-      '<p class="arr-note">計測していない月は点を打たず、線もつないでいません（0 ではありません）。</p></section>' +
+      '<p class="arr-note">計測していない月は点を打たず、線もつないでいません（0 ではありません）。</p></section>') +
       '<section><h2 class="arr-h2">ホームページの情報整備の内訳</h2>' +
       (cur ? '<p class="arr-sub">' + esc(String(cur.createdAt).slice(0, 10)) + ' に ' + esc(cur.url || '') + ' を診断' + (cur.inMonth ? '' : '<span class="arr-na">（当月の診断が無いため、この日の結果を使用）</span>') + '</p>' +
-        C.factors(c) +
-        '<div class="arr-cols"><div><h3 class="arr-h3">前月から直ったこと</h3><ul class="arr-ul arr-ok">' + ((site.resolved || []).map(function (g) { return '<li>' + esc(resolved(g)) + '</li>'; }).join('') || '<li class="arr-na">なし</li>') + '</ul></div>' +
-        '<div><h3 class="arr-h3">まだ足りないこと</h3><p class="arr-sub">' + ((cur.gaps || []).length ? (cur.gaps || []).length + '件（直し方は下の「直すこと」）' : 'なし') + '</p></div></div>' +
+        C.factors(c) + siteEvidenceHtml(cur) +
+        (c.first ? '' : '<div class="arr-cols"><div><h3 class="arr-h3">前月から直ったこと</h3><ul class="arr-ul arr-ok">' + ((site.resolved || []).map(function (g) { return '<li>' + esc(resolved(g)) + '</li>'; }).join('') || '<li class="arr-na">なし</li>') + '</ul></div>' +
+        '<div><h3 class="arr-h3">まだ足りないこと</h3><p class="arr-sub">' + ((cur.gaps || []).length ? (cur.gaps || []).length + '件（直し方は下の「直すこと」）' : 'なし') + '</p></div></div>') +
         (window.AirReachReport && (cur.gaps || []).length ? '<h3 class="arr-h3">直すこと（優先度の高い順）</h3>' + C.todos(window.AirReachReport.todoList(c), { audience: 'client', limit: 3, moreText: '（すべての項目は AirReach の画面で確認できます）' }) : '')
         : '<p class="arr-na">診断の記録がありません。</p>') + '</section>' +
       '<section><h2 class="arr-h2">AI回答の計測</h2>' +
@@ -107,7 +161,7 @@
         '</tbody></table><p class="arr-note">同じ質問をAIに複数回して集計。計測は無料枠のモデルで行っており、一般の人が使う最新の ChatGPT・Gemini とは結果が異なることがあります。</p>' +
         citedHtml(ai)
         : '<p class="arr-na">今月は計測していません。</p>') + '</section>' +
-      '<section><h2 class="arr-h2">数値の一覧（前月との比較）</h2><table class="arr-table"><thead><tr><th></th><th>' + esc(ym(c.previousMonth)) + '</th><th>' + esc(ym(r.period_month)) + '</th><th>差</th></tr></thead><tbody>' + kpi.join('') +
+      '<section' + (c.first ? ' class="arr-first"' : '') + '><h2 class="arr-h2">' + (c.first ? '数値の一覧（初回の基準値）' : '数値の一覧（前月との比較）') + '</h2><table class="arr-table"><thead><tr><th></th><th>' + esc(ym(c.previousMonth)) + '</th><th>' + esc(ym(r.period_month)) + '</th><th>差</th></tr></thead><tbody>' + kpi.join('') +
       '<tr><th>検索の表示回数</th><td>' + v(tr.gscPrev && tr.gscPrev.impressions) + '</td><td>' + v(tr.gsc && tr.gsc.impressions) + '</td><td>' + d(diff(tr.gsc && tr.gsc.impressions, tr.gscPrev && tr.gscPrev.impressions)) + '</td></tr>' +
       '<tr><th>検索結果での平均の順位</th><td>' + v(tr.gscPrev && tr.gscPrev.position) + '</td><td>' + v(tr.gsc && tr.gsc.position) + '</td><td>' + d(diff(tr.gsc && tr.gsc.position, tr.gscPrev && tr.gscPrev.position), '', true) + '</td></tr>' +
       '<tr><th>サイトへの訪問回数</th><td>' + v(tr.ga4Prev && tr.ga4Prev.sessions) + '</td><td>' + v(tr.ga4 && tr.ga4.sessions) + '</td><td>' + d(diff(tr.ga4 && tr.ga4.sessions, tr.ga4Prev && tr.ga4Prev.sessions)) + '</td></tr>' +

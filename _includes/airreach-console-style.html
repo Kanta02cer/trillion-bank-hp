@@ -119,6 +119,12 @@ a.arv-todo-studio{text-decoration:none}
 .arr-table td.arr-url{word-break:break-all;font-size:.82rem}
 .arr-ev th{width:30%;font-weight:600}
 .arr-ev td{font-size:.82rem;color:#334155}
+.arr-first thead th:nth-child(2),.arr-first thead th:nth-child(4),.arr-first tbody td:nth-child(2):not([colspan]),.arr-first tbody td:nth-child(4){display:none}
+.arr-checks td{font-size:.8rem;vertical-align:top}.arr-checks th:nth-child(2),.arr-checks td:nth-child(2){width:3.2em;white-space:nowrap;text-align:center}.arr-checks th:nth-child(3),.arr-checks td:nth-child(3){width:4.6em;white-space:nowrap}.arr-checks th:first-child{width:42%}.arr-checks .arr-mark{text-align:center;font-weight:800}
+.arr-checks tr.is-ng .arr-mark{color:#c2410c}.arr-checks tr.is-ok .arr-mark{color:#047857}.arr-checks tr.is-unknown .arr-mark{color:#64748b}
+.arr-checks tr.arr-grp th{background:#f1f5f9;font-size:.82rem;text-align:left}
+.arr-urls{margin:0;padding-left:1.1em}.arr-urls li{font-size:.8rem}
+.arv-todo-basis{margin-top:6px;font-size:.8rem;color:#334155;background:#f8fafc;border-left:3px solid #94a3b8;padding:6px 8px}.arv-todo-basis span{font-weight:700;margin-right:6px}
 .arr-sub{font-size:.82rem;color:#64748b;margin:2px 0 8px}
 .arr-concl li{font-size:1rem;font-weight:600;margin:4px 0;line-height:1.6}
 .arr-date{display:inline-block;min-width:3.2em;color:#64748b;font-variant-numeric:tabular-nums;margin-right:6px}
@@ -177,6 +183,7 @@ a.arv-todo-studio{text-decoration:none}
   /* 長い節（直すこと等）は途中で改ページしてよい。小さい部品だけ分割しない */
   .arr-table,.arv-fig,.arv-tile,.arv-todo,.arv-trends,.arv-tiles,.arv-facs,.arv-cmp{break-inside:avoid}
   .arr-h2,.arr-h3{break-after:avoid}
+  .arr-table.arr-checks{break-inside:auto}.arr-checks tr{break-inside:avoid}
   /* 印刷では「直すこと」を詰める（理由の行は画面で見られる） */
   .arv-todo-why,.arv-todo-tech{display:none}
   .arv-todo{padding:6px 10px}

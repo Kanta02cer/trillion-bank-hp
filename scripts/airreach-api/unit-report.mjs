@@ -112,7 +112,7 @@ expect('traffic: GSC は連携（サイト全体）の値を使う（並び順�
     traffic: [{ period_month: '2026-10-01', source: 'gsc_api', metrics: { clicks: 5, impressions: 50, start_date: '2026-10-01', end_date: '2026-10-28', days: 28, property: 'sc-domain:example.com' } }] });
   expect('cited: compiled ai has cited domains and target citations', [rc.ai.citedDomains.length, rc.ai.targetCitations.length], [2, 1]);
   const ev = R.evidenceList(rc);
-  expect('evidence: site row has date, url, rule version', /2026-10-05 に https:\/\/example\.com\/ .*判定基準 r9/.test(ev[0].detail), true);
+  expect('evidence: site row has date, url, rule version', /2026-10-05 \d\d:\d\d に https:\/\/example\.com\/ .*判定基準 r9/.test(ev[0].detail), true);
   expect('evidence: ai row has date, version, model and answers', /計測日 2026-10-20・質問の版 v1・ChatGPT（gpt-x） 10回答/.test(ev[1].detail), true);
   expect('evidence: gsc row has source and period', ev[2].source === 'Google Search Console（連携で取得）' && /2026-10-01〜2026-10-28（28日間）・sc-domain:example\.com・サイト全体の合計/.test(ev[2].detail), true);
   expect('evidence: ga4 missing → 未取得', ev[3].source, '未取得');
@@ -141,6 +141,59 @@ const c2 = R.compileReport({ periodMonth: '2026-09-01', scans: [], runs: [
 ], traffic: [], actions: [] });
 expect('report: 質問の版が違えば差を出さない', c2.ai.providers.map((p) => p.citeDelta), [null, null]);
 expect('report: 材料が無ければ missing に並ぶ', c2.missing, ['ホームページの診断', 'Search Console の数値', 'GA4 の数値']);
+
+// ---- 診断の根拠（RPC airreach_client_scans の拡張後の形に合わせた架空の値）----
+import fs from 'node:fs';
+const diagSrc = fs.readFileSync(path.join(ROOT, 'assets/js/airreach-diagnose.js'), 'utf8');
+const diagLabels = [...diagSrc.matchAll(/check\('(?:structure|entity|faq|discover)', '([^']+)'/g)].map((m) => m[1]);
+expect('criteria: 診断の18項目すべてに判定基準の言い方がある', diagLabels.filter((l) => !R.criteria[l]), []);
+expect('criteria: 診断の項目数は18', diagLabels.length, 18);
+const wts = Object.fromEntries([...diagSrc.matchAll(/\{ id: '(\w+)', label: '[^']+', weight: ([0-9.]+)/g)].map((m) => [m[1], Number(m[2])]));
+expect('criteria: 重みが診断と同じ', R.factorWeight, wts);
+
+const mkChecks = () => diagLabels.map((l, i) => ({ label: l, factor: i < 6 ? 'structure' : i < 11 ? 'entity' : i < 14 ? 'faq' : 'discover', state: 'ok', points: 2, max: 2, evidenceUrl: 'https://x.test/' }));
+const ev = mkChecks();
+ev.find((c) => c.label === 'FAQPageがある').state = 'ng'; ev.find((c) => c.label === 'FAQPageがある').points = 0;
+ev.find((c) => c.label === 'FAQが3問以上').state = 'ng'; ev.find((c) => c.label === 'FAQが3問以上').points = 0;
+ev.find((c) => c.label === 'llms.txtがある').state = 'ng'; ev.find((c) => c.label === 'llms.txtがある').points = 0;
+ev.find((c) => c.label === 'sitemap案内').state = 'unknown'; ev.find((c) => c.label === 'sitemap案内').points = null;
+const scanEv = {
+  id: 'e1', createdAt: '2026-10-05T01:02:00Z', fetchedAt: '2026-10-05T01:02:00Z', url: 'https://x.test/', overallScore: 53, ruleVersion: 'r1',
+  factors: { structure: 83, entity: 40, faq: 0, discover: 72 }, gaps: ['FAQPageがある', 'FAQが3問以上', 'llms.txtがある'], unknownChecks: 1,
+  checks: ev, adjustments: [{ factor: 'discover', label: 'meta robotsにnoindex', points: -3 }],
+  scope: { diagnosedAt: '2026-10-05T01:02:00Z', page: { url: 'https://x.test/', finalUrl: 'https://x.test/', status: 200 },
+    subpages: [{ url: 'https://x.test/menu/', role: 'menu', ok: true, status: 200 }, { url: 'https://x.test/access/', role: 'access', ok: false, status: 404 }] },
+  robots: { state: 'ok', url: 'https://x.test/robots.txt', bots: [{ name: 'GPTBot', org: 'OpenAI（学習）', via: 'own', verdict: 'blocked', lines: [{ n: 4, text: 'User-agent: GPTBot' }, { n: 5, text: 'Disallow: /' }] }, { name: 'ClaudeBot', org: 'Anthropic', via: 'star', verdict: 'allowed', lines: [] }] },
+  ld: { blocks: [{ types: ['Restaurant'], fields: { name: 'テスト店' } }], scripts: 1, errors: 0 }, types: ['Restaurant'],
+  evidence: { llms: { state: 'ok' }, robots: { state: 'ok' } }, pageInfo: { faqCount: 1, hasLlms: false, hasRobots: true, finalUrl: 'https://x.test/' }
+};
+const ce = R.compileReport({ periodMonth: '2026-10-01', scans: [scanEv], runs: [], traffic: [], actions: [] });
+const dt = ce.site.current.detail;
+expect('detail: 18項目すべてに結果が出る', dt.checks.length, 18);
+expect('detail: 内訳の寄与の合計は総合点に近い', Math.abs(dt.breakdown.total - 53) < 1, true);
+expect('detail: 内訳の寄与（ページの骨格 83×30%）', dt.breakdown.rows[0].contribution, 24.9);
+expect('detail: 重みの配り直しなし', dt.breakdown.redistributed, false);
+expect('detail: FAQ 0点の理由に問数が出る', dt.checks.find((c) => c.label === 'FAQが3問以上').reason, 'トップページで見つかったよくある質問：1問');
+expect('detail: FAQPage の理由に見つかった種類', dt.checks.find((c) => c.label === 'FAQPageがある').reason, '該当する構造化データがありません（トップページで見つかった種類：Restaurant）');
+expect('detail: llms.txt はあるが短い', dt.llms.key, 'short');
+expect('detail: 判定できない項目は0点扱いにしない', dt.checks.find((c) => c.label === 'sitemap案内').points, null);
+expect('detail: 判定基準の文', dt.checks.find((c) => c.label === 'FAQが3問以上').rule, 'よくある質問が3問以上あるか');
+expect('detail: 減点を残す', dt.adjustments, [{ factor: 'discover', factorLabel: '見つけやすさ', label: 'meta robotsにnoindex', points: -3 }]);
+expect('detail: 確認したページ数（読めた下層ページだけ数える）', dt.scope.pagesRead, 2);
+expect('detail: 下層ページの一覧', dt.scope.subpages.map((p) => [p.url, p.role, p.ok]), [['https://x.test/menu/', 'メニュー・料金', true], ['https://x.test/access/', 'アクセス・店舗情報', false]]);
+expect('detail: 根拠の行に行番号', dt.robots.bots[0].lines, ['4行目：User-agent: GPTBot', '5行目：Disallow: /']);
+expect('detail: AIボットの判定', dt.robots.bots.map((b) => [b.name, b.verdictText]), [['GPTBot', '拒否'], ['ClaudeBot', '許可']]);
+expect('detail: 個別指定のあるボット', dt.checks.find((c) => c.label === '主要AIボットの記載').reason, 'robots.txt に個別の指定があるAIのロボット：GPTBot');
+expect('detail: 診断日時は日本時間', R.jstTime('2026-10-05T01:02:00Z'), '2026-10-05 10:02');
+const todos = R.todoList(ce);
+expect('todo: 提案の理由に診断結果を結びつける', todos.find((t) => t.key === 'FAQPageがある').basis, '診断で「よくある質問」の「よくある質問が、構造化データ（FAQPage）で書かれているか」が満たされていなかった（0／2点）ため。「よくある質問」は0点です。');
+expect('first: 前の月の材料が無ければ初回', ce.first, true);
+const ce2 = R.compileReport({ periodMonth: '2026-10-01', scans: [scanEv, { ...scanEv, id: 'e0', createdAt: '2026-09-05T00:00:00Z', fetchedAt: null }], runs: [], traffic: [], actions: [] });
+expect('first: 前月の診断があれば初回ではない', ce2.first, false);
+const oldScan = { id: 'o', createdAt: '2026-10-05T00:00:00Z', url: 'https://x.test/', overallScore: 40, factors: { structure: 50 }, gaps: [] };
+const co = R.compileReport({ periodMonth: '2026-10-01', scans: [oldScan], runs: [], traffic: [], actions: [] });
+expect('old: 根拠の記録が無い古い診断でも落ちない', [co.site.current.detail.checks.length, co.site.current.detail.scope.pagesRead, co.site.current.detail.llms.key], [0, null, 'unknown']);
+expect('evidence: 診断の行に時刻と確認したページ数', R.evidenceList(ce)[0].detail.indexOf('2026-10-05 10:02') === 0 && R.evidenceList(ce)[0].detail.indexOf('読んだページ 2ページ') > 0, true);
 
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
