@@ -195,6 +195,19 @@ const co = R.compileReport({ periodMonth: '2026-10-01', scans: [oldScan], runs: 
 expect('old: 根拠の記録が無い古い診断でも落ちない', [co.site.current.detail.checks.length, co.site.current.detail.scope.pagesRead, co.site.current.detail.llms.key], [0, null, 'unknown']);
 expect('evidence: 診断の行に時刻と確認したページ数', R.evidenceList(ce)[0].detail.indexOf('2026-10-05 10:02') === 0 && R.evidenceList(ce)[0].detail.indexOf('読んだページ 2ページ') > 0, true);
 
+// ---- 日本時間の日付（世界標準時のまま切ると 0〜9 時が前の日になる）----
+expect('jstDay: 日本時間 10/3 0:53 は 10/3', R.jstDay('2026-10-02T15:53:00Z'), '2026-10-03');
+expect('jstDay: +00:00 の形でも同じ', R.jstDay('2026-10-02T15:53:00.123+00:00'), '2026-10-03');
+expect('jstDay: 日付だけはそのまま', R.jstDay('2026-10-03'), '2026-10-03');
+{
+  const sc = (createdAt, score) => ({ id: 'x' + score, createdAt, url: 'https://x.test/', overallScore: score, factors: {}, gaps: [] });
+  // 日本時間 11/1 8:00（世界標準時 10/31 23:00）の診断は 11 月の診断
+  const c = R.compileReport({ periodMonth: '2026-11-01', scans: [sc('2026-10-31T23:00:00Z', 50)], runs: [], traffic: [], actions: [] });
+  expect('月の判定: 日本時間の月初 8 時の診断は当月', [c.site.current && c.site.current.overall, c.site.current && c.site.current.inMonth], [50, true]);
+  const c2 = R.compileReport({ periodMonth: '2026-10-01', scans: [sc('2026-10-31T23:00:00Z', 50)], runs: [], traffic: [], actions: [] });
+  expect('月の判定: その診断は 10 月には入らない', c2.site.current, null);
+}
+
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);

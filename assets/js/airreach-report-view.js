@@ -14,6 +14,7 @@
   // 前月から直った不足を、お客様向けの肯定の言い方にする（airreach-report.js の PLAIN）
   function resolved(g) { return window.AirReachReport && window.AirReachReport.plainResolved ? window.AirReachReport.plainResolved(g) : g; }
 
+  function day(v) { return window.AirReachReport && window.AirReachReport.jstDay ? window.AirReachReport.jstDay(v) : String(v || '').slice(0, 10); }
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
@@ -143,7 +144,7 @@
       '<article class="arr-page">' +
       '<header class="arr-head"><div class="arr-kicker">AirReach 月次レポート</div>' +
       '<h1 class="arr-title">' + esc(c.client ? c.client.name : '') + '　' + esc(ym(r.period_month)) + '</h1>' +
-      '<div class="arr-meta">' + (r.published_at ? '公開 ' + esc(String(r.published_at).slice(0, 10)) : '作成 ' + esc(String(c.generatedAt || '').slice(0, 10))) + ' · 株式会社Trillion Bank</div></header>' +
+      '<div class="arr-meta">' + (r.published_at ? '公開 ' + esc(day(r.published_at)) : '作成 ' + esc(day(c.generatedAt))) + ' · 株式会社Trillion Bank</div></header>' +
       kindLegend() + '<section><h2 class="arr-h2">今月の数字</h2>' + C.tiles(c) + '</section>' +
       '<section><h2 class="arr-h2">今月の結論' + tag('manual') + '</h2><ol class="arr-ol arr-concl">' + (concl.length ? concl.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') : '<li class="arr-na">（未記入）</li>') + '</ol></section>' +
       '<div class="arr-cols">' +
@@ -161,7 +162,7 @@
       '<section><h2 class="arr-h2">推移（直近6か月）</h2>' + C.trends(c) +
       '<p class="arr-note">計測していない月は点を打たず、線もつないでいません（0 ではありません）。</p></section>') +
       '<section><h2 class="arr-h2">ホームページの情報整備の内訳' + tag('judged') + '</h2>' +
-      (cur ? '<p class="arr-sub">' + esc(String(cur.createdAt).slice(0, 10)) + ' に ' + esc(cur.url || '') + ' を診断' + (cur.inMonth ? '' : '<span class="arr-na">（当月の診断が無いため、この日の結果を使用）</span>') + '</p>' +
+      (cur ? '<p class="arr-sub">' + esc(day(cur.createdAt)) + ' に ' + esc(cur.url || '') + ' を診断' + (cur.inMonth ? '' : '<span class="arr-na">（当月の診断が無いため、この日の結果を使用）</span>') + '</p>' +
         C.factors(c) + siteEvidenceHtml(cur) +
         (c.first ? '' : '<div class="arr-cols"><div><h3 class="arr-h3">前月から直ったこと</h3><ul class="arr-ul arr-ok">' + ((site.resolved || []).map(function (g) { return '<li>' + esc(resolved(g)) + '</li>'; }).join('') || '<li class="arr-na">なし</li>') + '</ul></div>' +
         '<div><h3 class="arr-h3">まだ足りないこと</h3><p class="arr-sub">' + ((cur.gaps || []).length ? (cur.gaps || []).length + '件（直し方は下の「直すこと」）' : 'なし') + '</p></div></div>') +

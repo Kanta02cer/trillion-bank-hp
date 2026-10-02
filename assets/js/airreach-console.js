@@ -50,6 +50,8 @@
       }
     });
   }
+  // 日時は日本時間の日付で出す（assets/js/airreach-report.js の jstDay）
+  function day(v) { return window.AirReachReport && window.AirReachReport.jstDay ? window.AirReachReport.jstDay(v) : String(v || '').slice(0, 10); }
   function q(res) { if (res.error) throw new Error(res.error.message || String(res.error)); return res.data; }
   function readFile(input) {
     return new Promise(function (resolve, reject) {
@@ -218,7 +220,7 @@
           return '<a class="arc-client" href="#/c/' + c.id + '"><span class="arc-client-n">' + esc(c.name) + '<small>' + esc(INDUSTRY[c.industry_id] || '') + (c.status !== 'active' ? ' · ' + esc(c.status) : '') + '</small></span>' +
             '<span class="arc-client-s">' + (sc == null ? '<span class="arv-na">—</span>' : '<b>' + esc(sc) + '</b><small>点</small> <span class="arv-band" style="border-color:' + b.color + ';color:' + b.color + '">' + esc(b.label) + '</span>') + '</span>' +
             '<span class="arc-client-g">' + C.sparkline(scans.slice(-6).map(function (x) { return x.overallScore; }), c.name + ' の点数の推移') + '</span>' +
-            '<span class="arc-client-r">' + st + (last ? '<small>最終診断 ' + esc(String(last.createdAt).slice(0, 10)) + '</small>' : '') + '</span></a>';
+            '<span class="arc-client-r">' + st + (last ? '<small>最終診断 ' + esc(day(last.createdAt)) + '</small>' : '') + '</span></a>';
         }).join('') + '</div>';
       } else {
         list = '<ul class="arc-list">' + (rows.length ? rows.map(function (c) {
@@ -259,7 +261,7 @@
           todoCard(window.AirReachReport ? window.AirReachReport.todoList(top.compiled || {}) : [], top.compiled || {}, 'client');
       }
       body += '<section class="arc-card"><h2 class="arc-h2">これまでのレポート</h2><ul class="arc-list">' +
-        (reps.length ? reps.map(function (r) { return '<li><a href="/airreach/app/report/?id=' + r.id + '">' + esc(ymJa(r.period_month)) + ' のレポート</a>' + (r.published_at ? '<span class="arc-sub">公開 ' + esc(String(r.published_at).slice(0, 10)) + '</span>' : '') + '</li>'; }).join('') : '<li class="arc-empty">公開済みのレポートはまだありません。</li>') +
+        (reps.length ? reps.map(function (r) { return '<li><a href="/airreach/app/report/?id=' + r.id + '">' + esc(ymJa(r.period_month)) + ' のレポート</a>' + (r.published_at ? '<span class="arc-sub">公開 ' + esc(day(r.published_at)) + '</span>' : '') + '</li>'; }).join('') : '<li class="arc-empty">公開済みのレポートはまだありません。</li>') +
         '</ul></section>';
       // 見られる顧客が1社だけなら「戻る」は出さない（一覧に戻っても、この画面に戻されるため）
       shell(c.name, body, (me.client_ids || []).length > 1 ? '#/' : '', { client: { id: c.id, name: c.name } });
@@ -269,7 +271,7 @@
     var C = window.AirReachCharts, cur = compiled && compiled.site && compiled.site.current;
     if (!C || !cur) return '';
     return '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">直すこと' + (items.length ? '（' + items.length + '件）' : '') + '</h2>' +
-      '<span class="arc-sub">' + esc(String(cur.createdAt || '').slice(0, 10)) + ' の診断で見つかった不足・優先度の高い順</span></div>' +
+      '<span class="arc-sub">' + esc(day(cur.createdAt)) + ' の診断で見つかった不足・優先度の高い順</span></div>' +
       (audience === 'client' && items.length > 5
         ? C.todos(items.slice(0, 5), { audience: audience }) + '<details class="arc-more"><summary>残り ' + (items.length - 5) + '件をすべて表示</summary>' + C.todos(items.slice(5), { audience: audience, start: 5 }) + '</details>'
         : C.todos(items, { audience: audience, studioHref: studioHref })) + '</section>';
@@ -447,7 +449,7 @@
       if (live && C) {
         overview = '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(month)) + 'の状況</h2><span class="arc-sub">登録された材料からその場で集計</span></div>' +
           C.readiness([
-            { label: '診断', href: studioHref(c, sites) + '#start', ok: !!(live.site.current && live.site.current.inMonth), note: live.site.current ? (live.site.current.inMonth ? String(live.site.current.createdAt).slice(5, 10).replace('-', '/') + ' 診断' : '今月は未診断') : '未登録' },
+            { label: '診断', href: studioHref(c, sites) + '#start', ok: !!(live.site.current && live.site.current.inMonth), note: live.site.current ? (live.site.current.inMonth ? day(live.site.current.createdAt).slice(5).replace('-', '/') + ' 診断' : '今月は未診断') : '未登録' },
             { label: 'AI計測', href: studioHref(c, sites) + '#hack2', ok: !!live.ai, note: live.ai ? String(live.ai.measuredOn).slice(5).replace('-', '/') + ' 計測' : '今月は未計測' },
             { label: 'Search Console', href: '#/c/' + c.id + '/traffic', ok: !!live.traffic.gsc },
             { label: 'GA4', href: '#/c/' + c.id + '/traffic', ok: !!live.traffic.ga4 },
@@ -476,7 +478,7 @@
         return '<tr><td>' + esc(a.done_on || '') + '</td><td>' + esc(a.title) + (a.evidence_url ? ' <a href="' + esc(a.evidence_url) + '" target="_blank" rel="noopener noreferrer">証拠 ↗</a>' : '') + doneForm + '</td><td>' + (a.status === 'done' ? '実施済み' : '<span class="arc-chip is-warn">予定</span>') + '</td><td><button class="arc-btn-sm" data-del-action="' + a.id + '">削除</button></td></tr>';
       }).join('');
       var scanRows = scans.slice(0, 12).map(function (s) {
-        return '<tr><td>' + esc(String(s.createdAt).slice(0, 10)) + '</td><td>' + esc(s.url) + '</td><td>' + (s.overallScore == null ? '—' : esc(s.overallScore) + '点') + '</td><td>' + esc((s.gaps || []).length) + '件</td></tr>';
+        return '<tr><td>' + esc(day(s.createdAt)) + '</td><td>' + esc(s.url) + '</td><td>' + (s.overallScore == null ? '—' : esc(s.overallScore) + '点') + '</td><td>' + esc((s.gaps || []).length) + '件</td></tr>';
       }).join('');
       var repRows = reports.map(function (r) {
         return '<tr><td>' + esc(ym(r.period_month)) + '</td><td>' + statusChip(r.status) + '</td><td><a href="#/r/' + r.id + '">編集</a> · <a href="/airreach/app/report/?id=' + r.id + '">表示・PDF</a></td></tr>';
