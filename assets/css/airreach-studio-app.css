@@ -199,3 +199,9 @@ body:not(.has-job) [data-needs-job]{display:none}
 @media (prefers-reduced-motion:reduce){
   .ars-app .ars-btn,.ars-app .ars-more>summary::before{transition:none}
 }
+
+/* AI計測のブランド名（必須） */
+.ars-hack2-brand{margin:0 0 12px;max-width:420px}.ars-hack2-brand label{font-weight:700}
+.ars-input.is-invalid{border-color:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.15)}
+#hack2-status.is-err{color:#b91c1c;font-weight:700}
+.ars-hack2-help{display:block;margin-top:4px;font-size:.78rem;color:#64748b}

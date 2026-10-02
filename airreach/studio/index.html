@@ -103,7 +103,7 @@ robots: "noindex, follow"
       <div id="orch-progress" class="orch-progress" aria-live="polite"></div>
     </section>
         <details class="ars-card ars-more">
-          <summary>詳しい基本情報（任意・AI計測と直す材料に使う）</summary>
+          <summary>詳しい基本情報（ブランド名は AI計測に必要・ほかは任意）</summary>
           <div class="ars-more-body">
 <div class="ars-card">
               <div class="ars-form">
@@ -316,6 +316,7 @@ robots: "noindex, follow"
 
       <div class="ars-panel" data-panel-view="hack2">
         <div class="ars-title-row"><div><h2>AI計測</h2><p class="ars-sub">キーワードから作った質問を実際のAIに聞き、自社の名前・サイトが回答に出るかを測ります。</p></div><button id="run-hack2-measure" class="ars-btn ars-btn-primary" type="button">計測実行</button></div>
+            <div class="ars-field ars-hack2-brand"><label for="hack2-brand">計測するお店・会社の名前（必須）</label><input class="ars-input" id="hack2-brand" placeholder="例：更科堀井" autocomplete="off"><small class="ars-hack2-help">AI の回答にこの名前が出るかを数えます。「対象サイト」の基本情報と同じ欄です。</small></div>
             <div id="hack2-status" class="ars-note">まだ計測していません。AIを選んで「計測実行」を押します。</div>
             <div class="ars-row" style="margin:12px 0;flex-wrap:wrap;gap:10px">
               <label><input type="checkbox" data-hack2-engine value="jev"> 推定（Jev・実際のAIには聞かない）</label>
