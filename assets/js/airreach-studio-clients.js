@@ -175,7 +175,44 @@
       location.reload();
     };
   }
-  function init() { renderPicker(); renderSummary(); prefillBrand(); }
+  // ---- 左のメニューをダッシュボードと共通の並びにする（assets/js/airreach-nav.js）--------------
+  // Studio の画面のボタンはそのまま使い（押したときの動きは変えない）、ダッシュボードの節はリンクで並べる
+  function rebuildSide() {
+    var N = window.AirReachNav, side = document.querySelector('.ars-side');
+    if (!N || !side) return;
+    var btns = {};
+    Array.prototype.forEach.call(side.querySelectorAll('button[data-panel]'), function (b) { btns[b.getAttribute('data-panel')] = b; });
+    var navClient = client ? { id: client.id, name: client.name, site: client.url } : null;
+    var frag = document.createDocumentFragment(), n = 0;
+    if (client) {
+      var back = document.createElement('a');
+      back.className = 'ars-side-back'; back.href = '/airreach/app/#/'; back.textContent = '← 顧客一覧';
+      frag.appendChild(back);
+    }
+    N.groups(!!client).forEach(function (g) {
+      var gd = document.createElement('div'); gd.className = 'group'; gd.textContent = g.group; frag.appendChild(gd);
+      g.items.forEach(function (it) {
+        n += 1;
+        var el;
+        if (it.where === 'studio' && btns[it.panel]) {
+          el = btns[it.panel];
+          el.innerHTML = '<span class="n">' + n + '</span>' + esc(it.label);
+          delete btns[it.panel];
+        } else {
+          el = document.createElement('a');
+          el.className = 'ars-side-link';
+          el.href = N.href(it, navClient);
+          el.innerHTML = '<span class="n">' + n + '</span>' + esc(it.label);
+        }
+        frag.appendChild(el);
+      });
+    });
+    // 共通の並びに無い Studio の画面が残っていれば、最後に置く（消さない）
+    Object.keys(btns).forEach(function (k) { n += 1; var b = btns[k]; var sp = b.querySelector('.n'); if (sp) sp.textContent = n; frag.appendChild(b); });
+    side.innerHTML = '';
+    side.appendChild(frag);
+  }
+  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   window.AirReachStudioClients = { current: function () { return client; }, swapError: function () { return swapError; } };
 })();

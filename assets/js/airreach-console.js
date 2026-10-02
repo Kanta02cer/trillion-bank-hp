@@ -111,21 +111,20 @@
     { group: '設定', items: [['members', '顧客側のメンバー']] }
   ];
   var SEC_LABEL = {}; SECTIONS.forEach(function (g) { g.items.forEach(function (it) { SEC_LABEL[it[0]] = it[1]; }); });
+  // 左のメニューは Studio と共通（assets/js/airreach-nav.js）。ダッシュボードの節は同じページの中で、Studio の画面は Studio を開く
   function sideHtml(ctx) {
-    var cl = ctx.client, n = 0;
-    function item(href, label, on, badge) {
-      n += 1;
-      return '<a class="arc-side-i' + (on ? ' is-on' : '') + '" href="' + href + '"' + (on ? ' aria-current="page"' : '') + '><span class="arc-side-n">' + n + '</span><span class="arc-side-l">' + esc(label) + '</span>' + (badge || '') + '</a>';
-    }
-    if (!cl) {
-      return '<nav class="arc-side" aria-label="ダッシュボードの画面"><div class="arc-side-g">全体</div>' +
-        item('#/', '顧客一覧', ctx.sec === 'list') + item('#/review', '確認待ちのレポート', ctx.sec === 'review') +
-        '<p class="arc-side-note">顧客を選ぶと、ホーム・診断・AI計測・検索と訪問・施策・月次レポート・メンバーの画面がここに並びます。</p></nav>';
-    }
-    return '<nav class="arc-side" aria-label="顧客の画面"><a class="arc-side-back" href="#/">← 顧客一覧</a>' +
-      SECTIONS.map(function (g) {
-        return '<div class="arc-side-g">' + g.group + '</div>' + g.items.map(function (it) {
-          return item('#/c/' + cl.id + (it[0] === 'home' ? '' : '/' + it[0]), it[1], ctx.sec === it[0], it[0] === 'reports' && ctx.reportBadge ? '<span class="arc-side-b">' + esc(ctx.reportBadge) + '</span>' : '');
+    var N = window.AirReachNav, cl = ctx.client, n = 0;
+    if (!N) return '';
+    var head = cl ? '<a class="arc-side-back" href="#/">← 顧客一覧</a>' : '';
+    return '<nav class="arc-side" aria-label="' + (cl ? '顧客の画面' : 'ダッシュボードの画面') + '">' + head +
+      N.groups(!!cl).map(function (g) {
+        return '<div class="arc-side-g">' + esc(g.group) + '</div>' + g.items.map(function (it) {
+          n += 1;
+          var on = it.where === 'dash' && ctx.sec === it.sec;
+          var url = N.href(it, cl);
+          if (it.where === 'dash') url = url.replace('/airreach/app/', ''); // 同じページの中は # だけで移る
+          var badge = it.sec === 'reports' && ctx.reportBadge ? '<span class="arc-side-b">' + esc(ctx.reportBadge) + '</span>' : '';
+          return '<a class="arc-side-i' + (on ? ' is-on' : '') + (it.where === 'studio' ? ' is-studio' : '') + '" href="' + esc(url) + '"' + (on ? ' aria-current="page"' : '') + '><span class="arc-side-n">' + n + '</span><span class="arc-side-l">' + esc(it.label) + '</span>' + badge + '</a>';
         }).join('');
       }).join('') + '</nav>';
   }
@@ -165,7 +164,7 @@
       (site ? '<span class="arc-bar-site">' + esc(site) + '</span>' : '') +
       '<span class="arc-bar-sp"></span>' +
       // 社内の人には、ほかの社内ツールへの入口を常に出す（お客様には出さない）
-      (staff ? '<nav class="arc-tools" aria-label="社内ツール"><a href="' + esc(navClient ? navClient.href : '/airreach/studio/') + '"' + (navClient ? ' title="' + esc((navClient.name || '') + ' を Studio で開く') + '"' : '') + '>' + (navClient ? 'Studio（この顧客）' : 'Studio') + '</a><a href="/airreach/sales/">営業キット</a><a href="/airreach/" target="_blank" rel="noopener">無料診断</a></nav>' : '') +
+      (staff ? '<nav class="arc-tools" aria-label="社内ツール"><a href="/airreach/sales/">営業キット</a><a href="/airreach/" target="_blank" rel="noopener">無料診断</a></nav>' : '') +
       '<span class="arc-who">' + esc(me.email) + (staff ? ' · 社内' : '') + ' <button type="button" class="arc-btn-sm" id="arc-logout">ログアウト</button></span></header>' +
       '<div class="arc-shell' + (side ? '' : ' is-full') + '">' + side +
       '<div class="arc-main"><div class="arc-top"><div>' + (back ? '<a class="arc-back" href="' + back + '">← 戻る</a>' : '') +
@@ -528,7 +527,7 @@
         '<form id="arc-add-member" class="arc-row"><input class="arc-input" type="email" id="arc-member-email" placeholder="client@example.jp" required><button class="arc-btn" type="submit">招待（ログイン用のメールを送る）</button></form>' +
         '<p class="arc-note">招待すると、お客様に「AirReach ログイン用リンク」のメール（送信元 no-reply@trillion-bank.com）が届きます。リンクの有効期限は1時間です。切れたら「ログインメールを再送」を押してください。お客様に見えるのは、自社の公開済みのレポートだけです。</p>' +
         '</div></section>',
-        '', { client: { id: c.id, name: c.name, site: sites[0] && sites[0].url }, sec: curSec, reportBadge: repBadge, kicker: curSec === 'home' ? '' : c.name,
+        '', { client: { id: c.id, name: c.name, site: sites[0] && sites[0].url, industry: c.industry_id }, sec: curSec, reportBadge: repBadge, kicker: curSec === 'home' ? '' : c.name,
           action: curSec === 'home' ? '<a class="arc-btn" href="' + esc(studioHref(c, sites)) + '">Studio で分析・計測する</a>' : '' });
 
       Array.prototype.forEach.call(root.querySelectorAll('details[data-fold]'), function (d) {
