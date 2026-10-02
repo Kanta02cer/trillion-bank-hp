@@ -236,3 +236,4 @@ body:not(.has-job) [data-needs-job]{display:none}
 @media (max-width:900px){.ars-app .ars-side a.ars-side-link{width:auto;flex:none;white-space:nowrap;min-height:36px}.ars-app .ars-side .ars-side-back{display:none}}
 .ars-client-pick~.ars-appbar-context .ars-ctx-client{display:none}
 .ars-client-pick~.ars-appbar-context .ars-ctx-site::before{content:none}
+.ars-sync{margin-top:12px;padding:8px 12px;border-radius:8px;background:#f8fafc;font-size:13px;color:#334155;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ars-sync.is-ok{background:#ecfdf5;color:#065f46}.ars-sync.is-warn{background:#fffbeb;color:#92400e}

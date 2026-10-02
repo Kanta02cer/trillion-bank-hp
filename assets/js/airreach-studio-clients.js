@@ -47,6 +47,17 @@
   }
   var client = targetClient();
   swapTo(client ? client.id : NONE);
+  // 共有されている作業の読み込みは、開き直した直後（Studio が保存場所を読む前）に書き込む。
+  // 開き直す前に書くと、閉じるときに Studio が手元の古い作業を保存して上書きしてしまうため
+  var ADOPT_KEY = 'airreach_studio_adopt_v1';
+  (function applyPending() {
+    var p = null;
+    try { p = JSON.parse(sessionStorage.getItem(ADOPT_KEY) || 'null'); sessionStorage.removeItem(ADOPT_KEY); } catch (e) { p = null; }
+    if (!p || !client || p.clientId !== client.id) return;
+    WORK_KEYS.forEach(function (k, i) { set(k, p.strs[i]); });
+    set('airreach_studio_sync_v1:' + client.id, JSON.stringify({ version: p.version, sig: p.sig }));
+    try { sessionStorage.setItem('airreach_studio_adopted_v1', client.id + ':' + p.version + (p.backup ? ':b' : '')); } catch (e) {}
+  })();
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function studioUrl(c, site) {
@@ -212,7 +223,138 @@
     side.innerHTML = '';
     side.appendChild(frag);
   }
-  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); }
+  // ---- 顧客の作業を共有する（DB の studio_workspaces。統合②）-----------------------------
+  // 開いたら DB の版を読み、このブラウザの作業と比べる。作業が変わったら数秒後に保存する。
+  // 保存は版を確かめて行い、ほかの人が先に保存していたら上書きせず「最新を読み込む」を出す。
+  var SYNC_PREFIX = 'airreach_studio_sync_v1:';
+  var BACKUP_PREFIX = 'airreach_studio_backup_v1:';
+  var MAX_BYTES = 3800000;
+  var sync = { on: false, version: 0, sig: '', saving: false, timer: 0, conflict: null, email: '' };
+  function localStrings() { return WORK_KEYS.map(get); }
+  function sigOf(strs) { var t = strs.map(function (x) { return x == null ? '' : x; }).join('\u0001'), h = 5381; for (var i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return t.length + ':' + h; }
+  function hasWork(strs) { var st = {}; try { st = JSON.parse(strs[0] || '{}') || {}; } catch (e) {} return !!((st.keywords || []).length || Object.keys(st.generated || {}).length || (st.hack2 || []).length || (st.profile && st.profile.url)); }
+  function payload(strs) {
+    var data = { studio: null, orch: null };
+    try { data.studio = JSON.parse(strs[0] || 'null'); } catch (e) {}
+    try { data.orch = JSON.parse(strs[1] || 'null'); } catch (e) {}
+    // 大きすぎるときは分析の途中経過（orch）を外す（作業の本体は studio に入っている）
+    if (JSON.stringify(data).length > MAX_BYTES) data.orch = null;
+    return data;
+  }
+  function readMeta() { try { return JSON.parse(get(SYNC_PREFIX + client.id) || 'null') || { version: 0, sig: '' }; } catch (e) { return { version: 0, sig: '' }; } }
+  function writeMeta(v, sig) { sync.version = v; sync.sig = sig; set(SYNC_PREFIX + client.id, JSON.stringify({ version: v, sig: sig })); }
+  function hhmm(iso) { var d = iso ? new Date(iso) : new Date(); return isNaN(d) ? '' : ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+  function syncStatus(text, kind, action) {
+    var box = document.getElementById('ars-sync');
+    if (!box) {
+      var host = document.getElementById('ars-client-sum'); if (!host) return;
+      box = document.createElement('div'); box.id = 'ars-sync'; box.className = 'ars-sync'; box.setAttribute('aria-live', 'polite'); host.appendChild(box);
+    }
+    box.className = 'ars-sync' + (kind ? ' is-' + kind : '');
+    box.innerHTML = '<span>' + esc(text) + '</span>' + (action || '');
+  }
+  // DB の作業をこのブラウザに入れて開き直す（Studio はページを開いたときに読むため）
+  function adopt(server, backupLocal) {
+    if (backupLocal) set(BACKUP_PREFIX + client.id, JSON.stringify({ at: new Date().toISOString(), work: localStrings() }));
+    var d = server.data || {};
+    var strs = [d.studio == null ? null : JSON.stringify(d.studio), d.orch == null ? null : JSON.stringify(d.orch)];
+    sync.on = false; // 開き直すまで保存しない
+    try { sessionStorage.setItem(ADOPT_KEY, JSON.stringify({ clientId: client.id, strs: strs, version: server.version, sig: sigOf(strs), backup: !!backupLocal })); } catch (e) { syncStatus('最新の作業を読み込めませんでした（作業が大きすぎます）', 'warn'); return; }
+    location.reload();
+  }
+  function upload() {
+    sync.timer = 0;
+    if (!sync.on || sync.saving || sync.conflict) return;
+    var strs = localStrings(), sig = sigOf(strs);
+    if (sig === sync.sig) return;
+    sync.saving = true;
+    syncStatus('保存しています…');
+    sb().then(function (s) { return s.rpc('airreach_studio_save', { p_client_id: client.id, p_data: payload(strs), p_base_version: sync.version }); })
+      .then(function (r) {
+        sync.saving = false;
+        if (r.error) throw r.error;
+        var res = r.data || {};
+        if (res.ok) { writeMeta(res.version, sig); syncStatus('共有しています（' + hhmm() + ' に保存・社内の全員が見られます）', 'ok'); return; }
+        if (res.conflict) {
+          sync.conflict = res;
+          syncStatus((res.updated_by ? res.updated_by.split('@')[0] + ' さん' : '別の人') + 'が ' + hhmm(res.updated_at) + ' にこの顧客の作業を更新しました。このパソコンの変更はまだ共有していません。',
+            'warn', ' <button type="button" class="ars-btn ars-btn-secondary" id="ars-sync-load">最新を読み込む（このパソコンの変更は控えに残す）</button>');
+          var bt = document.getElementById('ars-sync-load');
+          if (bt) bt.onclick = function () { fetchServer().then(function (sv) { if (sv) adopt(sv, true); }); };
+        }
+      }).catch(function (e) {
+        sync.saving = false;
+        var m = String((e && e.message) || e);
+        syncStatus(/size_check|too large/i.test(m) ? '作業が大きすぎて共有できませんでした（このパソコンには保存されています）' : '共有できませんでした（このパソコンには保存されています）。あとで自動でもう一度試します', 'warn');
+      });
+  }
+  function fetchServer() {
+    return sb().then(function (s) { return s.from('studio_workspaces').select('data,version,updated_by,updated_at').eq('client_id', client.id).maybeSingle(); })
+      .then(function (r) { if (r.error) throw r.error; return r.data || null; });
+  }
+  function startSync() {
+    if (!client) return;
+    sb().then(function (s) { return s.auth.getSession(); }).then(function (r) {
+      var session = r && r.data && r.data.session;
+      if (!session) { syncStatus('このパソコンだけに保存しています。ダッシュボードにログインすると、社内で共有されます。', 'warn'); return; }
+      sync.email = (session.user && session.user.email) || '';
+      return fetchServer().then(function (server) {
+        var meta = readMeta(), strs = localStrings(), sig = sigOf(strs);
+        sync.version = meta.version || 0; sync.sig = meta.sig || '';
+        var changedHere = sig !== sync.sig && hasWork(strs);
+        if (server && server.version > sync.version) {
+          // ほかのパソコン・ほかの人が保存した新しい作業がある
+          var justAdopted = false;
+          try { justAdopted = sessionStorage.getItem('airreach_studio_adopted_v1') === client.id + ':' + server.version; } catch (e) {}
+          if (!justAdopted) { adopt(server, changedHere); return; }
+        }
+        if (!server && !hasWork(strs)) { sync.version = 0; sync.sig = sig; }
+        var note = '';
+        try { var a = sessionStorage.getItem('airreach_studio_adopted_v1') || ''; if (a.indexOf(client.id) === 0) { note = /:b$/.test(a) ? '共有されている最新の作業を読み込みました（このパソコンで共有していなかった変更は控えに残しています）' : '共有されている最新の作業を読み込みました'; sessionStorage.removeItem('airreach_studio_adopted_v1'); } } catch (e) {}
+        sync.on = true;
+        syncStatus(note || (server ? '共有しています（' + hhmm(server.updated_at) + ' に ' + (server.updated_by ? server.updated_by.split('@')[0] + ' さんが' : '') + '保存・社内の全員が見られます）' : '共有の準備ができました。作業すると自動で保存します'), 'ok');
+        upload();
+        // 作業が変わったら、変わり終えて 2.5 秒たってから保存する（変わり続けている間は待つ）
+        var seen = sigOf(localStrings());
+        setInterval(function () {
+          var now = sigOf(localStrings());
+          if (now !== seen) { seen = now; clearTimeout(sync.timer); sync.timer = setTimeout(upload, 2500); }
+          else if (now !== sync.sig && !sync.timer && !sync.saving) { sync.timer = setTimeout(upload, 2500); }
+        }, 2000);
+        window.addEventListener('pagehide', function () { if (sigOf(localStrings()) !== sync.sig) upload(); });
+      });
+    }).catch(function () { syncStatus('共有の状態を確かめられませんでした（このパソコンには保存されています）', 'warn'); });
+  }
+
+  // ---- Studio の AI計測を、顧客の「AI計測の記録」に自動で残す --------------------------------
+  var SAVED_RUNS = 'airreach_studio_saved_runs_v1';
+  function onMeasured(summary) {
+    if (!client || !summary) return Promise.resolve(false);
+    var key = summary.run_id || '';
+    var saved = []; try { saved = JSON.parse(get(SAVED_RUNS) || '[]'); } catch (e) {}
+    if (key && saved.indexOf(key) >= 0) return Promise.resolve(true);
+    return sb().then(function (s) {
+      return s.auth.getSession().then(function (r) {
+        var session = r && r.data && r.data.session;
+        if (!session) return false;
+        return s.from('measurement_runs').insert({ client_id: client.id, measured_on: new Date().toISOString().slice(0, 10), run_label: key || 'studio', query_set_version: summary.query_set_version || null, source: 'manual', summary: summary, created_by: (session.user && session.user.email) || null })
+          .then(function (res) {
+            if (res.error) throw res.error;
+            if (key) { saved.push(key); set(SAVED_RUNS, JSON.stringify(saved.slice(-200))); }
+            var st = document.getElementById('hack2-status');
+            if (st) st.textContent += ' ／ 顧客の「AI計測の記録」に保存しました（月次レポートに使えます）';
+            return true;
+          });
+      });
+    }).catch(function (e) {
+      var st = document.getElementById('hack2-status');
+      if (st) st.textContent += ' ／ 顧客の記録への保存に失敗しました: ' + String((e && e.message) || e);
+      return false;
+    });
+  }
+  function savedRun(key) { try { return (JSON.parse(get(SAVED_RUNS) || '[]') || []).indexOf(key) >= 0; } catch (e) { return false; } }
+
+  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); startSync(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-  window.AirReachStudioClients = { current: function () { return client; }, swapError: function () { return swapError; } };
+  window.AirReachStudioClients = { current: function () { return client; }, swapError: function () { return swapError; }, onMeasured: onMeasured, savedRun: savedRun };
 })();
