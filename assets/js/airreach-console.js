@@ -40,6 +40,16 @@
   function approvalOn() { return !!me && Object.prototype.hasOwnProperty.call(me, 'can_approve'); }
   function statusChip(st, prefix) { var x = REPORT_STATUS[st] || [st, '']; return '<span class="arc-chip ' + x[1] + '">' + esc((prefix || '') + x[0]) + '</span>'; }
   function jst(iso) { if (!iso) return ''; var t = Date.parse(iso); if (isNaN(t)) return ''; var d = new Date(t + 9 * 3600 * 1000); function z(n) { return (n < 10 ? '0' : '') + n; } return d.getUTCFullYear() + '-' + z(d.getUTCMonth() + 1) + '-' + z(d.getUTCDate()) + ' ' + z(d.getUTCHours()) + ':' + z(d.getUTCMinutes()); }
+  // お客様へのログイン用メール。implicit フロー（supabase-js の既定）なので、送った人のブラウザに縛られず、お客様のブラウザで開ける
+  function sendLoginMail(email) {
+    return sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + '/airreach/app/', shouldCreateUser: true } }).then(function (res) {
+      if (res && res.error) {
+        var m = String(res.error.message || res.error);
+        if (/rate limit|security purposes|seconds/i.test(m)) throw new Error('メールの送信が続いたため、少し待ってから「ログインメールを再送」を押してください（' + m + '）');
+        throw new Error('登録はできましたが、メールを送れませんでした。「ログインメールを再送」を押してください（' + m + '）');
+      }
+    });
+  }
   function q(res) { if (res.error) throw new Error(res.error.message || String(res.error)); return res.data; }
   function readFile(input) {
     return new Promise(function (resolve, reject) {
@@ -437,8 +447,9 @@
         '<table class="arc-table"><tbody>' + (actRows || '<tr><td class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></details>' +
 
         fold('members', '顧客側のメンバー', members.length + '人') +
-        '<ul class="arc-list">' + (members.map(function (m) { return '<li>' + esc(m.email) + ' <button class="arc-btn-sm" data-del-member="' + esc(m.email) + '">削除</button></li>'; }).join('') || '<li class="arc-empty">まだいません</li>') + '</ul>' +
-        '<form id="arc-add-member" class="arc-row"><input class="arc-input" type="email" id="arc-member-email" placeholder="client@example.jp" required><button class="arc-btn" type="submit">招待</button></form>' +
+        '<ul class="arc-list">' + (members.map(function (m) { return '<li>' + esc(m.email) + ' <button class="arc-btn-sm" data-resend-member="' + esc(m.email) + '">ログインメールを再送</button> <button class="arc-btn-sm" data-del-member="' + esc(m.email) + '">削除</button></li>'; }).join('') || '<li class="arc-empty">まだいません</li>') + '</ul>' +
+        '<form id="arc-add-member" class="arc-row"><input class="arc-input" type="email" id="arc-member-email" placeholder="client@example.jp" required><button class="arc-btn" type="submit">招待（ログイン用のメールを送る）</button></form>' +
+        '<p class="arc-note">招待すると、お客様に「AirReach ログイン用リンク」のメール（送信元 no-reply@trillion-bank.com）が届きます。リンクの有効期限は1時間です。切れたら「ログインメールを再送」を押してください。お客様に見えるのは、自社の公開済みのレポートだけです。</p>' +
         '<p class="arc-note">登録したメールアドレスで /airreach/app/ にログインすると、この顧客の「公開済み」レポートだけが見えます。招待メールは送られないので、URL をお伝えください。</p></div></details>',
         '#/');
 
@@ -477,7 +488,17 @@
       });
       $('#arc-add-member').addEventListener('submit', function (e) {
         e.preventDefault();
-        done(sb.from('client_members').insert({ client_id: id, email: $('#arc-member-email').value.trim().toLowerCase() }));
+        var em = $('#arc-member-email').value.trim().toLowerCase();
+        openFolds.members = true;
+        // 登録してから送る（登録済みのメールだけがアカウントを作れるフックがあるため、順番が大事）
+        sb.from('client_members').insert({ client_id: id, email: em }).then(function (res) {
+          // すでに登録済みなら、登録はそのままでメールだけ送り直す
+          if (res && res.error && /duplicate|23505|already exists/i.test(String(res.error.message || res.error.code || ''))) return sendLoginMail(em);
+          q(res); return sendLoginMail(em);
+        })
+          .then(function () { return clientStaff(id); })
+          .then(function () { msg(em + ' を登録し、ログイン用のメールを送りました', 'ok'); })
+          .catch(function (err) { clientStaff(id).then(function () { fail(err); }); });
       });
       $('#arc-add-action').addEventListener('submit', function (e) {
         e.preventDefault();
@@ -511,6 +532,18 @@
       });
       bindGoogleSync(id, sites);
       root.querySelectorAll('[data-del-site]').forEach(function (b) { b.addEventListener('click', function () { done(sb.from('client_sites').delete().eq('id', b.getAttribute('data-del-site'))); }); });
+      root.querySelectorAll('[data-resend-member]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var em = b.getAttribute('data-resend-member');
+          b.disabled = true;
+          sendLoginMail(em).then(function () {
+            msg(em + ' にログイン用のメールを送りました', 'ok');
+            // 同じアドレスへの送信は1分に1回まで（Supabase の制限）。1分たったら押せるように戻す
+            b.textContent = '送りました（1分後に再送できます）';
+            setTimeout(function () { b.disabled = false; b.textContent = 'ログインメールを再送'; }, 60000);
+          }).catch(function (err) { b.disabled = false; fail(err); });
+        });
+      });
       root.querySelectorAll('[data-del-member]').forEach(function (b) { b.addEventListener('click', function () { done(sb.from('client_members').delete().eq('client_id', id).eq('email', b.getAttribute('data-del-member'))); }); });
       root.querySelectorAll('[data-del-run]').forEach(function (b) { b.addEventListener('click', function () { done(sb.from('measurement_runs').delete().eq('id', b.getAttribute('data-del-run'))); }); });
       root.querySelectorAll('[data-del-traffic]').forEach(function (b) { b.addEventListener('click', function () { done(sb.from('traffic_snapshots').delete().eq('id', b.getAttribute('data-del-traffic'))); }); });
