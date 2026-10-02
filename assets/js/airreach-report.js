@@ -231,8 +231,19 @@
     var next = mo === 12 ? (y + 1) + '-01-01' : y + '-' + (mo + 1 < 10 ? '0' : '') + (mo + 1) + '-01';
     return next;
   }
+  // 日時（2026-10-02T15:53:00Z など）は日本時間の日付に直す。日付だけ（2026-10-03）はそのまま。
+  // 世界標準時のまま先頭10文字を取ると、日本時間の 0〜9 時の診断が前の日（月初なら前の月）になっていた
+  function jstDay(v) {
+    var t = String(v || '');
+    if (!/[T ]\d{2}:\d{2}/.test(t)) return t.slice(0, 10);
+    var ms = Date.parse(t);
+    if (isNaN(ms)) return t.slice(0, 10);
+    var d = new Date(ms + 9 * 3600 * 1000);
+    function z(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getUTCFullYear() + '-' + z(d.getUTCMonth() + 1) + '-' + z(d.getUTCDate());
+  }
   function inMonth(dateStr, m) {
-    var d = String(dateStr || '').slice(0, 10);
+    var d = jstDay(dateStr);
     return d >= m && d < monthEnd(m);
   }
   function num(v) {
@@ -399,7 +410,7 @@
     var end = monthEnd(m);
 
     // 診断: 当月（なければ月末までで最新）と、前月の最新
-    var scanNow = latest(p.scans, 'createdAt', function (s) { return String(s.createdAt).slice(0, 10) < end; });
+    var scanNow = latest(p.scans, 'createdAt', function (s) { return jstDay(s.createdAt) < end; });
     var scanPrev = latest(p.scans, 'createdAt', function (s) { return inMonth(s.createdAt, pm); });
     var gapsNow = scanNow ? (scanNow.gaps || []).map(gapText) : [];
     var gapsPrev = scanPrev ? (scanPrev.gaps || []).map(gapText) : [];
@@ -490,7 +501,7 @@
     // 足りない材料（レポートに「未計測」と出すもの）
     var missing = [];
     if (!site.current) missing.push('ホームページの診断');
-    else if (!site.current.inMonth) missing.push('当月の診断（' + String(site.current.createdAt).slice(0, 10) + ' の診断を使用）');
+    else if (!site.current.inMonth) missing.push('当月の診断（' + jstDay(site.current.createdAt) + ' の診断を使用）');
     if (!ai) missing.push('AI回答の計測');
     if (!traffic.gsc) missing.push('Search Console の数値');
     if (!traffic.ga4) missing.push('GA4 の数値');
@@ -541,7 +552,7 @@
     return out;
   }
 
-  var api = { jstTime: jstTime, criteria: CRITERIA, factorWeight: FACTOR_WEIGHT, evidenceList: evidenceList, gapText: gapText, plainGap: plainGap, plainResolved: plainResolved, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
+  var api = { jstDay: jstDay, jstTime: jstTime, criteria: CRITERIA, factorWeight: FACTOR_WEIGHT, evidenceList: evidenceList, gapText: gapText, plainGap: plainGap, plainResolved: plainResolved, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachReport = api;
 })(typeof window !== 'undefined' ? window : null);

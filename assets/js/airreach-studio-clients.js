@@ -67,7 +67,8 @@
     if (c.industry_id) p.set('industry', c.industry_id);
     return '/airreach/studio/?' + p.toString();
   }
-  function ymd(s) { return String(s || '').slice(0, 10); }
+  // 日時は日本時間の日付に（世界標準時のまま切ると 0〜9 時が前の日になる）。日付だけはそのまま
+  function ymd(s) { var t = String(s || ''); if (!/[T ]\d{2}:\d{2}/.test(t)) return t.slice(0, 10); var ms = Date.parse(t); if (isNaN(ms)) return t.slice(0, 10); return new Date(ms + 9 * 3600 * 1000).toISOString().slice(0, 10); }
 
   function sb() { return window.AirReachStaffAuth ? window.AirReachStaffAuth.client() : Promise.reject(new Error('no auth')); }
 
