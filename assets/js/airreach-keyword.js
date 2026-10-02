@@ -310,7 +310,8 @@
 
   /** 店名: 構造化データの name > og:site_name > タイトルの区切り記号の前（「公式」「HP」などは除く） */
   function shopName(src) {
-    var cands = [src.ldName, src.ogSiteName, String(src.title || '').split(/\s*[|｜\-–—:：]\s*/)[0]];
+    // 店名の後ろに「:更科そば」「｜公式サイト」などが続く形が多いので、どの候補も区切りの前だけを使う
+    var cands = [src.ldName, src.ogSiteName, src.title].map(function (x) { return String(x || '').split(/\s*[|｜\-–—:：]\s*/)[0]; });
     for (var i = 0; i < cands.length; i++) {
       var n = String(cands[i] || '').replace(BRAND_NOISE, ' ').replace(/\s+/g, ' ').trim();
       var n2 = n.replace(/\s*[（(][^）)]*[）)]\s*$/, '').trim(); // 「Sansan（営業AXサービス）」→「Sansan」

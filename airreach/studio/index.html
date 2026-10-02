@@ -222,18 +222,10 @@ robots: "noindex, follow"
       </div>
 
       <div class="ars-panel" data-panel-view="gaps">
-        <div class="ars-title-row"><div><h2>足りない情報</h2><p class="ars-sub">料金・事例・FAQ・根拠など、サイトに足りない情報を洗い出します（推定）。チェックは今ある情報の目安です。</p></div><button id="run-gap-analysis" class="ars-btn ars-btn-primary" type="button">不足を分析</button></div>
+        <div class="ars-title-row"><div><h2>足りない情報</h2><p class="ars-sub">お客さんが決める前に知りたい情報が、サイトに書いてあるかを洗い出します（推定）。項目は業種に合わせて変わります。チェックは今ある情報の目安です。</p></div><button id="run-gap-analysis" class="ars-btn ars-btn-primary" type="button">不足を分析</button></div>
             <div class="ars-grid">
               <div class="ars-card ars-c5"><h3>現在ある情報</h3><div class="ars-form">
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="pricing">料金 / プラン</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="case">導入事例 / Before After</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="comparison">比較 / 選び方</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="faq">FAQ</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="evidence">独自データ / 数値根拠</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="author">監修者 / 運営主体</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="schema">JSON-LD / Schema</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="cta">問い合わせ / CV導線</label>
-                <label class="ars-row"><input type="checkbox" class="gap-check" value="policy">利用条件 / ポリシー</label>
+                <div id="gap-checks"><!-- 業種ごとに airreach-studio.js の renderGapChecks() が描く --></div>
               </div></div>
               <div class="ars-card ars-c7"><h3>優先ギャップ</h3><ul id="gap-results" class="ars-list bad"><li>「不足を分析」を押すと表示します。</li></ul></div>
               <div class="ars-card ars-c12"><h3>FAQ Gap</h3><div class="ars-grid"><div class="ars-field ars-c6"><label for="existing-faq">既存FAQ</label><textarea id="existing-faq" class="ars-textarea"></textarea></div><div class="ars-field ars-c6"><label for="faq-context">よく聞かれる論点</label><textarea id="faq-context" class="ars-textarea"></textarea></div></div><div class="ars-row" style="margin-top:12px"><button id="generate-faq-gap" class="ars-btn ars-btn-primary" type="button">不足FAQを生成</button></div><div id="faq-gap-output" class="ars-grid" style="margin-top:14px"></div></div>

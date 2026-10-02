@@ -1,8 +1,13 @@
 /**
  * Content gap analysis via TypeSafe Jev.
  * POST /api/gap-analyze/
- * body: { url?: string, text?: string, title?: string, brand?: string, service?: string }
+ * body: { url?: string, text?: string, title?: string, brand?: string, service?: string, industry?: 'restaurant'|'clinic'|'b2b'|... }
+ *
+ * 業種ごとに「足りない情報」の項目を変える（飲食店に『導入事例』『監修者』を求めない）。
+ * 対象のページは、無料診断と同じ安全な取得（_lib/fetch-proxy.js: 公開アドレスだけ・DNS 固定・サイズ上限）で本文を読む。
  */
+// 取得の部品は ESM（api/airreach は type: module）。この関数は CommonJS に変換されるため、動的 import で読む
+const loadFetchProxy = () => import('./airreach/_lib/fetch-proxy.js');
 const TYPESAFE_URL = 'https://api.typesafe.ai/v1/systemone';
 const MAX_CHARS = 12000;
 
@@ -14,7 +19,8 @@ const ALLOWED_HOSTS = new Set([
   '127.0.0.1'
 ]);
 
-const GAP_DEFS = [
+// 会社向けサービス（既定）
+const GAP_DEFS_B2B = [
   { id: 'pricing', label: '料金・プラン', action: '料金・条件を公式に明記する', why: '購入判断に必要な価格条件が不足' },
   { id: 'case', label: '導入事例 / Before After', action: '事例・導入の流れを追加する', why: '成果の根拠が不足' },
   { id: 'comparison', label: '比較・選び方', action: '比較・向いている人を整理する', why: '商用Intentに答えられていない' },
@@ -25,6 +31,35 @@ const GAP_DEFS = [
   { id: 'cta', label: '問い合わせ / CV導線', action: '次の一歩（相談・問い合わせ）を明示する', why: '流入後の導線が弱い' },
   { id: 'policy', label: '利用条件 / ポリシー', action: '利用条件・責任範囲を整える', why: 'サービス条件が不明瞭' }
 ];
+// 飲食店: 初めて行く人が来店・予約を決める前に知りたいこと
+const GAP_DEFS_RESTAURANT = [
+  { id: 'menu', label: 'メニュー・予算の目安', action: '主なメニューと価格帯（ランチ・ディナー）を文字で書く', why: '何がいくらで食べられるか分からない' },
+  { id: 'hours', label: '営業時間・定休日', action: '営業時間・ラストオーダー・定休日を書く', why: '行ける日時が分からない' },
+  { id: 'reserve', label: '予約方法', action: '予約の方法（電話・予約サイト）と可否を書く', why: '予約できるか・どうするか分からない' },
+  { id: 'access', label: 'アクセス・駐車場', action: '最寄り駅からの道順・駐車場の有無を書く', why: '行き方が分からない' },
+  { id: 'seats', label: '席・個室', action: '席数・個室の有無と人数を書く', why: '人数や用途に合うか分からない' },
+  { id: 'family', label: '子ども連れ・バリアフリー', action: '子ども連れ・車いすの可否を書く', why: '家族やシニアが来られるか分からない' },
+  { id: 'payment', label: '支払い方法', action: '使えるカード・電子マネーを書く', why: '支払いで困るか分からない' },
+  { id: 'faq', label: 'よくある質問', action: 'よく聞かれる質問と答えをまとめて置く', why: 'AIが答えを抜き出しにくい' },
+  { id: 'schema', label: 'お店の情報（構造化データ）', action: '店名・住所・電話・営業時間を検索やAIが読み取れる形で埋め込む', why: '検索やAIがお店の基本情報を読み取れない' }
+];
+// 美容・クリニック: 初めての人が予約を決める前に知りたいこと
+const GAP_DEFS_CLINIC = [
+  { id: 'menu', label: 'メニュー・料金の目安', action: '主なメニューと料金（追加料金の有無）を書く', why: 'いくらかかるか分からない' },
+  { id: 'flow', label: '施術・来院の流れ', action: '初回の流れと所要時間を書く', why: '当日の様子が想像できない' },
+  { id: 'reserve', label: '予約方法・キャンセル', action: '予約の方法とキャンセル規定を書く', why: '予約のしかたや条件が分からない' },
+  { id: 'access', label: 'アクセス・駐車場', action: '最寄り駅からの道順・駐車場の有無を書く', why: '行き方が分からない' },
+  { id: 'staff', label: '担当者・資格', action: '担当者の経歴・資格を書く（書面で確認できるものだけ）', why: '誰が担当するか分からない' },
+  { id: 'caution', label: '注意点・リスク', action: '施術後の注意点やリスクを書く', why: '不安が解消できない' },
+  { id: 'faq', label: 'よくある質問', action: 'よく聞かれる質問と答えをまとめて置く', why: 'AIが答えを抜き出しにくい' },
+  { id: 'schema', label: 'お店の情報（構造化データ）', action: '名前・住所・電話・営業時間を検索やAIが読み取れる形で埋め込む', why: '検索やAIが基本情報を読み取れない' }
+];
+const GAP_SETS = {
+  restaurant: { defs: GAP_DEFS_RESTAURANT, reader: 'a first-time customer deciding whether to visit or reserve' },
+  clinic: { defs: GAP_DEFS_CLINIC, reader: 'a first-time customer or patient deciding whether to book' },
+  b2b: { defs: GAP_DEFS_B2B, reader: 'a first-time business reader evaluating' }
+};
+export function gapSetFor(industry) { return GAP_SETS[industry] || GAP_SETS.b2b; }
 
 function isCorsHost(host) {
   if (!host) return false;
@@ -57,8 +92,10 @@ export default async function handler(req, res) {
     return json(res, 400, { error: 'Invalid JSON body' });
   }
 
-  const brand = String(body.brand || '株式会社Trillion Bank').trim();
+  const brand = String(body.brand || 'このお店・会社').trim();
   const service = String(body.service || '').trim();
+  const set = gapSetFor(String(body.industry || ''));
+  const GAP_DEFS = set.defs;
 
   try {
     const extracted = await resolveContent(req, body);
@@ -88,7 +125,7 @@ export default async function handler(req, res) {
         type: 'noul',
         instructions:
           'Does `page.text` clearly present usable ' + g.label +
-          ' information for a first-time business reader evaluating `' + brand +
+          ' information for ' + set.reader + ' `' + brand +
           (service ? '` / `' + service : '') + '`?',
         criteria: {
           true: g.label + ' is present and usable on the page',
@@ -172,7 +209,9 @@ export default async function handler(req, res) {
       ok: true,
       model: payload.model || 'jev-latest',
       evidenceClass: 'Estimated',
+      industry: GAP_SETS[String(body.industry || '')] ? String(body.industry) : 'b2b',
       source: {
+        fetched: !!extracted.fetched,
         path: extracted.path || null,
         url: extracted.url || null,
         title: extracted.title || null,
@@ -210,7 +249,15 @@ async function resolveContent(req, body) {
   if (targetUrl) {
     try {
       const parsed = new URL(targetUrl);
-      if (ALLOWED_HOSTS.has(parsed.hostname) || parsed.hostname.endsWith('.vercel.app')) {
+      if (!(ALLOWED_HOSTS.has(parsed.hostname) || parsed.hostname.endsWith('.vercel.app'))) {
+        // お客様のサイト: 無料診断と同じ安全な取得で本文を読む（読めなければ下の概要で判定）
+        const { fetchPublicDocument, sanitizeTargetUrl } = await loadFetchProxy();
+        const doc = await fetchPublicDocument(sanitizeTargetUrl(targetUrl), { timeoutMs: 8000, maxBytes: 1500000 });
+        if (doc.status >= 200 && doc.status < 300 && /html/i.test(doc.contentType || '') && doc.body) {
+          const text = htmlToText(doc.body);
+          if (text.length >= 40) return { text, title: extractTitle(doc.body), path: parsed.pathname, url: doc.finalUrl || targetUrl, fetched: true };
+        }
+      } else {
         const pageRes = await fetch(targetUrl, {
           headers: { Accept: 'text/html', 'User-Agent': 'TrillionBank-GapAnalyze/1.0' },
           redirect: 'follow'
@@ -221,7 +268,8 @@ async function resolveContent(req, body) {
             text: htmlToText(html),
             title: extractTitle(html),
             path: parsed.pathname,
-            url: targetUrl
+            url: targetUrl,
+            fetched: true
           };
         }
       }

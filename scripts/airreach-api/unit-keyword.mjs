@@ -74,6 +74,8 @@ expect('source label', K.derive({ title: '炭火焼肉 さくら 神楽坂店', 
   const none = K.candidates(K.derive({ title: 'ホーム', text: '' }), { title: 'ホーム', text: '' }, 'restaurant', 20);
   expect('set: no base and no brand -> empty', none.length, 0);
   expect('shopName prefers structured name', K.shopName({ ldName: 'そば処 テスト', ogSiteName: 'TEST', title: 'TOP | x' }), 'そば処 テスト');
+  expect('shopName cuts og:site_name at the separator', K.shopName({ ogSiteName: '総本家 更科堀井:更科そば', title: '総本家 更科堀井:更科そば' }), '総本家 更科堀井');
+  expect('shopName cuts structured name at ｜', K.shopName({ ldName: '炭火焼肉 さくら｜公式サイト' }), '炭火焼肉 さくら');
 }
 
 // 語の一部を業態にしない
