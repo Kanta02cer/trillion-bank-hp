@@ -102,6 +102,7 @@ body{background:#0b1220 !important}
   </div>
   <p class="note">参考表示です。検索順位・AI掲載・予約・問い合わせ・売上を保証しません。</p>
 </div>
+<script src="/assets/js/airreach-staff-auth.js"></script>
 <script src="{{ '/assets/js/airreach-display.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/airreach-scan-store.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/airreach-sales-kit.js' | relative_url }}"></script>
@@ -200,12 +201,14 @@ body{background:#0b1220 !important}
     if (!qs.length) { st.className = 'ai-status is-err'; st.textContent = '質問を作れませんでした（調べる言葉がありません）。'; return; }
     var btn = document.getElementById('arp-ai-run'); btn.disabled = true;
     st.className = 'ai-status'; st.innerHTML = qs.length + 'つの質問を AI に聞いています…<div class="bar" aria-hidden="true"><i></i></div>';
-    fetch('/api/hack2-measure/', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-AirReach-Key': getKey() },
-      body: JSON.stringify({ brand: brand, url: scan.url, prompts: qs, engines: engines, competitors: comps.map(function (n) { return { name: n }; }) })
+    (window.AirReachStaffAuth ? window.AirReachStaffAuth.headers() : Promise.resolve({ 'Content-Type': 'application/json', 'X-AirReach-Key': getKey() })).then(function (hdr) {
+      return fetch('/api/hack2-measure/', {
+        method: 'POST', headers: hdr,
+        body: JSON.stringify({ brand: brand, url: scan.url, prompts: qs, engines: engines, competitors: comps.map(function (n) { return { name: n }; }) })
+      });
     }).then(function (res) { return res.json().then(function (j) { return { status: res.status, body: j }; }); }).then(function (r) {
       btn.disabled = false;
-      if (r.status === 401) { document.getElementById('arp-key-row').hidden = false; st.className = 'ai-status is-err'; st.textContent = '社内キーが必要です。入れてからもう一度押してください。'; document.getElementById('arp-key').focus(); return; }
+      if (r.status === 401) { st.className = 'ai-status is-err'; st.innerHTML = 'AI に聞くには、<a href="/airreach/app/" target="_blank" rel="noopener">AirReach のダッシュボード</a>に社内の人（@trillion-bank.com）としてログインしてから、もう一度押してください。'; return; }
       if (r.status >= 400) { st.className = 'ai-status is-err'; st.textContent = (r.body && r.body.error) || ('失敗しました（' + r.status + '）'); return; }
       var rows = (r.body.rows || []).filter(function (x) { return String(x.evidenceClass || '') !== 'Estimated'; });
       var result = { at: new Date().toISOString(), competitors: comps, rows: rows };
