@@ -8,7 +8,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const results = [];
 const expect = (name, cond, detail = '') => { results.push(!!cond); console.log(`${cond ? 'PASS' : 'FAIL'}  ${name}${cond || !detail ? '' : '  — ' + String(detail).slice(0, 300)}`); };
 
-const { competitorHits, nameIn, studioKeyOk, staffTokenOk, rateLimitWait, withRateRetry, mapLimit } = await import(pathToFileURL(path.join(ROOT, 'api/hack2-measure.js')).href);
+const { competitorHits, nameIn, studioKeyOk, staffTokenOk, rateLimitWait, withRateRetry, mapLimit, mentionOrder, urlsInAnswer } = await import(pathToFileURL(path.join(ROOT, 'api/hack2-measure.js')).href);
 const comps = [{ name: '赤坂そば', url: 'https://akasaka-soba.example/' }, { name: 'Soba Lab', url: 'soba-lab.example' }];
 let h = competitorHits('おすすめは赤坂そばと SOBA LAB です', ['https://www.akasaka-soba.example/menu'], comps);
 expect('hits: 名前（大文字小文字を区別しない）と出典URLのホスト（www 付き）', JSON.stringify(h) === JSON.stringify([{ name: '赤坂そば', mentioned: 1, cited: 1 }, { name: 'Soba Lab', mentioned: 1, cited: 0 }]), JSON.stringify(h));
@@ -83,6 +83,20 @@ expect('parse: SOV の無い従来の summary は sov=null', old.rows[0].sov ===
   let active = 0, peak = 0;
   const res = await mapLimit([1, 2, 3, 4, 5], 2, async (x) => { active++; peak = Math.max(peak, active); await new Promise((r) => setTimeout(r, 10)); active--; return x * 10; });
   expect('mapLimit: 同時2件まで・順番どおり', eq([peak, res], [2, [10, 20, 30, 40, 50]]), JSON.stringify([peak, res]));
+}
+
+// ---- 言及の順位・本文の URL ----
+{
+  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const comps = [{ name: 'スタジオ コフレ' }, { name: 'ラピナス' }];
+  const a = '大宮なら1. スタジオコフレ、2. ライフスタジオ 大宮店、3. ラピナスがおすすめです。';
+  const r = mentionOrder(a, 'ライフスタジオ', comps);
+  expect('rank: 出てきた順番（空白を無視）', eq(r.order, ['スタジオ コフレ', 'ライフスタジオ', 'ラピナス']), JSON.stringify(r));
+  expect('rank: 自社は2位', r.self_rank === 2, String(r.self_rank));
+  expect('rank: 自社が出なければ null', mentionOrder('コフレだけ', 'ライフスタジオ', [{ name: 'コフレ' }]).self_rank === null);
+  expect('rank: 名前が空なら数えない', eq(mentionOrder('x', '', [{ name: '' }]).order, []));
+  const u = urlsInAnswer('詳しくは https://lifestudio.jp/studio/omiya。予約は(https://lifestudio.jp/reserve) と https://lifestudio.jp/studio/omiya');
+  expect('urls: 本文の URL を重複なしで', eq(u, ['https://lifestudio.jp/studio/omiya', 'https://lifestudio.jp/reserve']), JSON.stringify(u));
 }
 
 const failed = results.filter((x) => !x).length;
