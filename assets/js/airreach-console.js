@@ -449,12 +449,12 @@
       if (live && C) {
         overview = '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(month)) + 'の状況</h2><span class="arc-sub">登録された材料からその場で集計</span></div>' +
           C.readiness([
-            { label: '診断', href: studioHref(c, sites) + '#start', ok: !!(live.site.current && live.site.current.inMonth), note: live.site.current ? (live.site.current.inMonth ? day(live.site.current.createdAt).slice(5).replace('-', '/') + ' 診断' : '今月は未診断') : '未登録' },
-            { label: 'AI計測', href: studioHref(c, sites) + '#hack2', ok: !!live.ai, note: live.ai ? String(live.ai.measuredOn).slice(5).replace('-', '/') + ' 計測' : '今月は未計測' },
-            { label: 'Search Console', href: '#/c/' + c.id + '/traffic', ok: !!live.traffic.gsc },
-            { label: 'GA4', href: '#/c/' + c.id + '/traffic', ok: !!live.traffic.ga4 },
-            { label: '施策', href: '#/c/' + c.id + '/actions', ok: live.actions.length > 0, note: live.actions.length ? live.actions.length + '件' : '今月は0件' },
-            { label: 'レポート', href: '#/c/' + c.id + '/reports', ok: !!(repNow && repNow.status === 'published'), note: repNow ? (REPORT_STATUS[repNow.status] || [repNow.status])[0] : '未作成' }
+            { label: '診断', go: '分析する', href: studioHref(c, sites) + '#start', ok: !!(live.site.current && live.site.current.inMonth), note: live.site.current ? (live.site.current.inMonth ? day(live.site.current.createdAt).slice(5).replace('-', '/') + ' 診断' : '今月は未診断') : '未登録' },
+            { label: 'AI計測', go: '計測する', href: studioHref(c, sites) + '#hack2', ok: !!live.ai, note: live.ai ? String(live.ai.measuredOn).slice(5).replace('-', '/') + ' 計測' : '今月は未計測' },
+            { label: 'Search Console', go: '取り込む', href: '#/c/' + c.id + '/traffic', ok: !!live.traffic.gsc },
+            { label: 'GA4', go: '取り込む', href: '#/c/' + c.id + '/traffic', ok: !!live.traffic.ga4 },
+            { label: '施策', go: '記録する', href: '#/c/' + c.id + '/actions', ok: live.actions.length > 0, note: live.actions.length ? live.actions.length + '件' : '今月は0件' },
+            { label: 'レポート', go: !repNow ? '作る' : ({ draft: '仕上げる', in_review: '確認する', approved: '公開する' }[repNow.status] || '開く'), href: '#/c/' + c.id + '/reports', ok: !!(repNow && repNow.status === 'published'), note: repNow ? (REPORT_STATUS[repNow.status] || [repNow.status])[0] : '未作成' }
           ]) +
           C.tiles(live) + '</section>' +
           todoCard(R.todoList(live), live, 'staff', studioHref(c, sites)) +
