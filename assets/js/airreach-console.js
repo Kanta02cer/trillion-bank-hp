@@ -100,16 +100,78 @@
 
   // 顧客の画面・その顧客のレポートを見ているときは、上部の Studio の入口をその顧客の作業として開く
   var navClient = null;
-  function shell(title, bodyHtml, back) {
+  // ---- 画面の枠（Studio と同じ: 上の帯・左の段階・右の作業）-------------------------
+  // ctx: { client: { id, name, site }, sec: 'list'|'review'|'home'|'sites'|'runs'|'traffic'|'actions'|'reports'|'members' }
+  var SECTIONS = [
+    { group: '概要', items: [['home', 'ホーム']] },
+    { group: '材料', items: [['sites', '診断'], ['runs', 'AI計測'], ['traffic', '検索と訪問'], ['actions', '施策']] },
+    { group: 'レポート', items: [['reports', '月次レポート']] },
+    { group: '設定', items: [['members', '顧客側のメンバー']] }
+  ];
+  var SEC_LABEL = {}; SECTIONS.forEach(function (g) { g.items.forEach(function (it) { SEC_LABEL[it[0]] = it[1]; }); });
+  function sideHtml(ctx) {
+    var cl = ctx.client, n = 0;
+    function item(href, label, on, badge) {
+      n += 1;
+      return '<a class="arc-side-i' + (on ? ' is-on' : '') + '" href="' + href + '"' + (on ? ' aria-current="page"' : '') + '><span class="arc-side-n">' + n + '</span><span class="arc-side-l">' + esc(label) + '</span>' + (badge || '') + '</a>';
+    }
+    if (!cl) {
+      return '<nav class="arc-side" aria-label="ダッシュボードの画面"><div class="arc-side-g">全体</div>' +
+        item('#/', '顧客一覧', ctx.sec === 'list') + item('#/review', '確認待ちのレポート', ctx.sec === 'review') +
+        '<p class="arc-side-note">顧客を選ぶと、ホーム・診断・AI計測・検索と訪問・施策・月次レポート・メンバーの画面がここに並びます。</p></nav>';
+    }
+    return '<nav class="arc-side" aria-label="顧客の画面"><a class="arc-side-back" href="#/">← 顧客一覧</a>' +
+      SECTIONS.map(function (g) {
+        return '<div class="arc-side-g">' + g.group + '</div>' + g.items.map(function (it) {
+          return item('#/c/' + cl.id + (it[0] === 'home' ? '' : '/' + it[0]), it[1], ctx.sec === it[0], it[0] === 'reports' && ctx.reportBadge ? '<span class="arc-side-b">' + esc(ctx.reportBadge) + '</span>' : '');
+        }).join('');
+      }).join('') + '</nav>';
+  }
+  var pickCache = null;
+  function pickerHtml(cl) {
+    return '<details class="arc-pick" id="arc-pick"><summary><span class="arc-pick-l">顧客</span><b>' + esc(cl ? cl.name : '選んでいません') + '</b> ▾</summary>' +
+      '<div class="arc-pick-menu" role="menu"><p class="arc-note">読み込んでいます…</p></div></details>';
+  }
+  function bindPicker() {
+    var d = document.getElementById('arc-pick');
+    if (!d) return;
+    d.addEventListener('toggle', function () {
+      if (!d.open) return;
+      var menu = d.querySelector('.arc-pick-menu');
+      (pickCache ? Promise.resolve(pickCache) : sb.from('clients').select('id,name,status').order('name').then(function (r) { pickCache = q(r) || []; return pickCache; }))
+        .then(function (rows) {
+          menu.innerHTML = '<input class="arc-input arc-pick-q" type="search" placeholder="顧客を探す" aria-label="顧客を探す"><ul>' +
+            rows.filter(function (c) { return c.status !== 'ended'; }).map(function (c) { return '<li><a role="menuitem" href="#/c/' + c.id + '">' + esc(c.name) + '</a></li>'; }).join('') + '</ul>';
+          var qi = menu.querySelector('.arc-pick-q');
+          qi.addEventListener('input', function () { var v = qi.value.trim().toLowerCase(); Array.prototype.forEach.call(menu.querySelectorAll('li'), function (li) { li.hidden = !!v && li.textContent.toLowerCase().indexOf(v) < 0; }); });
+          qi.focus();
+          Array.prototype.forEach.call(menu.querySelectorAll('a'), function (a) { a.addEventListener('click', function () { d.open = false; }); });
+        }).catch(fail);
+    });
+    document.addEventListener('click', function (e) { if (d.open && !d.contains(e.target)) d.open = false; });
+  }
+  // 顧客の画面・その顧客のレポートを見ているときは、上部の Studio の入口をその顧客の作業として開く
+  var navClient = null;
+  function shell(title, bodyHtml, back, ctx) {
+    ctx = ctx || {};
+    var staff = !!me.is_staff, cl = ctx.client || null;
+    var site = cl && cl.site ? String(cl.site).replace(/^https?:\/\//, '').replace(/\/$/, '') : '';
+    var side = staff ? sideHtml(ctx) : '';
     root.innerHTML =
-      '<div class="arc-top"><div>' + (back ? '<a class="arc-back" href="' + back + '">← 戻る</a>' : '') +
-      '<h1 class="arc-h1">' + esc(title) + '</h1></div>' +
+      '<header class="arc-bar"><a class="arc-brand" href="#/">AirReach</a>' +
+      (staff ? pickerHtml(cl) : (cl ? '<span class="arc-bar-client">' + esc(cl.name) + '</span>' : '')) +
+      (site ? '<span class="arc-bar-site">' + esc(site) + '</span>' : '') +
+      '<span class="arc-bar-sp"></span>' +
       // 社内の人には、ほかの社内ツールへの入口を常に出す（お客様には出さない）
-      (me.is_staff ? '<nav class="arc-tools" aria-label="社内ツール"><a href="' + esc(navClient ? navClient.href : '/airreach/studio/') + '">' + (navClient ? 'Studio（' + esc(navClient.name || 'この顧客') + '）' : 'Studio（分析・AI計測）') + '</a><a href="/airreach/sales/">営業キット</a><a href="/airreach/" target="_blank" rel="noopener">無料診断</a></nav>' : '') +
-      '<div class="arc-who">' + esc(me.email) + (me.is_staff ? ' · 社内' : '') +
-      ' <button type="button" class="arc-btn-sm" id="arc-logout">ログアウト</button></div></div>' +
-      '<p id="arc-msg" class="arc-msg" hidden aria-live="polite"></p>' + bodyHtml;
+      (staff ? '<nav class="arc-tools" aria-label="社内ツール"><a href="' + esc(navClient ? navClient.href : '/airreach/studio/') + '"' + (navClient ? ' title="' + esc((navClient.name || '') + ' を Studio で開く') + '"' : '') + '>' + (navClient ? 'Studio（この顧客）' : 'Studio') + '</a><a href="/airreach/sales/">営業キット</a><a href="/airreach/" target="_blank" rel="noopener">無料診断</a></nav>' : '') +
+      '<span class="arc-who">' + esc(me.email) + (staff ? ' · 社内' : '') + ' <button type="button" class="arc-btn-sm" id="arc-logout">ログアウト</button></span></header>' +
+      '<div class="arc-shell' + (side ? '' : ' is-full') + '">' + side +
+      '<div class="arc-main"><div class="arc-top"><div>' + (back ? '<a class="arc-back" href="' + back + '">← 戻る</a>' : '') +
+      (ctx.kicker ? '<div class="arc-kicker">' + esc(ctx.kicker) + '</div>' : '') +
+      '<h1 class="arc-h1">' + esc(title) + '</h1></div>' + (ctx.action || '') + '</div>' +
+      '<p id="arc-msg" class="arc-msg" hidden aria-live="polite"></p>' + bodyHtml + '</div></div>';
     $('#arc-logout').addEventListener('click', function () { sb.auth.signOut().then(function () { location.hash = ''; route(); }); });
+    if (staff) bindPicker();
   }
 
   function route() {
@@ -121,7 +183,8 @@
         me = q(r) || {};
         var h = location.hash || '';
         var m;
-        if ((m = /^#\/c\/([0-9a-f-]{36})$/.exec(h))) return me.is_staff ? clientStaff(m[1]) : clientMember(m[1]);
+        if ((m = /^#\/c\/([0-9a-f-]{36})(?:\/([a-z]+))?$/.exec(h))) return me.is_staff ? clientStaff(m[1], SEC_LABEL[m[2]] ? m[2] : 'home') : clientMember(m[1]);
+        if (h === '#/review' && me.is_staff) return reviewList();
         if ((m = /^#\/r\/([0-9a-f-]{36})$/.exec(h)) && me.is_staff) return reportEditor(m[1]);
         // お客様で、見られる顧客が1社だけなら一覧を飛ばしてその顧客のホームを開く
         if (!me.is_staff && (me.client_ids || []).length === 1) { location.replace('#/c/' + me.client_ids[0]); return; }
@@ -165,7 +228,7 @@
         '<form id="arc-add-client" class="arc-row"><input class="arc-input" id="arc-client-name" placeholder="顧客名（会社・店舗）" required>' +
         '<select class="arc-input" id="arc-client-ind">' + Object.keys(INDUSTRY).map(function (k) { return '<option value="' + k + '">' + INDUSTRY[k] + '</option>'; }).join('') + '</select>' +
         '<button class="arc-btn" type="submit">顧客を追加</button></form>' : '';
-      shell(me.is_staff ? '顧客' : 'レポート', '<section class="arc-card">' + list + add + '</section>');
+      shell(me.is_staff ? '顧客一覧' : 'レポート', '<section class="arc-card">' + list + add + '</section>', '', { sec: 'list' });
       if (me.is_staff) $('#arc-add-client').addEventListener('submit', function (e) {
         e.preventDefault();
         sb.from('clients').insert({ name: $('#arc-client-name').value.trim(), industry_id: $('#arc-client-ind').value, created_by: me.email })
@@ -198,7 +261,7 @@
         (reps.length ? reps.map(function (r) { return '<li><a href="/airreach/app/report/?id=' + r.id + '">' + esc(ymJa(r.period_month)) + ' のレポート</a>' + (r.published_at ? '<span class="arc-sub">公開 ' + esc(String(r.published_at).slice(0, 10)) + '</span>' : '') + '</li>'; }).join('') : '<li class="arc-empty">公開済みのレポートはまだありません。</li>') +
         '</ul></section>';
       // 見られる顧客が1社だけなら「戻る」は出さない（一覧に戻っても、この画面に戻されるため）
-      shell(c.name, body, (me.client_ids || []).length > 1 ? '#/' : '');
+      shell(c.name, body, (me.client_ids || []).length > 1 ? '#/' : '', { client: { id: c.id, name: c.name } });
     });
   }
   function todoCard(items, compiled, audience, studioHref) {
@@ -273,9 +336,12 @@
 
   // 材料のカードは折りたたむ（開いた状態は再描画しても保つ）
   var openFolds = {};
+  var curSec = 'home';
+  // 顧客の画面の各節。いまの節だけを見せる（ほかも DOM に置き、フォームの結び付けはそのまま使う）
   function fold(key, title, count) {
-    return '<details class="arc-card arc-fold" data-fold="' + key + '"' + (openFolds[key] ? ' open' : '') + '><summary><span class="arc-h2">' + esc(title) + '</span><span class="arc-sub">' + esc(count) + '</span></summary><div class="arc-fold-b">';
+    return '<section class="arc-card arc-sec" data-sec="' + key + '"' + (curSec === key ? '' : ' hidden') + '><div class="arv-home-head"><h2 class="arc-h2">' + esc(title) + '</h2><span class="arc-sub">' + esc(count) + '</span></div><div class="arc-fold-b">';
   }
+
   function ymJa(d) { var s = String(d || ''); return s.slice(0, 4) + '年' + Number(s.slice(5, 7)) + '月'; }
 
   // ---- 顧客（社内向け）: 材料の登録とレポート作成 ------------------------------
@@ -356,7 +422,8 @@
     });
   }
 
-  function clientStaff(id) {
+  function clientStaff(id, sec) {
+    curSec = sec || 'home';
     return Promise.all([
       sb.from('clients').select('*').eq('id', id).maybeSingle(),
       sb.from('client_sites').select('*').eq('client_id', id).order('created_at'),
@@ -416,8 +483,10 @@
 
       var fromStudio = studioActionsFor(id), fromMeasure = studioMeasureFor(id);
       navClient = { href: studioHref(c, sites), name: c.name };
-      shell(c.name, (fromMeasure ? studioMeasureCard(fromMeasure) : '') + (fromStudio ? studioActionsCard(fromStudio) : '') + overview +
-        '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">月次レポート</h2><a class="arc-btn arc-btn-line" href="' + esc(studioHref(c, sites)) + '">この顧客を Studio で開く（分析・AI計測・直す材料）</a></div>' +
+      var hid = function (k) { return curSec === k ? '' : ' hidden'; };
+      var repBadge = repNow ? (REPORT_STATUS[repNow.status] || [repNow.status])[0] : '';
+      shell(curSec === 'home' ? c.name : SEC_LABEL[curSec], '<div data-sec="home"' + hid('home') + '>' + (fromMeasure ? studioMeasureCard(fromMeasure) : '') + (fromStudio ? studioActionsCard(fromStudio) : '') + overview + '</div>' +
+        '<section class="arc-card arc-sec" data-sec="reports"' + hid('reports') + '><div class="arv-home-head"><h2 class="arc-h2">月次レポート</h2></div>' +
         '<form id="arc-make-report" class="arc-row"><input class="arc-input" type="month" id="arc-report-month" value="' + thisMonth() + '" required>' +
         '<button class="arc-btn" type="submit">この月の下書きを作る</button></form>' +
         '<p class="arc-note">下の材料（診断・AI計測・流入・施策）から、数字と変化を自動で集めます。結論・次の3施策・判断事項は、作成後に編集画面で書きます。</p>' +
@@ -427,12 +496,12 @@
         '<ul class="arc-list">' + (sites.map(function (s) { return '<li>' + esc(s.url) + ' <button class="arc-btn-sm" data-del-site="' + s.id + '">削除</button></li>'; }).join('') || '<li class="arc-empty">まだありません</li>') + '</ul>' +
         '<form id="arc-add-site" class="arc-row"><input class="arc-input" id="arc-site-url" placeholder="https://example.jp/" required><button class="arc-btn" type="submit">サイトを追加</button></form>' +
         '<p class="arc-note">診断は <a href="/airreach/" target="_blank" rel="noopener">無料診断</a> で行います。同じサイト（www. の有無は同一）の診断がここに並びます。</p>' +
-        '<table class="arc-table"><thead><tr><th>日付</th><th>URL</th><th>点数</th><th>不足</th></tr></thead><tbody>' + (scanRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></details>' +
+        '<table class="arc-table"><thead><tr><th>日付</th><th>URL</th><th>点数</th><th>不足</th></tr></thead><tbody>' + (scanRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
         fold('runs', 'AI回答の計測', runs.length + '回') +
         '<form id="arc-add-run" class="arc-row"><input class="arc-input" type="date" id="arc-run-date" required><input class="arc-input" type="file" id="arc-run-file" accept=".json,application/json" required><button class="arc-btn" type="submit">summary.json を取り込む</button></form>' +
         '<p class="arc-note">社内の計測スクリプトが出力する summary.json（runs/&lt;実行名&gt;/summary.json）を選びます。</p>' +
-        '<table class="arc-table"><thead><tr><th>計測日</th><th>質問の版</th><th>主な質問の引用率・言及率</th><th></th></tr></thead><tbody>' + (runRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></details>' +
+        '<table class="arc-table"><thead><tr><th>計測日</th><th>質問の版</th><th>主な質問の引用率・言及率</th><th></th></tr></thead><tbody>' + (runRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
         fold('traffic', '検索・アクセスの数値（月ごと）', traffic.length + '件') +
         '<form id="arc-add-gsc" class="arc-row"><input class="arc-input" type="month" id="arc-gsc-month" value="' + thisMonth() + '" required><input class="arc-input" type="file" id="arc-gsc-file" accept=".csv,text/csv" required><button class="arc-btn" type="submit">Search Console の CSV を取り込む</button></form>' +
@@ -444,35 +513,36 @@
         '<input class="arc-input" type="number" min="0" id="arc-ga4-cv" placeholder="問い合わせ・予約">' +
         '<button class="arc-btn" type="submit">GA4 の数値を保存</button></form>' +
         googleSyncForm(id, sites) +
-        '<table class="arc-table"><thead><tr><th>月</th><th>取得元</th><th>数値</th><th></th></tr></thead><tbody>' + (trRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></details>' +
+        '<table class="arc-table"><thead><tr><th>月</th><th>取得元</th><th>数値</th><th></th></tr></thead><tbody>' + (trRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
         fold('actions', '実施した施策', actions.length + '件') +
         '<form id="arc-add-action" class="arc-row"><input class="arc-input" type="date" id="arc-act-date"><input class="arc-input" id="arc-act-title" placeholder="やったこと（例: よくある質問を5問追加）" required>' +
         '<input class="arc-input" id="arc-act-url" placeholder="証拠のURL（公開ページ）"><select class="arc-input" id="arc-act-status"><option value="done">実施済み</option><option value="planned">予定</option></select>' +
         '<button class="arc-btn" type="submit">追加</button></form>' +
-        '<table class="arc-table"><tbody>' + (actRows || '<tr><td class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></details>' +
+        '<table class="arc-table"><tbody>' + (actRows || '<tr><td class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
         fold('members', '顧客側のメンバー', members.length + '人') +
         '<ul class="arc-list">' + (members.map(function (m) { return '<li>' + esc(m.email) + ' <button class="arc-btn-sm" data-resend-member="' + esc(m.email) + '">ログインメールを再送</button> <button class="arc-btn-sm" data-del-member="' + esc(m.email) + '">削除</button></li>'; }).join('') || '<li class="arc-empty">まだいません</li>') + '</ul>' +
         '<form id="arc-add-member" class="arc-row"><input class="arc-input" type="email" id="arc-member-email" placeholder="client@example.jp" required><button class="arc-btn" type="submit">招待（ログイン用のメールを送る）</button></form>' +
         '<p class="arc-note">招待すると、お客様に「AirReach ログイン用リンク」のメール（送信元 no-reply@trillion-bank.com）が届きます。リンクの有効期限は1時間です。切れたら「ログインメールを再送」を押してください。お客様に見えるのは、自社の公開済みのレポートだけです。</p>' +
-        '<p class="arc-note">登録したメールアドレスで /airreach/app/ にログインすると、この顧客の「公開済み」レポートだけが見えます。招待メールは送られないので、URL をお伝えください。</p></div></details>',
-        '#/');
+        '</div></section>',
+        '', { client: { id: c.id, name: c.name, site: sites[0] && sites[0].url }, sec: curSec, reportBadge: repBadge, kicker: curSec === 'home' ? '' : c.name,
+          action: curSec === 'home' ? '<a class="arc-btn" href="' + esc(studioHref(c, sites)) + '">Studio で分析・計測する</a>' : '' });
 
       Array.prototype.forEach.call(root.querySelectorAll('details[data-fold]'), function (d) {
         d.addEventListener('toggle', function () { openFolds[d.getAttribute('data-fold')] = d.open; });
       });
-      function done(p) { return p.then(function (res) { q(res); return clientStaff(id); }).catch(fail); }
+      function done(p) { return p.then(function (res) { q(res); return clientStaff(id, curSec); }).catch(fail); }
       if (fromMeasure) {
         $('#arc-measure-add').addEventListener('click', function () {
           var sm = fromMeasure.summary;
           sb.from('measurement_runs').insert({ client_id: id, measured_on: $('#arc-measure-date').value || fromMeasure.measuredOn, run_label: sm.run_id,
             query_set_version: sm.query_set_version || null, source: 'manual', summary: sm, created_by: me.email }).then(function (res) {
             q(res); sessionStorage.removeItem(STUDIO_MEASURE_KEY); openFolds.runs = true;
-            return clientStaff(id).then(function () { msg('AI計測を保存しました', 'ok'); });
+            return clientStaff(id, curSec).then(function () { msg('AI計測を保存しました', 'ok'); });
           }).catch(fail);
         });
-        $('#arc-measure-discard').addEventListener('click', function () { sessionStorage.removeItem(STUDIO_MEASURE_KEY); clientStaff(id); });
+        $('#arc-measure-discard').addEventListener('click', function () { sessionStorage.removeItem(STUDIO_MEASURE_KEY); clientStaff(id, curSec); });
       }
       if (fromStudio) {
         $('#arc-studio-add').addEventListener('click', function () {
@@ -481,10 +551,10 @@
           if (!rows.length) { msg('登録するものを選んでください', 'error'); return; }
           sb.from('action_items').insert(rows).then(function (res) {
             q(res); sessionStorage.removeItem(STUDIO_ACTIONS_KEY); openFolds.actions = true;
-            return clientStaff(id).then(function () { msg(rows.length + '件を予定として登録しました', 'ok'); });
+            return clientStaff(id, curSec).then(function () { msg(rows.length + '件を予定として登録しました', 'ok'); });
           }).catch(fail);
         });
-        $('#arc-studio-discard').addEventListener('click', function () { sessionStorage.removeItem(STUDIO_ACTIONS_KEY); clientStaff(id); });
+        $('#arc-studio-discard').addEventListener('click', function () { sessionStorage.removeItem(STUDIO_ACTIONS_KEY); clientStaff(id, curSec); });
       }
       $('#arc-add-site').addEventListener('submit', function (e) {
         e.preventDefault();
@@ -502,9 +572,9 @@
           if (res && res.error && /duplicate|23505|already exists/i.test(String(res.error.message || res.error.code || ''))) return sendLoginMail(em);
           q(res); return sendLoginMail(em);
         })
-          .then(function () { return clientStaff(id); })
+          .then(function () { return clientStaff(id, curSec); })
           .then(function () { msg(em + ' を登録し、ログイン用のメールを送りました', 'ok'); })
-          .catch(function (err) { clientStaff(id).then(function () { fail(err); }); });
+          .catch(function (err) { clientStaff(id, curSec).then(function () { fail(err); }); });
       });
       $('#arc-add-action').addEventListener('submit', function (e) {
         e.preventDefault();
@@ -578,6 +648,20 @@
     });
   }
 
+  // ---- 確認待ちのレポート（社内・全顧客）--------------------------------------------
+  function reviewList() {
+    var sts = approvalOn() ? ['in_review', 'approved'] : ['draft'];
+    return sb.from('reports').select('id,client_id,period_month,status,submitted_by,submitted_at,clients(name)').in('status', sts).order('period_month', { ascending: false }).then(function (res) {
+      var rows = q(res) || [];
+      var body = '<section class="arc-card"><p class="arc-note">' + (approvalOn() ? '確認を依頼されたレポートと、承認済みでまだ公開していないレポートです。' : '下書きのレポートです。') + '</p>' +
+        '<table class="arc-table"><thead><tr><th>顧客</th><th>月</th><th>状態</th><th>依頼</th><th></th></tr></thead><tbody>' +
+        (rows.length ? rows.map(function (r) {
+          return '<tr><td>' + esc((r.clients && r.clients.name) || '') + '</td><td>' + esc(ymJa(r.period_month)) + '</td><td>' + statusChip(r.status) + '</td><td>' + esc(r.submitted_by ? r.submitted_by.split('@')[0] + '（' + jst(r.submitted_at) + '）' : '') + '</td><td><a href="#/r/' + r.id + '">開く</a></td></tr>';
+        }).join('') : '<tr><td colspan="5" class="arc-empty">ありません</td></tr>') + '</tbody></table></section>';
+      shell('確認待ちのレポート', body, '', { sec: 'review' });
+    });
+  }
+
   // ---- レポート編集（社内）---------------------------------------------------
   function reportEditor(rid) {
     return sb.from('reports').select('*, clients(name)').eq('id', rid).maybeSingle().then(function (res) {
@@ -614,7 +698,7 @@
       var next = (r.next_actions || []).concat([{}, {}, {}]).slice(0, 3);
       var decisions = (r.client_decisions || []).join('\n');
       navClient = { href: studioHref({ id: r.client_id, name: (r.clients && r.clients.name) || '' }, null), name: (r.clients && r.clients.name) || '' };
-      shell((r.clients && r.clients.name ? r.clients.name + ' · ' : '') + ym(r.period_month) + ' のレポート',
+      shell(ymJa(r.period_month) + ' のレポート',
         (window.AirReachCharts && cmp.site ? '<section class="arc-card"><h2 class="arc-h2">今月の数字（お客様にもこの形で見えます）</h2>' + window.AirReachCharts.tiles(cmp) + '</section>' : '') +
         '<section class="arc-card"><h2 class="arc-h2">自動で集めた事実</h2><ul class="arc-list">' +
         ((cmp.facts || []).map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') || '<li class="arc-empty">材料がありません</li>') + '</ul>' +
@@ -639,7 +723,7 @@
           r.status === 'approved' ? '<button class="arc-btn" type="button" id="arc-publish">公開する（お客様が見られる）</button><button class="arc-btn arc-btn-line" type="button" id="arc-return">下書きに戻して直す</button>' :
           '<button class="arc-btn arc-btn-line" type="button" id="arc-unpublish">非公開に戻す</button>') +
         '<a class="arc-btn arc-btn-line" href="/airreach/app/report/?id=' + r.id + '">表示・PDF</a></div></form>',
-        '#/c/' + r.client_id);
+        '', { client: { id: r.client_id, name: (r.clients && r.clients.name) || '' }, sec: 'reports', kicker: '月次レポート' });
 
       if (!editable) {
         Array.prototype.forEach.call(root.querySelectorAll('#arc-report-form [data-concl], #arc-report-form [data-next-title], #arc-report-form [data-next-owner], #arc-report-form [data-next-due], #arc-decisions, [data-pick-todo]'), function (el) { el.disabled = true; });

@@ -210,4 +210,62 @@ a.arv-todo-studio{text-decoration:none}
   .arv-tile,.arv-fig{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .arv-fac-bar span,.arv-cmp-bar span,.arv-key{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* ---- ダッシュボードの作業台（Studio と同じ形）---- */
+body.arc-app{margin:0;background:#f8fafc}
+body.arc-app .arc-wrap{max-width:none;margin:0;padding:0}
+body.arc-app .arc-loading{padding:24px}
+body.arc-app .arc-login{margin:80px auto}
+.arc-bar{position:sticky;top:0;z-index:40;height:56px;box-sizing:border-box;display:flex;align-items:center;gap:14px;padding:0 24px;background:#fff;border-bottom:1px solid #e2e8f0}
+.arc-brand{font-weight:700;font-size:16px;color:#0f172a;text-decoration:none;white-space:nowrap}
+.arc-bar-client{font-weight:700;font-size:14px}
+.arc-bar-site{font-size:14px;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.arc-bar-sp{flex:1}
+.arc-bar .arc-tools{margin:0;flex-wrap:nowrap;white-space:nowrap}
+.arc-bar .arc-tools a{border:0;background:none;color:#334155;font-weight:500;font-size:14px;padding:8px 10px;border-radius:8px}
+.arc-bar .arc-tools a:first-child{background:#eff6ff;color:#1d4ed8;font-weight:700}
+.arc-bar .arc-tools a:hover{background:#f1f5f9}
+.arc-bar .arc-who{white-space:nowrap}
+.arc-pick{position:relative}
+.arc-pick{min-width:0}
+.arc-pick>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:1px solid #cbd5e1;border-radius:999px;font-size:13px;background:#fff;white-space:nowrap;max-width:260px;overflow:hidden}
+.arc-pick>summary b{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.arc-pick>summary::-webkit-details-marker{display:none}
+.arc-pick-l{color:#64748b;font-size:12px}
+.arc-pick-menu{position:absolute;z-index:50;top:calc(100% + 6px);left:0;width:min(320px,calc(100vw - 32px));max-height:60vh;overflow:auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.14);padding:10px}
+.arc-pick-menu .arc-input{width:100%;box-sizing:border-box}
+.arc-pick-menu ul{list-style:none;margin:8px 0 0;padding:0}
+.arc-pick-menu a{display:block;padding:8px 10px;border-radius:8px;color:#0f172a;text-decoration:none;font-weight:700;font-size:14px}
+.arc-pick-menu a:hover{background:#eff6ff}
+.arc-shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:calc(100vh - 56px)}
+.arc-shell.is-full{grid-template-columns:minmax(0,1fr)}
+.arc-side{position:sticky;top:56px;align-self:start;height:calc(100vh - 56px);overflow:auto;box-sizing:border-box;padding:16px 12px;background:#fff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;gap:2px}
+.arc-side-back{padding:6px 10px;margin:0 0 6px;font-size:13px;color:#64748b;text-decoration:none}
+.arc-side-g{margin:14px 8px 4px;font-size:12px;font-weight:600;color:#64748b}
+.arc-side-g:first-child{margin-top:4px}
+.arc-side-i{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:14px;font-weight:700;color:#334155;text-decoration:none}
+.arc-side-i:hover{background:#f8fafc}
+.arc-side-i.is-on{background:#eff6ff;color:#1d4ed8}
+.arc-side-n{width:22px;height:22px;flex:none;border-radius:50%;border:1px solid #cbd5e1;color:#64748b;font-size:12px;display:flex;align-items:center;justify-content:center}
+.arc-side-i.is-on .arc-side-n{background:#2563eb;border-color:#2563eb;color:#fff}
+.arc-side-l{flex:1}
+.arc-side-b{font-size:11px;padding:1px 8px;border-radius:999px;background:#fffbeb;color:#b45309;font-weight:700}
+.arc-side-note{margin:8px 10px;font-size:13px;line-height:1.7;color:#64748b}
+.arc-main{padding:28px 40px 64px;max-width:1040px;box-sizing:border-box;width:100%}
+.arc-shell.is-full .arc-main{margin:0 auto}
+.arc-kicker{font-size:13px;color:#64748b}
+body.arc-app .arc-msg{top:64px}
+@media (max-width:760px){
+  .arc-bar{padding:0 12px;gap:8px;flex-wrap:nowrap}
+  .arc-bar-site,.arc-bar .arc-tools{display:none}
+  .arc-pick>summary{max-width:calc(100vw - 200px)}
+  .arc-bar .arc-who{font-size:0}.arc-bar .arc-who .arc-btn-sm{font-size:12px}
+  .arc-shell{grid-template-columns:minmax(0,1fr)}
+  .arc-side{position:sticky;top:56px;z-index:30;height:auto;flex-direction:row;overflow-x:auto;padding:8px 12px;border-right:0;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+  .arc-side-g,.arc-side-note,.arc-side-back,.arc-side-n{display:none}
+  .arc-side-i{padding:8px 12px;border:1px solid #e2e8f0;border-radius:999px;font-size:13px}
+  .arc-side-i.is-on{border-color:#bfdbfe}
+  .arc-main{padding:20px 16px 48px}
+  body.arc-app .arc-msg{top:112px}
+}
 </style>

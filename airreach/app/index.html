@@ -9,10 +9,11 @@ robots: "noindex, nofollow"
 <html lang="ja"><head><meta charset="UTF-8">{% include tb-head.html %}
 {% include airreach-console-style.html %}
 </head>
-<body>{% include tb-header.html %}
+<body class="arc-app">
+<!-- Studio と同じ作業台の形（上の帯・左の段階・右の作業）。サイト共通のヘッダー・フッターは出さない -->
 <main id="main" class="arc-wrap">
   <div id="arc-root"><p class="arc-loading">読み込んでいます…</p></div>
-</main>{% include tb-footer.html %}
+</main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <script src="{{ '/assets/js/airreach-display.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/airreach-report-charts.js' | relative_url }}"></script>
