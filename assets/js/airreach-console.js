@@ -98,12 +98,14 @@
     });
   }
 
+  // 顧客の画面・その顧客のレポートを見ているときは、上部の Studio の入口をその顧客の作業として開く
+  var navClient = null;
   function shell(title, bodyHtml, back) {
     root.innerHTML =
       '<div class="arc-top"><div>' + (back ? '<a class="arc-back" href="' + back + '">← 戻る</a>' : '') +
       '<h1 class="arc-h1">' + esc(title) + '</h1></div>' +
       // 社内の人には、ほかの社内ツールへの入口を常に出す（お客様には出さない）
-      (me.is_staff ? '<nav class="arc-tools" aria-label="社内ツール"><a href="/airreach/studio/">Studio（分析・AI計測）</a><a href="/airreach/sales/">営業キット</a><a href="/airreach/" target="_blank" rel="noopener">無料診断</a></nav>' : '') +
+      (me.is_staff ? '<nav class="arc-tools" aria-label="社内ツール"><a href="' + esc(navClient ? navClient.href : '/airreach/studio/') + '">' + (navClient ? 'Studio（' + esc(navClient.name || 'この顧客') + '）' : 'Studio（分析・AI計測）') + '</a><a href="/airreach/sales/">営業キット</a><a href="/airreach/" target="_blank" rel="noopener">無料診断</a></nav>' : '') +
       '<div class="arc-who">' + esc(me.email) + (me.is_staff ? ' · 社内' : '') +
       ' <button type="button" class="arc-btn-sm" id="arc-logout">ログアウト</button></div></div>' +
       '<p id="arc-msg" class="arc-msg" hidden aria-live="polite"></p>' + bodyHtml;
@@ -111,6 +113,7 @@
   }
 
   function route() {
+    navClient = null; // 顧客の一覧などに戻ったら、Studio の入口は顧客なしに戻す
     return sb.auth.getSession().then(function (res) {
       var session = res && res.data && res.data.session;
       if (!session) { renderLogin(); return; }
@@ -412,6 +415,7 @@
       }).join('');
 
       var fromStudio = studioActionsFor(id), fromMeasure = studioMeasureFor(id);
+      navClient = { href: studioHref(c, sites), name: c.name };
       shell(c.name, (fromMeasure ? studioMeasureCard(fromMeasure) : '') + (fromStudio ? studioActionsCard(fromStudio) : '') + overview +
         '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">月次レポート</h2><a class="arc-btn arc-btn-line" href="' + esc(studioHref(c, sites)) + '">この顧客を Studio で開く（分析・AI計測・直す材料）</a></div>' +
         '<form id="arc-make-report" class="arc-row"><input class="arc-input" type="month" id="arc-report-month" value="' + thisMonth() + '" required>' +
@@ -609,6 +613,7 @@
       var concl = (r.conclusions || []).concat(['', '', '']).slice(0, 3);
       var next = (r.next_actions || []).concat([{}, {}, {}]).slice(0, 3);
       var decisions = (r.client_decisions || []).join('\n');
+      navClient = { href: studioHref({ id: r.client_id, name: (r.clients && r.clients.name) || '' }, null), name: (r.clients && r.clients.name) || '' };
       shell((r.clients && r.clients.name ? r.clients.name + ' · ' : '') + ym(r.period_month) + ' のレポート',
         (window.AirReachCharts && cmp.site ? '<section class="arc-card"><h2 class="arc-h2">今月の数字（お客様にもこの形で見えます）</h2>' + window.AirReachCharts.tiles(cmp) + '</section>' : '') +
         '<section class="arc-card"><h2 class="arc-h2">自動で集めた事実</h2><ul class="arc-list">' +
