@@ -37,6 +37,12 @@
 .arc-chip{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#475569}
 .arc-chip.is-ok{background:#ecfdf5;color:#047857}
 .arc-chip.is-warn{background:#fffbeb;color:#b45309}
+.arc-steps{display:flex;gap:6px;list-style:none;margin:6px 0 10px;padding:0;flex-wrap:wrap}
+.arc-steps li{flex:1 1 150px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:10px;font-size:.82rem;font-weight:700;color:#64748b;background:#fff}
+.arc-steps li small{display:block;font-weight:500;font-size:.74rem}
+.arc-steps li.is-done{color:#047857;border-color:#a7f3d0;background:#ecfdf5}.arc-steps li.is-done::before{content:'✓ '}
+.arc-steps li.is-now{color:#1d4ed8;border-color:#93c5fd;background:#eff6ff}
+.arc-history summary{cursor:pointer;font-size:.82rem;font-weight:700;margin-top:6px}
 .arc-chip.is-ng{background:#fef2f2;color:#b91c1c}
 .arc-studio-in{border-color:#93c5fd;background:#f5f9ff}
 .arc-hint{background:#fffbeb;color:#78350f;border-radius:8px;padding:10px 12px;margin:0 0 12px;font-size:.88rem}

@@ -139,7 +139,7 @@
     var C = window.AirReachCharts;
     root.innerHTML =
       '<div class="arr-tools"><button type="button" class="arr-btn" id="arr-print">PDFで保存（印刷）</button>' +
-      (r.status !== 'published' ? '<span class="arr-draft">下書き（お客様には見えません）</span>' : '') + '</div>' +
+      (r.status !== 'published' ? '<span class="arr-draft">' + ({ draft: '下書き', in_review: '確認待ち', approved: '承認済み・未公開' }[r.status] || '下書き') + '（お客様には見えません）</span>' : '') + '</div>' +
       '<article class="arr-page">' +
       '<header class="arr-head"><div class="arr-kicker">AirReach 月次レポート</div>' +
       '<h1 class="arr-title">' + esc(c.client ? c.client.name : '') + '　' + esc(ym(r.period_month)) + '</h1>' +
