@@ -54,7 +54,7 @@ robots: "noindex, follow"
 
     <section class="ars-main" id="ars-main" tabindex="-1">
       <div class="ars-panel is-active" data-panel-view="start">
-        <div class="ars-title-row"><div><h2>対象サイト</h2><p class="ars-sub">分析するサイトと条件を入れて「サイト全体を分析する」を押します。分析は1〜2分かかります。</p></div></div>
+        <div class="ars-title-row"><div><h2>対象サイト</h2><p class="ars-sub">分析するサイトと条件を入れて「サイト全体を分析する」を押します。分析は数十秒〜1分ほどで終わります。</p></div></div>
     <section class="ars-card ars-orch-launch" aria-labelledby="orch-launch-title">
       <h2 id="orch-launch-title" class="visually-hidden">分析の開始</h2>
       <div class="ars-form ars-orch-form">
@@ -81,13 +81,13 @@ robots: "noindex, follow"
         <div class="ars-field">
           <span class="ars-label">対策するキーワード数</span>
           <div class="orch-kw-pills" role="radiogroup" aria-label="キーワード件数">
-            <label class="orch-kw-pill"><input type="radio" name="orch-kw-count" value="20"> 20件</label>
-            <label class="orch-kw-pill"><input type="radio" name="orch-kw-count" value="50"> 50件</label>
-            <label class="orch-kw-pill is-on"><input type="radio" name="orch-kw-count" value="100" checked> 100件</label>
+            <label class="orch-kw-pill"><input type="radio" name="orch-kw-count" value="20"> 最大20件</label>
+            <label class="orch-kw-pill"><input type="radio" name="orch-kw-count" value="50"> 最大50件</label>
+            <label class="orch-kw-pill is-on"><input type="radio" name="orch-kw-count" value="100" checked> 最大100件</label>
           </div>
         </div>
         <div class="ars-field">
-          <label for="orch-region">対象地域</label>
+          <label for="orch-region"><span data-tip="会社向けサービスのキーワードに使います。お店（飲食店など）は、サイトに書かれた住所の地域を自動で使います。">対象地域</span></label>
           <select class="ars-select" id="orch-region">
             <option value="東京">東京</option>
             <option value="全国" selected>全国</option>
@@ -134,7 +134,7 @@ robots: "noindex, follow"
         <div class="ars-title-row"><div><h2>分析結果</h2></div></div>
         <div class="ars-empty-job ars-note">まだ分析していません。「1 対象サイト」で分析すると、ここに結論と数字が出ます。</div>
         <section class="ars-orch-result" id="orch-result" hidden>
-      <p class="orch-metric-legend">数字の見方：①対策に使う言葉の数　②Keyword Planner の月間検索数（無ければ未計測）　③公開ページの準備度（100点・AI掲載率ではない）　④いま着手すべき改善の件数</p>
+      <p class="orch-metric-legend">数字の見方：①対策に使う言葉の数　②月間の検索回数（Keyword Planner を取り込んだときだけ）　③公開ページの準備度（100点・AI掲載率ではない）　④いま着手すべき改善の件数</p>
       <div class="orch-four">
         <div class="orch-four-card">
           <div class="lab" data-tip="選定した対策キーワード数">① 対策候補</div>
@@ -162,7 +162,7 @@ robots: "noindex, follow"
         <p id="orch-conclusion" class="orch-conclusion"></p>
       </div>
       <div class="ars-card">
-        <h3>直す箇所のまとめ</h3>
+        <h3>直す作業の内訳（延べ数）</h3>
         <div id="orch-compress"></div>
       </div>
           <div class="ars-next">
@@ -242,10 +242,15 @@ robots: "noindex, follow"
         <div class="ars-row">
           <button type="button" class="ars-btn ars-btn-primary" id="orch-zip">ダウンロード（ZIP）</button>
           <button type="button" class="ars-btn ars-btn-secondary" id="orch-to-dashboard" hidden>ダッシュボードに施策として登録</button>
-          <button type="button" class="ars-btn ars-btn-secondary" id="orch-pr">GitHubに下書きPR</button>
-          <button type="button" class="ars-btn ars-btn-secondary" id="orch-deploy">公開前チェック</button>
         </div>
-        <p class="ars-gnote">ZIP には FAQ・構造化データ・llms.txt・作業手順が入ります。「ダッシュボードに施策として登録」は、ダッシュボードの顧客から Studio を開いたときに出ます。GitHub の下書きPRは、トークンをこの画面だけで使い、マージは人が行います。</p>
+        <p class="ars-gnote">ZIP には、よくある質問・お店や会社の情報（構造化データ）・AI向けの案内ファイル・作業手順が入ります。お客様や制作会社にそのまま渡せます。顧客を選んで開いているときは「ダッシュボードに施策として登録」も出ます。</p>
+        <details class="ars-dev"><summary>開発者・制作会社向け（GitHub に下書きを作る・公開前チェック）</summary>
+          <div class="ars-row">
+            <button type="button" class="ars-btn ars-btn-secondary" id="orch-pr">GitHubに下書きPR</button>
+            <button type="button" class="ars-btn ars-btn-secondary" id="orch-deploy">公開前チェック</button>
+          </div>
+          <p class="ars-gnote">GitHub の下書きPRは、トークンをこの画面だけで使い、マージは人が行います。</p>
+        </details>
         <p id="orch-phase2-status" class="orch-phase2-status" hidden></p>
       </div>
         </div>
@@ -321,7 +326,7 @@ robots: "noindex, follow"
               <label><input type="checkbox" data-hack2-engine value="perplexity" checked> Perplexity（検索あり）</label>
             </div>
             <div class="ars-model-grid" id="hack2-models"></div>
-            <div class="ars-grid" style="margin-top:16px"><div class="ars-card ars-c6"><h3>JSON取込</h3><textarea id="hack2-json" class="ars-code" style="min-height:200px"></textarea><button id="import-hack2" class="ars-btn ars-btn-primary" type="button" style="margin-top:10px">取込</button></div><div class="ars-card ars-c6"><h3>ルール</h3><ul class="ars-list"><li><strong>準備度 ≠ 引用率</strong></li><li><strong>0% ≠ 失敗</strong></li><li><strong>同一条件で再計測</strong></li><li><strong>Jevは推定</strong>：ページ本文から「引用されそうか」を推定した値で、実際のAIの回答ではない。引用率には含めない</li><li>ChatGPTは検索なし（gpt-4o-mini）で、店名・サービス名が回答に出た割合（言及率）だけを測る。引用は測らない</li><li>Claudeは検索ありで回答させ、返ってきた引用URLに公式サイトがあるかで判定</li><li>Perplexityは引用URLの一覧が取れないため、回答本文に公式サイトのドメインがあるときだけ「引用あり」。無いときは判定できない（0%にしない）</li><li>GitHub Pages上でも計測APIはVercelへ接続します</li></ul></div></div>
+            <details class="ars-dev" style="margin-top:16px"><summary>社内向け：計測のルールと、計測結果（JSON）の取り込み</summary><div class="ars-grid" style="margin-top:12px"><div class="ars-card ars-c6"><h3>JSON取込</h3><textarea id="hack2-json" class="ars-code" style="min-height:200px"></textarea><button id="import-hack2" class="ars-btn ars-btn-primary" type="button" style="margin-top:10px">取込</button></div><div class="ars-card ars-c6"><h3>ルール</h3><ul class="ars-list"><li><strong>準備度 ≠ 引用率</strong></li><li><strong>0% ≠ 失敗</strong></li><li><strong>同一条件で再計測</strong></li><li><strong>Jevは推定</strong>：ページ本文から「引用されそうか」を推定した値で、実際のAIの回答ではない。引用率には含めない</li><li>ChatGPTは検索なし（gpt-4o-mini）で、店名・サービス名が回答に出た割合（言及率）だけを測る。引用は測らない</li><li>Claudeは検索ありで回答させ、返ってきた引用URLに公式サイトがあるかで判定</li><li>Perplexityは引用URLの一覧が取れないため、回答本文に公式サイトのドメインがあるときだけ「引用あり」。無いときは判定できない（0%にしない）</li><li>GitHub Pages上でも計測APIはVercelへ接続します</li></ul></div></div></details>
           
       </div>
 
@@ -339,8 +344,8 @@ robots: "noindex, follow"
               </div>
               <div class="ars-card ars-c12"><h3>③ 取り込む</h3>
                 <div class="ars-google-sync"><div class="ars-field"><label for="sync-start">開始日</label><input id="sync-start" class="ars-input" type="date"></div><div class="ars-field"><label for="sync-end">終了日</label><input id="sync-end" class="ars-input" type="date"></div><button id="sync-gsc" class="ars-btn ars-btn-soft" type="button">GSC を取得</button><button id="sync-ga4" class="ars-btn ars-btn-soft" type="button">GA4 を取得</button></div>
-                <div id="sync-message" class="ars-note" style="margin-top:12px">CSVフォールバック可</div>
-                <div class="ars-row" style="margin-top:10px;align-items:center"><span class="ars-gnote" style="margin:0">CSV で取り込む:</span><label class="ars-btn ars-btn-secondary">GSC CSV<input id="gsc-csv" type="file" accept=".csv,text/csv" hidden></label><label class="ars-btn ars-btn-secondary">GA4 CSV<input id="ga4-csv" type="file" accept=".csv,text/csv" hidden></label></div>
+                <div id="sync-message" class="ars-note" style="margin-top:12px">接続しなくても、下の「ファイルで取り込む」から CSV で入れられます。</div>
+                <div class="ars-row" style="margin-top:10px;align-items:center"><span class="ars-gnote" style="margin:0">GA4 を CSV で入れる:</span><label class="ars-btn ars-btn-secondary">GA4 CSV<input id="ga4-csv" type="file" accept=".csv,text/csv" hidden></label></div>
               </div>
             </div>
           
@@ -368,7 +373,7 @@ robots: "noindex, follow"
 
       <div class="ars-panel" data-panel-view="timeseries">
         <div class="ars-title-row"><div><h2>推移</h2><p class="ars-sub">キーワードごとの表示・クリック・AI計測の推移。</p></div><div class="ars-row"><select id="timeseries-keyword" class="ars-select" style="min-width:220px"></select><button id="export-measurements" class="ars-btn ars-btn-secondary" type="button">CSV</button></div></div>
-            <div class="ars-grid"><div class="ars-card ars-c8"><h3>推移</h3><div id="timeseries-chart" class="ars-chart"></div></div><div class="ars-card ars-c4"><div class="ars-inline-kpi"><div><b id="ts-imp">0</b><span>Imp</span></div><div><b id="ts-ctr">0%</b><span>CTR</span></div><div><b id="ts-cvr">0%</b><span>CVR</span></div><div><b id="ts-pos">-</b><span>Pos</span></div></div></div><div class="ars-card ars-c12"><div class="ars-table-wrap"><table class="ars-table"><thead><tr><th>Date</th><th>Keyword</th><th>URL</th><th>Imp</th><th>Clicks</th><th>CTR</th><th>Pos</th><th>Sessions</th><th>Key</th><th>CVR</th><th>Mention</th><th>Citation</th></tr></thead><tbody id="measurement-body"></tbody></table></div></div></div>
+            <div class="ars-grid"><div class="ars-card ars-c8"><h3>推移</h3><div id="timeseries-chart" class="ars-chart"></div></div><div class="ars-card ars-c4"><div class="ars-inline-kpi"><div><b id="ts-imp">0</b><span>表示回数</span></div><div><b id="ts-ctr">0%</b><span>クリック率</span></div><div><b id="ts-cvr">0%</b><span>問い合わせ率</span></div><div><b id="ts-pos">-</b><span>平均の順位</span></div></div></div><div class="ars-card ars-c12"><div class="ars-table-wrap"><table class="ars-table"><thead><tr><th>日付</th><th>キーワード</th><th>ページ</th><th>表示回数</th><th>クリック</th><th>クリック率</th><th>順位</th><th>訪問</th><th>問い合わせ</th><th>問い合わせ率</th><th>AIで名前</th><th>AIで出典</th></tr></thead><tbody id="measurement-body"></tbody></table></div></div></div>
           
       </div>
     </section>

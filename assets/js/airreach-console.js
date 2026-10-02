@@ -447,12 +447,12 @@
       if (live && C) {
         overview = '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(month)) + 'の状況</h2><span class="arc-sub">登録された材料からその場で集計</span></div>' +
           C.readiness([
-            { label: '診断', ok: !!(live.site.current && live.site.current.inMonth), note: live.site.current ? (live.site.current.inMonth ? String(live.site.current.createdAt).slice(5, 10).replace('-', '/') + ' 診断' : '今月は未診断') : '未登録' },
-            { label: 'AI計測', ok: !!live.ai, note: live.ai ? String(live.ai.measuredOn).slice(5).replace('-', '/') + ' 計測' : '今月は未計測' },
-            { label: 'Search Console', ok: !!live.traffic.gsc },
-            { label: 'GA4', ok: !!live.traffic.ga4 },
-            { label: '施策', ok: live.actions.length > 0, note: live.actions.length ? live.actions.length + '件' : '今月は0件' },
-            { label: 'レポート', ok: !!(repNow && repNow.status === 'published'), note: repNow ? (REPORT_STATUS[repNow.status] || [repNow.status])[0] : '未作成' }
+            { label: '診断', href: studioHref(c, sites) + '#start', ok: !!(live.site.current && live.site.current.inMonth), note: live.site.current ? (live.site.current.inMonth ? String(live.site.current.createdAt).slice(5, 10).replace('-', '/') + ' 診断' : '今月は未診断') : '未登録' },
+            { label: 'AI計測', href: studioHref(c, sites) + '#hack2', ok: !!live.ai, note: live.ai ? String(live.ai.measuredOn).slice(5).replace('-', '/') + ' 計測' : '今月は未計測' },
+            { label: 'Search Console', href: '#/c/' + c.id + '/traffic', ok: !!live.traffic.gsc },
+            { label: 'GA4', href: '#/c/' + c.id + '/traffic', ok: !!live.traffic.ga4 },
+            { label: '施策', href: '#/c/' + c.id + '/actions', ok: live.actions.length > 0, note: live.actions.length ? live.actions.length + '件' : '今月は0件' },
+            { label: 'レポート', href: '#/c/' + c.id + '/reports', ok: !!(repNow && repNow.status === 'published'), note: repNow ? (REPORT_STATUS[repNow.status] || [repNow.status])[0] : '未作成' }
           ]) +
           C.tiles(live) + '</section>' +
           todoCard(R.todoList(live), live, 'staff', studioHref(c, sites)) +
@@ -496,12 +496,13 @@
         fold('sites', '対象サイト・診断履歴', sites.length + 'サイト・診断' + scans.length + '件') +
         '<ul class="arc-list">' + (sites.map(function (s) { return '<li>' + esc(s.url) + ' <button class="arc-btn-sm" data-del-site="' + s.id + '">削除</button></li>'; }).join('') || '<li class="arc-empty">まだありません</li>') + '</ul>' +
         '<form id="arc-add-site" class="arc-row"><input class="arc-input" id="arc-site-url" placeholder="https://example.jp/" required><button class="arc-btn" type="submit">サイトを追加</button></form>' +
-        '<p class="arc-note">診断は <a href="/airreach/" target="_blank" rel="noopener">無料診断</a> で行います。同じサイト（www. の有無は同一）の診断がここに並びます。</p>' +
+        '<p class="arc-note">診断は、左のメニューの <a href="' + esc(studioHref(c, sites) + '#start') + '">「対象サイト・分析」</a>（または <a href="/airreach/" target="_blank" rel="noopener">無料診断</a>）で行います。同じサイト（www. の有無は同一）の診断がここに並びます。</p>' +
         '<table class="arc-table"><thead><tr><th>日付</th><th>URL</th><th>点数</th><th>不足</th></tr></thead><tbody>' + (scanRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
-        fold('runs', 'AI回答の計測', runs.length + '回') +
-        '<form id="arc-add-run" class="arc-row"><input class="arc-input" type="date" id="arc-run-date" required><input class="arc-input" type="file" id="arc-run-file" accept=".json,application/json" required><button class="arc-btn" type="submit">summary.json を取り込む</button></form>' +
-        '<p class="arc-note">社内の計測スクリプトが出力する summary.json（runs/&lt;実行名&gt;/summary.json）を選びます。</p>' +
+        fold('runs', 'AI計測の記録', runs.length + '回') +
+        '<p class="arc-note">「AI計測を実行」で測った結果は、自動でここに入ります。</p>' +
+        '<details class="arc-dev"><summary>社内向け：計測スクリプトの結果（summary.json）を取り込む</summary>' + '<form id="arc-add-run" class="arc-row"><input class="arc-input" type="date" id="arc-run-date" required><input class="arc-input" type="file" id="arc-run-file" accept=".json,application/json" required><button class="arc-btn" type="submit">summary.json を取り込む</button></form>' +
+        '<p class="arc-note">社内の計測スクリプトが出力する summary.json（runs/&lt;実行名&gt;/summary.json）を選びます。</p></details>' +
         '<table class="arc-table"><thead><tr><th>計測日</th><th>質問の版</th><th>主な質問の引用率・言及率</th><th></th></tr></thead><tbody>' + (runRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
         fold('traffic', '検索・アクセスの数値（月ごと）', traffic.length + '件') +

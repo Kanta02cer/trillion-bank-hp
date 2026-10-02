@@ -569,9 +569,13 @@
         seed_source: fromGsc ? 'GSC' : 'Site', why: why, answered: c.answered, evidence: c.evidence || '', prompts: [] });
     });
     // 直す対象（P0）を先頭に。同じ優先度の中は元の並び（基本→条件→店名）を保つ
-    return out.map(function (k, i) { return { k: k, i: i }; })
+    var sorted = out.map(function (k, i) { return { k: k, i: i }; })
       .sort(function (a, b) { return (prioRank(a.k.priority) - prioRank(b.k.priority)) || (a.i - b.i); })
       .map(function (x) { return x.k; });
+    // 「必須」は先頭の5件まで（全部が必須だと、どれから手を付けるか分からない）。6件目以降は「推奨」
+    var nP0 = 0;
+    sorted.forEach(function (k) { if (k.priority === 'P0') { nP0 += 1; if (nP0 > 5) k.priority = 'P1'; } });
+    return sorted;
   }
 
   // 推定値が1つも無いときは null（「0回」「約◯回」と出さない）
@@ -1333,8 +1337,8 @@
       var allKw = job.keywords || [];
       var plannerKw = allKw.filter(function (k) { return k.volume_source === 'Official' && k.volume != null && k.volume !== '' && isFinite(Number(k.volume)); });
       if (!plannerKw.length) {
-        demandEl.textContent = '未計測';
-        if (dUnit) dUnit.textContent = 'Keyword Planner の月間検索数を取り込むと表示します（Search Console の表示回数は含めません）';
+        demandEl.textContent = '—';
+        if (dUnit) dUnit.textContent = '（任意）Google 広告の Keyword Planner のファイルを「Google 連携」で取り込むと、月間の検索回数が出ます';
       } else {
         var plannerTotal = plannerKw.reduce(function (s2, k) { return s2 + Number(k.volume); }, 0);
         demandEl.textContent = plannerTotal.toLocaleString('ja-JP');
@@ -1350,8 +1354,7 @@
       var unit = q('orch-n-score').parentElement && q('orch-n-score').parentElement.querySelector('.unit');
       if (unit) {
         unit.innerHTML = '/ 100' + (job.diagnose_source === 'Estimated'
-          ? ' <span class="orch-badge-est" data-tip="ページ取得できなかったため推定です">推定</span>'
-          : ' <span class="orch-badge-off" data-tip="公開HTMLの準備度（実測）">実測</span>');
+          ? ' <span class="orch-badge-est" data-tip="ページ取得できなかったため推定です">推定</span>' : '');
       }
     }
     if (q('orch-n-impl')) q('orch-n-impl').textContent = String(h.implSites || 0);
@@ -1361,12 +1364,12 @@
     if (q('orch-compress')) {
       q('orch-compress').innerHTML =
         '<div class="orch-compress-grid">' +
-        '<div><b>' + (c.existingPages || 0) + '</b><span data-tip="既存ページの改善候補数">既存ページ</span></div>' +
-        '<div><b>' + (c.newPages || 0) + '</b><span data-tip="新規ページ候補数">新規ページ</span></div>' +
-        '<div><b>' + (c.faqCount || 0) + '</b><span>FAQ</span></div>' +
-        '<div><b>' + (c.schemaCount || 0) + '</b><span data-tip="構造化データの修正候補">Schema</span></div>' +
-        '<div><b>' + (c.internalLinks || 0) + '</b><span>内部リンク</span></div>' +
-        '</div><p class="orch-impl-summary">実際に直すのは <b>' + (c.implSites || 0) + ' 箇所</b>です。</p>';
+        '<div><b>' + (c.existingPages || 0) + '</b><span>今あるページを直す</span></div>' +
+        '<div><b>' + (c.newPages || 0) + '</b><span>新しく作るページ</span></div>' +
+        '<div><b>' + (c.faqCount || 0) + '</b><span>よくある質問</span></div>' +
+        '<div><b>' + (c.schemaCount || 0) + '</b><span data-tip="検索やAIが読み取れる形でお店・会社の情報を埋め込む作業">構造化データ</span></div>' +
+        '<div><b>' + (c.internalLinks || 0) + '</b><span>ページどうしのリンク</span></div>' +
+        '</div><p class="orch-impl-summary">キーワードごとに数えた延べ数です。同じページでまとめて直せるものをまとめると、実際に手を入れるのは <b>' + (c.implSites || 0) + ' 箇所</b>です。</p>';
     }
 
     var hasGsc = (job.keywords || []).some(function (k) { return k.gsc_impressions != null && k.gsc_impressions > 0; });
@@ -1374,7 +1377,7 @@
     if (gscNote) {
       gscNote.textContent = hasGsc
         ? 'GSC の表示回数（Impressions）がある行だけ Google 実測を別列で表示しています。表示回数は検索回数ではありません。月間検索数は Keyword Planner の取り込み時だけ表示します。'
-        : '検索回数は出していません。「8 Google 連携」で Search Console を取り込むと、Google 実測の表示回数・クリックが別列で付きます（表示回数は検索回数ではありません）。';
+        : '検索回数は出していません。左のメニューの「Google 連携」で Search Console を取り込むと、Google 実測の表示回数・クリックが別列で付きます（表示回数は検索回数ではありません）。';
       gscNote.hidden = false;
     }
 
@@ -1452,6 +1455,47 @@
     return o ? '問い合わせを増やす' : '';
   }
 
+  // ---- Studio の分析を「診断の履歴」にも残す（無料診断と同じ保存先。月次レポートの点数に使われる）-------------
+  // 無料診断と別々だと、Studio で分析しても月次レポートに出なかった。分析1回につき1回だけ保存する
+  function scanId() {
+    try { if (window.crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, '').slice(0, 16); } catch (e) {}
+    return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+  function scanNote(text, kind) {
+    var res = q('orch-result');
+    if (!res) return;
+    var el = q('orch-scan-saved');
+    if (!el) { el = document.createElement('p'); el.id = 'orch-scan-saved'; el.className = 'ars-note'; res.insertBefore(el, res.firstChild); }
+    el.className = 'ars-note' + (kind ? ' ' + kind : '');
+    el.textContent = text;
+  }
+  function saveScanFromJob(job, goal) {
+    if (!job || !job.diagnose || !job.diagnose.checks || job._scanSaved) return;
+    job._scanSaved = true;
+    var p = job.profile || {};
+    var body = {
+      scan: {
+        // 保存の API は goal を acquisition / visibility、成果の種類を outcomeGoal（英小文字）で受ける
+        id: scanId(), url: job.url, industryId: job.industry || 'other', goal: goal === '見え方を整える' ? 'visibility' : 'acquisition',
+        outcomeGoal: goal === '予約を増やす' ? 'reservation' : (goal === '見え方を整える' ? 'awareness' : 'inquiry'),
+        keyword: (job.keywords && job.keywords[0] && job.keywords[0].keyword) || null,
+        siteTitle: (job.diagnose.page && job.diagnose.page.title) || null, displayName: p.brand || null,
+        source: 'expert', savedAt: new Date().toISOString()
+      },
+      result: job.diagnose
+    };
+    fetch('/api/airreach/scans/', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body), credentials: 'same-origin' })
+      .then(function (r) {
+        if (r.status === 201) {
+          scanNote('この分析は「診断の履歴」に保存しました（' + (job.diagnose.overall != null ? job.diagnose.overall + '点・' : '') + '月次レポートの点数に使われます）。', 'good');
+        } else {
+          scanNote('分析は終わりましたが、「診断の履歴」への保存に失敗しました（' + r.status + '）。月次レポートに使うには、もう一度分析してください。', 'warn');
+          job._scanSaved = false;
+        }
+      })
+      .catch(function () { job._scanSaved = false; scanNote('分析は終わりましたが、通信の問題で「診断の履歴」に保存できませんでした。もう一度分析してください。', 'warn'); });
+  }
+
   function prefillLaunch() {
     var url = '';
     var service = '';
@@ -1472,6 +1516,9 @@
         var ind = params.get('industry') || '';
         if (ind === 'restaurant' && url) { prefillIndustry = 'restaurant'; prefillIndustryHost = hostOf(url); }
       }
+      // 業種の指定（顧客を選ばずに開いたときも使う）
+      var ind0 = params.get('industry') || '';
+      if (ind0 === 'restaurant' && url && !prefillIndustry) { prefillIndustry = 'restaurant'; prefillIndustryHost = hostOf(url); }
     } catch (e) {}
     if (!studioClient) {
       try { studioClient = JSON.parse(sessionStorage.getItem(STUDIO_CLIENT_KEY) || 'null'); } catch (e) { studioClient = null; }
@@ -1510,6 +1557,8 @@
     var forceClientUrl = !!(studioClient && studioClient.url && url === studioClient.url);
     if (url && q('orch-url') && (forceClientUrl || !q('orch-url').value)) q('orch-url').value = url;
     if (service && q('orch-service') && !q('orch-service').value) q('orch-service').value = service;
+    // 飲食店なら目標の初期値は「予約を増やす」（問い合わせではない）
+    if (!goal && prefillIndustry === 'restaurant') goal = '予約を増やす';
     if (goal && q('orch-goal')) {
       var opts = q('orch-goal').options || [];
       for (var gi = 0; gi < opts.length; gi++) {
@@ -1694,6 +1743,9 @@
         }, function (j) { renderProgress(j); });
         renderResult(job);
         window.__orchLastJob = job;
+        saveScanFromJob(job, goal);
+        // 終わった進み具合の一覧は残さない（結果の邪魔になる）
+        setTimeout(function () { if (q('orch-progress-wrap')) q('orch-progress-wrap').hidden = true; }, 1200);
       } catch (e) {
         alert('分析に失敗しました: ' + (e && e.message ? e.message : e));
       } finally {
