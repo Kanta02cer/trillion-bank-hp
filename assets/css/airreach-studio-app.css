@@ -237,3 +237,9 @@ body:not(.has-job) [data-needs-job]{display:none}
 .ars-client-pick~.ars-appbar-context .ars-ctx-client{display:none}
 .ars-client-pick~.ars-appbar-context .ars-ctx-site::before{content:none}
 .ars-sync{margin-top:12px;padding:8px 12px;border-radius:8px;background:#f8fafc;font-size:13px;color:#334155;display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ars-sync.is-ok{background:#ecfdf5;color:#065f46}.ars-sync.is-warn{background:#fffbeb;color:#92400e}
+
+/* 「隠す」指定はボタンなどの表示指定より優先する（隠したはずのボタンが出ていた） */
+.ars-app [hidden]{display:none !important}
+/* 開発者・社内向けの折りたたみ */
+.ars-app .ars-dev{margin-top:12px;border:1px dashed var(--ars-line-strong);border-radius:var(--ars-r-sm);padding:8px 12px;background:var(--ars-canvas)}
+.ars-app .ars-dev>summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--ars-muted)}
