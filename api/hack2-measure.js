@@ -352,6 +352,23 @@ export function nameIn(text, name) {
   const n = String(name || '').toLowerCase().replace(/[\s\u3000]+/g, '');
   return !!n && t.indexOf(n) !== -1;
 }
+// 回答の中で名前が出てきた順番（自社と競合）。言及の順位に使う。名前は空白を無視して探す
+export function mentionOrder(answer, brand, competitors) {
+  const t = String(answer || '').toLowerCase().replace(/[\s\u3000]+/g, '');
+  const pos = (name) => { const n = String(name || '').toLowerCase().replace(/[\s\u3000]+/g, ''); return n ? t.indexOf(n) : -1; };
+  const all = [{ name: String(brand || ''), self: true, at: pos(brand) }]
+    .concat((competitors || []).map((c) => ({ name: String(c.name || ''), self: false, at: pos(c.name) })))
+    .filter((x) => x.name && x.at >= 0)
+    .sort((a, b) => a.at - b.at);
+  const selfIdx = all.findIndex((x) => x.self);
+  return { order: all.map((x) => x.name).slice(0, 12), self_rank: selfIdx >= 0 ? selfIdx + 1 : null };
+}
+// 回答の本文に書かれた URL（出典の一覧が返らない AI のための参考）
+export function urlsInAnswer(answer) {
+  const out = [];
+  String(answer || '').replace(/https?:\/\/[^\s)\]>"'、。）」]+/g, (u) => { if (out.indexOf(u) < 0 && out.length < 20) out.push(u.replace(/[.,;:]+$/, '')); return u; });
+  return out;
+}
 export function competitorHits(answer, citations, competitors) {
   const lower = String(answer || '').toLowerCase();
   return (competitors || []).map((c) => {
@@ -415,6 +432,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
         searched: false,
         citations: [],
         competitors: competitorHits(out.answer, null, competitors).map((h) => ({ name: h.name, mentioned: h.mentioned, cited: null })),
+        ...mentionOrder(out.answer, brand, competitors),
         evidenceClass: 'Observed',
         model: useGateway ? gatewayModel(engine) : engine,
         source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
@@ -440,8 +458,10 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
       cited,
       citeMethod,
       searched: !!out.searched,
-      citations: Array.isArray(out.citations) ? out.citations.slice(0, 10) : [],
+      citations: Array.isArray(out.citations) ? out.citations.slice(0, 20) : [],
+      urls_in_answer: Array.isArray(out.citations) ? [] : urlsInAnswer(out.answer),
       competitors: competitorHits(out.answer, out.citations, competitors),
+      ...mentionOrder(out.answer, brand, competitors),
       evidenceClass: 'Observed',
       model: useGateway ? gatewayModel(engine) : engine,
       source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
