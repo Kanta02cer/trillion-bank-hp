@@ -26,7 +26,7 @@ function isCorsHost(host) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin(req));
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-AirReach-Key');
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Vary', 'Origin');
 
@@ -37,6 +37,17 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') {
     return json(res, 405, { error: 'Method not allowed' });
+  }
+  // 実際の AI に聞く計測は費用がかかる。社内キー（Vercel の環境変数 AIRREACH_STUDIO_KEY、カンマ区切りで複数可）が
+  // 設定されているときは、ヘッダー X-AirReach-Key が一致しない要求を断る。ブラウザからの要求は許可したサイトだけ受ける
+  const origin = req.headers.origin || '';
+  if (origin) {
+    let oh = '';
+    try { oh = new URL(origin).hostname; } catch (e) {}
+    if (!isCorsHost(oh)) return json(res, 403, { error: 'origin not allowed', code: 'origin_not_allowed' });
+  }
+  if (!studioKeyOk(req)) {
+    return json(res, 401, { error: '社内キーが必要です。Studio の右上「その他」→「社内キー」で設定してください。', code: 'studio_key_required' });
   }
 
   let body;
@@ -158,6 +169,13 @@ export default async function handler(req, res) {
       'Perplexity citation URLs are not returned through the gateway, so cited is judged only from the answer text (null when not found).',
     fetchNote: fetchNote
   });
+}
+
+export function studioKeyOk(req, env = process.env) {
+  const keys = String(env.AIRREACH_STUDIO_KEY || '').split(',').map((k) => k.trim()).filter(Boolean);
+  if (!keys.length) return true; // 未設定のあいだは従来どおり（設定した時点から有効）
+  const got = String((req.headers && (req.headers['x-airreach-key'] || req.headers['X-AirReach-Key'])) || '').trim();
+  return !!got && keys.indexOf(got) !== -1;
 }
 
 function normalizePrompts(raw) {

@@ -64,6 +64,13 @@ expect('source label', K.derive({ title: '炭火焼肉 さくら 神楽坂店', 
   expect('set: brand from title without 公式', K.shopName(src), '炭火焼肉 さくら');
   expect('set: brand + 予約 answered', by['炭火焼肉 さくら 予約'].answered, true);
   expect('set: size <= 20', set.length <= 20, true);
+}
+// 「All Rights Reserved」を予約の答えと取り違えない（2026-10-02: 更科堀井で 予約=答えあり と誤判定していた）
+{
+  const src = { title: '[公式] 炭火焼肉 さくら | 神楽坂', ldAddress: ['東京都新宿区神楽坂3-1-2'], text: '炭火で焼き上げる国産牛の焼肉をお楽しみください。'.repeat(12) + ' Copyright 2026 Sakura. All Rights Reserved.' };
+  const set = K.candidates(K.derive(src), src, 'restaurant', 20);
+  const by = Object.fromEntries(set.map((c) => [c.text, c]));
+  expect('set: All Rights Reserved is not a 予約 answer', by['神楽坂 焼肉 予約'].answered, false);
   const none = K.candidates(K.derive({ title: 'ホーム', text: '' }), { title: 'ホーム', text: '' }, 'restaurant', 20);
   expect('set: no base and no brand -> empty', none.length, 0);
   expect('shopName prefers structured name', K.shopName({ ldName: 'そば処 テスト', ogSiteName: 'TEST', title: 'TOP | x' }), 'そば処 テスト');

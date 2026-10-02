@@ -151,7 +151,7 @@
   var SUBPAGE_ROLES = [
     { key: 'menu', re: /メニュー|お品書き|料理|料金|価格|プラン|menu|price|plan/i },
     { key: 'access', re: /アクセス|地図|所在地|店舗情報|店舗案内|会社概要|医院案内|クリニック案内|access|map|shop|store|about|company/i },
-    { key: 'reserve', re: /予約|reserve|reservation|booking/i },
+    { key: 'reserve', re: /予約|\breserv(?:e|ation|ations)\b|booking/i },
     { key: 'faq', re: /よくある質問|よくあるご質問|ご質問|faq|q&a/i }
   ];
   function pickSubpages(links, baseUrl, max) {
