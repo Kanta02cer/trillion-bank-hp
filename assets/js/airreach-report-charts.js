@@ -279,7 +279,7 @@
     return '<ul class="arv-ready">' + items.map(function (it) {
       // href があれば、その作業をする画面へのリンクにする（まだのものは「やる」を添える）
       var inner = '<span class="arv-ready-i" aria-hidden="true">' + (it.ok ? '✓' : '—') + '</span>' +
-        '<span><b>' + esc(it.label) + '</b><small>' + esc(it.note || (it.ok ? 'あり' : '未登録')) + (it.href && !it.ok ? ' <span class="arv-ready-go">→ やる</span>' : '') + '</small></span>';
+        '<span><b>' + esc(it.label) + '</b><small>' + esc(it.note || (it.ok ? 'あり' : '未登録')) + (it.href && !it.ok ? ' <span class="arv-ready-go">→ ' + esc(it.go || '開く') + '</span>' : '') + '</small></span>';
       return '<li class="' + (it.ok ? 'is-ok' : 'is-ng') + '">' + (it.href ? '<a class="arv-ready-a" href="' + esc(it.href) + '">' + inner + '</a>' : inner) + '</li>';
     }).join('') + '</ul>';
   }
