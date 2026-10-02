@@ -27,6 +27,28 @@
   function diff(a, b) { return a == null || b == null ? null : Math.round((Number(a) - Number(b)) * 10) / 10; }
   function ym(s) { var t = String(s || ''); return t.slice(0, 4) + '年' + Number(t.slice(5, 7)) + '月'; }
 
+  // AI が参照したページ（対象のURLが引用された記録と、参照されたサイトの上位）
+  function citedHtml(ai) {
+    var tc = (ai && ai.targetCitations) || [], cd = (ai && ai.citedDomains) || [];
+    if (!tc.length && !cd.length) return '<p class="arr-note">AIが参照したページの記録はありません（出典の URL を返さない AI、または記録を取り込んでいない計測です）。</p>';
+    var provs = [];
+    cd.forEach(function (x) { Object.keys(x.counts || {}).forEach(function (k) { if (provs.indexOf(k) < 0) provs.push(k); }); });
+    return '<h3 class="arr-h3">AIが参照したページ</h3>' +
+      (tc.length ? '<table class="arr-table"><thead><tr><th>質問</th><th>AI</th><th>引用されたページ</th></tr></thead><tbody>' + tc.slice(0, 12).map(function (x) {
+        return '<tr><td>' + esc(x.query) + '</td><td>' + esc(prov(x.provider)) + '</td><td class="arr-url"><a href="' + esc(x.url) + '">' + esc(x.url) + '</a></td></tr>';
+      }).join('') + '</tbody></table>' + (tc.length > 12 ? '<p class="arr-note">ほか ' + (tc.length - 12) + ' 件</p>' : '') : '<p class="arr-sub">この計測では、対象のページが出典として引用された回答はありませんでした。</p>') +
+      (cd.length ? '<p class="arr-sub">AI が出典として参照したサイト（回答の数・上位' + cd.length + '）</p><table class="arr-table"><thead><tr><th>サイト</th>' + provs.map(function (k) { return '<th>' + esc(prov(k)) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        cd.map(function (x) { return '<tr><td class="arr-url">' + esc(x.host) + '</td>' + provs.map(function (k) { return '<td>' + v(x.counts[k] || 0) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>' : '');
+  }
+  // 数字の出どころ
+  function evidenceHtml(c) {
+    var R = window.AirReachReport;
+    if (!R || !R.evidenceList) return '';
+    return '<section><h2 class="arr-h2">数字の出どころ</h2><table class="arr-table arr-ev"><thead><tr><th>数字</th><th>取得元</th><th>条件</th></tr></thead><tbody>' +
+      R.evidenceList(c).map(function (e) { return '<tr><th>' + esc(e.label) + '</th><td>' + esc(e.source) + '</td><td>' + esc(e.detail || '—') + '</td></tr>'; }).join('') +
+      '</tbody></table></section>';
+  }
+
   function render(r) {
     var c = r.compiled || {};
     var site = c.site || {}, cur = site.current || null, prev = site.previous || null;
@@ -82,7 +104,8 @@
         C.aiCompare(c) +
         '<table class="arr-table"><thead><tr><th>AI</th><th>質問した回数</th><th>公式サイトが出典になった割合</th><th>店名・社名が出た割合</th><th>取得できなかった回数</th></tr></thead><tbody>' +
         ai.providers.map(function (p) { return '<tr><td>' + esc(prov(p.provider)) + ' <small class="arr-na">' + esc(p.model) + '</small></td><td>' + v(p.answers) + '</td><td>' + v(p.citeRate, '%') + '</td><td>' + v(p.mentionRate, '%') + '</td><td>' + v(p.errors) + '</td></tr>'; }).join('') +
-        '</tbody></table><p class="arr-note">同じ質問をAIに複数回して集計。計測は無料枠のモデルで行っており、一般の人が使う最新の ChatGPT・Gemini とは結果が異なることがあります。</p>'
+        '</tbody></table><p class="arr-note">同じ質問をAIに複数回して集計。計測は無料枠のモデルで行っており、一般の人が使う最新の ChatGPT・Gemini とは結果が異なることがあります。</p>' +
+        citedHtml(ai)
         : '<p class="arr-na">今月は計測していません。</p>') + '</section>' +
       '<section><h2 class="arr-h2">数値の一覧（前月との比較）</h2><table class="arr-table"><thead><tr><th></th><th>' + esc(ym(c.previousMonth)) + '</th><th>' + esc(ym(r.period_month)) + '</th><th>差</th></tr></thead><tbody>' + kpi.join('') +
       '<tr><th>検索の表示回数</th><td>' + v(tr.gscPrev && tr.gscPrev.impressions) + '</td><td>' + v(tr.gsc && tr.gsc.impressions) + '</td><td>' + d(diff(tr.gsc && tr.gsc.impressions, tr.gscPrev && tr.gscPrev.impressions)) + '</td></tr>' +
@@ -90,6 +113,7 @@
       '<tr><th>サイトへの訪問回数</th><td>' + v(tr.ga4Prev && tr.ga4Prev.sessions) + '</td><td>' + v(tr.ga4 && tr.ga4.sessions) + '</td><td>' + d(diff(tr.ga4 && tr.ga4.sessions, tr.ga4Prev && tr.ga4Prev.sessions)) + '</td></tr>' +
       '<tr><th>AIのサービスから来た訪問回数</th><td>' + v(tr.ga4Prev && tr.ga4Prev.ai_sessions) + '</td><td>' + v(tr.ga4 && tr.ga4.ai_sessions) + '</td><td>' + d(diff(tr.ga4 && tr.ga4.ai_sessions, tr.ga4Prev && tr.ga4Prev.ai_sessions)) + '</td></tr>' +
       '</tbody></table><p class="arr-note">順位は数字が小さいほど上位。検索の数字は Google Search Console、訪問・問い合わせは Google アナリティクスの値です。数値は計測・入力された範囲のもので、順位・AIでの掲載・問い合わせ・売上を保証するものではなく、施策と数値の変化の因果関係も断定していません。</p></section>' +
+      evidenceHtml(c) +
       ((c.missing || []).length ? '<p class="arr-note">未計測の項目: ' + esc(c.missing.join('、')) + '</p>' : '') +
       '</article>';
     var pb = document.getElementById('arr-print');

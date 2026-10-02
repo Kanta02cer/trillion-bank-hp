@@ -165,6 +165,8 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-ev-v.is-allowed{color:#047857}.ar-ev-v.is-blocked{color:#b91c1c}.ar-ev-v.is-partial{color:#b45309}
 .ar-ev-pre{margin:6px 0 0;padding:8px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-all;max-height:320px;overflow:auto}
 .ar-ev-raw{margin-top:10px}.ar-ev-raw summary{cursor:pointer;font-weight:700;font-size:.9rem}
+.ar-ev-ld{margin:10px 0;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;background:#fff}
+.ar-ev-ld-type{font-weight:800;font-size:.9rem;color:#1d4ed8;margin-bottom:4px}
 .ar-ev-dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;margin:6px 0;font-size:.9rem}
 .ar-ev-dl dt{font-weight:700;color:#334155}.ar-ev-dl dd{margin:0;word-break:break-all}.ar-ev-dl ul{margin:0;padding-left:1.2em}
 @media (max-width:640px){.ar-ev-dl{grid-template-columns:1fr}.ar-ev-dl dd{margin-bottom:6px}}
@@ -1268,6 +1270,10 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
           <details class="ar-fold" id="ar-ev-proj-wrap" hidden>
             <summary>直したあとの点数の内訳<span class="ar-fold-count" id="ar-ev-proj-count"></span></summary>
             <div class="ar-fold-body"><div id="ar-ev-proj"></div></div>
+          </details>
+          <details class="ar-fold" id="ar-ev-ld-wrap" hidden>
+            <summary>構造化データの中身<span class="ar-fold-count" id="ar-ev-ld-count"></span></summary>
+            <div class="ar-fold-body"><div id="ar-ev-ld"></div></div>
           </details>
           <details class="ar-fold" id="ar-ev-robots-wrap" hidden>
             <summary>robots.txt と AI クローラー<span class="ar-fold-count" id="ar-ev-robots-count"></span></summary>
@@ -2580,6 +2586,23 @@ document.addEventListener('DOMContentLoaded', function () {
           '<ol class="ar-ev-list">' + pj.items.map(function (it, i) { return '<li' + (i < 3 ? ' class="is-top"' : '') + '><span>' + evEsc(crit(it.label, false)) + '</span><b>+' + it.gain + '点</b></li>'; }).join('') + '</ol>' +
           '<p class="ar-kwq-note">上位' + pj.top.length + 'つを直すと ' + pj.current + ' → ' + pj.afterTop + ' 点、すべて直すと ' + pj.afterAll + ' 点です。いくつかを同時に直すと、1項目ずつの点数の合計とは一致しないことがあります（分類ごとに100点に換算するため）。</p>';
       } else pw.hidden = true;
+    }
+    var lw = $('ar-ev-ld-wrap'), ld = d && d.page && d.page.ld;
+    if (lw) {
+      if (ld) {
+        lw.hidden = false;
+        var LAB = { name: '名前', url: 'URL', telephone: '電話', address: '住所', openingHours: '営業時間', openingHoursSpecification: '営業時間', priceRange: '価格帯', servesCuisine: '料理', acceptsReservations: '予約', logo: 'ロゴ', image: '画像', description: '説明', sameAs: '関連リンク', questions: 'よくある質問' };
+        $('ar-ev-ld-count').textContent = ld.scripts ? (ld.blocks.length + '件の情報（' + ld.scripts + 'か所）' + (ld.errors ? '・読めない記述 ' + ld.errors + 'か所' : '')) : '無し';
+        var pageUrl = (d.scope && d.scope.page && (d.scope.page.finalUrl || d.scope.page.url)) || (d.page && d.page.finalUrl) || '';
+        var rrt = pageUrl ? '<a href="https://search.google.com/test/rich-results?url=' + encodeURIComponent(pageUrl) + '" target="_blank" rel="noopener noreferrer">Google のリッチリザルト テストで確かめる ↗</a>' : '';
+        $('ar-ev-ld').innerHTML = !ld.scripts ? '<p class="ar-kwq-note">トップページに構造化データ（JSON-LD）がありません。' + rrt + '</p>' :
+          '<p class="ar-kwq-note">トップページの構造化データ（JSON-LD）から読み取った主な項目です。検索や AI が、お店・会社の情報として読む部分です。' + rrt + '</p>' +
+          ld.blocks.map(function (bk) {
+            var keys = Object.keys(bk.fields || {});
+            return '<div class="ar-ev-ld"><div class="ar-ev-ld-type">' + evEsc(bk.types.join(' / ')) + '</div>' + (keys.length ? '<dl class="ar-ev-dl">' + keys.map(function (k) { return '<dt>' + evEsc(LAB[k] || k) + '</dt><dd>' + evEsc(bk.fields[k]) + '</dd>'; }).join('') + '</dl>' : '<p class="ar-kwq-note">主な項目は書かれていません。</p>') + '</div>';
+          }).join('') +
+          (ld.raw && ld.raw.length ? '<details class="ar-ev-raw"><summary>元のデータ（JSON-LD）</summary>' + ld.raw.map(function (r) { return '<pre class="ar-ev-pre">' + evEsc(r) + '</pre>'; }).join('') + '</details>' : '');
+      } else lw.hidden = true;
     }
     if (rw) {
       if (rb) {

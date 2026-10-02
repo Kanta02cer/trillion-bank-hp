@@ -161,7 +161,19 @@
       };
     }).filter(function (r) { return r.provider && r.group; });
     if (!rows.length) throw new Error('summary.json に集計行がありません');
+    // AI が参照したサイト（cited_domains: [[host, {provider: 回数}]]）と、対象のURLが引用された記録（media_citations）
+    var citedDomains = (Array.isArray(d.cited_domains) ? d.cited_domains : []).map(function (x) {
+      var host = Array.isArray(x) ? x[0] : (x && x.host), counts = Array.isArray(x) ? x[1] : (x && x.counts);
+      counts = counts && typeof counts === 'object' ? counts : {};
+      var total = Object.keys(counts).reduce(function (t, k) { return t + (num(counts[k]) || 0); }, 0);
+      return { host: String(host || ''), counts: counts, total: total };
+    }).filter(function (x) { return x.host && x.host !== '(unresolved)' && x.total > 0; });
+    var targetCitations = (Array.isArray(d.media_citations) ? d.media_citations : (Array.isArray(d.target_citations) ? d.target_citations : [])).map(function (x) {
+      return { provider: String(x.provider || ''), query: String(x.query || ''), url: String(x.url || ''), matchType: String(x.match_type || '') };
+    }).filter(function (x) { return /^https?:\/\//.test(x.url); });
     return {
+      citedDomains: citedDomains,
+      targetCitations: targetCitations,
       runId: String(d.run_id || ''),
       generatedAt: String(d.generated_at || ''),
       querySetVersion: String(d.query_set_version || ''),
@@ -238,6 +250,9 @@
     var use = main.length ? main : parsed.rows.filter(function (r) { return r.group === 'all'; });
     return {
       measuredOn: run.measured_on,
+      source: run.source || '',
+      citedDomains: parsed.citedDomains.slice(0, 10),
+      targetCitations: parsed.targetCitations,
       querySetVersion: parsed.querySetVersion || run.query_set_version || '',
       providers: use.map(function (r) {
         return { provider: r.provider, model: r.model, answers: r.answers, citeRate: r.citeRate, mentionRate: r.mentionRate, sov: r.sov, competitorMentionRates: r.competitorMentionRates, errors: r.errors };
@@ -280,7 +295,7 @@
     var gapsNow = scanNow ? (scanNow.gaps || []).map(gapText) : [];
     var gapsPrev = scanPrev ? (scanPrev.gaps || []).map(gapText) : [];
     var site = {
-      current: scanNow ? { id: scanNow.id, createdAt: scanNow.createdAt, url: scanNow.url, overall: scanNow.overallScore, factors: scanNow.factors || {}, gaps: gapsNow, gapKeys: (scanNow.gaps || []).slice(), unknownChecks: scanNow.unknownChecks || 0, inMonth: inMonth(scanNow.createdAt, m) } : null,
+      current: scanNow ? { id: scanNow.id, createdAt: scanNow.createdAt, url: scanNow.url, ruleVersion: scanNow.ruleVersion || null, overall: scanNow.overallScore, factors: scanNow.factors || {}, gaps: gapsNow, gapKeys: (scanNow.gaps || []).slice(), unknownChecks: scanNow.unknownChecks || 0, inMonth: inMonth(scanNow.createdAt, m) } : null,
       previous: scanPrev ? { id: scanPrev.id, createdAt: scanPrev.createdAt, overall: scanPrev.overallScore, gaps: gapsPrev } : null,
       overallDelta: scanNow && scanPrev ? delta(scanNow.overallScore, scanPrev.overallScore) : null,
       resolved: scanPrev ? gapsPrev.filter(function (g) { return gapsNow.indexOf(g) < 0; }) : [],
@@ -294,7 +309,8 @@
     var ai = null;
     if (aiNow) {
       ai = {
-        measuredOn: aiNow.measuredOn, querySetVersion: aiNow.querySetVersion,
+        measuredOn: aiNow.measuredOn, querySetVersion: aiNow.querySetVersion, source: aiNow.source,
+        citedDomains: aiNow.citedDomains, targetCitations: aiNow.targetCitations,
         comparable: !!(aiPrev && aiPrev.querySetVersion === aiNow.querySetVersion),
         providers: aiNow.providers.map(function (r) {
           var prev = aiPrev ? aiPrev.providers.filter(function (x) { return x.provider === r.provider; })[0] : null;
@@ -383,7 +399,28 @@
     };
   }
 
-  var api = { gapText: gapText, plainGap: plainGap, plainResolved: plainResolved, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
+  // 数字の出どころ（レポートの各数字が、どこから・いつ・どの条件で取ったものか）
+  var PROV_JA = { openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity' };
+  var SRC_JA = { gsc_api: 'Google Search Console（連携で取得）', gsc_csv: 'Google Search Console（CSV を取り込み）', ga4_api: 'Google アナリティクス（連携で取得）', ga4_manual: 'Google アナリティクス（担当者が入力）' };
+  function evidenceList(c) {
+    var out = [];
+    var cur = c && c.site && c.site.current;
+    out.push({ label: 'ホームページの情報整備（点数・直すこと）', source: cur ? 'AirReach の無料診断' : '診断の記録なし',
+      detail: cur ? (String(cur.createdAt || '').slice(0, 10) + ' に ' + (cur.url || '') + ' のトップページと案内ファイル（llms.txt・robots.txt）を診断' + (cur.ruleVersion ? '・判定基準 ' + cur.ruleVersion : '') + (cur.inMonth ? '' : '（当月の診断が無いため、この日の結果）')) : '' });
+    var ai = c && c.ai;
+    out.push({ label: 'AI回答の計測（出典になった割合・名前が出た割合・競合と比べた割合）', source: ai ? (ai.source === 'manual' ? 'AirReach Studio での計測' : '社内の計測（同じ質問を AI に複数回聞いて集計）') : '計測の記録なし',
+      detail: ai ? ('計測日 ' + ai.measuredOn + '・質問の版 ' + (ai.querySetVersion || '—') + '・' + ai.providers.map(function (p) { return (PROV_JA[p.provider] || p.provider) + (p.model ? '（' + p.model + '）' : '') + (p.answers != null ? ' ' + p.answers + '回答' : ''); }).join('、')) : '' });
+    var tr = (c && c.traffic) || {};
+    var g = tr.gsc, a = tr.ga4;
+    out.push({ label: '検索からのクリック・表示回数・平均の順位', source: g ? (SRC_JA[g.source] || g.source) : '未取得',
+      detail: g ? (((g.start_date && g.end_date) ? g.start_date + '〜' + g.end_date + (g.days ? '（' + g.days + '日間）' : '') : '対象月') + (g.property ? '・' + g.property : '') + (g.source === 'gsc_api' ? '・サイト全体の合計' : '')) : '' });
+    out.push({ label: '訪問回数・AIのサービスから来た訪問・問い合わせ', source: a ? (SRC_JA[a.source] || a.source) : '未取得',
+      detail: a ? (((a.start_date && a.end_date) ? a.start_date + '〜' + a.end_date : '対象月') + (a.host ? '・' + a.host : '') + (a.source === 'ga4_api' ? '・問い合わせは GA4 のキーイベントの合計・AI 経由は参照元が AI サービス（ChatGPT・Perplexity・Gemini など）の訪問' : '')) : '' });
+    out.push({ label: '今月実施したこと', source: 'AirReach の施策台帳', detail: '担当者が登録した実施日と、公開ページの URL（証拠）' });
+    return out;
+  }
+
+  var api = { evidenceList: evidenceList, gapText: gapText, plainGap: plainGap, plainResolved: plainResolved, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachReport = api;
 })(typeof window !== 'undefined' ? window : null);

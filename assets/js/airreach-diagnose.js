@@ -220,13 +220,37 @@
     var ldAddress = [];
     var ldCuisine = [];
     var ldName = '';
+    // 構造化データの中身（画面で根拠として見せる分だけ。各ブロックの主な項目と、元の JSON の先頭）
+    var ldBlocks = [], ldRaw = [], ldErrors = 0;
+    function ldStr(v) {
+      if (v == null) return '';
+      if (typeof v === 'string' || typeof v === 'number') return String(v);
+      if (Array.isArray(v)) return v.map(ldStr).filter(Boolean).join('、');
+      if (typeof v === 'object') {
+        if (v['@type'] === 'PostalAddress' || v.streetAddress || v.addressLocality) return [v.postalCode, v.addressRegion, v.addressLocality, v.streetAddress].filter(Boolean).join(' ');
+        return v.name || v['@id'] || v.url || '';
+      }
+      return '';
+    }
     ldNodes.forEach(function (node) {
+      var rawText = String(node.textContent || '').trim();
+      if (ldRaw.length < 3) ldRaw.push(rawText.length > 2000 ? rawText.slice(0, 2000) + '…' : rawText);
       try {
         var data = JSON.parse(node.textContent);
         var items = Array.isArray(data) ? data : [data];
         items.forEach(function walk(it) {
           if (!it || typeof it !== 'object') return;
           var t = it['@type'];
+          if (t && ldBlocks.length < 12) {
+            var f = {};
+            ['name', 'url', 'telephone', 'address', 'openingHours', 'openingHoursSpecification', 'priceRange', 'servesCuisine', 'acceptsReservations', 'logo', 'image', 'description'].forEach(function (k) {
+              var val = ldStr(it[k]); if (val) f[k] = val.length > 140 ? val.slice(0, 140) + '…' : val;
+            });
+            if (Array.isArray(it.sameAs)) f.sameAs = it.sameAs.length + '件';
+            var ents = (t === 'FAQPage' || (Array.isArray(t) && t.indexOf('FAQPage') >= 0)) && Array.isArray(it.mainEntity) ? it.mainEntity : null;
+            if (ents) f.questions = ents.slice(0, 5).map(function (q) { return ldStr(q && q.name); }).filter(Boolean).join(' ／ ') + (ents.length > 5 ? ' ほか' : '') + '（' + ents.length + '問）';
+            ldBlocks.push({ types: (Array.isArray(t) ? t : [t]).map(String), fields: f });
+          }
           if (Array.isArray(t)) t.forEach(function (x) { types[x] = true; });
           else if (typeof t === 'string') types[t] = true;
           var tList = Array.isArray(t) ? t : [t];
@@ -242,7 +266,7 @@
           }
           if (Array.isArray(it['@graph'])) it['@graph'].forEach(walk);
         });
-      } catch (e) { /* ignore */ }
+      } catch (e) { ldErrors++; }
     });
     var faqNodes = doc.querySelectorAll('[itemtype*="FAQPage"], .faq, #faq, [aria-labelledby*="faq"]');
     var visibleFaq = faqNodes.length;
@@ -271,6 +295,7 @@
       robotsMeta: robotsMeta,
       ogTitle: ogTitle,
       types: types,
+      ld: { blocks: ldBlocks, raw: ldRaw, scripts: ldNodes.length, errors: ldErrors },
       faqCount: faqCount,
       visibleFaq: visibleFaq,
       faqAnchor: faqAnchor,
@@ -584,6 +609,7 @@
         title: page.title,
         h1: page.h1[0] || '',
         types: Object.keys(page.types).sort(),
+        ld: page.ld || null,
         faqCount: page.faqCount,
         faqAnchor: page.faqAnchor,
         hasLlms: llmsKnown ? !!(llmsText && llmsText.length > 80) : null,
