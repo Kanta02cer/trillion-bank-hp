@@ -10,6 +10,8 @@ Change ID（DEV-YYYY-NNN）の承認後にだけ使う。各手順は単独で�
   python3 scripts/airreach-api/phase2-apply.py auth-config             # ログインの戻り先・日本語メール（SMTP は smtp.json があれば）
   python3 scripts/airreach-api/phase2-apply.py auth-hook               # 登録済みのメールだけがアカウントを作れるフックを有効化
   python3 scripts/airreach-api/phase2-apply.py anon-key-to-vercel      # 公開用キーを Vercel 本番の SUPABASE_ANON_KEY に登録
+  python3 scripts/airreach-api/phase2-apply.py apply-report-2026-10      # 10月の追加: レポートの根拠＋承認フロー（2本）を適用して検証
+  python3 scripts/airreach-api/phase2-apply.py set-approver <email> on|off  # 月次レポートの承認者を設定（apply-report-2026-10 の後）
 
 Supabase のアクセストークン（Account → Access Tokens で発行・期限つき推奨）は、
 ~/.config/airreach/supabase_token（chmod 600）に置く。画面にもログにも出さない。
@@ -32,6 +34,11 @@ ROOT = Path(__file__).resolve().parents[2]
 MIGRATIONS = [
     ('airreach_phase2_auth_reports', ROOT / 'supabase/migrations/20260930120000_airreach_phase2_auth_reports.sql'),
     ('airreach_phase2_signup_guard', ROOT / 'supabase/migrations/20260930130000_airreach_phase2_signup_guard.sql'),
+]
+# 2026-10 の追加（レポートの根拠を返す・承認フロー）。どちらも Phase 2 の後に適用する
+MIGRATIONS_2026_10 = [
+    ('airreach_report_evidence', ROOT / 'supabase/migrations/20261002120000_airreach_report_evidence.sql'),
+    ('airreach_report_approval', ROOT / 'supabase/migrations/20261002130000_airreach_report_approval.sql'),
 ]
 HOOK_URI = 'pg-functions://postgres/public/airreach_before_user_created'
 CONF_DIR = Path.home() / '.config/airreach'
@@ -186,6 +193,43 @@ def cmd_add_staff(email, role):
     print('社内メンバー:', sql('select email, role from public.staff_members order by email', True))
 
 
+def cmd_apply_report_2026_10():
+    confirm_project()
+    if 'reports' not in tables():
+        die('Phase 2 の reports がありません。先に apply-db を実行してください')
+    for name, path in MIGRATIONS_2026_10:
+        call('POST', f'/projects/{REF}/database/migrations', {'name': name, 'query': path.read_text()})
+        print('migration を適用しました:', name)
+    checks = [
+        ('airreach_client_scans が根拠（checks・scope）を返す',
+         "select (position('''checks''' in pg_get_functiondef('public.airreach_client_scans(uuid,integer)'::regprocedure)) > 0 and position('''scope''' in pg_get_functiondef('public.airreach_client_scans(uuid,integer)'::regprocedure)) > 0) as ok"),
+        ('reports に承認のトリガがある', "select exists(select 1 from pg_trigger where tgname = 'reports_guard' and not tgisinternal) as ok"),
+        ('reports の状態に確認待ち・承認済みがある', "select position('in_review' in pg_get_constraintdef(oid)) > 0 as ok from pg_constraint where conname = 'reports_status_check'"),
+        ('report_events は RLS 有効・anon に権限なし', "select (select relrowsecurity from pg_class where oid = 'public.report_events'::regclass) and not exists(select 1 from information_schema.role_table_grants where table_name = 'report_events' and grantee = 'anon') as ok"),
+        ('airreach_me が can_approve を返す', "select position('can_approve' in pg_get_functiondef('public.airreach_me()'::regprocedure)) > 0 as ok"),
+    ]
+    bad = 0
+    for label, q in checks:
+        r = sql(q, True)
+        ok = bool(r and r[0].get('ok'))
+        bad += 0 if ok else 1
+        print(('OK  ' if ok else 'NG  ') + label)
+    if bad:
+        die(f'検証で {bad} 件が想定と違います。supabase/rollback/ の SQL で戻すか判断してください')
+    print('承認者はまだいません。set-approver <email> on で設定してください')
+
+
+def cmd_set_approver(email, flag):
+    email = email.strip().lower()
+    if flag not in ('on', 'off') or '@' not in email or "'" in email:
+        die('使い方: set-approver <email> on|off')
+    confirm_project()
+    r = sql(f"update public.staff_members set can_approve = {'true' if flag == 'on' else 'false'} where email = '{email}' returning email")
+    if not r:
+        die(f'{email} は社内メンバーに登録されていません。先に add-staff で登録してください')
+    print('承認者:', sql('select email, role, can_approve from public.staff_members where can_approve order by email', True))
+
+
 MAIL_BODY = '''<h2>AirReach ログイン</h2>
 <p>下のリンクを押すと AirReach にログインします。このメールに心当たりがない場合は、何もせずに削除してください。</p>
 <p><a href="{{ .ConfirmationURL }}">ログインする</a></p>
@@ -271,11 +315,13 @@ def cmd_anon_key_to_vercel():
 def main():
     a = sys.argv[1:]
     cmds = {'check': cmd_check, 'apply-db': cmd_apply_db, 'auth-config': cmd_auth_config, 'auth-hook': cmd_auth_hook,
-            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'verify': lambda: (confirm_project(), verify())}
+            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'verify': lambda: (confirm_project(), verify())}
     if a and a[0] in cmds and len(a) == 1:
         cmds[a[0]]()
     elif a and a[0] == 'add-staff' and len(a) == 3:
         cmd_add_staff(a[1], a[2])
+    elif a and a[0] == 'set-approver' and len(a) == 3:
+        cmd_set_approver(a[1], a[2])
     else:
         print(__doc__)
         sys.exit(0 if not a else 2)

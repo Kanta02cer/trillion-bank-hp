@@ -154,6 +154,22 @@ body.ar-gated header,body.ar-gated footer{filter:blur(10px);pointer-events:none;
 .ar-error.is-on{display:block}
 .ar-sec{padding:clamp(28px,5vw,52px) 0}
 .ar-empty{padding:20px 0;color:#64748b;font-size:1.05rem}
+.ar-when{color:#64748b}
+.ar-ev-list{margin:8px 0;padding-left:1.4em;display:grid;gap:6px}
+.ar-ev-list li{display:flex;justify-content:space-between;gap:12px;font-size:.92rem;line-height:1.5}
+.ar-ev-list li.is-top{font-weight:700}
+.ar-ev-list b{white-space:nowrap;color:#1d4ed8;font-variant-numeric:tabular-nums}
+.ar-ev-scroll{overflow-x:auto}
+.ar-ev-table td{vertical-align:top}
+.ar-ev-v{font-weight:800;white-space:nowrap}
+.ar-ev-v.is-allowed{color:#047857}.ar-ev-v.is-blocked{color:#b91c1c}.ar-ev-v.is-partial{color:#b45309}
+.ar-ev-pre{margin:6px 0 0;padding:8px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-all;max-height:320px;overflow:auto}
+.ar-ev-raw{margin-top:10px}.ar-ev-raw summary{cursor:pointer;font-weight:700;font-size:.9rem}
+.ar-ev-ld{margin:10px 0;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;background:#fff}
+.ar-ev-ld-type{font-weight:800;font-size:.9rem;color:#1d4ed8;margin-bottom:4px}
+.ar-ev-dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;margin:6px 0;font-size:.9rem}
+.ar-ev-dl dt{font-weight:700;color:#334155}.ar-ev-dl dd{margin:0;word-break:break-all}.ar-ev-dl ul{margin:0;padding-left:1.2em}
+@media (max-width:640px){.ar-ev-dl{grid-template-columns:1fr}.ar-ev-dl dd{margin-bottom:6px}}
 .ar-empty-idle p{margin:0 0 12px;line-height:1.6}
 .ar-loading{max-width:560px;padding:20px 22px;border:1px solid #dbeafe;border-radius:14px;background:#f8fbff;color:#0f172a}
 .ar-loading[hidden],.ar-empty-idle[hidden]{display:none}
@@ -1253,6 +1269,23 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
             <ul class="ar-detail-checks" id="ar-kwq-list"></ul>
             </div>
           </details>
+          <!-- 根拠: 直したあとの点数の内訳・robots.txt と AI クローラー・診断の範囲と日時（顧客向けレポートの数字を画面で確かめられるようにする） -->
+          <details class="ar-fold" id="ar-ev-proj-wrap" hidden>
+            <summary>直したあとの点数の内訳<span class="ar-fold-count" id="ar-ev-proj-count"></span></summary>
+            <div class="ar-fold-body"><div id="ar-ev-proj"></div></div>
+          </details>
+          <details class="ar-fold" id="ar-ev-ld-wrap" hidden>
+            <summary>構造化データの中身<span class="ar-fold-count" id="ar-ev-ld-count"></span></summary>
+            <div class="ar-fold-body"><div id="ar-ev-ld"></div></div>
+          </details>
+          <details class="ar-fold" id="ar-ev-robots-wrap" hidden>
+            <summary>robots.txt と AI クローラー<span class="ar-fold-count" id="ar-ev-robots-count"></span></summary>
+            <div class="ar-fold-body"><div id="ar-ev-robots"></div></div>
+          </details>
+          <details class="ar-fold" id="ar-ev-scope-wrap" hidden>
+            <summary>診断の範囲と日時<span class="ar-fold-count" id="ar-ev-scope-count"></span></summary>
+            <div class="ar-fold-body"><div id="ar-ev-scope"></div></div>
+          </details>
           <details class="ar-fold" id="ar-detail-checks-wrap">
             <summary>検出されたその他の項目<span class="ar-fold-count" id="ar-detail-checks-count"></span></summary>
             <div class="ar-fold-body">
@@ -1814,7 +1847,9 @@ document.addEventListener('DOMContentLoaded', function () {
     })();
     var urlShown = report.url || lastUrl || '';
     $('ar-industry-line').innerHTML = (urlShown ? '<a href="' + urlShown.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener noreferrer">' + urlShown.replace(/</g, '&lt;') + ' ↗</a> · ' : '') +
-      'お店・会社：<b>' + (report.industryLabel || '—') + '</b>' + (report.keyword ? ' · 調べた言葉：<b>「' + report.keyword.replace(/</g, '&lt;') + '」</b>' : '');
+      'お店・会社：<b>' + (report.industryLabel || '—') + '</b>' + (report.keyword ? ' · 調べた言葉：<b>「' + report.keyword.replace(/</g, '&lt;') + '」</b>' : '') +
+      (lastDiagnose && lastDiagnose.fetchedAt ? ' · <span class="ar-when">' + evWhen(lastDiagnose.fetchedAt) + ' 時点</span>' : '');
+    renderEvidence(lastDiagnose);
     $('ar-subtitle').textContent = '件数・点数は参考の目安で、掲載・順位・成果を保証するものではありません。';
     $('ar-disc').textContent = report.disclaimer;
     $('ar-confidence').textContent = String(report.confidence);
@@ -2531,6 +2566,79 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     var c = $('ar-inq-clear');
     if (c) c.addEventListener('click', function () { applyInq(0); var first = document.querySelector('#ar-inq-form [data-inq]'); if (first) first.focus(); });
+  }
+
+  // ---- 根拠の表示（直したあとの点数の内訳・robots.txt と AI クローラー・診断の範囲と日時） ----
+  function evEsc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function evWhen(iso) {
+    var d = new Date(iso); if (isNaN(d)) return '';
+    function p2(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes());
+  }
+  function evStatus(state, status) {
+    if (state === 'ok') return '取得できた（HTTP ' + (status || '—') + '）';
+    if (state === 'missing') return '無い（HTTP ' + (status || '—') + '）';
+    return '取得できなかった';
+  }
+  function renderEvidence(d) {
+    var crit = (window.AirReach && window.AirReach.checkCriteria) || function (l) { return l; };
+    var pj = d && d.projection, rb = d && d.robots, sc = d && d.scope;
+    var pw = $('ar-ev-proj-wrap'), rw = $('ar-ev-robots-wrap'), sw = $('ar-ev-scope-wrap');
+    if (pw) {
+      if (pj && pj.items && pj.items.length) {
+        pw.hidden = false;
+        $('ar-ev-proj-count').textContent = pj.current + ' → ' + pj.afterTop + '（上位' + pj.top.length + 'つ）／' + pj.afterAll + '（すべて）';
+        $('ar-ev-proj').innerHTML = '<p class="ar-kwq-note">満たしていない項目を直したと仮定して、診断と同じ計算式で点数を出し直したものです。1項目ずつ直した場合に上がる点数の大きい順です。</p>' +
+          '<ol class="ar-ev-list">' + pj.items.map(function (it, i) { return '<li' + (i < 3 ? ' class="is-top"' : '') + '><span>' + evEsc(crit(it.label, false)) + '</span><b>+' + it.gain + '点</b></li>'; }).join('') + '</ol>' +
+          '<p class="ar-kwq-note">上位' + pj.top.length + 'つを直すと ' + pj.current + ' → ' + pj.afterTop + ' 点、すべて直すと ' + pj.afterAll + ' 点です。いくつかを同時に直すと、1項目ずつの点数の合計とは一致しないことがあります（分類ごとに100点に換算するため）。</p>';
+      } else pw.hidden = true;
+    }
+    var lw = $('ar-ev-ld-wrap'), ld = d && d.page && d.page.ld;
+    if (lw) {
+      if (ld) {
+        lw.hidden = false;
+        var LAB = { name: '名前', url: 'URL', telephone: '電話', address: '住所', openingHours: '営業時間', openingHoursSpecification: '営業時間', priceRange: '価格帯', servesCuisine: '料理', acceptsReservations: '予約', logo: 'ロゴ', image: '画像', description: '説明', sameAs: '関連リンク', questions: 'よくある質問' };
+        $('ar-ev-ld-count').textContent = ld.scripts ? (ld.blocks.length + '件の情報（' + ld.scripts + 'か所）' + (ld.errors ? '・読めない記述 ' + ld.errors + 'か所' : '')) : '無し';
+        var pageUrl = (d.scope && d.scope.page && (d.scope.page.finalUrl || d.scope.page.url)) || (d.page && d.page.finalUrl) || '';
+        var rrt = pageUrl ? '<a href="https://search.google.com/test/rich-results?url=' + encodeURIComponent(pageUrl) + '" target="_blank" rel="noopener noreferrer">Google のリッチリザルト テストで確かめる ↗</a>' : '';
+        $('ar-ev-ld').innerHTML = !ld.scripts ? '<p class="ar-kwq-note">トップページに構造化データ（JSON-LD）がありません。' + rrt + '</p>' :
+          '<p class="ar-kwq-note">トップページの構造化データ（JSON-LD）から読み取った主な項目です。検索や AI が、お店・会社の情報として読む部分です。' + rrt + '</p>' +
+          ld.blocks.map(function (bk) {
+            var keys = Object.keys(bk.fields || {});
+            return '<div class="ar-ev-ld"><div class="ar-ev-ld-type">' + evEsc(bk.types.join(' / ')) + '</div>' + (keys.length ? '<dl class="ar-ev-dl">' + keys.map(function (k) { return '<dt>' + evEsc(LAB[k] || k) + '</dt><dd>' + evEsc(bk.fields[k]) + '</dd>'; }).join('') + '</dl>' : '<p class="ar-kwq-note">主な項目は書かれていません。</p>') + '</div>';
+          }).join('') +
+          (ld.raw && ld.raw.length ? '<details class="ar-ev-raw"><summary>元のデータ（JSON-LD）</summary>' + ld.raw.map(function (r) { return '<pre class="ar-ev-pre">' + evEsc(r) + '</pre>'; }).join('') + '</details>' : '');
+      } else lw.hidden = true;
+    }
+    if (rw) {
+      if (rb) {
+        rw.hidden = false;
+        var V = { allowed: '許可', blocked: '拒否', partial: '一部のページを拒否' };
+        $('ar-ev-robots-count').textContent = evStatus(rb.state, rb.status);
+        var rows = (rb.bots || []).map(function (b) {
+          var via = b.via === 'own' ? 'このボット向けの記載' : (b.via === 'star' ? '記載なし（全ボット共通「*」の規則）' : '記載なし（規則なし＝許可）');
+          return '<tr><td><b>' + evEsc(b.name) + '</b><br><small>' + evEsc(b.org) + '</small></td><td class="ar-ev-v is-' + evEsc(b.verdict) + '">' + evEsc(V[b.verdict] || b.verdict) + '</td><td><small>' + evEsc(via) + '</small>' +
+            (b.lines && b.lines.length ? '<pre class="ar-ev-pre">' + b.lines.map(function (l) { return evEsc(l.n + ': ' + l.text); }).join('\n') + '</pre>' : '') + '</td></tr>';
+        }).join('');
+        $('ar-ev-robots').innerHTML = '<p class="ar-kwq-note">' + evEsc(rb.url || '') + ' — ' + evEsc(evStatus(rb.state, rb.status)) + (rb.fetchedAt ? '（' + evWhen(rb.fetchedAt) + ' 取得）' : '') + '。トップページ（/）を読みに来たときに許可されるかを、robots.txt の規則から判定しています。「一部のページを拒否」は、管理画面など一部のパスだけを拒否している状態で、よくある設定です。</p>' +
+          (rows ? '<div class="ar-ev-scroll"><table class="ar-kwc ar-ev-table"><thead><tr><th scope="col">AI クローラー</th><th scope="col">判定</th><th scope="col">根拠の行</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<p class="ar-kwq-note">robots.txt が無い、または取得できなかったため、判定していません（robots.txt が無い場合、一般には全て許可と扱われます）。</p>') +
+          (rb.lines && rb.lines.length ? '<details class="ar-ev-raw"><summary>robots.txt の中身' + (rb.truncated ? '（先頭60行）' : '') + '</summary><pre class="ar-ev-pre">' + rb.lines.map(evEsc).join('\n') + '</pre></details>' : '');
+      } else rw.hidden = true;
+    }
+    if (sw) {
+      if (sc) {
+        sw.hidden = false;
+        var okSubs = (sc.subpages || []).filter(function (x) { return x.ok; }).length;
+        $('ar-ev-scope-count').textContent = evWhen(sc.diagnosedAt) + '・' + (1 + okSubs) + 'ページ';
+        $('ar-ev-scope').innerHTML = '<dl class="ar-ev-dl">' +
+          '<dt>診断日時</dt><dd>' + evEsc(evWhen(sc.diagnosedAt)) + '（トップページを取得した時刻）</dd>' +
+          '<dt>点数に使ったページ</dt><dd>' + evEsc(sc.page.finalUrl || sc.page.url) + '（' + evEsc(evStatus('ok', sc.page.status)) + (sc.page.via ? '・当社の取得サーバー経由' : '') + '）</dd>' +
+          '<dt>答えの判定に読んだ下層ページ</dt><dd>' + ((sc.subpages || []).length ? '<ul>' + sc.subpages.map(function (x) { return '<li>' + evEsc(x.url) + (x.ok ? '' : '（取得できず）') + '</li>'; }).join('') + '</ul>' : 'なし') + '</dd>' +
+          '<dt>llms.txt</dt><dd>' + evEsc(sc.llms.url || '') + '（' + evEsc(evStatus(sc.llms.state, sc.llms.status)) + '）</dd>' +
+          '<dt>robots.txt</dt><dd>' + evEsc(sc.robots.url || '') + '（' + evEsc(evStatus(sc.robots.state, sc.robots.status)) + '）</dd>' +
+          '</dl><p class="ar-kwq-note">点数はトップページ1枚と案内ファイルから計算しています。下層ページは「お客さんが調べそうな言葉」に答えがあるかの判定にだけ使います。</p>';
+      } else sw.hidden = true;
+    }
   }
 
   function buildReport(diagnose) {

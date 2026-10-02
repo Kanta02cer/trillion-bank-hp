@@ -11,6 +11,7 @@
 import { ApiError } from './errors.js';
 import { DISPLAY_VERSIONS, FACTOR_IDS, RULES } from './rules.js';
 import { UrlIssue, normalizeSiteUrl, sanitizeHttpUrl } from './url.js';
+import { ldOut, robotsOut, scopeOut } from './evidence-extra.js';
 export const SCAN_ID_RE = /^[a-z0-9]{8,32}$/;
 const INDUSTRY_RE = /^[a-z0-9_]{1,32}$/;
 const OUTCOME_RE = /^[a-z_]{1,32}$/;
@@ -482,6 +483,8 @@ export function validateScanRequest(body) {
         hasRobots: boolOrNull(issues, 'result.page.hasRobots', pageIn.hasRobots),
         baseHref: urlOrNull(issues, 'result.page.baseHref', pageIn.baseHref),
         finalUrl: urlOrNull(issues, 'result.page.finalUrl', pageIn.finalUrl),
+        // 構造化データの中身（任意・崩れていれば捨てる）
+        ld: ldOut(pageIn.ld),
     };
     const reviewIn = isObj(resultIn.review) ? resultIn.review : {};
     const review = {
@@ -518,6 +521,9 @@ export function validateScanRequest(body) {
         evidence: evidenceOut,
         review,
         page,
+        // 診断の範囲と AI ボットの許可・拒否（任意・崩れていれば捨てる）
+        scope: scopeOut(resultIn.scope),
+        robots: robotsOut(resultIn.robots),
     };
     if (issues.any)
         throw ApiError.validation(issues.list);

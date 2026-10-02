@@ -35,6 +35,21 @@
   function hostOf(u) {
     try { return new URL(/^https?:\/\//.test(u) ? u : 'https://' + u).hostname.toLowerCase().replace(/^www\./, ''); } catch (e) { return ''; }
   }
+  // レポートの状態。承認フロー（DB の migration 20261002130000）が入っているかは airreach_me の can_approve の有無で見る
+  var REPORT_STATUS = { draft: ['下書き', ''], in_review: ['確認待ち', 'is-warn'], approved: ['承認済み・未公開', 'is-warn'], published: ['公開', 'is-ok'] };
+  function approvalOn() { return !!me && Object.prototype.hasOwnProperty.call(me, 'can_approve'); }
+  function statusChip(st, prefix) { var x = REPORT_STATUS[st] || [st, '']; return '<span class="arc-chip ' + x[1] + '">' + esc((prefix || '') + x[0]) + '</span>'; }
+  function jst(iso) { if (!iso) return ''; var t = Date.parse(iso); if (isNaN(t)) return ''; var d = new Date(t + 9 * 3600 * 1000); function z(n) { return (n < 10 ? '0' : '') + n; } return d.getUTCFullYear() + '-' + z(d.getUTCMonth() + 1) + '-' + z(d.getUTCDate()) + ' ' + z(d.getUTCHours()) + ':' + z(d.getUTCMinutes()); }
+  // お客様へのログイン用メール。implicit フロー（supabase-js の既定）なので、送った人のブラウザに縛られず、お客様のブラウザで開ける
+  function sendLoginMail(email) {
+    return sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + '/airreach/app/', shouldCreateUser: true } }).then(function (res) {
+      if (res && res.error) {
+        var m = String(res.error.message || res.error);
+        if (/rate limit|security purposes|seconds/i.test(m)) throw new Error('メールの送信が続いたため、少し待ってから「ログインメールを再送」を押してください（' + m + '）');
+        throw new Error('登録はできましたが、メールを送れませんでした。「ログインメールを再送」を押してください（' + m + '）');
+      }
+    });
+  }
   function q(res) { if (res.error) throw new Error(res.error.message || String(res.error)); return res.data; }
   function readFile(input) {
     return new Promise(function (resolve, reject) {
@@ -130,7 +145,7 @@
           var scans = (extra.scans[i] || []).slice().sort(function (a, b) { return String(a.createdAt).localeCompare(String(b.createdAt)); });
           var last = scans[scans.length - 1], sc = last ? last.overallScore : null, b = C.band(sc);
           var rep = extra.reports.filter(function (x) { return x.client_id === c.id; })[0];
-          var st = rep ? (rep.status === 'published' ? '<span class="arc-chip is-ok">今月: 公開済み</span>' : '<span class="arc-chip is-warn">今月: 下書き</span>') : '<span class="arc-chip is-ng">今月: 未作成</span>';
+          var st = rep ? statusChip(rep.status, '今月: ') : '<span class="arc-chip is-ng">今月: 未作成</span>';
           return '<a class="arc-client" href="#/c/' + c.id + '"><span class="arc-client-n">' + esc(c.name) + '<small>' + esc(INDUSTRY[c.industry_id] || '') + (c.status !== 'active' ? ' · ' + esc(c.status) : '') + '</small></span>' +
             '<span class="arc-client-s">' + (sc == null ? '<span class="arv-na">—</span>' : '<b>' + esc(sc) + '</b><small>点</small> <span class="arv-band" style="border-color:' + b.color + ';color:' + b.color + '">' + esc(b.label) + '</span>') + '</span>' +
             '<span class="arc-client-g">' + C.sparkline(scans.slice(-6).map(function (x) { return x.overallScore; }), c.name + ' の点数の推移') + '</span>' +
@@ -364,7 +379,7 @@
             { label: 'Search Console', ok: !!live.traffic.gsc },
             { label: 'GA4', ok: !!live.traffic.ga4 },
             { label: '施策', ok: live.actions.length > 0, note: live.actions.length ? live.actions.length + '件' : '今月は0件' },
-            { label: 'レポート', ok: !!(repNow && repNow.status === 'published'), note: repNow ? (repNow.status === 'published' ? '公開済み' : '下書き') : '未作成' }
+            { label: 'レポート', ok: !!(repNow && repNow.status === 'published'), note: repNow ? (REPORT_STATUS[repNow.status] || [repNow.status])[0] : '未作成' }
           ]) +
           C.tiles(live) + '</section>' +
           todoCard(R.todoList(live), live, 'staff', studioHref(c, sites)) +
@@ -391,7 +406,7 @@
         return '<tr><td>' + esc(String(s.createdAt).slice(0, 10)) + '</td><td>' + esc(s.url) + '</td><td>' + (s.overallScore == null ? '—' : esc(s.overallScore) + '点') + '</td><td>' + esc((s.gaps || []).length) + '件</td></tr>';
       }).join('');
       var repRows = reports.map(function (r) {
-        return '<tr><td>' + esc(ym(r.period_month)) + '</td><td>' + (r.status === 'published' ? '<span class="arc-chip is-ok">公開</span>' : '<span class="arc-chip">下書き</span>') + '</td><td><a href="#/r/' + r.id + '">編集</a> · <a href="/airreach/app/report/?id=' + r.id + '">表示・PDF</a></td></tr>';
+        return '<tr><td>' + esc(ym(r.period_month)) + '</td><td>' + statusChip(r.status) + '</td><td><a href="#/r/' + r.id + '">編集</a> · <a href="/airreach/app/report/?id=' + r.id + '">表示・PDF</a></td></tr>';
       }).join('');
 
       var fromStudio = studioActionsFor(id), fromMeasure = studioMeasureFor(id);
@@ -432,8 +447,9 @@
         '<table class="arc-table"><tbody>' + (actRows || '<tr><td class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></details>' +
 
         fold('members', '顧客側のメンバー', members.length + '人') +
-        '<ul class="arc-list">' + (members.map(function (m) { return '<li>' + esc(m.email) + ' <button class="arc-btn-sm" data-del-member="' + esc(m.email) + '">削除</button></li>'; }).join('') || '<li class="arc-empty">まだいません</li>') + '</ul>' +
-        '<form id="arc-add-member" class="arc-row"><input class="arc-input" type="email" id="arc-member-email" placeholder="client@example.jp" required><button class="arc-btn" type="submit">招待</button></form>' +
+        '<ul class="arc-list">' + (members.map(function (m) { return '<li>' + esc(m.email) + ' <button class="arc-btn-sm" data-resend-member="' + esc(m.email) + '">ログインメールを再送</button> <button class="arc-btn-sm" data-del-member="' + esc(m.email) + '">削除</button></li>'; }).join('') || '<li class="arc-empty">まだいません</li>') + '</ul>' +
+        '<form id="arc-add-member" class="arc-row"><input class="arc-input" type="email" id="arc-member-email" placeholder="client@example.jp" required><button class="arc-btn" type="submit">招待（ログイン用のメールを送る）</button></form>' +
+        '<p class="arc-note">招待すると、お客様に「AirReach ログイン用リンク」のメール（送信元 no-reply@trillion-bank.com）が届きます。リンクの有効期限は1時間です。切れたら「ログインメールを再送」を押してください。お客様に見えるのは、自社の公開済みのレポートだけです。</p>' +
         '<p class="arc-note">登録したメールアドレスで /airreach/app/ にログインすると、この顧客の「公開済み」レポートだけが見えます。招待メールは送られないので、URL をお伝えください。</p></div></details>',
         '#/');
 
@@ -472,7 +488,17 @@
       });
       $('#arc-add-member').addEventListener('submit', function (e) {
         e.preventDefault();
-        done(sb.from('client_members').insert({ client_id: id, email: $('#arc-member-email').value.trim().toLowerCase() }));
+        var em = $('#arc-member-email').value.trim().toLowerCase();
+        openFolds.members = true;
+        // 登録してから送る（登録済みのメールだけがアカウントを作れるフックがあるため、順番が大事）
+        sb.from('client_members').insert({ client_id: id, email: em }).then(function (res) {
+          // すでに登録済みなら、登録はそのままでメールだけ送り直す
+          if (res && res.error && /duplicate|23505|already exists/i.test(String(res.error.message || res.error.code || ''))) return sendLoginMail(em);
+          q(res); return sendLoginMail(em);
+        })
+          .then(function () { return clientStaff(id); })
+          .then(function () { msg(em + ' を登録し、ログイン用のメールを送りました', 'ok'); })
+          .catch(function (err) { clientStaff(id).then(function () { fail(err); }); });
       });
       $('#arc-add-action').addEventListener('submit', function (e) {
         e.preventDefault();
@@ -506,6 +532,18 @@
       });
       bindGoogleSync(id, sites);
       root.querySelectorAll('[data-del-site]').forEach(function (b) { b.addEventListener('click', function () { done(sb.from('client_sites').delete().eq('id', b.getAttribute('data-del-site'))); }); });
+      root.querySelectorAll('[data-resend-member]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var em = b.getAttribute('data-resend-member');
+          b.disabled = true;
+          sendLoginMail(em).then(function () {
+            msg(em + ' にログイン用のメールを送りました', 'ok');
+            // 同じアドレスへの送信は1分に1回まで（Supabase の制限）。1分たったら押せるように戻す
+            b.textContent = '送りました（1分後に再送できます）';
+            setTimeout(function () { b.disabled = false; b.textContent = 'ログインメールを再送'; }, 60000);
+          }).catch(function (err) { b.disabled = false; fail(err); });
+        });
+      });
       root.querySelectorAll('[data-del-member]').forEach(function (b) { b.addEventListener('click', function () { done(sb.from('client_members').delete().eq('client_id', id).eq('email', b.getAttribute('data-del-member'))); }); });
       root.querySelectorAll('[data-del-run]').forEach(function (b) { b.addEventListener('click', function () { done(sb.from('measurement_runs').delete().eq('id', b.getAttribute('data-del-run'))); }); });
       root.querySelectorAll('[data-del-traffic]').forEach(function (b) { b.addEventListener('click', function () { done(sb.from('traffic_snapshots').delete().eq('id', b.getAttribute('data-del-traffic'))); }); });
@@ -523,7 +561,7 @@
         e.preventDefault();
         var month = $('#arc-report-month').value + '-01';
         var existing = reports.filter(function (r) { return r.period_month === month; })[0];
-        if (existing && existing.status === 'published') { msg('この月のレポートは公開済みです。作り直すには、編集画面で「非公開に戻す」を先に行ってください。', 'error'); return; }
+        if (existing && existing.status !== 'draft') { msg('この月のレポートは「' + (REPORT_STATUS[existing.status] || [existing.status])[0] + '」です。作り直すには、編集画面で先に下書きに戻してください（確認と承認をやり直します）。', 'error'); return; }
         var compiled;
         try { compiled = R.compileReport({ client: c, periodMonth: month, scans: scans, runs: runs, traffic: traffic, actions: actions }); } catch (err) { fail(err); return; }
         var row = { client_id: id, period_month: month, compiled: compiled, status: 'draft', updated_by: me.email };
@@ -538,6 +576,33 @@
   function reportEditor(rid) {
     return sb.from('reports').select('*, clients(name)').eq('id', rid).maybeSingle().then(function (res) {
       var r = q(res); if (!r) throw new Error('レポートが見つかりません');
+      if (!approvalOn()) return [r, [], []];
+      return Promise.all([
+        sb.from('report_events').select('action,actor,note,created_at').eq('report_id', rid).order('created_at', { ascending: true }),
+        sb.from('staff_members').select('email,name,can_approve')
+      ]).then(function (x) { return [r, q(x[0]) || [], q(x[1]) || []]; });
+    }).then(function (pack) {
+      var r = pack[0], events = pack[1], staff = pack[2];
+      var flow = approvalOn();
+      var editable = !flow || r.status === 'draft';
+      function who(email) { var s = staff.filter(function (x) { return x.email === email; })[0]; return s && s.name ? s.name : (email || ''); }
+      var approvers = staff.filter(function (x) { return x.can_approve; }).map(function (x) { return x.name || x.email; });
+      var ACT = { created: '作成', submitted: '確認を依頼', withdrawn: '依頼を取り下げ', returned: '差し戻し', approved: '承認', published: '公開', unpublished: '非公開に戻す' };
+      var lastReturn = events.filter(function (e) { return e.action === 'returned'; }).slice(-1)[0];
+      var approvalCard = !flow ? '' : '<section class="arc-card arc-approval"><h2 class="arc-h2">確認と承認 ' + statusChip(r.status) + '</h2>' +
+        '<ol class="arc-steps">' +
+          '<li class="' + (r.status === 'draft' ? 'is-now' : 'is-done') + '">担当が作成・確認</li>' +
+          '<li class="' + (r.status === 'in_review' ? 'is-now' : (r.status === 'approved' || r.status === 'published' ? 'is-done' : '')) + '">承認者が承認' + (approvers.length ? '<small>（' + esc(approvers.join('・')) + '）</small>' : '<small>（承認者が未設定）</small>') + '</li>' +
+          '<li class="' + (r.status === 'approved' ? 'is-now' : (r.status === 'published' ? 'is-done' : '')) + '">公開（お客様の画面・PDF）</li>' +
+        '</ol>' +
+        (r.submitted_by ? '<p class="arc-sub">依頼：' + esc(who(r.submitted_by)) + '（' + esc(jst(r.submitted_at)) + '）</p>' : '') +
+        (r.approved_by ? '<p class="arc-sub">承認：' + esc(who(r.approved_by)) + '（' + esc(jst(r.approved_at)) + '）</p>' : '') +
+        (r.status === 'draft' && lastReturn ? '<p class="arc-note">差し戻し（' + esc(who(lastReturn.actor)) + '・' + esc(jst(lastReturn.created_at)) + '）：' + esc(lastReturn.note || '理由の記入なし') + '</p>' : '') +
+        (r.status === 'in_review' && me.can_approve && me.email !== r.submitted_by ? '<textarea class="arc-input arc-ta" id="arc-review-note" rows="2" maxlength="1000" placeholder="差し戻すときの理由（担当者に表示されます）"></textarea>' : '') +
+        (events.length ? '<details class="arc-history"><summary>履歴（' + events.length + '件）</summary><ul class="arc-list">' + events.map(function (e) {
+          return '<li>' + esc(jst(e.created_at)) + '　' + esc(ACT[e.action] || e.action) + '　' + esc(who(e.actor) || '管理者') + (e.note && e.action === 'returned' ? '：' + esc(e.note) : '') + '</li>';
+        }).join('') + '</ul></details>' : '') +
+        '</section>';
       var cmp = r.compiled || {};
       var concl = (r.conclusions || []).concat(['', '', '']).slice(0, 3);
       var next = (r.next_actions || []).concat([{}, {}, {}]).slice(0, 3);
@@ -558,11 +623,20 @@
             '<input class="arc-input" type="date" data-next-due="' + i + '" value="' + esc(a.due || '') + '"></div>';
         }).join('') + '</section>' +
         '<section class="arc-card"><h2 class="arc-h2">お客様に判断いただきたいこと</h2><textarea class="arc-input arc-ta" id="arc-decisions" rows="3" placeholder="1行に1件">' + esc(decisions) + '</textarea></section>' +
-        '<div class="arc-row"><button class="arc-btn" type="submit">保存</button>' +
-        (r.status === 'published' ? '<button class="arc-btn arc-btn-line" type="button" id="arc-unpublish">非公開に戻す</button>' : '<button class="arc-btn arc-btn-line" type="button" id="arc-publish">公開する（お客様が見られる）</button>') +
+        approvalCard +
+        '<div class="arc-row">' + (editable ? '<button class="arc-btn" type="submit">保存</button>' : '') +
+        (!flow ? (r.status === 'published' ? '<button class="arc-btn arc-btn-line" type="button" id="arc-unpublish">非公開に戻す</button>' : '<button class="arc-btn arc-btn-line" type="button" id="arc-publish">公開する（お客様が見られる）</button>') :
+          r.status === 'draft' ? '<button class="arc-btn arc-btn-line" type="button" id="arc-submit">確認を依頼する</button>' :
+          r.status === 'in_review' ? (me.can_approve && me.email !== r.submitted_by ? '<button class="arc-btn" type="button" id="arc-approve">承認する</button><button class="arc-btn arc-btn-line" type="button" id="arc-return">差し戻す</button>' :
+            (me.email === r.submitted_by ? '<button class="arc-btn arc-btn-line" type="button" id="arc-withdraw">依頼を取り下げる</button>' : '<span class="arc-sub">承認待ちです</span>')) :
+          r.status === 'approved' ? '<button class="arc-btn" type="button" id="arc-publish">公開する（お客様が見られる）</button><button class="arc-btn arc-btn-line" type="button" id="arc-return">下書きに戻して直す</button>' :
+          '<button class="arc-btn arc-btn-line" type="button" id="arc-unpublish">非公開に戻す</button>') +
         '<a class="arc-btn arc-btn-line" href="/airreach/app/report/?id=' + r.id + '">表示・PDF</a></div></form>',
         '#/c/' + r.client_id);
 
+      if (!editable) {
+        Array.prototype.forEach.call(root.querySelectorAll('#arc-report-form [data-concl], #arc-report-form [data-next-title], #arc-report-form [data-next-owner], #arc-report-form [data-next-due], #arc-decisions, [data-pick-todo]'), function (el) { el.disabled = true; });
+      }
       // 候補の「次の3施策に入れる」: 空いている最初の欄に直し方を入れる
       Array.prototype.forEach.call(root.querySelectorAll('[data-pick-todo]'), function (b) {
         b.addEventListener('click', function () {
@@ -586,14 +660,38 @@
         return sb.from('reports').update(Object.assign(collect(), extra || {})).eq('id', r.id).then(function (res) { q(res); });
       }
       $('#arc-report-form').addEventListener('submit', function (e) { e.preventDefault(); save().then(function () { msg('保存しました', 'ok'); }).catch(fail); });
+      // 状態だけを変える（中身は送らない）。決まりは DB のトリガが守る
+      function setStatus(extra, done) {
+        return sb.from('reports').update(Object.assign({ updated_by: me.email }, extra)).eq('id', r.id).then(function (res) { q(res); })
+          .then(function () { return reportEditor(rid); }).then(function () { msg(done, 'ok'); }).catch(fail);
+      }
       var pub = $('#arc-publish');
       if (pub) pub.addEventListener('click', function () {
+        if (flow) { setStatus({ status: 'published' }, '公開しました'); return; }
         var c = collect();
         if (!c.conclusions.length) { msg('公開する前に、結論を1つ以上書いてください', 'error'); return; }
         save({ status: 'published', published_at: new Date().toISOString() }).then(function () { return reportEditor(rid); }).then(function () { msg('公開しました', 'ok'); }).catch(fail);
       });
+      var sub = $('#arc-submit');
+      if (sub) sub.addEventListener('click', function () {
+        var c = collect();
+        if (!c.conclusions.length) { msg('確認を依頼する前に、結論を1つ以上書いてください', 'error'); return; }
+        if (!c.next_actions.length) { msg('確認を依頼する前に、次にやる施策を1つ以上書いてください', 'error'); return; }
+        save({ status: 'in_review', review_note: null }).then(function () { return reportEditor(rid); }).then(function () { msg('確認を依頼しました（承認されるまで、お客様には見えません）', 'ok'); }).catch(fail);
+      });
+      var apv = $('#arc-approve');
+      if (apv) apv.addEventListener('click', function () { setStatus({ status: 'approved' }, '承認しました。「公開する」でお客様に見えるようになります'); });
+      var ret = $('#arc-return');
+      if (ret) ret.addEventListener('click', function () {
+        var note = $('#arc-review-note') ? $('#arc-review-note').value.trim() : '';
+        if (r.status === 'in_review' && !note) { msg('差し戻す理由を書いてください', 'error'); return; }
+        setStatus({ status: 'draft', review_note: note || null }, r.status === 'in_review' ? '差し戻しました' : '下書きに戻しました（直したら、もう一度確認と承認が必要です）');
+      });
+      var wd = $('#arc-withdraw');
+      if (wd) wd.addEventListener('click', function () { setStatus({ status: 'draft', review_note: null }, '依頼を取り下げました'); });
       var unpub = $('#arc-unpublish');
       if (unpub) unpub.addEventListener('click', function () {
+        if (flow) { setStatus({ status: 'draft', review_note: null }, '非公開に戻しました（もう一度公開するには、確認と承認が必要です）'); return; }
         save({ status: 'draft', published_at: null }).then(function () { return reportEditor(rid); }).then(function () { msg('非公開に戻しました', 'ok'); }).catch(fail);
       });
     });

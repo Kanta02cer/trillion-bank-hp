@@ -306,6 +306,7 @@
         '<div class="arv-todo-h"><b>' + esc(title) + '</b><span class="arv-prio is-' + pr.key + '">' + pr.label + '</span>' + (t.factorLabel ? '<span class="arv-todo-f">' + esc(t.factorLabel) + '</span>' : '') + '</div>' +
         (how ? '<div class="arv-todo-how"><span>直し方</span>' + esc(how) + '</div>' : '') +
         (why ? '<div class="arv-todo-why">' + esc(why) + '</div>' : '') +
+        (t.basis ? '<div class="arv-todo-basis"><span>この提案の理由</span>' + esc(t.basis) + '</div>' : '') +
         (client && t.plainText && t.plainText !== t.text ? '<div class="arv-todo-tech">制作会社の方へ：' + esc(t.text) + '</div>' : '') +
         '<div class="arv-todo-foot">' + studio + (opts.pick ? '<button type="button" class="arc-btn-sm" data-pick-todo="' + esc(t.plainHow || t.how || t.text) + '">次の3施策に入れる</button>' : '') + '</div>' +
         '</div></li>';

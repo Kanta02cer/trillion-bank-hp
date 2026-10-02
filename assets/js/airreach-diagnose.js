@@ -220,13 +220,37 @@
     var ldAddress = [];
     var ldCuisine = [];
     var ldName = '';
+    // 構造化データの中身（画面で根拠として見せる分だけ。各ブロックの主な項目と、元の JSON の先頭）
+    var ldBlocks = [], ldRaw = [], ldErrors = 0;
+    function ldStr(v) {
+      if (v == null) return '';
+      if (typeof v === 'string' || typeof v === 'number') return String(v);
+      if (Array.isArray(v)) return v.map(ldStr).filter(Boolean).join('、');
+      if (typeof v === 'object') {
+        if (v['@type'] === 'PostalAddress' || v.streetAddress || v.addressLocality) return [v.postalCode, v.addressRegion, v.addressLocality, v.streetAddress].filter(Boolean).join(' ');
+        return v.name || v['@id'] || v.url || '';
+      }
+      return '';
+    }
     ldNodes.forEach(function (node) {
+      var rawText = String(node.textContent || '').trim();
+      if (ldRaw.length < 3) ldRaw.push(rawText.length > 2000 ? rawText.slice(0, 2000) + '…' : rawText);
       try {
         var data = JSON.parse(node.textContent);
         var items = Array.isArray(data) ? data : [data];
         items.forEach(function walk(it) {
           if (!it || typeof it !== 'object') return;
           var t = it['@type'];
+          if (t && ldBlocks.length < 12) {
+            var f = {};
+            ['name', 'url', 'telephone', 'address', 'openingHours', 'openingHoursSpecification', 'priceRange', 'servesCuisine', 'acceptsReservations', 'logo', 'image', 'description'].forEach(function (k) {
+              var val = ldStr(it[k]); if (val) f[k] = val.length > 140 ? val.slice(0, 140) + '…' : val;
+            });
+            if (Array.isArray(it.sameAs)) f.sameAs = it.sameAs.length + '件';
+            var ents = (t === 'FAQPage' || (Array.isArray(t) && t.indexOf('FAQPage') >= 0)) && Array.isArray(it.mainEntity) ? it.mainEntity : null;
+            if (ents) f.questions = ents.slice(0, 5).map(function (q) { return ldStr(q && q.name); }).filter(Boolean).join(' ／ ') + (ents.length > 5 ? ' ほか' : '') + '（' + ents.length + '問）';
+            ldBlocks.push({ types: (Array.isArray(t) ? t : [t]).map(String), fields: f });
+          }
           if (Array.isArray(t)) t.forEach(function (x) { types[x] = true; });
           else if (typeof t === 'string') types[t] = true;
           var tList = Array.isArray(t) ? t : [t];
@@ -242,7 +266,7 @@
           }
           if (Array.isArray(it['@graph'])) it['@graph'].forEach(walk);
         });
-      } catch (e) { /* ignore */ }
+      } catch (e) { ldErrors++; }
     });
     var faqNodes = doc.querySelectorAll('[itemtype*="FAQPage"], .faq, #faq, [aria-labelledby*="faq"]');
     var visibleFaq = faqNodes.length;
@@ -271,6 +295,7 @@
       robotsMeta: robotsMeta,
       ogTitle: ogTitle,
       types: types,
+      ld: { blocks: ldBlocks, raw: ldRaw, scripts: ldNodes.length, errors: ldErrors },
       faqCount: faqCount,
       visibleFaq: visibleFaq,
       faqAnchor: faqAnchor,
@@ -333,6 +358,126 @@
     return c ? (ok ? c.ok : c.ng) : (ok ? label : '「' + label + '」を満たしていない');
   }
 
+  // 点数の計算（判定できた項目だけで各分類を出し、総合は必須分類がそろったときだけ重みを配り直して出す）
+  function computeScores(checks, adjustments) {
+    var factors = {};
+    FACTORS.forEach(function (f) {
+      var pts = 0, max = 0, knownCount = 0, total = 0;
+      checks.forEach(function (c) {
+        if (c.factor !== f.id) return;
+        total += 1;
+        if (!c.known) return;
+        knownCount += 1;
+        pts += c.points || 0;
+        max += c.max;
+      });
+      (adjustments || []).forEach(function (a) { if (a.factor === f.id && knownCount > 0) pts += a.points; });
+      var score = knownCount > 0 ? scoreBlock(Math.max(0, pts), max) : null;
+      factors[f.id] = {
+        id: f.id,
+        label: f.label,
+        weight: f.weight,
+        required: f.required,
+        score: score,
+        state: knownCount === 0 ? 'unknown' : (knownCount < total ? 'partial' : 'verified'),
+        knownChecks: knownCount,
+        totalChecks: total
+      };
+    });
+    var overall = null;
+    var requiredMissing = FACTORS.some(function (f) { return f.required && factors[f.id].score == null; });
+    if (!requiredMissing) {
+      var sum = 0, wsum = 0;
+      FACTORS.forEach(function (f) {
+        var s = factors[f.id].score;
+        if (s == null) return;
+        sum += s * f.weight;
+        wsum += f.weight;
+      });
+      overall = wsum > 0 ? Math.round(sum / wsum) : null;
+    }
+    return { factors: factors, overall: overall };
+  }
+
+  // 直した場合の点数。満たしていない項目（ng）を満点にしたと仮定して、上と同じ計算で出し直す（推測の幅は使わない）。
+  // 1項目ずつの上がり幅で並べ、上位3つを直した場合と、すべて直した場合を返す。減点（adjustments）はそのまま残す
+  function projectFixes(checks, adjustments, overall) {
+    if (overall == null) return null;
+    function fixed(labels) {
+      return checks.map(function (c) {
+        if (c.state === 'ng' && labels.indexOf(c.label) >= 0) return Object.assign({}, c, { state: 'ok', ok: true, points: c.max });
+        return c;
+      });
+    }
+    var ng = checks.filter(function (c) { return c.state === 'ng'; });
+    var items = ng.map(function (c) {
+      var after = computeScores(fixed([c.label]), adjustments).overall;
+      return { label: c.label, factor: c.factor, max: c.max, gain: after != null ? after - overall : 0 };
+    }).sort(function (a, b) { return (b.gain - a.gain) || (b.max - a.max); });
+    var top = items.slice(0, 3);
+    var afterTop = computeScores(fixed(top.map(function (x) { return x.label; })), adjustments).overall;
+    var afterAll = computeScores(fixed(ng.map(function (x) { return x.label; })), adjustments).overall;
+    return { current: overall, items: items, top: top, afterTop: afterTop, afterAll: afterAll, method: '満たしていない項目を満点にしたと仮定して、同じ計算式で点数を出し直したもの' };
+  }
+
+  // robots.txt を AI ボットごとに読み解く（RFC 9309 の考え方: その名前のグループが無ければ * のグループ、パスはいちばん長く一致した規則、同じ長さなら Allow を優先）
+  var AI_BOTS = [
+    { name: 'GPTBot', org: 'OpenAI（学習）' },
+    { name: 'OAI-SearchBot', org: 'OpenAI（ChatGPT の検索）' },
+    { name: 'ChatGPT-User', org: 'OpenAI（ユーザーの依頼で取得）' },
+    { name: 'ClaudeBot', org: 'Anthropic' },
+    { name: 'PerplexityBot', org: 'Perplexity' },
+    { name: 'Google-Extended', org: 'Google（Gemini の学習）' }
+  ];
+  function parseRobots(text) {
+    var groups = [], cur = null, lastWasAgent = false;
+    String(text || '').split(/\r?\n/).forEach(function (raw, i) {
+      var line = raw.replace(/#.*$/, '').trim();
+      if (!line) return;
+      var m = /^([A-Za-z-]+)\s*:\s*(.*)$/.exec(line);
+      if (!m) return;
+      var key = m[1].toLowerCase(), val = m[2].trim();
+      if (key === 'user-agent') {
+        if (!cur || !lastWasAgent) { cur = { agents: [], rules: [], lines: [] }; groups.push(cur); }
+        cur.agents.push(val.toLowerCase()); cur.lines.push({ n: i + 1, text: raw.trim() });
+        lastWasAgent = true;
+      } else if ((key === 'allow' || key === 'disallow') && cur) {
+        cur.rules.push({ type: key, path: val }); cur.lines.push({ n: i + 1, text: raw.trim() });
+        lastWasAgent = false;
+      } else { lastWasAgent = false; }
+    });
+    return groups;
+  }
+  function robotsVerdict(group, path) {
+    if (!group) return 'unspecified';
+    var best = null;
+    group.rules.forEach(function (r) {
+      if (r.type === 'disallow' && r.path === '') return; // 「Disallow:」（空）は全部許可
+      var pat = r.path.replace(/\$$/, '');
+      var re = new RegExp('^' + pat.split('*').map(function (x) { return x.replace(/[.+?^${}()|[\]\\]/g, '\\$&'); }).join('.*') + (/\$$/.test(r.path) ? '$' : ''));
+      if (!re.test(path)) return;
+      var len = r.path.length;
+      if (!best || len > best.len || (len === best.len && r.type === 'allow')) best = { type: r.type, len: len };
+    });
+    if (!best) return 'allowed';
+    return best.type === 'allow' ? 'allowed' : 'blocked';
+  }
+  function robotsBreakdown(robotsRes, robotsText) {
+    var base = { state: robotsRes.state, status: robotsRes.status, url: robotsRes.finalUrl || robotsRes.url, fetchedAt: robotsRes.fetchedAt, error: robotsRes.error || null };
+    if (robotsRes.state !== 'ok') return Object.assign(base, { bots: [], lines: [] });
+    var groups = parseRobots(robotsText);
+    var star = groups.filter(function (g) { return g.agents.indexOf('*') >= 0; })[0] || null;
+    var bots = AI_BOTS.map(function (b) {
+      var own = groups.filter(function (g) { return g.agents.indexOf(b.name.toLowerCase()) >= 0; })[0] || null;
+      var g = own || star;
+      var top = robotsVerdict(g, '/');
+      var partial = top === 'allowed' && g && g.rules.some(function (r) { return r.type === 'disallow' && r.path && r.path !== '/'; });
+      return { name: b.name, org: b.org, via: own ? 'own' : (star ? 'star' : 'none'), verdict: !g ? 'allowed' : (partial ? 'partial' : top), lines: g ? g.lines.slice(0, 12) : [] };
+    });
+    var lines = String(robotsText).split(/\r?\n/).slice(0, 60);
+    return Object.assign(base, { bots: bots, lines: lines, truncated: String(robotsText).split(/\r?\n/).length > 60 });
+  }
+
   function analyze(page, pageRes, llmsRes, robotsRes, baseHref) {
     var pageEv = evidenceFrom(pageRes);
     var faqEv = evidenceFrom(pageRes, page.faqAnchor);
@@ -378,45 +523,12 @@
       adjustments.push({ factor: 'discover', label: 'meta robotsにnoindex', points: -3, evidence: pageEv });
     }
 
-    // Factor scores over known checks only
-    var factors = {};
-    FACTORS.forEach(function (f) {
-      var pts = 0, max = 0, knownCount = 0, total = 0;
-      checks.forEach(function (c) {
-        if (c.factor !== f.id) return;
-        total += 1;
-        if (!c.known) return;
-        knownCount += 1;
-        pts += c.points || 0;
-        max += c.max;
-      });
-      adjustments.forEach(function (a) { if (a.factor === f.id && knownCount > 0) pts += a.points; });
-      var score = knownCount > 0 ? scoreBlock(Math.max(0, pts), max) : null;
-      factors[f.id] = {
-        id: f.id,
-        label: f.label,
-        weight: f.weight,
-        required: f.required,
-        score: score,
-        state: knownCount === 0 ? 'unknown' : (knownCount < total ? 'partial' : 'verified'),
-        knownChecks: knownCount,
-        totalChecks: total
-      };
-    });
-
-    // Overall: null when a required factor is unknown; renormalize weights over known factors otherwise
-    var overall = null;
-    var requiredMissing = FACTORS.some(function (f) { return f.required && factors[f.id].score == null; });
-    if (!requiredMissing) {
-      var sum = 0, wsum = 0;
-      FACTORS.forEach(function (f) {
-        var s = factors[f.id].score;
-        if (s == null) return;
-        sum += s * f.weight;
-        wsum += f.weight;
-      });
-      overall = wsum > 0 ? Math.round(sum / wsum) : null;
-    }
+    // Factor scores over known checks only（計算は computeScores に一本化。直した場合の点数も同じ計算で出す）
+    var scored = computeScores(checks, adjustments);
+    var factors = scored.factors;
+    var overall = scored.overall;
+    var projection = projectFixes(checks, adjustments, overall);
+    var robotsDetail = robotsBreakdown(robotsRes, robotsText);
     var anyUnknown = checks.some(function (c) { return !c.known; });
     var resultState = anyUnknown ? 'partial' : 'verified';
 
@@ -471,6 +583,8 @@
       faq: factors.faq.score,
       discover: factors.discover.score,
       factors: factors,
+      projection: projection,
+      robots: robotsDetail,
       strengths: strengths,
       gaps: gaps,
       unknowns: unknowns,
@@ -495,6 +609,7 @@
         title: page.title,
         h1: page.h1[0] || '',
         types: Object.keys(page.types).sort(),
+        ld: page.ld || null,
         faqCount: page.faqCount,
         faqAnchor: page.faqAnchor,
         hasLlms: llmsKnown ? !!(llmsText && llmsText.length > 80) : null,
@@ -531,17 +646,28 @@
       var parsed = parseHtml(pageRes.text);
       var subs = options.subpages === false ? [] : pickSubpages(parsed.links || [], pageRes.finalUrl || url.href, 4);
       // 下層ページは「調べた言葉」と「答えが書いてあるか」にだけ使う（点数の計算には使わない）
+      var tried = [];
       return Promise.all(subs.map(function (sp) {
         return withTimeout(fetchResource(sp.url, allowProxy), 6000).then(function (r) {
+          tried.push({ url: sp.url, role: sp.role, ok: !!(r && r.state === 'ok' && r.text), status: r ? r.status : null });
           return r && r.state === 'ok' && r.text ? { url: sp.url, role: sp.role, text: pageText(r.text).slice(0, 15000) } : null;
-        }).catch(function () { return null; });
+        }).catch(function () { tried.push({ url: sp.url, role: sp.role, ok: false, status: null }); return null; });
       })).then(function (pages) {
         parsed.kwSrc.pages = pages.filter(function (x) { return x && x.text; });
         parsed.keywordAuto = buildKeywordAuto(parsed.kwSrc);
-        return analyze(parsed, pageRes, parts[1], parts[2], url.href);
+        var result = analyze(parsed, pageRes, parts[1], parts[2], url.href);
+        // 診断の範囲: 点数に使ったページ、答えの判定に読んだ下層ページ、案内ファイル。時刻はトップページを取得した時刻
+        result.scope = {
+          diagnosedAt: pageRes.fetchedAt,
+          page: { url: url.href, finalUrl: pageRes.finalUrl || url.href, status: pageRes.status, via: pageRes.via },
+          subpages: subs.map(function (sp) { return tried.filter(function (t) { return t.url === sp.url; })[0] || { url: sp.url, role: sp.role, ok: false, status: null }; }),
+          llms: { url: parts[1].finalUrl || parts[1].url, state: parts[1].state, status: parts[1].status },
+          robots: { url: parts[2].finalUrl || parts[2].url, state: parts[2].state, status: parts[2].status }
+        };
+        return result;
       });
     });
   }
 
-  window.AirReach = { checkCriteria: criteriaText, diagnose: diagnose, normalizeUrl: normalizeUrl, RULE_VERSION: RULE_VERSION, FACTORS: FACTORS };
+  window.AirReach = { _test: { parseRobots: parseRobots, robotsBreakdown: robotsBreakdown, computeScores: computeScores, projectFixes: projectFixes }, checkCriteria: criteriaText, diagnose: diagnose, normalizeUrl: normalizeUrl, RULE_VERSION: RULE_VERSION, FACTORS: FACTORS };
 })();
