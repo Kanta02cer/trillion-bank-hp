@@ -102,6 +102,8 @@
     root.innerHTML =
       '<div class="arc-top"><div>' + (back ? '<a class="arc-back" href="' + back + '">← 戻る</a>' : '') +
       '<h1 class="arc-h1">' + esc(title) + '</h1></div>' +
+      // 社内の人には、ほかの社内ツールへの入口を常に出す（お客様には出さない）
+      (me.is_staff ? '<nav class="arc-tools" aria-label="社内ツール"><a href="/airreach/studio/">Studio（分析・AI計測）</a><a href="/airreach/sales/">営業キット</a><a href="/airreach/" target="_blank" rel="noopener">無料診断</a></nav>' : '') +
       '<div class="arc-who">' + esc(me.email) + (me.is_staff ? ' · 社内' : '') +
       ' <button type="button" class="arc-btn-sm" id="arc-logout">ログアウト</button></div></div>' +
       '<p id="arc-msg" class="arc-msg" hidden aria-live="polite"></p>' + bodyHtml;
@@ -411,7 +413,7 @@
 
       var fromStudio = studioActionsFor(id), fromMeasure = studioMeasureFor(id);
       shell(c.name, (fromMeasure ? studioMeasureCard(fromMeasure) : '') + (fromStudio ? studioActionsCard(fromStudio) : '') + overview +
-        '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">月次レポート</h2><a class="arc-btn arc-btn-line" href="' + esc(studioHref(c, sites)) + '">直す材料を作る（Studio）</a></div>' +
+        '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">月次レポート</h2><a class="arc-btn arc-btn-line" href="' + esc(studioHref(c, sites)) + '">この顧客を Studio で開く（分析・AI計測・直す材料）</a></div>' +
         '<form id="arc-make-report" class="arc-row"><input class="arc-input" type="month" id="arc-report-month" value="' + thisMonth() + '" required>' +
         '<button class="arc-btn" type="submit">この月の下書きを作る</button></form>' +
         '<p class="arc-note">下の材料（診断・AI計測・流入・施策）から、数字と変化を自動で集めます。結論・次の3施策・判断事項は、作成後に編集画面で書きます。</p>' +
