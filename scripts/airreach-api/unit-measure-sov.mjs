@@ -8,7 +8,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const results = [];
 const expect = (name, cond, detail = '') => { results.push(!!cond); console.log(`${cond ? 'PASS' : 'FAIL'}  ${name}${cond || !detail ? '' : '  — ' + String(detail).slice(0, 300)}`); };
 
-const { competitorHits, nameIn, studioKeyOk, staffTokenOk } = await import(pathToFileURL(path.join(ROOT, 'api/hack2-measure.js')).href);
+const { competitorHits, nameIn, studioKeyOk, staffTokenOk, rateLimitWait, withRateRetry, mapLimit } = await import(pathToFileURL(path.join(ROOT, 'api/hack2-measure.js')).href);
 const comps = [{ name: '赤坂そば', url: 'https://akasaka-soba.example/' }, { name: 'Soba Lab', url: 'soba-lab.example' }];
 let h = competitorHits('おすすめは赤坂そばと SOBA LAB です', ['https://www.akasaka-soba.example/menu'], comps);
 expect('hits: 名前（大文字小文字を区別しない）と出典URLのホスト（www 付き）', JSON.stringify(h) === JSON.stringify([{ name: '赤坂そば', mentioned: 1, cited: 1 }, { name: 'Soba Lab', mentioned: 1, cited: 0 }]), JSON.stringify(h));
@@ -63,6 +63,26 @@ expect('parse: SOV の無い従来の summary は sov=null', old.rows[0].sov ===
   await staffTokenOk(tok('e'.repeat(40)), env, f); await staffTokenOk(tok('e'.repeat(40)), env, f);
   expect('staff token: 同じトークンは5分覚える（問い合わせ1回）', calls === 1);
   expect('staff token: 通信失敗は通さない', await staffTokenOk(tok('f'.repeat(40)), env, async () => { throw new Error('network'); }) === false);
+}
+
+// ---- 回数の上限（Gateway の rate limit）----
+{
+  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const msg = 'Rate limit exceeded for perplexity/sonar for provider perplexity: this team\'s limit of 5 requests per minute (per region) was reached. Retry after 43s.';
+  expect('rate: 実際の文言から待ち時間 44 秒', eq(rateLimitWait(new Error(msg)), 44000), JSON.stringify(rateLimitWait(new Error(msg))));
+  expect('rate: 秒数が無ければ 16 秒', eq(rateLimitWait(new Error('429 Too Many Requests')), 16000), JSON.stringify(rateLimitWait(new Error('429 Too Many Requests'))));
+  expect('rate: 上限は 60 秒', eq(rateLimitWait(new Error('rate limit. Retry after 300s')), 60000), JSON.stringify(rateLimitWait(new Error('rate limit. Retry after 300s'))));
+  expect('rate: ほかのエラーは待たない', eq(rateLimitWait(new Error('invalid api key')), null), JSON.stringify(rateLimitWait(new Error('invalid api key'))));
+  let n = 0, waited = [];
+  const r = await withRateRetry(async () => { n++; if (n < 3) throw new Error(msg); return 'ok'; }, Date.now() + 999999, async (ms) => { waited.push(ms); });
+  expect('rate: 2回待って3回目で成功', eq([r, n, waited], ['ok', 3, [44000, 44000]]), JSON.stringify([r, n, waited]));
+  let threw = false; try { await withRateRetry(async () => { throw new Error(msg); }, Date.now() + 1000, async () => {}); } catch (e) { threw = true; }
+  expect('rate: 期限を越えるなら待たずに失敗', eq(threw, true), JSON.stringify(threw));
+  let threw2 = false, n2 = 0; try { await withRateRetry(async () => { n2++; throw new Error('bad request'); }, Date.now() + 999999, async () => {}); } catch (e) { threw2 = true; }
+  expect('rate: ほかのエラーは聞き直さない', eq([threw2, n2], [true, 1]), JSON.stringify([threw2, n2]));
+  let active = 0, peak = 0;
+  const res = await mapLimit([1, 2, 3, 4, 5], 2, async (x) => { active++; peak = Math.max(peak, active); await new Promise((r) => setTimeout(r, 10)); active--; return x * 10; });
+  expect('mapLimit: 同時2件まで・順番どおり', eq([peak, res], [2, [10, 20, 30, 40, 50]]), JSON.stringify([peak, res]));
 }
 
 const failed = results.filter((x) => !x).length;
