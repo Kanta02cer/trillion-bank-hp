@@ -316,8 +316,9 @@ robots: "noindex, follow"
       </div>
 
       <div class="ars-panel" data-panel-view="hack2">
-        <div class="ars-title-row"><div><h2>AI計測</h2><p class="ars-sub">キーワードから作った質問を実際のAIに聞き、自社の名前・サイトが回答に出るかを測ります。</p></div><button id="run-hack2-measure" class="ars-btn ars-btn-primary" type="button">計測実行</button></div>
+        <div class="ars-title-row"><div><h2>AI計測</h2><p class="ars-sub">登録した質問を実際のAIに聞き、自社と競合の名前・サイトが回答に出るかを測ります。</p></div><button id="run-hack2-measure" class="ars-btn ars-btn-primary" type="button">計測実行</button></div>
             <div class="ars-field ars-hack2-brand"><label for="hack2-brand">計測するお店・会社の名前（必須）</label><input class="ars-input" id="hack2-brand" placeholder="例：更科堀井" autocomplete="off"><small class="ars-hack2-help">AI の回答にこの名前が出るかを数えます。「対象サイト」の「お店・会社の名前」と同じです。</small></div>
+            <div class="ars-card ars-prompts-card" id="hack2-prompts"><!-- 計測する質問（airreach-studio.js の renderPrompts） --></div>
             <div id="hack2-status" class="ars-note">まだ計測していません。AIを選んで「計測実行」を押します。</div>
             <div class="ars-row" style="margin:12px 0;flex-wrap:wrap;gap:10px">
               <label><input type="checkbox" data-hack2-engine value="jev"> 推定（Jev・実際のAIには聞かない）</label>

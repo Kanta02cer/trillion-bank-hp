@@ -70,18 +70,24 @@
     var byQ = {};
     rows.forEach(function (r) {
       var k = r.prompt || r.keyword || '';
-      var q = byQ[k] || (byQ[k] = { prompt: k, n: 0, selfMention: 0, selfCiteN: 0, selfCite: 0, compMention: 0, ranks: [], engines: {} });
+      var q = byQ[k] || (byQ[k] = { prompt: k, n: 0, selfMention: 0, selfCiteN: 0, selfCite: 0, compMention: 0, compCiteN: 0, compCite: 0, ranks: [], engines: {}, answers: [] });
       q.n += 1;
       q.engines[r.engine] = 1;
       if (r.mentioned) q.selfMention += 1;
       if (r.cited === 0 || r.cited === 1) { q.selfCiteN += 1; if (r.cited === 1) q.selfCite += 1; }
       if ((r.competitors || []).some(function (c) { return c.mentioned; })) q.compMention += 1;
+      // 競合が出典: 競合の URL を登録していて、出典で判定できた回答だけで数える
+      var cj = (r.competitors || []).filter(function (c) { return c.cited === 0 || c.cited === 1; });
+      if (cj.length) { q.compCiteN += 1; if (cj.some(function (c) { return c.cited === 1; })) q.compCite += 1; }
+      q.answers.push({ engine: r.engine, mentioned: r.mentioned, cited: r.cited, rank: r.self_rank || null, order: r.order || null,
+        comps: (r.competitors || []).filter(function (c) { return c.mentioned; }).map(function (c) { return c.name; }), text: r.answer_excerpt || '' });
       if (r.self_rank) q.ranks.push(r.self_rank);
     });
     var questions = Object.keys(byQ).map(function (k) {
       var q = byQ[k];
       return { prompt: q.prompt, answers: q.n, engines: Object.keys(q.engines), selfMention: q.selfMention, selfMentionRate: pct(q.selfMention, q.n),
         selfCite: q.selfCite, selfCiteJudged: q.selfCiteN, selfCiteRate: pct(q.selfCite, q.selfCiteN), compMention: q.compMention, compMentionRate: pct(q.compMention, q.n),
+        compCite: q.compCite, compCiteJudged: q.compCiteN, compCiteRate: pct(q.compCite, q.compCiteN), detail: q.answers,
         bestRank: q.ranks.length ? Math.min.apply(null, q.ranks) : null };
     }).sort(function (a, b) { return (a.selfMentionRate == null ? -1 : a.selfMentionRate) - (b.selfMentionRate == null ? -1 : b.selfMentionRate); });
 
@@ -158,13 +164,21 @@
     h += '<div class="aib-types">' + typeCard('general', '一般質問', '店名・社名を含まない質問（例：大宮でおすすめのフォトスタジオは？）') + typeCard('branded', '指名質問', '店名・社名を含む質問（例：〇〇の料金プランを教えて）') + '</div>';
     // 1. 質問ごと
     h += '<section class="ars-card aib-sec"><h3>質問ごとの結果 <small>（最新の計測' + (when ? '・' + esc(when) : '') + '・' + s.answers + '回答）</small></h3>' +
-      '<p class="ars-gnote">自社の名前が出にくい質問から並べています。「出典」は出典の一覧が返る AI の回答だけで数えます。</p>' +
-      '<div class="ars-table-wrap"><table class="ars-table aib-q"><thead><tr><th>質問</th><th>AI</th><th>自社の名前</th><th>自社が出典</th><th>競合の名前</th><th>自社の順位（最高）</th></tr></thead><tbody>' +
+      '<p class="ars-gnote">自社の名前が出にくい質問から並べています。「出典」は出典の一覧が返る AI の回答だけで数えます（競合は「競合」で URL を登録した会社）。質問を押すと、AI ごとの回答が読めます。</p>' +
+      '<div class="ars-table-wrap"><table class="ars-table aib-q"><thead><tr><th>質問（押すと回答）</th><th>AI</th><th>自社の名前</th><th>自社が出典</th><th>競合の名前</th><th>競合が出典</th><th>自社の順位（最高）</th></tr></thead><tbody>' +
       s.questions.map(function (q) {
-        return '<tr><td>' + esc(q.prompt) + '</td><td>' + esc(q.engines.join('・')) + '</td>' +
+        var det = '<details class="aib-ans"><summary>' + esc(q.prompt) + '</summary>' + q.detail.map(function (a) {
+          return '<div class="aib-ans-i"><div class="aib-ans-h"><b>' + esc(a.engine) + '</b>' +
+            '<span>' + (a.mentioned ? '自社の名前あり' : '自社の名前なし') + (a.cited === 1 ? '・自社が出典' : a.cited === 0 ? '・自社は出典でない' : '') + (a.rank ? '・' + a.rank + '位' : '') + '</span>' +
+            (a.comps.length ? '<span>競合: ' + esc(a.comps.join('、')) + '</span>' : '') +
+            (a.order && a.order.length ? '<span>名前が出た順: ' + esc(a.order.join(' → ')) + '</span>' : '') + '</div>' +
+            '<p>' + (a.text ? esc(a.text) + (a.text.length >= 400 ? '…' : '') : '<span class="ars-muted">回答の記録なし</span>') + '</p></div>';
+        }).join('') + '<p class="ars-gnote">回答は冒頭の400文字まで保存しています。</p></details>';
+        return '<tr><td>' + det + '</td><td>' + esc(q.engines.join('・')) + '</td>' +
           '<td>' + bar(q.selfMentionRate, '#2563eb') + rate(q.selfMention, q.answers) + '</td>' +
           '<td>' + (q.selfCiteJudged ? bar(q.selfCiteRate, '#047857') + rate(q.selfCite, q.selfCiteJudged) : '<span class="ars-muted">判定なし</span>') + '</td>' +
           '<td>' + bar(q.compMentionRate, '#c2410c') + rate(q.compMention, q.answers) + '</td>' +
+          '<td>' + (q.compCiteJudged ? bar(q.compCiteRate, '#9a3412') + rate(q.compCite, q.compCiteJudged) : '<span class="ars-muted">判定なし</span>') + '</td>' +
           '<td>' + (q.bestRank ? esc(q.bestRank) + '位' : '<span class="ars-muted">—</span>') + '</td></tr>';
       }).join('') + '</tbody></table></div></section>';
     // 2. 言及の順位
