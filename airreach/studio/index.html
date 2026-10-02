@@ -63,6 +63,10 @@ robots: "noindex, follow"
           <input class="ars-input" id="orch-url" type="url" inputmode="url" placeholder="https://example.com/" autocomplete="url">
         </div>
         <div class="ars-field">
+          <label for="orch-brand"><span data-tip="AI計測で、回答にこの名前が出るかを数えます。空欄なら、分析のときにページの題名から読み取ります。">お店・会社の名前</span></label>
+          <input class="ars-input" id="orch-brand" type="text" placeholder="例: 更科堀井（空欄ならページから読み取ります）" autocomplete="organization">
+        </div>
+        <div class="ars-field">
           <label for="orch-service"><span data-tip="キーワード生成の核になるサービス名・商品名。空欄なら診断結果やドメインから推定します。">サービス名</span></label>
           <input class="ars-input" id="orch-service" type="text" placeholder="例: AI検索対策" autocomplete="organization-title">
         </div>
@@ -103,18 +107,18 @@ robots: "noindex, follow"
       <div id="orch-progress" class="orch-progress" aria-live="polite"></div>
     </section>
         <details class="ars-card ars-more">
-          <summary>詳しい基本情報（ブランド名は AI計測に必要・ほかは任意）</summary>
+          <summary>AI向けの説明（任意・直す材料の文章に使う）</summary>
           <div class="ars-more-body">
 <div class="ars-card">
               <div class="ars-form">
                 <div class="ars-grid">
-                  <div class="ars-field ars-c6"><label for="site-url">対象URL</label><input class="ars-input" id="site-url" type="url" placeholder="https://example.com/" inputmode="url"></div>
-                  <div class="ars-field ars-c6"><label for="brand-name">ブランド / 会社名</label><input class="ars-input" id="brand-name" placeholder="株式会社Example"></div>
-                  <div class="ars-field ars-c6"><label for="service-name">サービス名</label><input class="ars-input" id="service-name" placeholder="サービス名"></div>
+                  <div class="ars-field ars-c6" hidden><label for="site-url">対象URL</label><input class="ars-input" id="site-url" type="url" placeholder="https://example.com/" inputmode="url"></div>
+                  <div class="ars-field ars-c6" hidden><label for="brand-name">ブランド / 会社名</label><input class="ars-input" id="brand-name" placeholder="株式会社Example"></div>
+                  <div class="ars-field ars-c6" hidden><label for="service-name">サービス名</label><input class="ars-input" id="service-name" placeholder="サービス名"></div>
                   <div class="ars-field ars-c6"><label for="target-audience">主な顧客</label><input class="ars-input" id="target-audience" placeholder="例：BtoBマーケティング担当者"></div>
                   <div class="ars-field ars-c12"><label for="service-summary">何を提供し、何が強いか</label><textarea class="ars-textarea" id="service-summary" placeholder="サービスの概要・独自性・実績・対応範囲など"></textarea></div>
                 </div>
-                <div class="ars-row"><button id="save-profile" class="ars-btn ars-btn-primary" type="button">基本情報を保存</button></div>
+                <div class="ars-row"><button id="save-profile" class="ars-btn ars-btn-primary" type="button">説明を保存</button></div>
               </div>
               <div class="ars-hidden-kpis" aria-hidden="true" hidden>
                 <span id="kpi-readiness">--</span><span id="kpi-faq">--</span><span id="kpi-keywords">0</span><span id="kpi-rows">0</span>
@@ -316,7 +320,7 @@ robots: "noindex, follow"
 
       <div class="ars-panel" data-panel-view="hack2">
         <div class="ars-title-row"><div><h2>AI計測</h2><p class="ars-sub">キーワードから作った質問を実際のAIに聞き、自社の名前・サイトが回答に出るかを測ります。</p></div><button id="run-hack2-measure" class="ars-btn ars-btn-primary" type="button">計測実行</button></div>
-            <div class="ars-field ars-hack2-brand"><label for="hack2-brand">計測するお店・会社の名前（必須）</label><input class="ars-input" id="hack2-brand" placeholder="例：更科堀井" autocomplete="off"><small class="ars-hack2-help">AI の回答にこの名前が出るかを数えます。「対象サイト」の基本情報と同じ欄です。</small></div>
+            <div class="ars-field ars-hack2-brand"><label for="hack2-brand">計測するお店・会社の名前（必須）</label><input class="ars-input" id="hack2-brand" placeholder="例：更科堀井" autocomplete="off"><small class="ars-hack2-help">AI の回答にこの名前が出るかを数えます。「対象サイト」の「お店・会社の名前」と同じです。</small></div>
             <div id="hack2-status" class="ars-note">まだ計測していません。AIを選んで「計測実行」を押します。</div>
             <div class="ars-row" style="margin:12px 0;flex-wrap:wrap;gap:10px">
               <label><input type="checkbox" data-hack2-engine value="jev"> 推定（Jev・実際のAIには聞かない）</label>

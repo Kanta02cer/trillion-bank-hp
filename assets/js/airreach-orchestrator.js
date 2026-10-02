@@ -1005,7 +1005,8 @@
       localStorage.setItem('airreach_studio_v1', JSON.stringify(st));
       if (window.AirReachStudio && window.AirReachStudio.getState) {
         var live = window.AirReachStudio.getState();
-        live.profile = st.profile;
+        // 画面の欄も分析結果の名前・URLに更新する（欄が古いままだと、次の操作で空の欄が保存済みの名前を消していた）
+        if (window.AirReachStudio.setProfile) window.AirReachStudio.setProfile(st.profile); else live.profile = st.profile;
         live.keywords = st.keywords;
         if (job.competitors && job.competitors.length) live.competitors = job.competitors;
         else st.competitors = live.competitors || st.competitors;
@@ -1675,7 +1676,7 @@
           region: region,
           profile: {
             url: url,
-            brand: (q('brand-name') && q('brand-name').value) || '',
+            brand: ((q('orch-brand') && q('orch-brand').value.trim()) || (q('brand-name') && q('brand-name').value) || ''),
             service: service || (q('service-name') && q('service-name').value) || '',
             summary: (q('service-summary') && q('service-summary').value) || ''
           },
