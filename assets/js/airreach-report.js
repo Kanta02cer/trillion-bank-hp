@@ -526,18 +526,18 @@
   function evidenceList(c) {
     var out = [];
     var cur = c && c.site && c.site.current;
-    out.push({ label: 'ホームページの情報整備（点数・直すこと）', source: cur ? 'AirReach の無料診断' : '診断の記録なし',
+    out.push({ kinds: cur ? ['measured', 'judged'] : ['unknown'], label: 'ホームページの情報整備（点数・直すこと）', source: cur ? 'AirReach の無料診断' : '診断の記録なし',
       detail: cur ? (jstTime(cur.detail && cur.detail.scope && cur.detail.scope.diagnosedAt || cur.createdAt) + ' に ' + (cur.url || '') + ' のトップページと案内ファイル（llms.txt・robots.txt）を診断' + (cur.detail && cur.detail.scope && cur.detail.scope.pagesRead != null ? '・答えの確認に読んだページ ' + cur.detail.scope.pagesRead + 'ページ' : '') + (cur.ruleVersion ? '・判定基準 ' + cur.ruleVersion : '') + (cur.inMonth ? '' : '（当月の診断が無いため、この日の結果）')) : '' });
     var ai = c && c.ai;
-    out.push({ label: 'AI回答の計測（出典になった割合・名前が出た割合・競合と比べた割合）', source: ai ? (ai.source === 'manual' ? 'AirReach Studio での計測' : '社内の計測（同じ質問を AI に複数回聞いて集計）') : '計測の記録なし',
+    out.push({ kinds: ai ? ['reference'] : ['unknown'], label: 'AI回答の計測（出典になった割合・名前が出た割合・競合と比べた割合）', source: ai ? (ai.source === 'manual' ? 'AirReach Studio での計測' : '社内の計測（同じ質問を AI に複数回聞いて集計）') : '計測の記録なし',
       detail: ai ? ('計測日 ' + ai.measuredOn + '・質問の版 ' + (ai.querySetVersion || '—') + '・' + ai.providers.map(function (p) { return (PROV_JA[p.provider] || p.provider) + (p.model ? '（' + p.model + '）' : '') + (p.answers != null ? ' ' + p.answers + '回答' : ''); }).join('、')) : '' });
     var tr = (c && c.traffic) || {};
     var g = tr.gsc, a = tr.ga4;
-    out.push({ label: '検索からのクリック・表示回数・平均の順位', source: g ? (SRC_JA[g.source] || g.source) : '未取得',
+    out.push({ kinds: [g ? (g.source === 'ga4_manual' ? 'manual' : 'measured') : 'unknown'], label: '検索からのクリック・表示回数・平均の順位', source: g ? (SRC_JA[g.source] || g.source) : '未取得',
       detail: g ? (((g.start_date && g.end_date) ? g.start_date + '〜' + g.end_date + (g.days ? '（' + g.days + '日間）' : '') : '対象月') + (g.property ? '・' + g.property : '') + (g.source === 'gsc_api' ? '・サイト全体の合計' : '')) : '' });
-    out.push({ label: '訪問回数・AIのサービスから来た訪問・問い合わせ', source: a ? (SRC_JA[a.source] || a.source) : '未取得',
+    out.push({ kinds: [a ? (a.source === 'ga4_manual' ? 'manual' : 'measured') : 'unknown'], label: '訪問回数・AIのサービスから来た訪問・問い合わせ', source: a ? (SRC_JA[a.source] || a.source) : '未取得',
       detail: a ? (((a.start_date && a.end_date) ? a.start_date + '〜' + a.end_date : '対象月') + (a.host ? '・' + a.host : '') + (a.source === 'ga4_api' ? '・問い合わせは GA4 のキーイベントの合計・AI 経由は参照元が AI サービス（ChatGPT・Perplexity・Gemini など）の訪問' : '')) : '' });
-    out.push({ label: '今月実施したこと', source: 'AirReach の施策台帳', detail: '担当者が登録した実施日と、公開ページの URL（証拠）' });
+    out.push({ kinds: ['manual'], label: '今月実施したこと', source: 'AirReach の施策台帳', detail: '担当者が登録した実施日と、公開ページの URL（証拠）' });
     return out;
   }
 
