@@ -80,12 +80,14 @@
   function renderLogin() {
     root.innerHTML =
       '<div class="arc-card arc-login">' +
+      '<div class="arc-login-co">株式会社Trillion Bank</div>' +
       '<h1 class="arc-h1">AirReach ログイン</h1>' +
       '<p class="arc-lead">登録されたメールアドレスを入力してください。ログイン用のリンクをお送りします。</p>' +
       '<form id="arc-login-form"><label class="arc-label" for="arc-email">メールアドレス</label>' +
       '<input id="arc-email" class="arc-input" type="email" autocomplete="email" required>' +
       '<button class="arc-btn" type="submit">ログインリンクを送る</button></form>' +
-      '<p id="arc-msg" class="arc-msg" hidden aria-live="polite"></p></div>';
+      '<p id="arc-msg" class="arc-msg" hidden aria-live="polite"></p></div>' +
+      '<p class="arc-login-foot">© 株式会社Trillion Bank · <a href="/trillionbank/privacy/">プライバシーポリシー</a></p>';
     $('#arc-login-form').addEventListener('submit', function (e) {
       e.preventDefault();
       var email = $('#arc-email').value.trim().toLowerCase();
