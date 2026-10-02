@@ -267,6 +267,54 @@
       shell(c.name, body, (me.client_ids || []).length > 1 ? '#/' : '', { client: { id: c.id, name: c.name } });
     });
   }
+  /**
+   * 今月の進め方：毎月の作業を順番に並べ、どこまで済んだかと「次にやること」を出す（社内向けホーム）。
+   * 済み／まだ は登録された材料から判定する（手で付けるチェックは持たない）
+   */
+  function monthSteps(c, sites, live, repNow, actions) {
+    var studio = studioHref(c, sites), base = '#/c/' + c.id + '/', mon = thisMonth();
+    var cur = live.site.current, tr = live.traffic;
+    var planned = actions.filter(function (a) { return a.status !== 'done'; });
+    var madeThisMonth = actions.some(function (a) { return String(a.created_at || '').slice(0, 7) === mon; });
+    var rs = repNow ? repNow.status : '';
+    var md = function (d) { return String(d).slice(5, 10).replace('-', '/'); };
+    var steps = [
+      { title: 'サイトを調べる', what: 'URL を確かめて「分析する」を押すだけ', get: '整い具合の点数と、直すべきところ', time: '約1分',
+        ok: !!(cur && cur.inMonth), note: cur && cur.inMonth ? md(day(cur.createdAt)) + ' 診断' : '', btn: '分析する', href: studio + '#start' },
+      { title: '直すことを決めて、材料を渡す', what: '直す材料（よくある質問・お店の情報の下書き）を作り、お客様か制作会社に渡す', get: '渡した内容が「施策の予定」として残る', time: '約10分',
+        ok: madeThisMonth || planned.length > 0 || live.actions.length > 0, note: planned.length ? '予定 ' + planned.length + '件' : '', btn: '直す材料を作る', href: studio + '#generator' },
+      { title: 'AI での見え方を測る', what: '質問を確かめて「計測する」を押す', get: 'AI の回答に名前・サイトが出た割合、競合との比較', time: '約2分',
+        ok: !!live.ai, note: live.ai ? md(live.ai.measuredOn) + ' 計測' : '', btn: '計測する', href: studio + '#hack2' },
+      { title: '検索と訪問の数字を入れる', what: 'Google と連携していれば月を選ぶだけ', get: '検索のクリック、訪問、問い合わせの数', time: '約3分',
+        ok: !!(tr.gsc && tr.ga4), note: tr.gsc || tr.ga4 ? (tr.gsc ? 'Search Console ✓' : 'Search Console まだ') + '・' + (tr.ga4 ? 'GA4 ✓' : 'GA4 まだ') : '', btn: '取り込む', href: base + 'traffic' },
+      { title: 'やったことを記録する', what: '直したことを「実施済み」にして、公開したページの URL を入れる', get: 'レポートの「今月実施したこと」になる', time: '約3分',
+        ok: live.actions.length > 0, note: live.actions.length ? live.actions.length + '件' : '', btn: '記録する', href: base + 'actions' },
+      { title: '月次レポートを作って、確認を依頼する', what: '結論と次の施策を書いて、確認を依頼する', get: '承認されるとお客様に公開できる', time: '約15分',
+        ok: rs === 'in_review' || rs === 'approved' || rs === 'published', note: repNow ? (REPORT_STATUS[rs] || [rs])[0] : '',
+        btn: !repNow ? 'レポートを作る' : rs === 'draft' ? '続きを書く' : '開く', href: repNow ? '#/r/' + repNow.id : base + 'reports' },
+      { title: 'お客様に公開する', what: '承認されたレポートを公開する（お客様の画面と PDF に出る）', get: 'お客様が今月の結果を見られる', time: '約1分',
+        ok: rs === 'published', note: '', btn: rs === 'approved' ? '公開する' : '開く', href: repNow ? '#/r/' + repNow.id : base + 'reports' }
+    ];
+    var doneN = steps.filter(function (s) { return s.ok; }).length;
+    var nextI = -1; steps.some(function (s, i) { if (!s.ok) { nextI = i; return true; } return false; });
+    var next = nextI >= 0 ? steps[nextI] : null;
+    var lead = next
+      ? '<div class="arc-next"><div><div class="arc-next-k">次にやること</div><div class="arc-next-t">' + (nextI + 1) + '. ' + esc(next.title) + '</div>' +
+        '<div class="arc-next-d">' + esc(next.what) + '（' + esc(next.time) + '）</div></div>' +
+        '<a class="arc-btn arc-next-b" href="' + esc(next.href) + '">' + esc(next.btn) + ' →</a></div>'
+      : '<div class="arc-next is-done"><div><div class="arc-next-k">今月の作業</div><div class="arc-next-t">✓ すべて済みました</div><div class="arc-next-d">来月の初めに、また「サイトを調べる」から始めます。</div></div></div>';
+    var list = '<ol class="arc-msteps">' + steps.map(function (s, i) {
+      var st = s.ok ? 'is-ok' : i === nextI ? 'is-next' : '';
+      return '<li class="arc-mstep ' + st + '"><span class="arc-mstep-n" aria-hidden="true">' + (s.ok ? '✓' : i + 1) + '</span>' +
+        '<div class="arc-mstep-b"><b>' + esc(s.title) + '</b><span>' + esc(s.what) + '</span><small>分かること・できること：' + esc(s.get) + '</small></div>' +
+        '<div class="arc-mstep-s"><span class="arc-mstep-st">' + (s.ok ? '✓ 済み' : i === nextI ? '次はここ' : 'まだ') + (s.note ? '<small>' + esc(s.note) + '</small>' : '') + '</span>' +
+        '<a class="arc-btn-sm" href="' + esc(s.href) + '">' + esc(s.ok ? '見る' : s.btn) + '</a></div></li>';
+    }).join('') + '</ol>';
+    return '<section class="arc-card"><div class="arv-home-head"><div><h2 class="arc-h2">' + esc(ymJa(mon + '-01')) + 'の進め方</h2>' +
+      '<p class="arc-note" style="margin:2px 0 0">毎月、上から順に進めると月次レポートが出せます。済んだものには ✓ が付きます（登録された材料から自動で判定）。</p></div>' +
+      '<span class="arc-progress"><small>進み具合</small><b>' + doneN + ' / ' + steps.length + '</b></span></div>' + lead + list + '</section>';
+  }
+
   function todoCard(items, compiled, audience, studioHref) {
     var C = window.AirReachCharts, cur = compiled && compiled.site && compiled.site.current;
     if (!C || !cur) return '';
@@ -447,15 +495,8 @@
       var repNow = reports.filter(function (x) { return x.period_month === month; })[0];
       var overview = '';
       if (live && C) {
-        overview = '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(month)) + 'の状況</h2><span class="arc-sub">登録された材料からその場で集計</span></div>' +
-          C.readiness([
-            { label: '診断', go: '分析する', href: studioHref(c, sites) + '#start', ok: !!(live.site.current && live.site.current.inMonth), note: live.site.current ? (live.site.current.inMonth ? day(live.site.current.createdAt).slice(5).replace('-', '/') + ' 診断' : '今月は未診断') : '未登録' },
-            { label: 'AI計測', go: '計測する', href: studioHref(c, sites) + '#hack2', ok: !!live.ai, note: live.ai ? String(live.ai.measuredOn).slice(5).replace('-', '/') + ' 計測' : '今月は未計測' },
-            { label: 'Search Console', go: '取り込む', href: '#/c/' + c.id + '/traffic', ok: !!live.traffic.gsc },
-            { label: 'GA4', go: '取り込む', href: '#/c/' + c.id + '/traffic', ok: !!live.traffic.ga4 },
-            { label: '施策', go: '記録する', href: '#/c/' + c.id + '/actions', ok: live.actions.length > 0, note: live.actions.length ? live.actions.length + '件' : '今月は0件' },
-            { label: 'レポート', go: !repNow ? '作る' : ({ draft: '仕上げる', in_review: '確認する', approved: '公開する' }[repNow.status] || '開く'), href: '#/c/' + c.id + '/reports', ok: !!(repNow && repNow.status === 'published'), note: repNow ? (REPORT_STATUS[repNow.status] || [repNow.status])[0] : '未作成' }
-          ]) +
+        overview = monthSteps(c, sites, live, repNow, actions) +
+          '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(month)) + 'の数字</h2><span class="arc-sub">登録された材料からその場で集計</span></div>' +
           C.tiles(live) + '</section>' +
           todoCard(R.todoList(live), live, 'staff', studioHref(c, sites)) +
           '<section class="arc-card"><h2 class="arc-h2">推移（直近6か月）</h2>' + C.trends(live) + '</section>';
@@ -531,7 +572,7 @@
         '<p class="arc-note">招待すると、お客様に「AirReach ログイン用リンク」のメール（送信元 no-reply@trillion-bank.com）が届きます。リンクの有効期限は1時間です。切れたら「ログインメールを再送」を押してください。お客様に見えるのは、自社の公開済みのレポートだけです。</p>' +
         '</div></section>',
         '', { client: { id: c.id, name: c.name, site: sites[0] && sites[0].url, industry: c.industry_id }, sec: curSec, reportBadge: repBadge, kicker: curSec === 'home' ? '' : c.name,
-          action: curSec === 'home' ? '<div class="arc-actions"><a class="arc-btn" href="' + esc(studioHref(c, sites) + '#start') + '">サイトを分析する</a><a class="arc-btn arc-btn-line" href="' + esc(studioHref(c, sites) + '#hack2') + '">AI計測を実行</a></div>' : '' });
+          action: '' });
 
       Array.prototype.forEach.call(root.querySelectorAll('details[data-fold]'), function (d) {
         d.addEventListener('toggle', function () { openFolds[d.getAttribute('data-fold')] = d.open; });

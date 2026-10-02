@@ -99,6 +99,32 @@ a.arv-todo-studio{text-decoration:none}
 .arc-fold>summary .arc-sub{margin-left:8px}
 .arc-fold-b{padding:0 20px 18px}
 /* 社内: 材料のそろい具合 */
+.arc-progress{flex:none;display:flex;flex-direction:column;align-items:center;padding:6px 14px;border-radius:10px;background:#eff6ff;color:#1d4ed8}
+.arc-progress small{font-size:.7rem}
+.arc-progress b{font-size:1.4rem;font-variant-numeric:tabular-nums}
+.arc-next{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border:2px solid #2563eb;border-radius:12px;padding:14px 18px;margin:10px 0 12px}
+.arc-next.is-done{border-color:#86efac;background:#f0fdf4}
+.arc-next-k{font-size:.75rem;font-weight:700;color:#1d4ed8}
+.arc-next.is-done .arc-next-k{color:#15803d}
+.arc-next-t{font-size:1.1rem;font-weight:700;margin-top:2px}
+.arc-next-d{font-size:.85rem;color:#334155;margin-top:2px}
+.arc-next-b{flex:none}
+.arc-msteps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.arc-mstep{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;background:#fff}
+.arc-mstep.is-next{border-color:#93c5fd}
+.arc-mstep-n{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;border:1px solid #cbd5e1;color:#64748b}
+.arc-mstep.is-ok .arc-mstep-n{border:0;background:#ecfdf5;color:#047857}
+.arc-mstep.is-next .arc-mstep-n{border:0;background:#2563eb;color:#fff}
+.arc-mstep-b{display:flex;flex-direction:column;gap:1px;min-width:0}
+.arc-mstep-b b{font-size:.92rem;font-weight:700;color:#0f172a}
+.arc-mstep-b span{font-size:.8rem;font-weight:400;color:#334155}
+.arc-mstep-b small{font-size:.72rem;color:#64748b}
+.arc-mstep-s{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.arc-mstep-st{display:flex;flex-direction:column;align-items:flex-end;font-size:.75rem;font-weight:700;color:#64748b}
+.arc-mstep-st small{font-weight:400}
+.arc-mstep.is-ok .arc-mstep-st{color:#047857}
+.arc-mstep.is-next .arc-mstep-st{color:#1d4ed8}
+@media(max-width:640px){.arc-mstep{grid-template-columns:28px minmax(0,1fr)}.arc-mstep-s{grid-column:2;flex-direction:row;align-items:center;justify-content:space-between}.arc-mstep-st{align-items:flex-start}.arc-next-b{width:100%;justify-content:center}}
 .arv-ready{list-style:none;margin:4px 0 12px;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
 .arv-ready li{display:flex;gap:6px;align-items:flex-start;border-radius:8px;padding:7px 8px;font-size:.8rem;border:1px solid #e2e8f0}
 .arv-ready li span:last-child{display:flex;flex-direction:column;min-width:0}
