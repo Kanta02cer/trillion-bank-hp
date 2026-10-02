@@ -523,9 +523,14 @@
     'アクセス': '最寄り駅からの道順・徒歩分数を書く'
   };
 
-  function buildRestaurantKeywords(diagnose, limit, gscMap) {
+  function buildRestaurantKeywords(diagnose, limit, gscMap, brand) {
     var kwa = (diagnose && diagnose.page && diagnose.page.keywordAuto) || {};
     var cands = (kwa.candidates || []).slice();
+    // 店名の言葉は、入力された名前（または顧客名）があればそれを使う（ページの題名から読んだ名前より正確）
+    var nm = String(brand || '').trim();
+    if (nm && kwa.shopName && nm !== kwa.shopName) {
+      cands = cands.map(function (c) { return c.group === 'brand' ? Object.assign({}, c, { text: String(c.text).replace(kwa.shopName, nm) }) : c; });
+    }
     var out = [], seen = {};
     // GSC の実クエリ（あれば先頭）
     Object.keys(gscMap || {}).map(function (k) { return gscMap[k]; })
@@ -985,10 +990,11 @@
     try {
       var st = JSON.parse(localStorage.getItem('airreach_studio_v1') || '{}');
       st.profile = job.profile;
+      if (job.industry) st.industry = job.industry;
       st.keywords = (job.keywords || []).map(function (k) {
         return {
           id: k.id, text: k.keyword, intent: k.intent, cluster: k.cluster,
-          priority: k.priority, targetUrl: '', status: '未対策', volume: k.volume,
+          priority: k.priority, targetUrl: '', status: '未対策', volume: k.volume, answered: k.answered === undefined ? null : k.answered,
           gsc_impressions: k.gsc_impressions, why: k.why || '', action: k.action || '',
           brandScope: (job.profile && job.profile.brand) || '',
           serviceScope: (job.profile && job.profile.service) || ''
@@ -1008,6 +1014,7 @@
         // 画面の欄も分析結果の名前・URLに更新する（欄が古いままだと、次の操作で空の欄が保存済みの名前を消していた）
         if (window.AirReachStudio.setProfile) window.AirReachStudio.setProfile(st.profile); else live.profile = st.profile;
         live.keywords = st.keywords;
+        if (st.industry) live.industry = st.industry;
         if (job.competitors && job.competitors.length) live.competitors = job.competitors;
         else st.competitors = live.competitors || st.competitors;
         live.generated = st.generated;
@@ -1192,7 +1199,7 @@
     await sleep(200);
 
     setStep(3, 'running', 20);
-    var keywords = isFood ? buildRestaurantKeywords(diagnose, job.keyword_limit, gscMap) : buildKeywords(job.profile.service, job.region, job.keyword_limit, gscMap, {
+    var keywords = isFood ? buildRestaurantKeywords(diagnose, job.keyword_limit, gscMap, (input.profile && input.profile.brand) || '') : buildKeywords(job.profile.service, job.region, job.keyword_limit, gscMap, {
       brand: job.profile.brand,
       url: job.url || job.profile.url
     });
