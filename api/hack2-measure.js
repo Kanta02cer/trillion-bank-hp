@@ -201,6 +201,34 @@ export async function staffTokenOk(req, env = process.env, fetchImpl = globalThi
   return ok;
 }
 
+// 上限つきで並べて実行する（順番は入力どおり）
+export async function mapLimit(items, limit, fn) {
+  const out = new Array(items.length);
+  let next = 0;
+  async function worker() {
+    while (next < items.length) { const i = next++; out[i] = await fn(items[i], i); }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return out;
+}
+
+// 回数の上限（rate limit・429）に当たったら、案内された秒数（無ければ15秒）待って最大3回聞き直す。期限を越えるなら諦める
+export function rateLimitWait(err) {
+  const m = String((err && err.message) || err || '');
+  if (!/rate limit|too many requests|\b429\b/i.test(m)) return null;
+  const s = /retry after\s+(\d+)\s*s/i.exec(m);
+  return Math.min(60, (s ? Number(s[1]) : 15) + 1) * 1000;
+}
+export async function withRateRetry(fn, deadline, sleep = (ms) => new Promise((r) => setTimeout(r, ms))) {
+  for (let attempt = 0; ; attempt++) {
+    try { return await fn(); } catch (e) {
+      const wait = rateLimitWait(e);
+      if (wait == null || attempt >= 3 || Date.now() + wait > deadline) throw e;
+      await sleep(wait);
+    }
+  }
+}
+
 export function studioKeyOk(req, env = process.env) {
   const keys = String(env.AIRREACH_STUDIO_KEY || '').split(',').map((k) => k.trim()).filter(Boolean);
   if (!keys.length) return true; // 未設定のあいだは従来どおり（設定した時点から有効）
@@ -369,10 +397,13 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
   const withSearch = useGateway && engine === 'claude';
   const mentionOnly = engine === 'chatgpt';
 
-  const rows = await Promise.all(prompts.map(async (p) => {
+  // Gateway の無料枠は1分あたりの回数に上限がある（Perplexity は5回/分）。同時に2問までにし、
+  // 上限に当たったら返ってきた待ち時間だけ待って聞き直す（関数の制限時間に収まる範囲で）
+  const deadline = Date.now() + 240000;
+  const rows = await mapLimit(prompts, 2, async (p) => {
     let out;
-    if (withSearch) out = await callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt);
-    else out = { answer: useGateway ? await callViaGateway(engine, gatewayKey, p.prompt) : await callProvider(engine, directKey, p.prompt), citations: null, searched: engine === 'perplexity' };
+    if (withSearch) out = await withRateRetry(() => callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt), deadline);
+    else out = { answer: await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt)), deadline), citations: null, searched: engine === 'perplexity' };
     if (mentionOnly) {
       return {
         engine: engineLabel(engine),
@@ -416,7 +447,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
       source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
       answer_excerpt: String(out.answer || '').slice(0, 400)
     };
-  }));
+  });
   return {
     rows,
     status: {
