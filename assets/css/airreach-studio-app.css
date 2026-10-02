@@ -227,3 +227,12 @@ body:not(.has-job) [data-needs-job]{display:none}
 @media (max-width:640px){.ars-client-pick{margin-left:0}}
 @media (max-width:640px){.ars-client-pick~.ars-appbar-context{display:none}}
 .ars-client-legacy{margin-top:12px;padding:12px;border:1px solid #fde68a;background:#fffbeb;border-radius:10px;font-size:14px}.ars-client-legacy p{margin:0 0 8px}
+
+/* ダッシュボードと共通のメニュー: ダッシュボードの節へのリンク（Studio の画面ボタンと同じ見た目・右に小さな矢印） */
+.ars-app .ars-side a.ars-side-link{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;min-height:40px;margin:2px 0;padding:8px 10px;border-radius:var(--ars-r-sm);font-weight:600;font-size:14px;color:var(--ars-ink-2);text-decoration:none}
+.ars-app .ars-side a.ars-side-link:hover{background:var(--ars-canvas)}
+.ars-app .ars-side a.ars-side-link::after{content:'';margin-left:auto;width:6px;height:6px;border-top:1.5px solid var(--ars-faint);border-right:1.5px solid var(--ars-faint);transform:rotate(45deg);flex:none}
+.ars-app .ars-side .ars-side-back{display:block;padding:6px 10px;margin:0 0 6px;font-size:13px;color:var(--ars-muted);text-decoration:none}
+@media (max-width:900px){.ars-app .ars-side a.ars-side-link{width:auto;flex:none;white-space:nowrap;min-height:36px}.ars-app .ars-side .ars-side-back{display:none}}
+.ars-client-pick~.ars-appbar-context .ars-ctx-client{display:none}
+.ars-client-pick~.ars-appbar-context .ars-ctx-site::before{content:none}
