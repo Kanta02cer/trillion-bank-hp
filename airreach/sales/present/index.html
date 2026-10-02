@@ -183,7 +183,7 @@ body{background:#0b1220 !important}
       (lost.length ? '<div class="lost">' + lost.slice(0, 4).map(function (x) {
         return '<div><b>「' + esc(x.prompt) + '」</b><small>' + esc(x.engine) + ' は ' + esc((x.competitors || []).filter(function (c) { return c.mentioned; }).map(function (c) { return c.name; }).join('、')) + ' を紹介し、このお店は出ませんでした。' + (x.answer_excerpt ? '<br>回答の冒頭: ' + esc(String(x.answer_excerpt).slice(0, 120)) + '…' : '') + '</small></div>';
       }).join('') + '</div>' : '<p class="legend">競合だけが紹介された質問はありませんでした。</p>') +
-      '<p class="legend">' + esc(String(r.at || '').slice(0, 16).replace('T', ' ')) + ' 時点・' + r.rows.length + '回答。AIの回答は聞くたびに変わります。</p>';
+      '<p class="legend">' + esc((function () { var d = new Date(r.at); return isNaN(d) ? '' : d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); })()) + ' 時点・' + r.rows.length + '回答。AIの回答は聞くたびに変わります。</p>';
   }
   renderAi(saved);
   document.getElementById('arp-ai-form').addEventListener('submit', function (e) {
