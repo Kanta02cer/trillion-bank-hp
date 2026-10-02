@@ -99,6 +99,24 @@ const merged = R.compileReport({
 expect('traffic: GA4 は連携の値を優先し、取れない対象ページ閲覧は手入力で埋める',
   [merged.traffic.ga4.source, merged.traffic.ga4.sessions, merged.traffic.ga4.ai_sessions, merged.traffic.ga4.target_page_views, merged.traffic.ga4.conversions], ['ga4_api', 120, 5, 40, 4]);
 expect('traffic: GSC は連携（サイト全体）の値を使う（並び順に左右されない）', [merged.traffic.gsc.source, merged.traffic.gsc.clicks], ['gsc_api', 636]);
+// AI が参照したサイト・引用された対象ページ（社内計測の summary.json の cited_domains / media_citations）
+{
+  const sum = { run_id: 'r1', query_set_version: 'v1', by: [{ provider: 'openai', model: 'gpt-x', group: 'main', denominator: 10, either: { rate: 20, numerator: 2 }, service_mention_rate: 30 }],
+    cited_domains: [['example.com', { openai: 3, gemini: 1 }], ['(unresolved)', { openai: 2 }], ['news.example', { openai: 1, gemini: 0 }]],
+    media_citations: [{ provider: 'openai', query: '町田 焼肉', url: 'https://news.example/a/1', match_type: 'exact_target' }, { provider: 'gemini', query: 'x', url: 'not-a-url' }] };
+  const pr = R.parseMeasurementSummary(sum);
+  expect('cited: domains parsed, unresolved dropped, totals', pr.citedDomains.map((d) => [d.host, d.total]), [['example.com', 4], ['news.example', 1]]);
+  expect('cited: target citations keep only real URLs', pr.targetCitations.map((t) => t.url), ['https://news.example/a/1']);
+  const rc = R.compileReport({ client: { name: 't' }, periodMonth: '2026-10-01', now: new Date('2026-10-30T00:00:00Z'), scans: [{ id: 's', createdAt: '2026-10-05T00:00:00Z', url: 'https://example.com/', overallScore: 50, ruleVersion: 'r9', gaps: [] }], actions: [],
+    runs: [{ measured_on: '2026-10-20', source: 'script', summary: sum }],
+    traffic: [{ period_month: '2026-10-01', source: 'gsc_api', metrics: { clicks: 5, impressions: 50, start_date: '2026-10-01', end_date: '2026-10-28', days: 28, property: 'sc-domain:example.com' } }] });
+  expect('cited: compiled ai has cited domains and target citations', [rc.ai.citedDomains.length, rc.ai.targetCitations.length], [2, 1]);
+  const ev = R.evidenceList(rc);
+  expect('evidence: site row has date, url, rule version', /2026-10-05 に https:\/\/example\.com\/ .*判定基準 r9/.test(ev[0].detail), true);
+  expect('evidence: ai row has date, version, model and answers', /計測日 2026-10-20・質問の版 v1・ChatGPT（gpt-x） 10回答/.test(ev[1].detail), true);
+  expect('evidence: gsc row has source and period', ev[2].source === 'Google Search Console（連携で取得）' && /2026-10-01〜2026-10-28（28日間）・sc-domain:example\.com・サイト全体の合計/.test(ev[2].detail), true);
+  expect('evidence: ga4 missing → 未取得', ev[3].source, '未取得');
+}
 const todo = R.todoList(compiled);
 expect('todo: 配点の大きい順（llms.txt 4点 → robots.txt 2点）', todo.map((t) => [t.key, t.points]), [['llms.txtがある', 4], ['robots.txtがある', 2]]);
 expect('todo: 直し方と直す材料の有無', [todo[0].studio, todo[1].studio, !!todo[0].how], [true, false, true]);
