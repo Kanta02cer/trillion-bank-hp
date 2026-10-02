@@ -435,6 +435,9 @@ body.ar-modal-open{overflow:hidden}
 .ar-referral-note{margin:10px 0 0;font-size:.76rem;color:var(--ar-muted,#64748b);line-height:1.5;text-align:center}
 /* その他のツール（担当者向け） */
 .ar-more-tools{margin-top:18px;border:1px solid var(--ar-line,#e2e8f0);border-radius:12px;background:#fff;padding:0}
+.ar-share-row{margin-top:18px}
+.ar-share-row .ar-tool{border:1px solid var(--ar-line,#e2e8f0);border-radius:12px;background:#fff}
+.ar-share-row .ar-tool[hidden]{display:none}
 .ar-more-tools summary{cursor:pointer;padding:12px 14px;font-size:.92rem;font-weight:700;color:#475569;list-style:none;display:flex;align-items:center;justify-content:space-between}
 .ar-more-tools summary::-webkit-details-marker{display:none}
 .ar-more-tools summary::after{content:"⌄";color:#94a3b8;font-size:1rem}
@@ -1261,11 +1264,15 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
             <button type="button" class="ar-formula-entry" id="ar-formula-open" aria-haspopup="dialog" aria-controls="ar-formula-modal"><svg class="ar-formula-entry-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/></svg><span class="ar-formula-entry-label">詳しい計算式を見る</span><span class="ar-arrow" aria-hidden="true">→</span></button>
           </div>
           <!-- 担当者向けのツール。結果の流れの最後に置き、説明付きのリストにする -->
-          <details class="ar-more-tools" id="ar-more-tools">
+          <!-- 共有リンクはお客様も使うので、担当者向けの欄の外に置く -->
+          <div class="ar-share-row">
+            <!-- 共有リンク。診断を保存できたときだけ表示する（リンクを知っている人だけが開ける） -->
+            <a class="ar-tool" id="ar-cta-share" href="/airreach/result/" hidden><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">診断結果を共有</span><span class="ar-tool-desc">共有リンクをコピーする。リンクを知っている人だけがこの結果を開ける</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
+            <p class="ar-tool-note" id="ar-share-note" hidden aria-live="polite"></p>
+          </div>
+          <details class="ar-more-tools" id="ar-more-tools" hidden>
             <summary>その他のツール（担当者向け）</summary>
             <div class="ar-tool-list">
-              <!-- 共有リンク。診断を保存できたときだけ表示する（リンクを知っている人だけが開ける） -->
-              <a class="ar-tool" id="ar-cta-share" href="/airreach/result/" hidden><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">診断結果を共有</span><span class="ar-tool-desc">共有リンクをコピーする。リンクを知っている人だけがこの結果を開ける</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
               <a class="ar-tool" href="/airreach/platform/"><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">くわしい分析</span><span class="ar-tool-desc">Search Console・GA4 の実数とつないで、訪問や問い合わせの余地を試算する</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
               <button type="button" class="ar-tool" id="ar-google-connect"><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 12h8M12 8v8"/><circle cx="12" cy="12" r="9"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">Googleと連携（実測）</span><span class="ar-tool-desc">Search Console とつないで、Search Console・GA4 とつないで、表示回数・クリック・セッションを取り込む</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></button>
               <a class="ar-tool" href="/airreach/studio/" id="ar-cta-actions"><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6M9 13h7M9 17h7"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">直す材料を作る</span><span class="ar-tool-desc">対策ファイルの下書きを生成する。自動では公開しない</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
@@ -1273,7 +1280,6 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
               <a class="ar-tool" id="ar-cta-sales-present" href="/airreach/sales/" hidden><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">商談モード</span><span class="ar-tool-desc">お客様に見せる用の画面で開く</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
             </div>
             <p class="ar-tool-note" id="ar-google-note" hidden></p>
-            <p class="ar-tool-note" id="ar-share-note" hidden aria-live="polite"></p>
           </details>
         </div>
 
@@ -2765,6 +2771,12 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   // 「営業の履歴」は営業ページから開いたときだけ出す（お客様の結果画面には出さない）
   try { if (sessionStorage.getItem('airreach_sales_ctx') === '1' && $('ar-sales-link')) $('ar-sales-link').hidden = false; } catch (e) {}
+  // 「その他のツール（担当者向け）」は担当者の端末でだけ出す（お客様の結果画面には出さない）。
+  // 担当者の端末 = 営業用トップ等を開いたことがある、または社内キーを保存してある端末。アクセス制限ではなく表示の切り替え
+  try {
+    var staffDevice = localStorage.getItem('airreach_staff_device_v1') === '1' || !!localStorage.getItem('airreach_studio_key_v1');
+    if (staffDevice && $('ar-more-tools')) $('ar-more-tools').hidden = false;
+  } catch (e) {}
   // FAB: 1画面分ほどスクロールしたら出る。押すとページの先頭へ戻る
   (function () {
     var fab = $('ar-fab-top');
