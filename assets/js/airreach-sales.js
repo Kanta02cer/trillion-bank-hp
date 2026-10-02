@@ -1009,15 +1009,26 @@
           meaning: profile.now_meaning + ' · ' + scoreMeaning(acq.score),
           sub: acq.score == null ? (acq.note || '未確認') : scoreMeaning(acq.score)
         },
-        {
-          id: 'after',
-          label: profile.after_label,
-          value: improve.low + '〜' + improve.high,
-          unit: '/ 100',
-          badge: 'Inferred',
-          meaning: profile.after_meaning,
-          sub: '目安 ' + improve.multiplierLow + '〜' + improve.multiplierHigh + '倍（レンジ・保証なし）'
-        },
+        (function () {
+          // 直したあとの点数は、満たしていない項目を直したと仮定して診断と同じ計算式で出し直した値（推測の幅は使わない）
+          var pj = diagnose && diagnose.projection;
+          if (!pj || pj.afterTop == null) {
+            return { id: 'after', label: profile.after_label, value: '—', unit: '', badge: 'Unmeasured',
+              meaning: diagnose ? '満たしていない項目が無いか、点数を出せない項目があるため、直したあとの点数は出していません' : 'サイトを取得できなかったため、直したあとの点数は出していません', sub: '' };
+          }
+          var crit = (window.AirReach && window.AirReach.checkCriteria) || function (l) { return l; };
+          var names = pj.top.map(function (t) { return crit(t.label, false); });
+          return {
+            id: 'after',
+            label: profile.after_label,
+            value: pj.current + ' → ' + pj.afterTop,
+            unit: '/ 100',
+            badge: 'Inferred',
+            meaning: '「' + names.join('」「') + '」を直した場合の点数です（診断と同じ計算式で出し直したもの。すべて直すと ' + pj.afterAll + ' 点）',
+            projection: pj,
+            sub: ''
+          };
+        })(),
         inqMeasured ? {
           id: 'outcome',
           label: profile.outcome_label,
