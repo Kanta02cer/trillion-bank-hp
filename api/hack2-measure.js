@@ -26,7 +26,7 @@ function isCorsHost(host) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin(req));
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-AirReach-Key, Authorization');
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Vary', 'Origin');
 
@@ -37,6 +37,19 @@ export default async function handler(req, res) {
   }
   if (req.method !== 'POST') {
     return json(res, 405, { error: 'Method not allowed' });
+  }
+  // 実際の AI に聞く計測は費用がかかる。社内キー（Vercel の環境変数 AIRREACH_STUDIO_KEY、カンマ区切りで複数可）が
+  // 設定されているときは、ヘッダー X-AirReach-Key が一致しない要求を断る。ブラウザからの要求は許可したサイトだけ受ける
+  const origin = req.headers.origin || '';
+  if (origin) {
+    let oh = '';
+    try { oh = new URL(origin).hostname; } catch (e) {}
+    if (!isCorsHost(oh)) return json(res, 403, { error: 'origin not allowed', code: 'origin_not_allowed' });
+  }
+  // 社内の人は、AirReach のダッシュボードにログインしていればキーなしで使える（Authorization: Bearer <ログインのトークン>）。
+  // そうでなければ社内キーで判定する
+  if (!(await staffTokenOk(req)) && !studioKeyOk(req)) {
+    return json(res, 401, { error: 'AirReach のダッシュボード（/airreach/app/）に社内の人としてログインしてから、もう一度押してください。', code: 'staff_login_required' });
   }
 
   let body;
@@ -158,6 +171,41 @@ export default async function handler(req, res) {
       'Perplexity citation URLs are not returned through the gateway, so cited is judged only from the answer text (null when not found).',
     fetchNote: fetchNote
   });
+}
+
+// ログインのトークンが AirReach の社内メンバーのものかを、その人のトークンで airreach_me を呼んで確かめる。
+// トークンの署名と期限は Supabase（PostgREST）が検証する。同じトークンの結果は5分だけ覚える
+const staffCache = new Map();
+export async function staffTokenOk(req, env = process.env, fetchImpl = globalThis.fetch) {
+  const h = String((req.headers && (req.headers.authorization || req.headers.Authorization)) || '');
+  const m = /^Bearer\s+([A-Za-z0-9._-]{20,4096})$/.exec(h.trim());
+  if (!m) return false;
+  const url = String(env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
+  const anon = String(env.SUPABASE_ANON_KEY || '').trim();
+  if (!url || !anon) return false;
+  const token = m[1];
+  const hit = staffCache.get(token);
+  if (hit && hit.until > Date.now()) return hit.ok;
+  let ok = false;
+  try {
+    const r = await fetchImpl(url + '/rest/v1/rpc/airreach_me', {
+      method: 'POST',
+      headers: { apikey: anon, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: '{}',
+      signal: AbortSignal.timeout(5000)
+    });
+    if (r.ok) { const me = await r.json(); ok = !!(me && me.is_staff === true); }
+  } catch (e) { ok = false; }
+  if (staffCache.size > 500) staffCache.clear();
+  staffCache.set(token, { ok, until: Date.now() + 5 * 60 * 1000 });
+  return ok;
+}
+
+export function studioKeyOk(req, env = process.env) {
+  const keys = String(env.AIRREACH_STUDIO_KEY || '').split(',').map((k) => k.trim()).filter(Boolean);
+  if (!keys.length) return true; // 未設定のあいだは従来どおり（設定した時点から有効）
+  const got = String((req.headers && (req.headers['x-airreach-key'] || req.headers['X-AirReach-Key'])) || '').trim();
+  return !!got && keys.indexOf(got) !== -1;
 }
 
 function normalizePrompts(raw) {

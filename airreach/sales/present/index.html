@@ -30,6 +30,37 @@ body{background:#0b1220 !important}
 .arp .btn-line{background:transparent;border:1px solid #475569;color:#e2e8f0}
 .arp .note{margin-top:28px;font-size:.8rem;color:#64748b}
 .arp .err{color:#fca5a5;font-weight:700}
+.arp .q-head{font-size:clamp(1.3rem,3.4vw,1.9rem);font-weight:800;line-height:1.45;margin:0 0 14px}
+.arp .q-head b{color:#60a5fa}.arp .q-head em{font-style:normal;color:#fdba74;font-size:1.3em}
+.arp .chips{display:flex;flex-wrap:wrap;gap:8px}
+.arp .chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border-radius:999px;font-weight:700;font-size:.95rem}
+.arp .chip.ok{background:rgba(96,165,250,.16);border:1px solid rgba(96,165,250,.5);color:#bfdbfe}
+.arp .chip.ng{background:rgba(253,186,116,.12);border:1px solid rgba(253,186,116,.45);color:#fed7aa}
+.arp .legend{margin-top:10px;font-size:.85rem;color:#94a3b8}
+.arp .mini{display:flex;align-items:baseline;gap:10px;margin-top:28px;color:#cbd5e1;font-size:1rem}
+.arp .mini b{font-size:2rem;color:#f8fafc}
+.arp .ai{margin-top:36px;padding:24px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(148,163,184,.25)}
+.arp .ai h2{margin:0 0 6px;font-size:1.25rem;color:#f8fafc}
+.arp .ai .lead{margin:0 0 16px;color:#94a3b8;line-height:1.6}
+.arp .ai-form{display:grid;gap:12px}
+.arp .ai-comps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.arp .ai input[type=text],.arp .ai input[type=password]{min-height:48px;padding:0 14px;border-radius:10px;border:1px solid #475569;background:#0f172a;color:#f8fafc;font:inherit;font-size:1rem}
+.arp .ai input:focus{outline:2px solid #60a5fa;outline-offset:1px}
+.arp .ai label.eng{display:inline-flex;align-items:center;gap:8px;margin-right:16px;color:#e2e8f0}
+.arp .ai-status{margin-top:12px;color:#cbd5e1;min-height:1.4em}
+.arp .ai-status.is-err{color:#fca5a5}
+.arp .bar{position:relative;height:6px;border-radius:99px;background:rgba(148,163,184,.25);overflow:hidden;margin-top:10px}
+.arp .bar i{position:absolute;inset:0 auto 0 0;width:35%;background:#60a5fa;border-radius:99px;animation:arp-slide 1.6s cubic-bezier(.65,0,.35,1) infinite}
+@keyframes arp-slide{0%{transform:translateX(-100%)}100%{transform:translateX(290%)}}
+@media (prefers-reduced-motion:reduce){.arp .bar i{animation:none;width:100%;opacity:.4}}
+.arp table.res{width:100%;border-collapse:collapse;margin-top:16px;font-size:1rem}
+.arp table.res th,.arp table.res td{padding:12px 10px;border-bottom:1px solid rgba(148,163,184,.25);text-align:left;vertical-align:top}
+.arp table.res th{color:#94a3b8;font-size:.85rem;font-weight:700}
+.arp .hit{color:#86efac;font-weight:800}.arp .miss{color:#64748b}
+.arp .lost{margin-top:18px;display:grid;gap:10px}
+.arp .lost div{padding:14px 16px;border-radius:12px;background:rgba(253,186,116,.08);border:1px solid rgba(253,186,116,.35)}
+.arp .lost b{display:block;font-size:1.05rem}.arp .lost small{color:#cbd5e1;line-height:1.6}
+@media (max-width:640px){.arp .ai-comps{grid-template-columns:1fr}}
 </style>
 <div class="arp">
   <div class="top">
@@ -38,11 +69,32 @@ body{background:#0b1220 !important}
   </div>
   <h1 id="arp-name">—</h1>
   <p class="sub" id="arp-sub">AI・検索から、まだ取れる可能性のあるお客様がいます。</p>
+  <section id="arp-q" hidden>
+    <p class="q-head" id="arp-q-head"></p>
+    <div class="chips" id="arp-q-chips"></div>
+    <p class="legend">青＝ホームページに答えが書いてある　橙＝見つからない</p>
+  </section>
   <div class="score" id="arp-score">—<span>/ 100</span></div>
   <div class="panel">
     <h2>最大の問題（最初に直すこと）</h2>
     <p id="arp-fix">—</p>
   </div>
+  <section class="ai" aria-labelledby="arp-ai-title">
+    <h2 id="arp-ai-title">AIに聞いてみる</h2>
+    <p class="lead">お客さんが調べそうな質問を、実際の AI に聞きます。回答に、このお店と競合のどちらの名前が出るかを比べます（30秒前後）。</p>
+    <form class="ai-form" id="arp-ai-form" novalidate>
+      <div class="ai-comps">
+        <input type="text" id="arp-c1" placeholder="競合の名前（例: ○○そば）" aria-label="競合の名前 1">
+        <input type="text" id="arp-c2" placeholder="競合の名前（任意）" aria-label="競合の名前 2">
+        <input type="text" id="arp-c3" placeholder="競合の名前（任意）" aria-label="競合の名前 3">
+      </div>
+      <div><label class="eng"><input type="checkbox" data-eng value="perplexity" checked> Perplexity（検索あり）</label><label class="eng"><input type="checkbox" data-eng value="chatgpt" checked> ChatGPT</label></div>
+      <div id="arp-key-row" hidden><input type="password" id="arp-key" placeholder="社内キー" aria-label="社内キー" autocomplete="off"> <span style="color:#94a3b8;font-size:.85rem">社内キーはこの端末にだけ保存します</span></div>
+      <div><button type="submit" class="btn" id="arp-ai-run">AIに聞いてみる</button></div>
+    </form>
+    <div class="ai-status" id="arp-ai-status" role="status" aria-live="polite"></div>
+    <div id="arp-ai-result"></div>
+  </section>
   <div class="actions">
     <a class="btn" id="arp-why" href="#">なぜ？</a>
     <a class="btn btn-line" id="arp-how" href="#">どう直す？</a>
@@ -50,6 +102,7 @@ body{background:#0b1220 !important}
   </div>
   <p class="note">参考表示です。検索順位・AI掲載・予約・問い合わせ・売上を保証しません。</p>
 </div>
+<script src="/assets/js/airreach-staff-auth.js"></script>
 <script src="{{ '/assets/js/airreach-display.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/airreach-scan-store.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/airreach-sales-kit.js' | relative_url }}"></script>
@@ -79,8 +132,93 @@ body{background:#0b1220 !important}
     e.preventDefault();
     kit.openProposal(scan);
   });
+
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  var ka = (scan.previewDiagnose && scan.previewDiagnose.page && scan.previewDiagnose.page.keywordAuto) || null;
+  var cands = ((ka && ka.candidates) || []).filter(function (c) { return c.group === 'condition' && c.answered !== null && c.answered !== undefined; });
+
+  // お客さんが調べること（答えの有無）を主役にする。点数は脇役
+  if (cands.length) {
+    var ok = cands.filter(function (c) { return c.answered; }).length;
+    document.getElementById('arp-q').hidden = false;
+    document.getElementById('arp-q-head').innerHTML = 'お客さんが調べる <b>' + cands.length + '</b> のことのうち、ホームページに答えがあるのは <em>' + ok + '</em> つ';
+    document.getElementById('arp-q-chips').innerHTML = cands.map(function (c) {
+      return '<span class="chip ' + (c.answered ? 'ok' : 'ng') + '">' + (c.answered ? '✓ ' : '− ') + esc(c.modifier || c.text) + '</span>';
+    }).join('');
+    var sc = document.getElementById('arp-score');
+    sc.className = 'mini';
+    sc.innerHTML = 'ホームページの整い具合 <b>' + (score != null ? score : '—') + '</b> / 100';
+  }
+
+  // ---- AIに聞いてみる（実際の AI。社内キーで保護） ----
+  var KEY_STORE = 'airreach_studio_key_v1';
+  function getKey() { try { return localStorage.getItem(KEY_STORE) || ''; } catch (e) { return ''; } }
+  function questions() {
+    var base = (ka && ka.keyword) || scan.keyword || '';
+    var qs = [];
+    if (base) qs.push(base + 'でおすすめのお店を教えて');
+    cands.filter(function (c) { return !c.answered; }).slice(0, 3).forEach(function (c) { qs.push(c.text + 'のお店を教えて'); });
+    if (qs.length < 2) cands.filter(function (c) { return c.answered; }).slice(0, 2).forEach(function (c) { qs.push(c.text + 'のお店を教えて'); });
+    return qs.slice(0, 4).map(function (t) { return { keyword: t, prompt: t }; });
+  }
+  var brand = scan.siteTitle || (ka && ka.shopName) || scan.displayName || '';
+  var saved = scan.aiCompare || null;
+  if (saved && saved.competitors) saved.competitors.forEach(function (n, i) { var el = document.getElementById('arp-c' + (i + 1)); if (el) el.value = n; });
+  function renderAi(r) {
+    var box = document.getElementById('arp-ai-result');
+    if (!r || !r.rows || !r.rows.length) { box.innerHTML = ''; return; }
+    var names = r.competitors || [];
+    var by = {};
+    r.rows.forEach(function (x) {
+      var b = by[x.engine] || (by[x.engine] = { n: 0, self: 0, comp: {} });
+      b.n++; b.self += x.mentioned ? 1 : 0;
+      (x.competitors || []).forEach(function (c) { b.comp[c.name] = (b.comp[c.name] || 0) + (c.mentioned ? 1 : 0); });
+    });
+    var head = '<tr><th>AI</th><th>' + esc(brand || 'このお店') + '</th>' + names.map(function (n) { return '<th>' + esc(n) + '</th>'; }).join('') + '</tr>';
+    var body = Object.keys(by).map(function (e) {
+      var b = by[e];
+      return '<tr><td>' + esc(e) + '</td><td class="' + (b.self ? 'hit' : 'miss') + '">' + b.self + ' / ' + b.n + '問</td>' + names.map(function (n) { var v = b.comp[n] || 0; return '<td class="' + (v ? 'hit' : 'miss') + '">' + v + ' / ' + b.n + '問</td>'; }).join('') + '</tr>';
+    }).join('');
+    var lost = r.rows.filter(function (x) { return !x.mentioned && (x.competitors || []).some(function (c) { return c.mentioned; }); });
+    box.innerHTML = '<table class="res"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>' +
+      (lost.length ? '<div class="lost">' + lost.slice(0, 4).map(function (x) {
+        return '<div><b>「' + esc(x.prompt) + '」</b><small>' + esc(x.engine) + ' は ' + esc((x.competitors || []).filter(function (c) { return c.mentioned; }).map(function (c) { return c.name; }).join('、')) + ' を紹介し、このお店は出ませんでした。' + (x.answer_excerpt ? '<br>回答の冒頭: ' + esc(String(x.answer_excerpt).slice(0, 120)) + '…' : '') + '</small></div>';
+      }).join('') + '</div>' : '<p class="legend">競合だけが紹介された質問はありませんでした。</p>') +
+      '<p class="legend">' + esc((function () { var d = new Date(r.at); return isNaN(d) ? '' : d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); })()) + ' 時点・' + r.rows.length + '回答。AIの回答は聞くたびに変わります。</p>';
+  }
+  renderAi(saved);
+  document.getElementById('arp-ai-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var st = document.getElementById('arp-ai-status');
+    var comps = ['arp-c1', 'arp-c2', 'arp-c3'].map(function (id) { return document.getElementById(id).value.trim(); }).filter(function (v) { return v.length >= 2; });
+    var engines = [].map.call(document.querySelectorAll('[data-eng]:checked'), function (x) { return x.value; });
+    var keyInput = document.getElementById('arp-key');
+    if (keyInput && keyInput.value.trim()) { try { localStorage.setItem(KEY_STORE, keyInput.value.trim()); } catch (err) {} }
+    if (!brand) { st.className = 'ai-status is-err'; st.textContent = 'お店の名前が分かりません。案件詳細で名前を確認してください。'; return; }
+    if (!comps.length) { st.className = 'ai-status is-err'; st.textContent = '競合の名前を1つ以上入れてください。'; document.getElementById('arp-c1').focus(); return; }
+    if (!engines.length) { st.className = 'ai-status is-err'; st.textContent = 'AIを1つ以上選んでください。'; return; }
+    var qs = questions();
+    if (!qs.length) { st.className = 'ai-status is-err'; st.textContent = '質問を作れませんでした（調べる言葉がありません）。'; return; }
+    var btn = document.getElementById('arp-ai-run'); btn.disabled = true;
+    st.className = 'ai-status'; st.innerHTML = qs.length + 'つの質問を AI に聞いています…<div class="bar" aria-hidden="true"><i></i></div>';
+    (window.AirReachStaffAuth ? window.AirReachStaffAuth.headers() : Promise.resolve({ 'Content-Type': 'application/json', 'X-AirReach-Key': getKey() })).then(function (hdr) {
+      return fetch('/api/hack2-measure/', {
+        method: 'POST', headers: hdr,
+        body: JSON.stringify({ brand: brand, url: scan.url, prompts: qs, engines: engines, competitors: comps.map(function (n) { return { name: n }; }) })
+      });
+    }).then(function (res) { return res.json().then(function (j) { return { status: res.status, body: j }; }); }).then(function (r) {
+      btn.disabled = false;
+      if (r.status === 401) { st.className = 'ai-status is-err'; st.innerHTML = 'AI に聞くには、<a href="/airreach/app/" target="_blank" rel="noopener">AirReach のダッシュボード</a>に社内の人（@trillion-bank.com）としてログインしてから、もう一度押してください。'; return; }
+      if (r.status >= 400) { st.className = 'ai-status is-err'; st.textContent = (r.body && r.body.error) || ('失敗しました（' + r.status + '）'); return; }
+      var rows = (r.body.rows || []).filter(function (x) { return String(x.evidenceClass || '') !== 'Estimated'; });
+      var result = { at: new Date().toISOString(), competitors: comps, rows: rows };
+      try { scan = AirReachScanStore.saveScan(Object.assign({}, AirReachScanStore.loadScan(id) || scan, { aiCompare: result })) || scan; } catch (err) {}
+      st.className = 'ai-status'; st.textContent = '';
+      renderAi(result);
+    }).catch(function (err) { btn.disabled = false; st.className = 'ai-status is-err'; st.textContent = '通信に失敗しました: ' + (err && err.message ? err.message : err); });
+  });
 })();
 </script>
-<script>try { sessionStorage.setItem('airreach_sales_ctx', '1'); } catch (e) {}</script>
+<script>try { sessionStorage.setItem('airreach_sales_ctx', '1'); localStorage.setItem('airreach_staff_device_v1', '1'); } catch (e) {}</script>
 </main>{% include tb-footer.html %}
 </body></html>

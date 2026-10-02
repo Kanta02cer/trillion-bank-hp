@@ -235,7 +235,7 @@
       { word: 'ランチ', check: /ランチ|昼の部|昼営業/ },
       { word: 'ディナー', check: /ディナー|夜の部|夜営業/ },
       { word: '個室', check: /個室|半個室/ },
-      { word: '予約', check: /予約|reserve|reservation/i },
+      { word: '予約', check: /予約|\breserv(?:e|ation|ations)\b/i },
       { word: '子連れ', check: /子連れ|お子様|キッズ|子ども|お子さま/ },
       { word: '駐車場', check: /駐車場|パーキング|駐車\s*\d+\s*台/ },
       { word: 'テイクアウト', check: /テイクアウト|持ち帰り/ },
@@ -260,7 +260,7 @@
     { word: 'おすすめ', check: null },
     { word: '口コミ', check: null },
     { word: '料金', check: /料金|価格|\d[\d,]*\s*円|[¥￥]\s*\d/ },
-    { word: '予約', check: /予約|reserve|reservation/i },
+    { word: '予約', check: /予約|\breserv(?:e|ation|ations)\b/i },
     { word: '体験', check: /体験|お試し|無料カウンセリング/ },
     { word: '初めて', check: /初めて|はじめて|初心者/ },
     { word: '駐車場', check: /駐車場|パーキング/ },
@@ -269,7 +269,7 @@
   var BRAND_MODIFIERS = {
     restaurant: [
       { word: '', check: null },
-      { word: '予約', check: /予約|reserve|reservation/i },
+      { word: '予約', check: /予約|\breserv(?:e|ation|ations)\b/i },
       { word: 'メニュー', check: /メニュー|お品書き|\d[\d,]*\s*円/ },
       { word: '営業時間', check: /営業時間|定休日|open/i },
       { word: 'アクセス', check: /徒歩\s*\d+\s*分|アクセス|駅から|最寄/ }
@@ -284,7 +284,7 @@
     other: [
       { word: '', check: null },
       { word: '料金', check: /料金|価格|\d[\d,]*\s*円/ },
-      { word: '予約', check: /予約|reserve|reservation/i },
+      { word: '予約', check: /予約|\breserv(?:e|ation|ations)\b/i },
       { word: '口コミ', check: null },
       { word: 'アクセス', check: /徒歩\s*\d+\s*分|アクセス|駅から|最寄/ }
     ],
