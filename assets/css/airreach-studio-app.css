@@ -257,3 +257,11 @@ body:not(.has-job) [data-needs-job]{display:none}
 .aib-cat{border:1px solid var(--ars-line);border-radius:10px;padding:8px 10px}.aib-cat span{display:block;font-size:12px;color:var(--ars-muted)}.aib-cat b{font-size:20px}.aib-cat small{display:block;font-size:11px;color:var(--ars-muted)}
 .aib-cat.is-self{border-color:#bfdbfe}.aib-cat.is-comp{border-color:#fed7aa}
 .aib-dom details summary{cursor:pointer;font-weight:600}.aib-dom ul{margin:6px 0 0;padding-left:16px;font-size:12px}.aib-dom li a{word-break:break-all}
+
+/* 一般質問・指名質問のまとめ */
+.aib-types{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.aib-type h3 small{font-weight:400;font-size:12px;color:var(--ars-muted)}
+.aib-kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.aib-kpis>div{border:1px solid var(--ars-line);border-radius:10px;padding:8px 10px}.aib-kpis span{display:block;font-size:12px;color:var(--ars-muted)}.aib-kpis b{font-size:22px}.aib-kpis small{display:block;font-size:11px;color:var(--ars-muted)}
+.aib-mini{margin-top:8px;font-size:13px}.aib-mini>span{display:block;font-size:12px;font-weight:600;color:var(--ars-muted);margin-bottom:2px}
+.aib-mini ul{display:flex;gap:12px;flex-wrap:wrap;list-style:none;margin:0;padding:0}.aib-mini ol{margin:0;padding-left:18px}.aib-mini ol a{word-break:break-all}
