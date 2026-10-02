@@ -1404,11 +1404,12 @@
       launch.parentNode.insertBefore(el, launch);
     }
     el.innerHTML = 'ダッシュボードの顧客「<strong>' + escHtml(studioClient.name || '（名前なし）') + '</strong>」の作業として開いています。' +
-      '下書きを作ったあと「ダッシュボードに施策として登録」で、施策の予定として登録できます。 ' +
+      'この顧客の分析・キーワード・AI計測・下書きは、顧客ごとにこの端末に保存されます。下書きを作ったあと「ダッシュボードに施策として登録」で、施策の予定として登録できます。 ' +
       '<a href="/airreach/app/#/c/' + studioClient.id + '">ダッシュボードに戻る</a>' +
       ' · <button type="button" class="ars-btn ars-btn-secondary" id="orch-client-clear" style="padding:2px 10px;font-size:12px">この顧客の作業をやめる</button>';
     var clr = q('orch-client-clear');
-    if (clr) clr.onclick = function () { try { sessionStorage.removeItem(STUDIO_CLIENT_KEY); } catch (e) {} studioClient = null; el.remove(); var b = q('orch-to-dashboard'); if (b) b.hidden = true; };
+    // 顧客の作業をやめる＝顧客なしの作業場所に切り替えて開き直す（airreach-studio-clients.js が入れ替える）
+    if (clr) clr.onclick = function () { try { sessionStorage.removeItem(STUDIO_CLIENT_KEY); } catch (e) {} location.href = '/airreach/studio/?client=none'; };
   }
   function escHtml(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   /** 下書きのファイルから、ダッシュボードの「施策（予定）」の候補を作る */
