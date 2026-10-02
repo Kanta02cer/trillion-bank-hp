@@ -37,6 +37,12 @@
 .arc-chip{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;background:#f1f5f9;color:#475569}
 .arc-chip.is-ok{background:#ecfdf5;color:#047857}
 .arc-chip.is-warn{background:#fffbeb;color:#b45309}
+.arc-steps{display:flex;gap:6px;list-style:none;margin:6px 0 10px;padding:0;flex-wrap:wrap}
+.arc-steps li{flex:1 1 150px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:10px;font-size:.82rem;font-weight:700;color:#64748b;background:#fff}
+.arc-steps li small{display:block;font-weight:500;font-size:.74rem}
+.arc-steps li.is-done{color:#047857;border-color:#a7f3d0;background:#ecfdf5}.arc-steps li.is-done::before{content:'✓ '}
+.arc-steps li.is-now{color:#1d4ed8;border-color:#93c5fd;background:#eff6ff}
+.arc-history summary{cursor:pointer;font-size:.82rem;font-weight:700;margin-top:6px}
 .arc-chip.is-ng{background:#fef2f2;color:#b91c1c}
 .arc-studio-in{border-color:#93c5fd;background:#f5f9ff}
 .arc-hint{background:#fffbeb;color:#78350f;border-radius:8px;padding:10px 12px;margin:0 0 12px;font-size:.88rem}
@@ -119,6 +125,16 @@ a.arv-todo-studio{text-decoration:none}
 .arr-table td.arr-url{word-break:break-all;font-size:.82rem}
 .arr-ev th{width:30%;font-weight:600}
 .arr-ev td{font-size:.82rem;color:#334155}
+.arr-first thead th:nth-child(2),.arr-first thead th:nth-child(4),.arr-first tbody td:nth-child(2):not([colspan]),.arr-first tbody td:nth-child(4){display:none}
+.arr-checks td{font-size:.8rem;vertical-align:top}.arr-checks th:nth-child(2),.arr-checks td:nth-child(2){width:3.2em;white-space:nowrap;text-align:center}.arr-checks th:nth-child(3),.arr-checks td:nth-child(3){width:4.6em;white-space:nowrap}.arr-checks th:first-child{width:42%}.arr-checks .arr-mark{text-align:center;font-weight:800}
+.arr-checks tr.is-ng .arr-mark{color:#c2410c}.arr-checks tr.is-ok .arr-mark{color:#047857}.arr-checks tr.is-unknown .arr-mark{color:#64748b}
+.arr-checks tr.arr-grp th{background:#f1f5f9;font-size:.82rem;text-align:left}
+.arr-kind{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:999px;font-size:.66rem;font-weight:700;vertical-align:middle;border:1px solid;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.arr-kind.is-measured{color:#1d4ed8;border-color:#bfdbfe;background:#eff6ff}.arr-kind.is-judged{color:#6d28d9;border-color:#ddd6fe;background:#f5f3ff}
+.arr-kind.is-manual{color:#b45309;border-color:#fde68a;background:#fffbeb}.arr-kind.is-reference{color:#475569;border-color:#cbd5e1;background:#f8fafc}.arr-kind.is-unknown{color:#64748b;border-color:#e2e8f0;background:#fff;border-style:dashed}
+.arr-legend{margin:0 0 14px;font-size:.8rem;color:#334155}.arr-legend summary{cursor:pointer;font-weight:700}.arr-legend dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 10px;margin:8px 0 0}.arr-legend dt .arr-kind{margin-left:0}.arr-legend dd{margin:0}
+.arr-urls{margin:0;padding-left:1.1em}.arr-urls li{font-size:.8rem}
+.arv-todo-basis{margin-top:6px;font-size:.8rem;color:#334155;background:#f8fafc;border-left:3px solid #94a3b8;padding:6px 8px}.arv-todo-basis span{font-weight:700;margin-right:6px}
 .arr-sub{font-size:.82rem;color:#64748b;margin:2px 0 8px}
 .arr-concl li{font-size:1rem;font-weight:600;margin:4px 0;line-height:1.6}
 .arr-date{display:inline-block;min-width:3.2em;color:#64748b;font-variant-numeric:tabular-nums;margin-right:6px}
@@ -177,6 +193,7 @@ a.arv-todo-studio{text-decoration:none}
   /* 長い節（直すこと等）は途中で改ページしてよい。小さい部品だけ分割しない */
   .arr-table,.arv-fig,.arv-tile,.arv-todo,.arv-trends,.arv-tiles,.arv-facs,.arv-cmp{break-inside:avoid}
   .arr-h2,.arr-h3{break-after:avoid}
+  .arr-table.arr-checks{break-inside:auto}.arr-checks tr{break-inside:avoid}
   /* 印刷では「直すこと」を詰める（理由の行は画面で見られる） */
   .arv-todo-why,.arv-todo-tech{display:none}
   .arv-todo{padding:6px 10px}

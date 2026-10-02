@@ -95,6 +95,111 @@
    * 最新の診断の不足を「直すこと」にして、配点の大きい順に並べる。
    * @returns {Array<{key,text,factor,factorLabel,points,why,how,studio}>}
    */
+  // 各項目の判定基準（お客様向けの言い方）。ラベルと配点は airreach-diagnose.js と同じ（unit-report で一致を確かめる）
+  var CRITERIA = {
+    'ページタイトルがある': 'ページの題名（title）が入っているか',
+    'H1が1つ': 'ページの一番大きな見出し（H1）がちょうど1つか',
+    '説明文（meta）が十分': '検索結果に出る紹介文（meta description）が40文字以上あるか',
+    'canonicalがある': 'ページの正式なURL（canonical）が指定されているか',
+    'og:titleがある': 'SNSやLINEで共有されたときの題名（og:title）があるか',
+    '本文量がある': 'ページの本文が800文字を超えるか',
+    '会社情報（Organization等）': '会社・お店の情報が、検索やAIが読み取れる形（構造化データの Organization / LocalBusiness）で書かれているか',
+    'WebSite / WebPage': 'サイトとページの種類が、構造化データ（WebSite / WebPage）で書かれているか',
+    'Service / Product': 'サービス・商品が、構造化データ（Service / Product）で書かれているか',
+    'BreadcrumbList': 'ページの階層が、構造化データ（BreadcrumbList）で書かれているか',
+    '問い合わせ導線': '問い合わせ・予約・相談の案内がページにあるか',
+    'FAQPageがある': 'よくある質問が、構造化データ（FAQPage）で書かれているか',
+    'FAQが3問以上': 'よくある質問が3問以上あるか',
+    '画面上のFAQらしき領域': '画面に「よくある質問」のまとまりがあるか',
+    'llms.txtがある': 'AI向けの案内ファイル（llms.txt）があり、81文字以上書かれているか',
+    'robots.txtがある': '検索やAIのロボット向けの案内ファイル（robots.txt）があるか',
+    '主要AIボットの記載': 'robots.txt に、AIのロボット（GPTBot など）への指定が書かれているか',
+    'sitemap案内': 'robots.txt に、サイトの地図（sitemap）の場所が書かれているか'
+  };
+  // 総合点の重み（airreach-diagnose.js の FACTORS と同じ）
+  var FACTOR_WEIGHT = { structure: 0.30, entity: 0.25, faq: 0.20, discover: 0.25 };
+  var LD_CHECKS = { '会社情報（Organization等）': 1, 'WebSite / WebPage': 1, 'Service / Product': 1, 'BreadcrumbList': 1, 'FAQPageがある': 1 };
+  var VERDICT_JA = { allowed: '許可', partial: '一部のページだけ拒否', blocked: '拒否', unspecified: '指定なし（許可と同じ）' };
+  var ROLE_JA = { menu: 'メニュー・料金', access: 'アクセス・店舗情報', reserve: '予約', faq: 'よくある質問' };
+
+  // llms.txt の状態: ファイルが無い／あるが短い／ある／確認できなかった
+  function llmsStatus(s) {
+    var st = s && s.evidence && s.evidence.llms && s.evidence.llms.state;
+    var has = s && s.pageInfo ? s.pageInfo.hasLlms : null;
+    if (st === 'missing') return { key: 'missing', text: 'ファイルがありません' };
+    if (st === 'ok' && has === false) return { key: 'short', text: 'ファイルはありますが、80文字以下のため内容が足りないと判定しました' };
+    if (st === 'ok' || has === true) return { key: 'ok', text: 'ファイルがあり、81文字以上書かれています' };
+    return { key: 'unknown', text: '取得できなかったため、判定していません（0点ではありません）' };
+  }
+
+  // 項目ごとの「なぜこの結果か」。判定に使った事実を、分かる範囲で添える
+  function checkReason(c, s) {
+    if (c.state === 'unknown') return '読み取れなかったため、判定していません（0点ではなく、点数の計算から外しています）';
+    var ok = c.state === 'ok';
+    var types = (s.types || []).filter(Boolean);
+    if (c.label === 'llms.txtがある') return llmsStatus(s).text;
+    if (c.label === 'robots.txtがある') return ok ? 'ファイルがあります' : 'ファイルがありません';
+    if (LD_CHECKS[c.label]) return (ok ? '該当する構造化データがありました' : '該当する構造化データがありません') + '（トップページで見つかった種類：' + (types.length ? types.join('、') : 'なし') + '）';
+    if (c.label === 'FAQが3問以上') { var n = s.pageInfo && s.pageInfo.faqCount; return (n != null ? 'トップページで見つかったよくある質問：' + n + '問' : (ok ? '3問以上ありました' : '3問未満でした')); }
+    if (c.label === '主要AIボットの記載' && s.robots && (s.robots.bots || []).length) {
+      var own = s.robots.bots.filter(function (b) { return b.via === 'own'; }).map(function (b) { return b.name; });
+      return own.length ? 'robots.txt に個別の指定があるAIのロボット：' + own.join('、') : 'robots.txt に、AIのロボットへの個別の指定がありません';
+    }
+    return ok ? '満たしています' : ((PLAIN[c.label] || {}).t || '満たしていません');
+  }
+
+  // 総合点の内訳: 分類ごとの点数 × 重み。判定できた分類だけで重みを配り直す（airreach-diagnose.js と同じ計算）
+  function scoreBreakdown(factors, overall) {
+    var keys = ['structure', 'entity', 'faq', 'discover'];
+    var wsum = 0;
+    keys.forEach(function (k) { if (factors && factors[k] != null) wsum += FACTOR_WEIGHT[k]; });
+    var rows = keys.map(function (k) {
+      var sc = factors ? factors[k] : null;
+      var w = sc == null || !wsum ? null : FACTOR_WEIGHT[k] / wsum;
+      return { factor: k, label: FACTOR_LABEL[k], score: sc == null ? null : sc, weight: FACTOR_WEIGHT[k], share: w == null ? null : Math.round(w * 1000) / 10,
+        contribution: w == null ? null : Math.round(sc * w * 10) / 10 };
+    });
+    var total = rows.reduce(function (a, r) { return a + (r.contribution || 0); }, 0);
+    return { rows: rows, total: Math.round(total * 10) / 10, overall: overall == null ? null : overall, redistributed: wsum > 0 && wsum < 0.999 };
+  }
+
+  // 診断の範囲（点数に使ったページ・読んだ下層ページ・案内ファイル）
+  function scopeOf(s) {
+    var sc = s.scope || null;
+    var top = (sc && sc.page && (sc.page.finalUrl || sc.page.url)) || (s.pageInfo && s.pageInfo.finalUrl) || s.url || '';
+    var subs = sc && Array.isArray(sc.subpages) ? sc.subpages.map(function (p) { return { url: p.url, role: ROLE_JA[p.role] || '', ok: !!p.ok, status: p.status == null ? null : p.status }; }) : null;
+    return {
+      diagnosedAt: (sc && sc.diagnosedAt) || s.fetchedAt || s.createdAt || null,
+      scored: 'トップページ（' + top + '）と、案内ファイル（llms.txt・robots.txt）',
+      topUrl: top,
+      subpages: subs,
+      pagesRead: subs ? 1 + subs.filter(function (p) { return p.ok; }).length : null,
+      note: subs ? '下層ページは「お客さんの質問に答えが書いてあるか」を見るためだけに読み、点数には使っていません。' : '下層ページの記録はありません（この診断では保存していません）。'
+    };
+  }
+
+  function siteDetail(s) {
+    if (!s) return null;
+    var checks = (s.checks || []).map(function (c) {
+      var pl = PLAIN[c.label] || {};
+      return { label: c.label, text: c.state === 'ok' ? (pl.ok || c.label) : (pl.t || gapText(c.label)), factor: c.factor, factorLabel: FACTOR_LABEL[c.factor] || '', state: c.state,
+        points: c.points == null ? null : c.points, max: c.max == null ? null : c.max, rule: CRITERIA[c.label] || '', reason: checkReason(c, s), evidenceUrl: c.evidenceUrl || '' };
+    });
+    var bots = s.robots && Array.isArray(s.robots.bots) ? s.robots.bots.map(function (b) { return { name: b.name, org: b.org || '', verdict: b.verdict, verdictText: VERDICT_JA[b.verdict] || '—', via: b.via, lines: (b.lines || []).slice(0, 6).map(function (l) { return l && typeof l === 'object' ? (l.n ? l.n + '行目：' : '') + (l.text || '') : String(l || ''); }).filter(Boolean) }; }) : null;
+    var ld = s.ld && Array.isArray(s.ld.blocks) ? { blocks: s.ld.blocks.slice(0, 12), scripts: s.ld.scripts || 0, errors: s.ld.errors || 0 } : null;
+    return {
+      fetchedAt: s.fetchedAt || null,
+      checks: checks,
+      adjustments: (s.adjustments || []).map(function (a) { return { factor: a.factor, factorLabel: FACTOR_LABEL[a.factor] || '', label: a.label, points: a.points }; }),
+      breakdown: scoreBreakdown(s.factors || {}, s.overallScore),
+      scope: scopeOf(s),
+      types: (s.types || []).slice(0, 30),
+      ld: ld,
+      robots: s.robots ? { state: s.robots.state || null, url: s.robots.url || '', bots: bots } : null,
+      llms: llmsStatus(s)
+    };
+  }
+
   function todoList(compiled) {
     var cur = compiled && compiled.site && compiled.site.current;
     if (!cur) return [];
@@ -103,8 +208,12 @@
     return keys.map(function (k) {
       var f = FIX_INFO[k] || {};
       var pl = PLAIN[k] || {};
+      var ck = (cur.detail && cur.detail.checks || []).filter(function (c) { return c.label === k; })[0] || null;
+      var fs = cur.factors ? cur.factors[f.factor] : null;
+      var basis = ck ? '診断で「' + (ck.factorLabel || FACTOR_LABEL[f.factor] || '') + '」の「' + (ck.rule || gapText(k)) + '」が満たされていなかった（' + (ck.points == null ? 0 : ck.points) + '／' + ck.max + '点）ため。' +
+        (fs != null ? '「' + (FACTOR_LABEL[f.factor] || '') + '」は' + fs + '点です。' : '') : '';
       return { key: k, text: gapText(k), factor: f.factor || '', factorLabel: FACTOR_LABEL[f.factor] || '', points: f.points || 0, why: f.why || '', how: f.how || '', studio: !!f.studio,
-        plainText: pl.t || gapText(k), plainHow: pl.how || f.how || '', plainWhy: pl.why || f.why || '' };
+        plainText: pl.t || gapText(k), plainHow: pl.how || f.how || '', plainWhy: pl.why || f.why || '', basis: basis };
     }).sort(function (a, b) { return (b.points - a.points) || (order.indexOf(a.factor) - order.indexOf(b.factor)); });
   }
 
@@ -295,7 +404,7 @@
     var gapsNow = scanNow ? (scanNow.gaps || []).map(gapText) : [];
     var gapsPrev = scanPrev ? (scanPrev.gaps || []).map(gapText) : [];
     var site = {
-      current: scanNow ? { id: scanNow.id, createdAt: scanNow.createdAt, url: scanNow.url, ruleVersion: scanNow.ruleVersion || null, overall: scanNow.overallScore, factors: scanNow.factors || {}, gaps: gapsNow, gapKeys: (scanNow.gaps || []).slice(), unknownChecks: scanNow.unknownChecks || 0, inMonth: inMonth(scanNow.createdAt, m) } : null,
+      current: scanNow ? { id: scanNow.id, createdAt: scanNow.createdAt, url: scanNow.url, ruleVersion: scanNow.ruleVersion || null, overall: scanNow.overallScore, factors: scanNow.factors || {}, gaps: gapsNow, gapKeys: (scanNow.gaps || []).slice(), unknownChecks: scanNow.unknownChecks || 0, inMonth: inMonth(scanNow.createdAt, m), detail: siteDetail(scanNow) } : null,
       previous: scanPrev ? { id: scanPrev.id, createdAt: scanPrev.createdAt, overall: scanPrev.overallScore, gaps: gapsPrev } : null,
       overallDelta: scanNow && scanPrev ? delta(scanNow.overallScore, scanPrev.overallScore) : null,
       resolved: scanPrev ? gapsPrev.filter(function (g) { return gapsNow.indexOf(g) < 0; }) : [],
@@ -375,6 +484,9 @@
       });
     }
 
+    // 初回（前の月までの材料が何も無い）。初回は前月との比較と推移を出さず「基準値」として見せる
+    var first = history.slice(0, 5).every(function (h) { return h.score == null && !Object.keys(h.cite).length && h.clicks == null && h.conversions == null; });
+
     // 足りない材料（レポートに「未計測」と出すもの）
     var missing = [];
     if (!site.current) missing.push('ホームページの診断');
@@ -395,32 +507,41 @@
       actions: actions,
       facts: facts,
       history: history,
+      first: first,
       missing: missing
     };
   }
 
   // 数字の出どころ（レポートの各数字が、どこから・いつ・どの条件で取ったものか）
+  // 日本時間の「YYYY-MM-DD HH:mm」
+  function jstTime(iso) {
+    var t = Date.parse(iso || '');
+    if (isNaN(t)) return String(iso || '').slice(0, 10);
+    var d = new Date(t + 9 * 3600 * 1000);
+    function z(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getUTCFullYear() + '-' + z(d.getUTCMonth() + 1) + '-' + z(d.getUTCDate()) + ' ' + z(d.getUTCHours()) + ':' + z(d.getUTCMinutes());
+  }
   var PROV_JA = { openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity' };
   var SRC_JA = { gsc_api: 'Google Search Console（連携で取得）', gsc_csv: 'Google Search Console（CSV を取り込み）', ga4_api: 'Google アナリティクス（連携で取得）', ga4_manual: 'Google アナリティクス（担当者が入力）' };
   function evidenceList(c) {
     var out = [];
     var cur = c && c.site && c.site.current;
-    out.push({ label: 'ホームページの情報整備（点数・直すこと）', source: cur ? 'AirReach の無料診断' : '診断の記録なし',
-      detail: cur ? (String(cur.createdAt || '').slice(0, 10) + ' に ' + (cur.url || '') + ' のトップページと案内ファイル（llms.txt・robots.txt）を診断' + (cur.ruleVersion ? '・判定基準 ' + cur.ruleVersion : '') + (cur.inMonth ? '' : '（当月の診断が無いため、この日の結果）')) : '' });
+    out.push({ kinds: cur ? ['measured', 'judged'] : ['unknown'], label: 'ホームページの情報整備（点数・直すこと）', source: cur ? 'AirReach の無料診断' : '診断の記録なし',
+      detail: cur ? (jstTime(cur.detail && cur.detail.scope && cur.detail.scope.diagnosedAt || cur.createdAt) + ' に ' + (cur.url || '') + ' のトップページと案内ファイル（llms.txt・robots.txt）を診断' + (cur.detail && cur.detail.scope && cur.detail.scope.pagesRead != null ? '・答えの確認に読んだページ ' + cur.detail.scope.pagesRead + 'ページ' : '') + (cur.ruleVersion ? '・判定基準 ' + cur.ruleVersion : '') + (cur.inMonth ? '' : '（当月の診断が無いため、この日の結果）')) : '' });
     var ai = c && c.ai;
-    out.push({ label: 'AI回答の計測（出典になった割合・名前が出た割合・競合と比べた割合）', source: ai ? (ai.source === 'manual' ? 'AirReach Studio での計測' : '社内の計測（同じ質問を AI に複数回聞いて集計）') : '計測の記録なし',
+    out.push({ kinds: ai ? ['reference'] : ['unknown'], label: 'AI回答の計測（出典になった割合・名前が出た割合・競合と比べた割合）', source: ai ? (ai.source === 'manual' ? 'AirReach Studio での計測' : '社内の計測（同じ質問を AI に複数回聞いて集計）') : '計測の記録なし',
       detail: ai ? ('計測日 ' + ai.measuredOn + '・質問の版 ' + (ai.querySetVersion || '—') + '・' + ai.providers.map(function (p) { return (PROV_JA[p.provider] || p.provider) + (p.model ? '（' + p.model + '）' : '') + (p.answers != null ? ' ' + p.answers + '回答' : ''); }).join('、')) : '' });
     var tr = (c && c.traffic) || {};
     var g = tr.gsc, a = tr.ga4;
-    out.push({ label: '検索からのクリック・表示回数・平均の順位', source: g ? (SRC_JA[g.source] || g.source) : '未取得',
+    out.push({ kinds: [g ? (g.source === 'ga4_manual' ? 'manual' : 'measured') : 'unknown'], label: '検索からのクリック・表示回数・平均の順位', source: g ? (SRC_JA[g.source] || g.source) : '未取得',
       detail: g ? (((g.start_date && g.end_date) ? g.start_date + '〜' + g.end_date + (g.days ? '（' + g.days + '日間）' : '') : '対象月') + (g.property ? '・' + g.property : '') + (g.source === 'gsc_api' ? '・サイト全体の合計' : '')) : '' });
-    out.push({ label: '訪問回数・AIのサービスから来た訪問・問い合わせ', source: a ? (SRC_JA[a.source] || a.source) : '未取得',
+    out.push({ kinds: [a ? (a.source === 'ga4_manual' ? 'manual' : 'measured') : 'unknown'], label: '訪問回数・AIのサービスから来た訪問・問い合わせ', source: a ? (SRC_JA[a.source] || a.source) : '未取得',
       detail: a ? (((a.start_date && a.end_date) ? a.start_date + '〜' + a.end_date : '対象月') + (a.host ? '・' + a.host : '') + (a.source === 'ga4_api' ? '・問い合わせは GA4 のキーイベントの合計・AI 経由は参照元が AI サービス（ChatGPT・Perplexity・Gemini など）の訪問' : '')) : '' });
-    out.push({ label: '今月実施したこと', source: 'AirReach の施策台帳', detail: '担当者が登録した実施日と、公開ページの URL（証拠）' });
+    out.push({ kinds: ['manual'], label: '今月実施したこと', source: 'AirReach の施策台帳', detail: '担当者が登録した実施日と、公開ページの URL（証拠）' });
     return out;
   }
 
-  var api = { evidenceList: evidenceList, gapText: gapText, plainGap: plainGap, plainResolved: plainResolved, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
+  var api = { jstTime: jstTime, criteria: CRITERIA, factorWeight: FACTOR_WEIGHT, evidenceList: evidenceList, gapText: gapText, plainGap: plainGap, plainResolved: plainResolved, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachReport = api;
 })(typeof window !== 'undefined' ? window : null);

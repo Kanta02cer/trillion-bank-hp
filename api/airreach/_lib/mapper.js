@@ -106,6 +106,8 @@ function rawResult(v) {
         evidence: r.evidence,
         review: r.review,
         page: r.page,
+        ...(r.scope ? { scope: r.scope } : {}),
+        ...(r.robots ? { robots: r.robots } : {}),
         // 調べる言葉の一覧（scan 側の値。列を増やさず raw_result に残し、共有表示で復元する）。無ければ入れない
         ...(v.scan.keywords ? { keywords: v.scan.keywords } : {}),
     };
