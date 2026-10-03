@@ -222,12 +222,12 @@ robots: "noindex, follow"
       </div>
 
       <div class="ars-panel" data-panel-view="gaps">
-        <div class="ars-title-row"><div><h2>足りない情報</h2><p class="ars-sub">お客さんが決める前に知りたい情報が、サイトに書いてあるかを洗い出します（推定）。項目は業種に合わせて変わります。チェックは今ある情報の目安です。</p></div><button id="run-gap-analysis" class="ars-btn ars-btn-primary" type="button">不足を分析</button></div>
+        <div class="ars-title-row"><div><h2>足りない情報</h2><p class="ars-sub">お客さんが決める前に知りたい情報が、サイトに書いてあるかを洗い出します（推定）。サイトを分析すると自動で判定します。項目は業種に合わせて変わります。</p><p id="gap-meta" class="ars-note"></p></div><button id="run-gap-analysis" class="ars-btn ars-btn-secondary" type="button">もう一度判定する</button></div>
             <div class="ars-grid">
               <div class="ars-card ars-c5"><h3>現在ある情報</h3><div class="ars-form">
                 <div id="gap-checks"><!-- 業種ごとに airreach-studio.js の renderGapChecks() が描く --></div>
               </div></div>
-              <div class="ars-card ars-c7"><h3>優先ギャップ</h3><ul id="gap-results" class="ars-list bad"><li>「不足を分析」を押すと表示します。</li></ul></div>
+              <div class="ars-card ars-c7"><h3>優先ギャップ</h3><ul id="gap-results" class="ars-list bad"><li>サイトを分析すると、ここに自動で表示します。</li></ul></div>
               <div class="ars-card ars-c12"><h3>FAQ Gap</h3><div class="ars-grid"><div class="ars-field ars-c6"><label for="existing-faq">既存FAQ</label><textarea id="existing-faq" class="ars-textarea"></textarea></div><div class="ars-field ars-c6"><label for="faq-context">よく聞かれる論点</label><textarea id="faq-context" class="ars-textarea"></textarea></div></div><div class="ars-row" style="margin-top:12px"><button id="generate-faq-gap" class="ars-btn ars-btn-primary" type="button">不足FAQを生成</button></div><div id="faq-gap-output" class="ars-grid" style="margin-top:14px"></div></div>
             </div>
           
