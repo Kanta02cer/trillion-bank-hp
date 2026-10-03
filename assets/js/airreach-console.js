@@ -522,13 +522,40 @@
           if (r.ok) return j;
           var e = j.error && typeof j.error === 'object' ? (j.error.message || '') : (j.error || '');
           if (r.status === 401) e = 'Google に接続していません（または接続が切れています）。左のメニューの「Google とつなぐ」で「接続」してください';
-          else if (r.status === 403 && path.indexOf('gsc') >= 0) e = 'この Search Console のサイトを見る権限がありません。サイトの種類（sc-domain: か https://〜/ か）と、閲覧権限を確認してください';
+          else if (r.status === 403 && path.indexOf('gsc') >= 0) e = 'この Search Console のサイトを、つないだ Google アカウントでは見られません。上の一覧から「このお客様のサイト」を選ぶか、お客様に Search Console の「設定 → ユーザーと権限」でこのアカウントを追加してもらってください';
           throw new Error(e || ('HTTP ' + r.status));
         });
       });
   }
+  // つないだ Google アカウントが見られる Search Console のプロパティを読み、選べるようにする。
+  // 顧客のサイトに合うもの（sc-domain: か https://〜/ か）を先に選ぶ。無ければ、権限をもらう方法を書く
+  var gscListCache = null;
+  function gscCandidates(host) { return host ? ['sc-domain:' + host, 'https://' + host + '/', 'https://www.' + host + '/', 'http://' + host + '/', 'http://www.' + host + '/'] : []; }
+  function fillGscProperties(clientId, sites) {
+    var input = $('#arc-g-gsc'); if (!input || !/(?:^|;\s*)airreach_google_scopes=[^;]*gsc/.test(document.cookie)) return;
+    var host = sites[0] && sites[0].host;
+    var load = gscListCache ? Promise.resolve(gscListCache) : fetch('/api/google/gsc/', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }).then(function (j) { gscListCache = j.sites || []; return gscListCache; });
+    load.then(function (list) {
+      var note = $('#arc-g-gsc-note'); if (note) note.remove();
+      var urls = list.map(function (x) { return x.siteUrl; });
+      var sel = document.createElement('select'); sel.className = 'arc-input'; sel.id = 'arc-g-gsc-sel'; sel.setAttribute('aria-label', 'Search Console のサイト');
+      var cands = gscCandidates(host);
+      var saved = input.value.trim(), pick = urls.indexOf(saved) >= 0 ? saved : (cands.filter(function (c) { return urls.indexOf(c) >= 0; })[0] || '');
+      sel.innerHTML = '<option value="">（Search Console は取らない）</option>' + urls.map(function (u) { return '<option value="' + esc(u) + '"' + (u === pick ? ' selected' : '') + '>' + esc(u) + (cands.indexOf(u) >= 0 ? '（このお客様のサイト）' : '') + '</option>'; }).join('');
+      input.hidden = true; input.value = pick; input.insertAdjacentElement('afterend', sel);
+      sel.addEventListener('change', function () { input.value = sel.value; });
+      if (!pick) {
+        var p = document.createElement('p'); p.id = 'arc-g-gsc-note'; p.className = 'arc-gmsg is-warn';
+        p.textContent = urls.length
+          ? 'つないだ Google アカウントで見られる Search Console のサイトに、' + (host || 'このお客様のサイト') + ' がありません（見られるサイト：' + urls.slice(0, 5).join('、') + (urls.length > 5 ? ' ほか' : '') + '）。お客様に、Search Console の「設定 → ユーザーと権限」で、つないだ Google アカウントを追加してもらってください。追加されたら、ここを開き直すと選べます。'
+          : 'つないだ Google アカウントで見られる Search Console のサイトがありません。お客様に、Search Console の「設定 → ユーザーと権限」で、つないだ Google アカウントを追加してもらってください。';
+        var box = input.closest('.arc-gbox'); if (box) box.insertBefore(p, input.closest('form'));
+      }
+    }).catch(function () { /* 一覧を読めないときは、今まで通り手で入れる */ });
+  }
   function bindGoogleSync(clientId, sites) {
     var form = $('#arc-google-sync'); if (!form) return;
+    fillGscProperties(clientId, sites);
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var month = $('#arc-g-month').value, gsc = $('#arc-g-gsc').value.trim(), ga4 = $('#arc-g-ga4').value.trim().replace(/^properties\//, '');
