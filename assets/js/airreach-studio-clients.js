@@ -126,7 +126,7 @@
     sb().then(function (s) {
       return Promise.all([
         s.rpc('airreach_client_scans', { p_client_id: client.id, p_limit: 1 }),
-        s.from('measurement_runs').select('measured_on,source').eq('client_id', client.id).order('measured_on', { ascending: false }).limit(1),
+        s.from('measurement_runs').select('measured_on,source').eq('client_id', client.id).order('measured_on', { ascending: false }).order('created_at', { ascending: false }).limit(1),
         s.from('reports').select('status').eq('client_id', client.id).eq('period_month', month).maybeSingle(),
         s.from('client_sites').select('url').eq('client_id', client.id)
       ]);

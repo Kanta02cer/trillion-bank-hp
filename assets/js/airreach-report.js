@@ -358,8 +358,11 @@
   }
 
   // ---- レポートの下書き ------------------------------------------------------
+  // 同じ日に何度も測ったときは、保存した時刻（created_at）が新しいものを使う（日付だけだと同じ日のどれが選ばれるか決まらない）
   function latest(list, dateKey, pred) {
-    return (list || []).filter(pred).sort(function (a, b) { return String(b[dateKey]).localeCompare(String(a[dateKey])); })[0] || null;
+    return (list || []).filter(pred).sort(function (a, b) {
+      return String(b[dateKey]).localeCompare(String(a[dateKey])) || String(b.created_at || '').localeCompare(String(a.created_at || ''));
+    })[0] || null;
   }
 
   function aiKpis(run) {

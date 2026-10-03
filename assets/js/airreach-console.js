@@ -628,7 +628,7 @@
       sb.from('clients').select('*').eq('id', id).maybeSingle(),
       sb.from('client_sites').select('*').eq('client_id', id).order('created_at'),
       sb.from('client_members').select('*').eq('client_id', id).order('email'),
-      sb.from('measurement_runs').select('id,measured_on,run_label,query_set_version,summary').eq('client_id', id).order('measured_on', { ascending: false }),
+      sb.from('measurement_runs').select('id,measured_on,run_label,query_set_version,summary,created_at').eq('client_id', id).order('measured_on', { ascending: false }).order('created_at', { ascending: false }),
       sb.from('traffic_snapshots').select('*').eq('client_id', id).order('period_month', { ascending: false }),
       sb.from('action_items').select('*').eq('client_id', id).order('done_on', { ascending: false }),
       sb.from('reports').select('id,period_month,status,published_at,updated_at').eq('client_id', id).order('period_month', { ascending: false }),
