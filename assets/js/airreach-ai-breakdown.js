@@ -164,7 +164,7 @@
     h += '<div class="aib-types">' + typeCard('general', '一般質問', '店名・社名を含まない質問（例：大宮でおすすめのフォトスタジオは？）') + typeCard('branded', '指名質問', '店名・社名を含む質問（例：〇〇の料金プランを教えて）') + '</div>';
     // 1. 質問ごと
     h += '<section class="ars-card aib-sec"><h3>質問ごとの結果 <small>（最新の計測' + (when ? '・' + esc(when) : '') + '・' + s.answers + '回答）</small></h3>' +
-      '<p class="ars-gnote">自社の名前が出にくい質問から並べています。「出典」は出典の一覧が返る AI の回答だけで数えます（競合は「競合」で URL を登録した会社）。質問を押すと、AI ごとの回答が読めます。</p>' +
+      '<p class="ars-gnote">自社の名前が出にくい質問から並べています。「出典」は出典の一覧が返る AI の回答だけで数えます（競合は「競合と比べる」で URL を登録した会社）。質問を押すと、AI ごとの回答が読めます。</p>' +
       '<div class="ars-table-wrap"><table class="ars-table aib-q"><thead><tr><th>質問（押すと回答）</th><th>AI</th><th>自社の名前</th><th>自社が出典</th><th>競合の名前</th><th>競合が出典</th><th>自社の順位（最高）</th></tr></thead><tbody>' +
       s.questions.map(function (q) {
         var det = '<details class="aib-ans"><summary>' + esc(q.prompt) + '</summary>' + q.detail.map(function (a) {
@@ -191,7 +191,7 @@
           return '<tr' + (r.self ? ' class="is-self"' : '') + '><th>' + (r.self ? '<span class="aib-chip is-self">自社</span>' : '') + esc(r.name) + '</th>' +
             ['first', 'second', 'thirdPlus', 'none'].map(function (k) { return '<td>' + bar(r[k] / tot * 100, k === 'none' ? '#cbd5e1' : (r.self ? '#2563eb' : '#c2410c')) + esc(r[k]) + '</td>'; }).join('') + '</tr>';
         }).join('') + '</tbody></table>' +
-        '<p class="ars-gnote">' + s.answersWithOrder + '回答で数えました。競合は「競合」の画面で登録した名前で数えます。</p>';
+        '<p class="ars-gnote">' + s.answersWithOrder + '回答で数えました。競合は「競合と比べる」の画面で登録した名前で数えます。</p>';
     }
     h += '</section>';
     // 3. 引用元の分類
@@ -207,7 +207,7 @@
           return '<tr><td><details><summary>' + esc(d.host) + '</summary><ul>' + d.urls.map(function (u) { return '<li><a href="' + esc(u.url) + '" target="_blank" rel="noopener noreferrer">' + esc(u.url.replace(/^https?:\/\/(www\.)?/, '')) + '</a> ' + esc(u.count) + '件</li>'; }).join('') + '</ul></details></td>' +
             '<td><span class="aib-chip is-' + d.cat + '">' + esc(CAT[d.cat]) + '</span></td><td>' + esc(d.count) + '</td><td>' + (d.share == null ? '—' : esc(d.share) + '%') + '</td></tr>';
         }).join('') + '</tbody></table></div>' +
-        '<p class="ars-gnote">' + s.answersWithSource + ' / ' + s.answers + ' 回答から集計。自社＝対象サイト、競合＝「競合」で登録した URL のサイト、SNS＝Instagram・Facebook・X など。</p>';
+        '<p class="ars-gnote">' + s.answersWithSource + ' / ' + s.answers + ' 回答から集計。自社＝対象サイト、競合＝「競合と比べる」で登録した URL のサイト、SNS＝Instagram・Facebook・X など。</p>';
     }
     h += '</section></div>';
     el.innerHTML = h;

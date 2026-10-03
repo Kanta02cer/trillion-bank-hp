@@ -208,13 +208,13 @@
         var el;
         if (it.where === 'studio' && btns[it.panel]) {
           el = btns[it.panel];
-          el.innerHTML = '<span class="n">' + n + '</span>' + esc(it.label);
+          el.innerHTML = '<span class="n">' + n + '</span><span class="ars-side-l">' + esc(it.label) + (it.desc ? '<small>' + esc(it.desc) + '</small>' : '') + '</span>';
           delete btns[it.panel];
         } else {
           el = document.createElement('a');
           el.className = 'ars-side-link';
           el.href = N.href(it, navClient);
-          el.innerHTML = '<span class="n">' + n + '</span>' + esc(it.label);
+          el.innerHTML = '<span class="n">' + n + '</span><span class="ars-side-l">' + esc(it.label) + (it.desc ? '<small>' + esc(it.desc) + '</small>' : '') + '</span>';
         }
         frag.appendChild(el);
       });
@@ -223,6 +223,14 @@
     Object.keys(btns).forEach(function (k) { n += 1; var b = btns[k]; var sp = b.querySelector('.n'); if (sp) sp.textContent = n; frag.appendChild(b); });
     side.innerHTML = '';
     side.appendChild(frag);
+    // 各画面の見出しをメニューの名前に、説明（lead）があれば見出しの下に出す
+    N.groups(!!client).forEach(function (g) { g.items.forEach(function (it) {
+      if (it.where !== 'studio') return;
+      var view = document.querySelector('[data-panel-view="' + it.panel + '"] .ars-title-row');
+      if (!view) return;
+      var h = view.querySelector('h2'); if (h) h.textContent = it.label;
+      if (it.lead) { var sub = view.querySelector('.ars-sub'); if (!sub) { sub = document.createElement('p'); sub.className = 'ars-sub'; if (h) h.insertAdjacentElement('afterend', sub); } sub.textContent = it.lead; }
+    }); });
   }
   // ---- 顧客の作業を共有する（DB の studio_workspaces。統合②）-----------------------------
   // 開いたら DB の版を読み、このブラウザの作業と比べる。作業が変わったら数秒後に保存する。
