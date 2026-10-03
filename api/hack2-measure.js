@@ -421,7 +421,12 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
     let out;
     if (withSearch) out = await withRateRetry(() => callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt), deadline);
     else {
-      const got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt)), deadline);
+      let got = null;
+      if (useGateway && engine === 'perplexity') {
+        try { got = await withRateRetry(() => callPerplexityResponses(gatewayModel(engine), gatewayKey, p.prompt), deadline); } catch (e) { got = null; }
+        if (got && !got.answer) got = null;
+      }
+      if (!got) got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt)), deadline);
       // Gateway は出典の一覧も返すことがある（Perplexity）。一覧が取れたら出典で、取れなければ本文で判定する
       out = got && typeof got === 'object'
         ? { answer: got.answer, citations: got.citations, searched: engine === 'perplexity', fields: got.fields }
@@ -531,6 +536,45 @@ async function callResponsesWithSearch(model, key, prompt) {
     }
   }
   return { answer, citations, searched };
+}
+
+/**
+ * Perplexity を AI Gateway の Responses API で聞く。chat/completions では出典の一覧が返らない（2026-10-03 実測：citation_fields が空）。
+ * Responses API の出典は output[].content[].annotations の url_citation で返る（Claude の検索と同じ形）。
+ * 出典の項目が1つも無いときは citations を null にして、本文での判定に回す
+ */
+export async function callPerplexityResponses(model, key, prompt) {
+  const res = await fetch('https://ai-gateway.vercel.sh/v1/responses', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, input: prompt, store: false }),
+    signal: AbortSignal.timeout(120000)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(gatewayError(res.status, data, model));
+  return parseResponsesOutput(data);
+}
+export function parseResponsesOutput(data) {
+  let answer = '';
+  const citations = [];
+  let sawAnnotations = false;
+  for (const o of (data && data.output) || []) {
+    if (o.type !== 'message') continue;
+    for (const c of o.content || []) {
+      if (c.type !== 'output_text') continue;
+      answer += c.text || '';
+      if (Array.isArray(c.annotations)) sawAnnotations = true;
+      for (const a of c.annotations || []) {
+        const u = a && (a.url || (a.url_citation && a.url_citation.url));
+        if (a && a.type === 'url_citation' && u && citations.indexOf(u) < 0) citations.push(u);
+      }
+    }
+  }
+  // 上位にまとめて返る形（sources・citations）にも備える
+  const extra = gatewayCitations(data);
+  extra.urls && extra.urls.forEach((u) => { if (citations.indexOf(u) < 0) citations.push(u); });
+  const found = citations.length > 0 || sawAnnotations || extra.urls !== null;
+  return { answer, citations: found ? citations.slice(0, 20) : null, fields: ['responses'].concat(sawAnnotations ? ['annotations'] : [], extra.fields) };
 }
 
 function gatewayError(status, data, model) {
