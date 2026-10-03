@@ -428,5 +428,27 @@
 
   function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); startSync(); renderRunHistory(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-  window.AirReachStudioClients = { current: function () { return client; }, swapError: function () { return swapError; }, onMeasured: onMeasured, savedRun: savedRun };
+  // ---- 分析したサイトを、この顧客のサイトとして登録する ------------------------------------------
+  // ダッシュボードは「顧客に登録されたサイト」と同じサイトの診断だけを、その顧客の診断として出す。
+  // サイトが1つも登録されていない顧客なら、分析したサイトを自動で登録する。別のサイトが登録済みなら、登録するかを選べるようにする
+  // 戻り値: Promise<{ state: 'added'|'already'|'other'|'nologin'|'none', host }>
+  function ensureSite(url) {
+    var host = hostOf(url);
+    if (!client || !host) return Promise.resolve({ state: 'none', host: host });
+    var origin = ''; try { origin = new URL(/^https?:\/\//i.test(url) ? url : 'https://' + url).origin + '/'; } catch (e) { origin = url; }
+    return sb().then(function (s) {
+      return s.auth.getSession().then(function (r) {
+        if (!(r && r.data && r.data.session)) return { state: 'nologin', host: host };
+        return s.from('client_sites').select('host').eq('client_id', client.id).then(function (x) {
+          if (x.error) throw x.error;
+          var hosts = (x.data || []).map(function (h) { return h.host; });
+          if (hosts.indexOf(host) >= 0) return { state: 'already', host: host };
+          if (hosts.length) return { state: 'other', host: host, hosts: hosts, add: function () { return s.from('client_sites').insert({ client_id: client.id, url: origin, host: host }).then(function (y) { if (y.error) throw y.error; return true; }); } };
+          return s.from('client_sites').insert({ client_id: client.id, url: origin, host: host }).then(function (y) { if (y.error) throw y.error; return { state: 'added', host: host }; });
+        });
+      });
+    });
+  }
+
+  window.AirReachStudioClients = { current: function () { return client; }, swapError: function () { return swapError; }, onMeasured: onMeasured, savedRun: savedRun, ensureSite: ensureSite };
 })();

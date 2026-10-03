@@ -569,7 +569,10 @@
       if (live && C) {
         // ダッシュボード：今月の数字 → AI での見え方・今月の進み具合 → 直すこと・AI が参照したサイト → 推移
         var studioH = studioHref(c, sites);
-        overview = '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(month)) + 'の数字</h2><span class="arc-sub">登録された材料からその場で集計</span></div>' +
+        // サイトが登録されていないと、分析しても診断がこの顧客に紐づかない（ホームに何も出ない）
+        if (!sites.length) overview += '<section class="arc-card arc-nosite"><b>この顧客にはサイトが登録されていません</b><p class="arc-note" style="margin:4px 0 8px">診断はサイトごとに保存されるため、サイトを登録するまでここには出ません。Studio で「サイトを調べる」を行うと、調べたサイトを自動で登録します。</p>' +
+          '<a class="arc-btn" href="#/c/' + c.id + '/sites">サイトを登録する</a></section>';
+        overview += '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(month)) + 'の数字</h2><span class="arc-sub">登録された材料からその場で集計</span></div>' +
           C.tiles(live) + '</section>' +
           '<div class="arc-dash-2">' + dashAi(runs[0], live, studioH) + monthSteps(c, sites, live, repNow, actions) + '</div>' +
           '<div class="arc-dash-2">' + dashTodos(R.todoList(live), live, studioH) + dashSources(runs[0], studioH) + '</div>' +
