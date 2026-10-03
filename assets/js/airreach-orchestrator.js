@@ -1469,6 +1469,25 @@
     el.className = 'ars-note' + (kind ? ' ' + kind : '');
     el.textContent = text;
   }
+  // 顧客を選んで分析したときは、分析したサイトを顧客のサイトとして登録する（登録が無いと、ダッシュボードにこの診断が出ない）
+  function linkScanToClient(url) {
+    var SC = window.AirReachStudioClients;
+    if (!SC || !SC.ensureSite || !SC.current()) return;
+    SC.ensureSite(url).then(function (r) {
+      var name = SC.current().name || 'この顧客';
+      if (r.state === 'added') scanNote('この分析を保存し、' + r.host + ' を「' + name + '」のサイトとして登録しました。ダッシュボードのホームと「これまでの診断」に出ます。', 'good');
+      else if (r.state === 'nologin') scanNote('この分析は保存しましたが、ログインしていないため「' + name + '」には紐づいていません。ダッシュボードにログインしてから、もう一度分析してください。', 'warn');
+      else if (r.state === 'other') {
+        scanNote('この分析は保存しましたが、' + r.host + ' は「' + name + '」に登録されたサイト（' + r.hosts.join('・') + '）と違うため、ダッシュボードには出ません。', 'warn');
+        var el = q('orch-scan-saved');
+        if (el) {
+          var b = document.createElement('button'); b.type = 'button'; b.className = 'ars-btn ars-btn-secondary'; b.style.marginLeft = '8px'; b.textContent = r.host + ' もこの顧客のサイトにする';
+          b.onclick = function () { b.disabled = true; r.add().then(function () { scanNote('この分析を保存し、' + r.host + ' を「' + name + '」のサイトに加えました。ダッシュボードに出ます。', 'good'); }, function () { b.disabled = false; scanNote('サイトを登録できませんでした。ダッシュボードの「これまでの診断」から追加してください。', 'warn'); }); };
+          el.appendChild(b);
+        }
+      }
+    }).catch(function () { scanNote('この分析は保存しましたが、顧客のサイトの確認に失敗しました。ダッシュボードの「これまでの診断」でサイトが登録されているか確かめてください。', 'warn'); });
+  }
   function saveScanFromJob(job, goal) {
     if (!job || !job.diagnose || !job.diagnose.checks || job._scanSaved) return;
     job._scanSaved = true;
@@ -1488,6 +1507,7 @@
       .then(function (r) {
         if (r.status === 201) {
           scanNote('この分析は「診断の履歴」に保存しました（' + (job.diagnose.overall != null ? job.diagnose.overall + '点・' : '') + '月次レポートの点数に使われます）。', 'good');
+          linkScanToClient(job.url);
         } else {
           scanNote('分析は終わりましたが、「診断の履歴」への保存に失敗しました（' + r.status + '）。月次レポートに使うには、もう一度分析してください。', 'warn');
           job._scanSaved = false;
