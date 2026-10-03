@@ -310,7 +310,7 @@
       { title: 'AI での見え方を測る', what: '質問を確かめて「計測する」を押す', get: 'AI の回答に名前・サイトが出た割合、競合との比較', time: '約2分',
         ok: !!live.ai, note: live.ai ? md(live.ai.measuredOn) + ' 計測' : '', btn: '計測する', href: studio + '#hack2' },
       { title: '検索と訪問の数字を入れる', what: 'Google と連携していれば月を選ぶだけ', get: '検索のクリック、訪問、問い合わせの数', time: '約3分',
-        ok: !!(tr.gsc && tr.ga4), note: tr.gsc || tr.ga4 ? (tr.gsc ? 'Search Console ✓' : 'Search Console まだ') + '・' + (tr.ga4 ? 'GA4 ✓' : 'GA4 まだ') : '', btn: '取り込む', href: base + 'traffic' },
+        ok: !!(tr.gsc || tr.ga4), note: tr.gsc && tr.ga4 ? 'Search Console ✓・GA4 ✓' : tr.gsc ? 'Search Console ✓（GA4 は任意：入れると訪問・問い合わせも出ます）' : tr.ga4 ? 'GA4 ✓（Search Console は任意：入れると検索の数字も出ます）' : '', btn: '取り込む', href: base + 'traffic' },
       { title: 'やったことを記録する', what: '直したことを「実施済み」にして、公開したページの URL を入れる', get: 'レポートの「今月実施したこと」になる', time: '約3分',
         ok: live.actions.length > 0, note: live.actions.length ? live.actions.length + '件' : '', btn: '記録する', href: base + 'actions' },
       { title: '月次レポートを作って、確認を依頼する', what: '結論と次の施策を書いて、確認を依頼する', get: '承認されるとお客様に公開できる', time: '約15分',
