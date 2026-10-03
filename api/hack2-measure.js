@@ -460,7 +460,10 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
     } else {
       // 出典URLの一覧が無い: 本文にドメインがあれば引用ありとし、無ければ判定できない（0 にしない）
       citeMethod = 'text';
-      cited = host && lower.indexOf(host) !== -1 ? 1 : null;
+      // 本文に自社のドメインがあれば引用あり。本文にほかのサイトの URL を出典として並べていて、自社が無ければ引用なし（0）。
+      // URL がまったく無い回答は判定できない（null。0 にしない）
+      const inText = urlsInAnswer(out.answer);
+      cited = host && lower.indexOf(host) !== -1 ? 1 : (host && inText.length ? 0 : null);
     }
     return {
       engine: engineLabel(engine),
