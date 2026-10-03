@@ -341,6 +341,8 @@
     var loc = region && region !== '全国' && region !== '指定' ? region : '';
     // 付け足す言葉は業種ごと（メディアに「料金」「料金プラン」、会社向けに「予約」のような合わない言葉を作らない）
     var seeds = [s].concat((KEYWORD_MODS[opts.industry] || KEYWORD_MODS.other).map(function (m) { return s + ' ' + m; }));
+    // 「必須」「推奨」にする言葉も業種ごと（お客さんが決める・探すときにいちばん使う言葉）
+    var TOP_WORDS = { b2b: /おすすめ|比較|料金|費用|導入事例/, clinic: /おすすめ|口コミ|料金|予約/, media: /とは|一覧|有名|人気|まとめ/, other: /おすすめ|口コミ|料金|予約/ }[opts.industry] || /おすすめ|比較|費用|料金|口コミ/;
     if (brand && normKw(brand) !== normKw(s)) {
       seeds = seeds.concat([brand, brand + ' ' + s, s + ' ' + brand]);
     }
@@ -379,8 +381,8 @@
       var intent = /比較|おすすめ|選び方|費用|料金|予約|相談|導入/.test(text) ? 'Commercial' : 'Informational';
       var fromGsc = !!(gsc && gsc.impressions > 0);
       var priority = fromGsc && gsc.impressions >= 200 ? 'P0' : (fromGsc ? 'P1' : 'P2');
-      if (/比較|おすすめ|費用|料金/.test(text) && priority === 'P2') priority = 'P1';
-      if (!fromGsc && out.filter(function (x) { return x.priority === 'P0'; }).length < Math.ceil(limit * 0.12) && /おすすめ|比較|費用|料金|口コミ/.test(text)) {
+      if (TOP_WORDS.test(text) && priority === 'P2') priority = 'P1';
+      if (!fromGsc && out.filter(function (x) { return x.priority === 'P0'; }).length < Math.ceil(limit * 0.12) && TOP_WORDS.test(text)) {
         priority = 'P0';
       }
       var strength = fromGsc && gsc.impressions > 50 ? '普通' : (priority === 'P0' ? '弱い' : '普通');
