@@ -7,6 +7,8 @@
 export const GSC_SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly';
 export const GA4_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
 
+// openid・email は「どの Google アカウントでつないだか」を画面に出すため（メールアドレスだけ。ほかの情報は読まない）
+export const EMAIL_SCOPES = ['openid', 'email'];
 export const OAUTH_SCOPES = [
   GSC_SCOPE,
   GA4_SCOPE

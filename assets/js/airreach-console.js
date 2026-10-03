@@ -487,7 +487,8 @@
   // Google とつないで戻ってきたとき（?google=connected など）。一度だけ知らせ、アドレスからは消す
   var googleRet = (location.search.match(/[?&]google=([a-z_]+)/) || [])[1] || '';
   if (googleRet) { try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {} }
-  function googleSyncForm(clientId, sites) {
+  function googleEmail() { try { return decodeURIComponent((document.cookie.match(/(?:^|;\s*)airreach_google_email=([^;]*)/) || [])[1] || ''); } catch (e) { return ''; } }
+  function googleSyncForm(clientId, sites, traffic) {
     var p = googleProps(clientId), host = sites[0] && sites[0].host;
     var feats = ((document.cookie.match(/(?:^|;\s*)airreach_google_scopes=([^;]*)/) || [])[1] || '').split('.').filter(Boolean);
     var hasGsc = feats.indexOf('gsc') >= 0, hasGa4 = feats.indexOf('ga4') >= 0;
@@ -496,15 +497,23 @@
     var ret = googleRet; googleRet = '';
     var RET = { connected: ['ok', 'Google とつながりました。月を選んで「Google から取得」を押してください。'], gsc_missing: ['warn', 'Search Console の閲覧が許可されませんでした。もう一度つなぎ、Search Console にチェックを入れてください。'],
       ga4_missing: ['warn', 'GA4 の閲覧が許可されませんでした（Search Console だけつながりました）。GA4 も使うときは、もう一度つないでチェックを入れてください。'], scope_missing: ['warn', '閲覧の許可がありませんでした。もう一度つないで、チェックを入れてください。'] };
+    var email = googleEmail();
+    // この顧客の数字を前回取ったときの Google アカウント（保存した数字に記録してある）
+    var lastBy = ((traffic || []).filter(function (t) { return /_api$/.test(t.source) && t.metrics && t.metrics.google_email; })[0] || {}).metrics;
+    var lastEmail = lastBy ? lastBy.google_email : '';
     var state = feats.length
-      ? '<span class="arc-chip is-ok">Google とつながっています</span> <span class="arc-sub">Search Console ' + (hasGsc ? '✓' : '—') + '・GA4 ' + (hasGa4 ? '✓' : '—') + '</span> <a class="arc-btn-sm" href="' + esc(connect) + '">つなぎ直す</a>'
+      ? '<span class="arc-chip is-ok">Google とつながっています</span> <span class="arc-sub">' + (email ? '<b>' + esc(email) + '</b>・' : '') + 'Search Console ' + (hasGsc ? '✓' : '—') + '・GA4 ' + (hasGa4 ? '✓' : '—') + '</span> <a class="arc-btn-sm" href="' + esc(connect) + '">別のアカウントでつなぎ直す</a> <button type="button" class="arc-btn-sm" id="arc-g-disconnect">切断する</button>' +
+        (lastEmail && email && lastEmail !== email ? '<p class="arc-gmsg is-warn" style="flex-basis:100%">この顧客の数字は前回 <b>' + esc(lastEmail) + '</b> で取りました。今は <b>' + esc(email) + '</b> でつながっています。別の会社のアカウントでないか確かめてから取得してください。</p>' : '') +
+        (!email ? '<p class="arc-note" style="flex-basis:100%;margin:0">どの Google アカウントでつないだかを表示するには、一度「別のアカウントでつなぎ直す」からつなぎ直してください。</p>' : '') +
+        '<p class="arc-note" style="flex-basis:100%;margin:0">Google のつながりはこのブラウザに残り、どの顧客を開いても同じアカウントが使われます。顧客ごとに、その会社のサイトを選んで取得してください。</p>'
       : '<span class="arc-chip is-warn">まだ Google とつながっていません</span> <a class="arc-btn" href="' + esc(connect) + '">Google とつなぐ</a>';
     return '<div class="arc-gbox"><div class="arc-gbox-h"><b>Google から取り込む（おすすめ）</b>' + state + '</div>' +
       (RET[ret] ? '<p class="arc-gmsg is-' + RET[ret][0] + '">' + esc(RET[ret][1]) + '</p>' : '') +
       '<form id="arc-google-sync" class="arc-row"><input class="arc-input" type="month" id="arc-g-month" value="' + thisMonth() + '" required>' +
       '<input class="arc-input" id="arc-g-gsc" placeholder="Search Console のサイト（例: sc-domain:example.jp）" value="' + esc(p.gsc != null ? p.gsc : (host ? 'sc-domain:' + host : '')) + '">' +
       '<input class="arc-input" id="arc-g-ga4" inputmode="numeric" placeholder="GA4 プロパティID（数字）" value="' + esc(p.ga4 || '') + '">' +
-      '<button class="arc-btn" type="submit"' + (feats.length ? '' : ' disabled') + '>Google から取得</button></form>' +
+      '<button class="arc-btn" type="submit"' + (feats.length ? '' : ' disabled') + '>Google から取得</button>' +
+      '<label class="arc-g-other" id="arc-g-other-wrap" hidden><input type="checkbox" id="arc-g-other"> このお客様のサイトではないと分かったうえで取得する</label></form>' +
       '<p class="arc-note">つないだ Google アカウントが閲覧できるサイトだけ取得できます（お客様のサイトは閲覧権限をもらってください）。Search Console はサイト全体の表示・クリック、GA4 は ' + esc(host || '対象サイト') + ' のセッション・AI 経由のセッション（ChatGPT・Perplexity・Gemini などから）・問い合わせを取得します。当月は昨日までの数字です。' +
       '言葉ごとの取り込み（CSV・Keyword Planner）は <a href="' + esc(studioG) + '">Studio の取り込み画面</a>で行えます。</p></div>';
   }
@@ -556,6 +565,14 @@
   function bindGoogleSync(clientId, sites) {
     var form = $('#arc-google-sync'); if (!form) return;
     fillGscProperties(clientId, sites);
+    var dc = $('#arc-g-disconnect');
+    if (dc) dc.addEventListener('click', function () {
+      dc.disabled = true;
+      fetch('/api/google/auth/?disconnect=1', { method: 'POST', credentials: 'same-origin' }).then(function () {
+        gscListCache = null; openFolds.traffic = true;
+        return clientStaff(clientId, 'traffic').then(function () { msg('Google との接続を切りました。このブラウザでは、もう一度つなぐまで Google から取得できません。', 'ok'); });
+      }).catch(function () { dc.disabled = false; msg('切断できませんでした。少し待ってからもう一度押してください。', 'error'); });
+    });
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var month = $('#arc-g-month').value, gsc = $('#arc-g-gsc').value.trim(), ga4 = $('#arc-g-ga4').value.trim().replace(/^properties\//, '');
@@ -564,6 +581,13 @@
       if (!gsc && !ga4) { msg('Search Console のサイトか GA4 プロパティIDを入れてください', 'error'); return; }
       if (ga4 && !/^\d{1,20}$/.test(ga4)) { msg('GA4 プロパティIDは数字だけです（「G-」で始まる測定IDではありません）', 'error'); return; }
       if (ga4 && !sites[0]) { msg('GA4 を取得するには、先に「対象サイト」を登録してください', 'error'); return; }
+      // 選んだ Search Console のサイトが、この顧客のサイトか（違う会社の数字が入るのを防ぐ）
+      var host0 = sites[0] && sites[0].host;
+      if (gsc && host0 && gscCandidates(host0).indexOf(gsc) < 0 && !($('#arc-g-other') || {}).checked) {
+        var w = $('#arc-g-other-wrap'); if (w) w.hidden = false;
+        msg('選んだ Search Console のサイト（' + gsc + '）は、このお客様のサイト（' + host0 + '）ではありません。違う会社の数字が入るのを防ぐため、取得しませんでした。お客様のサイトを選ぶか、分かったうえで取るときは下のチェックを入れてください。', 'error');
+        return;
+      }
       saveGoogleProps(clientId, { gsc: gsc, ga4: ga4 });
       msg('Google から取得しています…');
       var period = month + '-01', jobs = [], got = [];
@@ -571,7 +595,7 @@
         var t = d.totals; if (!t) throw new Error('Search Console の合計を取得できませんでした');
         got.push('Search Console（' + t.days + '日間 クリック ' + t.clicks + ' / 表示 ' + t.impressions + '）');
         return sb.from('traffic_snapshots').upsert({ client_id: clientId, period_month: period, source: 'gsc_api',
-          metrics: { clicks: t.clicks, impressions: t.impressions, ctr: t.ctr, position: t.position, days: t.days, start_date: t.startDate, end_date: t.endDate, property: gsc },
+          metrics: { clicks: t.clicks, impressions: t.impressions, ctr: t.ctr, position: t.position, days: t.days, start_date: t.startDate, end_date: t.endDate, property: gsc, google_email: googleEmail() || null },
           created_by: me.email }, { onConflict: 'client_id,period_month,source' }).then(q);
       }));
       if (ga4) jobs.push(googlePost('/api/google/ga4/', { propertyId: ga4, siteUrl: sites[0].url, startDate: range.start, endDate: range.end, summaryOnly: true }).then(function (d) {
@@ -579,13 +603,13 @@
         got.push('GA4（セッション ' + g.sessions + ' / AI経由 ' + g.aiSessions + ' / キーイベント ' + g.keyEvents + '）');
         return sb.from('traffic_snapshots').upsert({ client_id: clientId, period_month: period, source: 'ga4_api',
           metrics: { sessions: g.sessions, ai_sessions: g.aiSessions, conversions: g.keyEvents, target_page_views: null, ai_sources: g.aiSources,
-            property_id: ga4, host: d.host, start_date: range.start, end_date: range.end },
+            property_id: ga4, host: d.host, start_date: range.start, end_date: range.end, google_email: googleEmail() || null },
           created_by: me.email }, { onConflict: 'client_id,period_month,source' }).then(q);
       }));
       Promise.allSettled(jobs).then(function (rs) {
         var errs = rs.filter(function (r) { return r.status === 'rejected'; }).map(function (r) { return (r.reason && r.reason.message) || String(r.reason); });
         openFolds.traffic = true;
-        return clientStaff(clientId).then(function () {
+        return clientStaff(clientId, 'traffic').then(function () {
           if (errs.length) msg((got.length ? '保存: ' + got.join('、') + '。' : '') + '失敗: ' + errs.join(' / '), 'error');
           else msg('保存しました: ' + got.join('、'), 'ok');
         });
@@ -674,7 +698,7 @@
         '<table class="arc-table"><thead><tr><th>計測日</th><th>質問の版</th><th>主な質問の引用率・言及率</th><th></th></tr></thead><tbody>' + (runRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
         fold('traffic', SEC_LABEL.traffic, traffic.length + '件') +
-        googleSyncForm(id, sites) +
+        googleSyncForm(id, sites, traffic) +
         '<details class="arc-dev"><summary>Google とつながない場合：CSV で取り込む・手で入力する</summary>' +
         '<form id="arc-add-gsc" class="arc-row"><input class="arc-input" type="month" id="arc-gsc-month" value="' + thisMonth() + '" required><input class="arc-input" type="file" id="arc-gsc-file" accept=".csv,text/csv" required><button class="arc-btn" type="submit">Search Console の CSV を取り込む</button></form>' +
         '<p class="arc-note">Search Console の「検索パフォーマンス」→「エクスポート」→ CSV の、日付の表（グラフ.csv / Chart.csv）を選びます。</p>' +
