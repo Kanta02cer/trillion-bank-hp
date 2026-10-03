@@ -423,7 +423,8 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
     else {
       let got = null;
       if (useGateway && engine === 'perplexity') {
-        try { got = await withRateRetry(() => callPerplexityResponses(gatewayModel(engine), gatewayKey, p.prompt), deadline); } catch (e) { got = null; }
+        try { got = await withRateRetry(() => callPerplexityResponses(gatewayModel(engine), gatewayKey, p.prompt), deadline); }
+        catch (e) { if (/rate limit|回数の上限|429/i.test(String((e && e.message) || e))) throw e; got = null; }
         if (got && !got.answer) got = null;
       }
       if (!got) got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt)), deadline);
@@ -573,8 +574,9 @@ export function parseResponsesOutput(data) {
   // 上位にまとめて返る形（sources・citations）にも備える
   const extra = gatewayCitations(data);
   extra.urls && extra.urls.forEach((u) => { if (citations.indexOf(u) < 0) citations.push(u); });
-  const found = citations.length > 0 || sawAnnotations || extra.urls !== null;
-  return { answer, citations: found ? citations.slice(0, 20) : null, fields: ['responses'].concat(sawAnnotations ? ['annotations'] : [], extra.fields) };
+  // 空の一覧は「出典なし」ではなく「渡されていない」とみる（Perplexity は必ず検索する。AI Gateway は出典を渡さないことがある：2026-10-03 実測）。
+  // 0% と記録すると実際より悪く見えるので、URL が1つも無ければ null（本文で判定）にする
+  return { answer, citations: citations.length ? citations.slice(0, 20) : null, fields: ['responses'].concat(sawAnnotations ? ['annotations'] : [], extra.fields) };
 }
 
 function gatewayError(status, data, model) {
@@ -583,6 +585,11 @@ function gatewayError(status, data, model) {
     return model + ' は Vercel AI Gateway の無料枠では使えません（有料クレジットが必要）';
   }
   if (/not found/i.test(String(msg))) return model + ' が見つかりません（モデル名を確認）';
+  if (status === 429 || /rate limit/i.test(String(msg))) {
+    const sec = (/retry after (\d+)s/i.exec(String(msg)) || [])[1];
+    // 末尾の英語は自動で待って聞き直すための目印（rateLimitWait が読む）。消さない
+    return model.split('/')[0] + ' の回数の上限（1分あたりの回数）に当たりました。' + (sec ? sec + '秒ほど' : '1〜2分') + 'あけて、もう一度計測してください（続けて押すと上限に当たります）' + ' [rate limit' + (sec ? '; retry after ' + sec + 's' : '') + ']';
+  }
   return String(msg || ('AI Gateway failed (' + status + ')')).slice(0, 200);
 }
 
