@@ -426,7 +426,7 @@
   }
   function savedRun(key) { try { return (JSON.parse(get(SAVED_RUNS) || '[]') || []).indexOf(key) >= 0; } catch (e) { return false; } }
 
-  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); startSync(); renderRunHistory(); setTimeout(function () { takeCustomerQuestions(); autoStart(); }, 600); }
+  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); startSync(); renderRunHistory(); setTimeout(function () { takeCustomerQuestions(); autoStart(); setTimeout(autoGscSync, 1500); }, 600); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   // ---- 分析したサイトを、この顧客のサイトとして登録する ------------------------------------------
   // ダッシュボードは「顧客に登録されたサイト」と同じサイトの診断だけを、その顧客の診断として出す。
@@ -461,6 +461,58 @@
       });
     }).catch(function () { return null; });
   }
+  // ---- Search Console の実際の検索語を、キーワードに自動で反映する（キーワード選びの第3段階）---------------
+  // 顧客ごとの Google のつながり（ダッシュボードでつないだもの）と、ダッシュボードで取得したサイト（traffic_snapshots の property）を使う。
+  // 直近28日（昨日まで）。前回から7日たったか、月が変わったか、サイトが変わったときだけ取り直す
+  function gKey() { return client ? String(client.id).toLowerCase().replace(/-/g, '') : ''; }
+  function gConnected() { var m = document.cookie.match(new RegExp('(?:^|;\\s*)airreach_g_' + gKey() + '_s=([^;]*)')); return !!m && decodeURIComponent(m[1]).split('.').indexOf('gsc') >= 0; }
+  function gscNote(text, kind) {
+    var body = document.getElementById('keyword-body'); if (!body) return;
+    var el = document.getElementById('kw-gsc-note');
+    if (!el) { el = document.createElement('p'); el.id = 'kw-gsc-note'; body.parentNode.insertBefore(el, body); }
+    el.className = 'ars-note' + (kind ? ' ' + kind : ''); el.textContent = text;
+  }
+  function ymdJst(ms) { return new Date(ms + 9 * 3600000).toISOString().slice(0, 10); }
+  function autoGscSync(force) {
+    if (!client || !window.AirReachStudio || !window.AirReachOrchestrator) return Promise.resolve(null);
+    if (!gConnected()) { gscNote('この顧客は Google とつながっていないため、Search Console の実際の検索語は入っていません。ダッシュボードの「検索と訪問の数字を入れる」でつなぐと、ここに自動で入ります。'); return Promise.resolve(null); }
+    return sb().then(function (s) {
+      return s.from('traffic_snapshots').select('metrics,period_month').eq('client_id', client.id).eq('source', 'gsc_api').order('period_month', { ascending: false }).limit(1);
+    }).then(function (r) {
+      var prop = r && r.data && r.data[0] && r.data[0].metrics && r.data[0].metrics.property;
+      if (!prop) { gscNote('Search Console のサイトがまだ決まっていません。ダッシュボードの「検索と訪問の数字を入れる」で一度「Google から取得」をすると、ここに実際の検索語が自動で入ります。'); return null; }
+      var st = window.AirReachStudio.getState(), last = st.gscAuto || {};
+      var now = Date.now(), end = ymdJst(now - 86400000), start = ymdJst(now - 28 * 86400000);
+      var fresh = last.property === prop && last.at && (now - Date.parse(last.at) < 7 * 86400000) && String(last.at).slice(0, 7) === new Date(now).toISOString().slice(0, 7);
+      if (fresh && !force) { gscNote('Search Console の実際の検索語（' + last.start.slice(5).replace('-', '/') + '〜' + last.end.slice(5).replace('-', '/') + '・' + last.count + '語）を反映しています。7日ごとに自動で新しくします。', 'good'); return null; }
+      gscNote('Search Console から実際の検索語を読み込んでいます…');
+      return fetch('/api/google/gsc/', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: client.id, siteUrl: prop, startDate: start, endDate: end }) })
+        .then(function (res) { return res.json().catch(function () { return {}; }).then(function (d) { if (!res.ok) throw new Error(res.status === 401 ? 'Google とのつながりが切れています。ダッシュボードでつなぎ直してください' : res.status === 403 ? 'この Search Console のサイトを見る権限がありません' : (d.error && d.error.message) || ('HTTP ' + res.status)); return d; }); })
+        .then(function (d) {
+          var rows = d.rows || [];
+          if (window.AirReachStudio.beginGscSync) window.AirReachStudio.beginGscSync(d.siteUrl || prop, start, end, d.totals);
+          if (rows.length) window.AirReachOrchestrator.importGscRows(rows, { property: d.siteUrl || prop });
+          // 分析の結果（キーワードの一覧）に、表示回数・クリックと、一覧に無い実際の検索語を足す
+          var job = window.__orchLastJob; if (!job) { try { job = (JSON.parse(localStorage.getItem('airreach_studio_orch_v1') || 'null') || {}).lastJob; } catch (e) { job = null; } }
+          var hasJob = !!(job && job.keywords && job.keywords.length);
+          if (job && job.keywords && window.AirReachOrchestrator.reattachGscToJob) {
+            job = window.AirReachOrchestrator.reattachGscToJob(job); window.__orchLastJob = job;
+            var res2 = document.getElementById('orch-result'); if (res2 && !res2.hidden && window.AirReachOrchestrator.renderResult) window.AirReachOrchestrator.renderResult(job);
+          }
+          var queries = {}; rows.forEach(function (x) { if (x.keyword) queries[x.keyword] = 1; });
+          var n = Object.keys(queries).length;
+          st = window.AirReachStudio.getState();
+          st.gscAuto = { at: new Date().toISOString(), property: prop, start: start, end: end, count: n };
+          window.AirReachStudio.save();
+          var span = start.slice(5).replace('-', '/') + '〜' + end.slice(5).replace('-', '/');
+          gscNote(!n ? 'Search Console では、この期間に表示された検索語がありませんでした（' + start + '〜' + end + '）。'
+            : hasJob ? 'Search Console の実際の検索語（' + span + '・' + n + '語）を反映しました。表示の多い検索語は「必須」になり、一覧に無かったものは足しています。7日ごとに自動で新しくします。'
+            : 'Search Console の実際の検索語（' + span + '・' + n + '語）を読み込みました。「サイトを調べる」を行うと、キーワードの一覧に入ります。', n ? 'good' : '');
+          return n;
+        });
+    }).catch(function (e) { gscNote('Search Console の検索語を読み込めませんでした（' + String((e && e.message) || e) + '）。', 'warn'); return null; });
+  }
+
   // ダッシュボードで顧客をサイトつきで追加したとき（?auto=1）は、開いたらそのまま「サイトを調べる」を始める。
   // 分析が終わると、足りない情報の判定と AI での見え方の計測も続けて自動で行う（airreach-studio.js）
   // 顧客の追加時に入れた「お客様によく聞かれる質問」を受け取り、作業（state.customerQuestions）と測る質問の先頭に入れる
@@ -501,5 +553,5 @@
     })();
   }
 
-  window.AirReachStudioClients = { current: function () { return client; }, swapError: function () { return swapError; }, onMeasured: onMeasured, savedRun: savedRun, ensureSite: ensureSite, measuredThisMonth: measuredThisMonth };
+  window.AirReachStudioClients = { current: function () { return client; }, swapError: function () { return swapError; }, onMeasured: onMeasured, savedRun: savedRun, ensureSite: ensureSite, measuredThisMonth: measuredThisMonth, autoGscSync: autoGscSync };
 })();
