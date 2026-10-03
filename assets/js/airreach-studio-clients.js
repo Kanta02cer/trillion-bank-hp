@@ -365,7 +365,7 @@
   }
 
   // ---- これまでの AI 計測（顧客の measurement_runs）を「AI での見え方を測る」の下に出す ----------------
-  var PROV = { openai: 'ChatGPT', chatgpt: 'ChatGPT', perplexity: 'Perplexity', claude: 'Claude', gemini: 'Gemini', jev: '推定' };
+  var PROV = { openai: 'ChatGPT', chatgpt: 'ChatGPT', perplexity: 'Perplexity', claude: 'Claude', gemini: 'Gemini', google_aio: 'Google AI による概要', google_ai_mode: 'Google AI モード', jev: '推定' };
   function pct(v) { return v == null || v === '' || isNaN(Number(v)) ? '—' : (Math.round(Number(v) * 10) / 10) + '%'; }
   function renderRunHistory() {
     var box = document.getElementById('hack2-history');

@@ -18,7 +18,9 @@
     openai: { label: 'ChatGPT', color: '#2a78d6' },
     gemini: { label: 'Gemini', color: '#eb6834' },
     claude: { label: 'Claude', color: '#1baf7a' },
-    perplexity: { label: 'Perplexity', color: '#4a3aa7' }
+    perplexity: { label: 'Perplexity', color: '#4a3aa7' },
+    google_aio: { label: 'Google AI による概要', color: '#c2410c' },
+    google_ai_mode: { label: 'Google AI モード', color: '#0e7490' }
   };
   var INK = '#0f172a', MUTED = '#64748b', PREV = '#b8c0cc';
   var FALLBACK_BANDS = [
