@@ -463,14 +463,29 @@
   function saveGoogleProps(clientId, v) {
     try { var all = JSON.parse(localStorage.getItem(GOOGLE_PROPS_KEY) || '{}') || {}; all[clientId] = v; localStorage.setItem(GOOGLE_PROPS_KEY, JSON.stringify(all)); } catch (e) {}
   }
+  // Google とつないで戻ってきたとき（?google=connected など）。一度だけ知らせ、アドレスからは消す
+  var googleRet = (location.search.match(/[?&]google=([a-z_]+)/) || [])[1] || '';
+  if (googleRet) { try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {} }
   function googleSyncForm(clientId, sites) {
     var p = googleProps(clientId), host = sites[0] && sites[0].host;
-    return '<form id="arc-google-sync" class="arc-row"><input class="arc-input" type="month" id="arc-g-month" value="' + thisMonth() + '" required>' +
+    var feats = ((document.cookie.match(/(?:^|;\s*)airreach_google_scopes=([^;]*)/) || [])[1] || '').split('.').filter(Boolean);
+    var hasGsc = feats.indexOf('gsc') >= 0, hasGa4 = feats.indexOf('ga4') >= 0;
+    var connect = '/api/google/auth/?back=app&client=' + encodeURIComponent(clientId);
+    var studioG = (window.AirReachNav ? window.AirReachNav.studioBase({ id: clientId, site: sites && sites[0] && sites[0].url }) : '/airreach/studio/') + '#google';
+    var ret = googleRet; googleRet = '';
+    var RET = { connected: ['ok', 'Google とつながりました。月を選んで「Google から取得」を押してください。'], gsc_missing: ['warn', 'Search Console の閲覧が許可されませんでした。もう一度つなぎ、Search Console にチェックを入れてください。'],
+      ga4_missing: ['warn', 'GA4 の閲覧が許可されませんでした（Search Console だけつながりました）。GA4 も使うときは、もう一度つないでチェックを入れてください。'], scope_missing: ['warn', '閲覧の許可がありませんでした。もう一度つないで、チェックを入れてください。'] };
+    var state = feats.length
+      ? '<span class="arc-chip is-ok">Google とつながっています</span> <span class="arc-sub">Search Console ' + (hasGsc ? '✓' : '—') + '・GA4 ' + (hasGa4 ? '✓' : '—') + '</span> <a class="arc-btn-sm" href="' + esc(connect) + '">つなぎ直す</a>'
+      : '<span class="arc-chip is-warn">まだ Google とつながっていません</span> <a class="arc-btn" href="' + esc(connect) + '">Google とつなぐ</a>';
+    return '<div class="arc-gbox"><div class="arc-gbox-h"><b>Google から取り込む（おすすめ）</b>' + state + '</div>' +
+      (RET[ret] ? '<p class="arc-gmsg is-' + RET[ret][0] + '">' + esc(RET[ret][1]) + '</p>' : '') +
+      '<form id="arc-google-sync" class="arc-row"><input class="arc-input" type="month" id="arc-g-month" value="' + thisMonth() + '" required>' +
       '<input class="arc-input" id="arc-g-gsc" placeholder="Search Console のサイト（例: sc-domain:example.jp）" value="' + esc(p.gsc != null ? p.gsc : (host ? 'sc-domain:' + host : '')) + '">' +
       '<input class="arc-input" id="arc-g-ga4" inputmode="numeric" placeholder="GA4 プロパティID（数字）" value="' + esc(p.ga4 || '') + '">' +
-      '<button class="arc-btn" type="submit">Google から取得</button></form>' +
-      '<p class="arc-note">先に、左のメニューの <a href="' + esc((window.AirReachNav ? window.AirReachNav.studioBase({ id: clientId, site: sites && sites[0] && sites[0].url }) : '/airreach/studio/') + '#google') + '">「Google とつなぐ」</a>で「接続」してください。接続した Google アカウントが閲覧できるサイトだけ取得できます（顧客サイトは閲覧権限をもらう）。' +
-      'Search Console はサイト全体の表示・クリック、GA4 は ' + esc(host || '対象サイト') + ' のセッション・AI経由セッション（ChatGPT・Perplexity・Gemini 等からの流入）・キーイベントを取得します。対象ページ閲覧は手入力の値を使います。当月は昨日までの数値です。</p>';
+      '<button class="arc-btn" type="submit"' + (feats.length ? '' : ' disabled') + '>Google から取得</button></form>' +
+      '<p class="arc-note">つないだ Google アカウントが閲覧できるサイトだけ取得できます（お客様のサイトは閲覧権限をもらってください）。Search Console はサイト全体の表示・クリック、GA4 は ' + esc(host || '対象サイト') + ' のセッション・AI 経由のセッション（ChatGPT・Perplexity・Gemini などから）・問い合わせを取得します。当月は昨日までの数字です。' +
+      '言葉ごとの取り込み（CSV・Keyword Planner）は <a href="' + esc(studioG) + '">Studio の取り込み画面</a>で行えます。</p></div>';
   }
   function monthRange(ymStr) {
     var y = Number(ymStr.slice(0, 4)), mo = Number(ymStr.slice(5, 7));
@@ -608,6 +623,8 @@
         '<table class="arc-table"><thead><tr><th>計測日</th><th>質問の版</th><th>主な質問の引用率・言及率</th><th></th></tr></thead><tbody>' + (runRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
         fold('traffic', SEC_LABEL.traffic, traffic.length + '件') +
+        googleSyncForm(id, sites) +
+        '<details class="arc-dev"><summary>Google とつながない場合：CSV で取り込む・手で入力する</summary>' +
         '<form id="arc-add-gsc" class="arc-row"><input class="arc-input" type="month" id="arc-gsc-month" value="' + thisMonth() + '" required><input class="arc-input" type="file" id="arc-gsc-file" accept=".csv,text/csv" required><button class="arc-btn" type="submit">Search Console の CSV を取り込む</button></form>' +
         '<p class="arc-note">Search Console の「検索パフォーマンス」→「エクスポート」→ CSV の、日付の表（グラフ.csv / Chart.csv）を選びます。</p>' +
         '<form id="arc-add-ga4" class="arc-row"><input class="arc-input" type="month" id="arc-ga4-month" value="' + thisMonth() + '" required>' +
@@ -616,7 +633,7 @@
         '<input class="arc-input" type="number" min="0" id="arc-ga4-pv" placeholder="対象ページ閲覧">' +
         '<input class="arc-input" type="number" min="0" id="arc-ga4-cv" placeholder="問い合わせ・予約">' +
         '<button class="arc-btn" type="submit">GA4 の数値を保存</button></form>' +
-        googleSyncForm(id, sites) +
+        '</details>' +
         '<table class="arc-table"><thead><tr><th>月</th><th>取得元</th><th>数値</th><th></th></tr></thead><tbody>' + (trRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
         fold('actions', SEC_LABEL.actions, actions.length + '件') +

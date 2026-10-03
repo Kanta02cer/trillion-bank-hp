@@ -31,7 +31,13 @@ export default async function handler(req, res) {
   if (!clientId) return res.status(500).json({ error: 'GOOGLE_CLIENT_ID is not configured' });
 
   const state = randomState();
-  res.setHeader('Set-Cookie', `airreach_google_state=${state}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`);
+  // 戻り先：ダッシュボードの「検索と訪問の数字を入れる」から始めたときは、そこへ戻す（?back=app&client=<uuid>）。
+  // 値は決まった形だけ受け付け、Cookie に入れて callback で使う（任意の URL へは戻さない）
+  const q = req.query || {};
+  const back = q.back === 'app' && /^[0-9a-f-]{36}$/i.test(String(q.client || '')) ? `app:${String(q.client).toLowerCase()}` : '';
+  const cookies = [`airreach_google_state=${state}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
+    `airreach_google_back=${back}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${back ? 600 : 0}`];
+  res.setHeader('Set-Cookie', cookies);
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,

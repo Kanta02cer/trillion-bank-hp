@@ -208,6 +208,7 @@
         var el;
         if (it.where === 'studio' && btns[it.panel]) {
           el = btns[it.panel];
+          if (it.also) el.setAttribute('data-also', it.also.join(' ')); // 中で一緒に扱う画面（そのときもこの項目を選んだ状態にする）
           el.innerHTML = '<span class="n">' + n + '</span><span class="ars-side-l">' + esc(it.label) + (it.desc ? '<small>' + esc(it.desc) + '</small>' : '') + '</span>';
           delete btns[it.panel];
         } else {
@@ -219,8 +220,8 @@
         frag.appendChild(el);
       });
     });
-    // 共通の並びに無い Studio の画面が残っていれば、最後に置く（消さない）
-    Object.keys(btns).forEach(function (k) { n += 1; var b = btns[k]; var sp = b.querySelector('.n'); if (sp) sp.textContent = n; frag.appendChild(b); });
+    // メニューに出さない Studio の画面（ほかの画面の中で扱うもの）は、隠したまま残す（URL の #… やボタンから開ける）
+    Object.keys(btns).forEach(function (k) { var b = btns[k]; b.hidden = true; frag.appendChild(b); });
     side.innerHTML = '';
     side.appendChild(frag);
     // 各画面の見出しをメニューの名前に、説明（lead）があれば見出しの下に出す
@@ -363,6 +364,39 @@
     }).catch(function () { syncStatus('共有の状態を確かめられませんでした（このパソコンには保存されています）', 'warn'); });
   }
 
+  // ---- これまでの AI 計測（顧客の measurement_runs）を「AI での見え方を測る」の下に出す ----------------
+  var PROV = { openai: 'ChatGPT', chatgpt: 'ChatGPT', perplexity: 'Perplexity', claude: 'Claude', gemini: 'Gemini', jev: '推定' };
+  function pct(v) { return v == null || v === '' || isNaN(Number(v)) ? '—' : (Math.round(Number(v) * 10) / 10) + '%'; }
+  function renderRunHistory() {
+    var box = document.getElementById('hack2-history');
+    if (!box || !client) return;
+    box.hidden = false;
+    var dash = '/airreach/app/#/c/' + encodeURIComponent(client.id) + '/runs';
+    var head = '<div class="ars-hist-h"><h3>これまでの記録</h3><a href="' + esc(dash) + '">削除・取り込みはダッシュボードで →</a></div>';
+    box.innerHTML = head + '<p class="ars-note">読み込んでいます…</p>';
+    sb().then(function (s) {
+      return s.auth.getSession().then(function (r) {
+        if (!(r && r.data && r.data.session)) return null;
+        return s.from('measurement_runs').select('measured_on,query_set_version,source,summary,created_at').eq('client_id', client.id).order('measured_on', { ascending: false }).order('created_at', { ascending: false }).limit(24);
+      });
+    }).then(function (r) {
+      if (r === null) { box.innerHTML = head + '<p class="ars-note">ログインすると、この顧客のこれまでの計測が表示されます。</p>'; return; }
+      if (r.error) throw r.error;
+      var rows = [];
+      (r.data || []).forEach(function (run) {
+        var by = (run.summary && Array.isArray(run.summary.by)) ? run.summary.by.filter(function (b) { return !b.group || b.group === 'main' || b.group === 'all'; }) : [];
+        if (!by.length) rows.push('<tr><td>' + esc(run.measured_on) + '</td><td colspan="4" class="ars-muted">集計を読めません</td></tr>');
+        by.forEach(function (b, i) {
+          var cite = b.either && b.either.rate != null ? b.either.rate : b.rate;
+          rows.push('<tr><td>' + (i ? '' : esc(String(run.measured_on).slice(5).replace('-', '/'))) + '</td><td>' + esc(PROV[String(b.provider || '').toLowerCase()] || b.provider || '') + '</td><td>' + pct(b.service_mention_rate) + '</td><td>' + pct(cite) + '</td><td>' + pct(b.sov) + '</td></tr>');
+        });
+      });
+      box.innerHTML = head + (rows.length
+        ? '<div class="ars-table-wrap"><table class="ars-table"><thead><tr><th>計測日</th><th>AI</th><th>名前が出た</th><th>自社サイトが出典</th><th>競合と比べた割合</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div><p class="ars-note">計測すると自動でここに入り、月次レポートの AI の数字に使われます。</p>'
+        : '<p class="ars-note">まだ記録がありません。上の「計測実行」で測ると、ここに入ります。</p>');
+    }).catch(function () { box.innerHTML = head + '<p class="ars-note">記録を読み込めませんでした。少し待ってから開き直してください。</p>'; });
+  }
+
   // ---- Studio の AI計測を、顧客の「AI計測の記録」に自動で残す --------------------------------
   var SAVED_RUNS = 'airreach_studio_saved_runs_v1';
   function onMeasured(summary) {
@@ -379,7 +413,8 @@
             if (res.error) throw res.error;
             if (key) { saved.push(key); set(SAVED_RUNS, JSON.stringify(saved.slice(-200))); }
             var st = document.getElementById('hack2-status');
-            if (st) st.textContent += ' ／ 顧客の「AI計測の記録」に保存しました（月次レポートに使えます）';
+            if (st) st.textContent += ' ／ 下の「これまでの記録」に保存しました（月次レポートに使えます）';
+            renderRunHistory();
             return true;
           });
       });
@@ -391,7 +426,7 @@
   }
   function savedRun(key) { try { return (JSON.parse(get(SAVED_RUNS) || '[]') || []).indexOf(key) >= 0; } catch (e) { return false; } }
 
-  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); startSync(); }
+  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); startSync(); renderRunHistory(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   window.AirReachStudioClients = { current: function () { return client; }, swapError: function () { return swapError; }, onMeasured: onMeasured, savedRun: savedRun };
 })();
