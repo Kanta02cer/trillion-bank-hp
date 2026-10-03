@@ -28,6 +28,32 @@ function setCors(req, res) {
 export default async function handler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
+  // GET：つないだアカウントで見られる GA4 プロパティの一覧（画面で選べるようにする）。
+  // 名前と、ウェブのデータストリームの URL（お客様のサイトに合うものを選ぶため）を返す。読み取りのみ（analytics.readonly）
+  if (req.method === 'GET') {
+    if (!isGa4Enabled()) return res.status(503).json({ error: 'GA4連携は準備中です', code: 'ga4_not_enabled' });
+    const tk = await getAccessToken(req, requestClientId(req));
+    if (!tk) return res.status(401).json({ error: 'Google connection required', code: 'not_connected' });
+    const H = { Authorization: `Bearer ${tk}` };
+    const r0 = await fetch('https://analyticsadmin.googleapis.com/v1beta/accountSummaries?pageSize=200', { headers: H });
+    const d0 = await r0.json().catch(() => ({}));
+    if (!r0.ok) return res.status(r0.status).json({ error: (d0.error && d0.error.message) || 'GA4 のプロパティ一覧を読めませんでした', code: 'list_failed' });
+    const props = [];
+    (d0.accountSummaries || []).forEach((a) => (a.propertySummaries || []).forEach((p) => {
+      const id = String(p.property || '').replace(/^properties\//, '');
+      if (/^\d+$/.test(id)) props.push({ id, name: p.displayName || '', account: a.displayName || '', uris: [] });
+    }));
+    // ウェブのデータストリームの URL（多すぎると遅いので先頭30件まで）
+    await Promise.all(props.slice(0, 30).map(async (p) => {
+      try {
+        const r1 = await fetch(`https://analyticsadmin.googleapis.com/v1beta/properties/${p.id}/dataStreams?pageSize=20`, { headers: H });
+        const d1 = await r1.json().catch(() => ({}));
+        if (r1.ok) p.uris = (d1.dataStreams || []).map((x) => x.webStreamData && x.webStreamData.defaultUri).filter(Boolean);
+      } catch (e) {}
+    }));
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json({ properties: props });
+  }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST required' });
   // GA4 連携は準備中。OAuth で analytics.readonly を要求していないので、Google へは問い合わせない（コードは再開用に残す）
   if (!isGa4Enabled()) return res.status(503).json({ error: 'GA4連携は準備中です。GA4 は CSV で取り込めます。', code: 'ga4_not_enabled' });

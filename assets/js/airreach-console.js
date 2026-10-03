@@ -310,7 +310,7 @@
       { title: 'AI での見え方を測る', what: '質問を確かめて「計測する」を押す', get: 'AI の回答に名前・サイトが出た割合、競合との比較', time: '約2分',
         ok: !!live.ai, note: live.ai ? md(live.ai.measuredOn) + ' 計測' : '', btn: '計測する', href: studio + '#hack2' },
       { title: '検索と訪問の数字を入れる', what: 'Google と連携していれば月を選ぶだけ', get: '検索のクリック、訪問、問い合わせの数', time: '約3分',
-        ok: !!(tr.gsc && tr.ga4), note: tr.gsc || tr.ga4 ? (tr.gsc ? 'Search Console ✓' : 'Search Console まだ') + '・' + (tr.ga4 ? 'GA4 ✓' : 'GA4 まだ') : '', btn: '取り込む', href: base + 'traffic' },
+        ok: !!(tr.gsc && tr.ga4), note: tr.gsc || tr.ga4 ? (tr.gsc ? 'Search Console ✓' : 'Search Console まだ') + '・' + (tr.ga4 ? 'GA4 ✓' : 'GA4 まだ（必須：プロパティを選んで取得）') : '', btn: '取り込む', href: base + 'traffic' },
       { title: 'やったことを記録する', what: '直したことを「実施済み」にして、公開したページの URL を入れる', get: 'レポートの「今月実施したこと」になる', time: '約3分',
         ok: live.actions.length > 0, note: live.actions.length ? live.actions.length + '件' : '', btn: '記録する', href: base + 'actions' },
       { title: '月次レポートを作って、確認を依頼する', what: '結論と次の施策を書いて、確認を依頼する', get: '承認されるとお客様に公開できる', time: '約15分',
@@ -516,7 +516,7 @@
       (RET[ret] ? '<p class="arc-gmsg is-' + RET[ret][0] + '">' + esc(RET[ret][1]) + '</p>' : '') +
       '<form id="arc-google-sync" class="arc-row"><input class="arc-input" type="month" id="arc-g-month" value="' + thisMonth() + '" required>' +
       '<input class="arc-input" id="arc-g-gsc" placeholder="Search Console のサイト（例: sc-domain:example.jp）" value="' + esc(p.gsc != null ? p.gsc : (host ? 'sc-domain:' + host : '')) + '">' +
-      '<input class="arc-input" id="arc-g-ga4" inputmode="numeric" placeholder="GA4 プロパティID（数字）" value="' + esc(p.ga4 || '') + '">' +
+      '<input class="arc-input" id="arc-g-ga4" inputmode="numeric" placeholder="GA4 プロパティID（数字・必須）" value="' + esc(p.ga4 || '') + '">' +
       '<button class="arc-btn" type="submit"' + (feats.length ? '' : ' disabled') + '>Google から取得</button>' +
       '<label class="arc-g-other" id="arc-g-other-wrap" hidden><input type="checkbox" id="arc-g-other"> このお客様のサイトではないと分かったうえで取得する</label></form>' +
       '<p class="arc-note">つないだ Google アカウントが閲覧できるサイトだけ取得できます（お客様のサイトは閲覧権限をもらってください）。Search Console はサイト全体の表示・クリック、GA4 は ' + esc(host || '対象サイト') + ' のセッション・AI 経由のセッション（ChatGPT・Perplexity・Gemini などから）・問い合わせを取得します。当月は昨日までの数字です。' +
@@ -567,14 +567,46 @@
       }
     }).catch(function () { /* 一覧を読めないときは、今まで通り手で入れる */ });
   }
+  // つないだアカウントで見られる GA4 プロパティを読み、選べるようにする。お客様のサイトのデータストリームを持つものを先に選ぶ
+  var ga4ListCache = null;
+  function fillGa4Properties(clientId, sites) {
+    var input = $('#arc-g-ga4'); if (!input || gCookie(clientId, 's').split('.').indexOf('ga4') < 0) return;
+    var host = sites[0] && sites[0].host;
+    var load = ga4ListCache && ga4ListCache.id === clientId ? Promise.resolve(ga4ListCache.list) : fetch('/api/google/ga4/?client=' + encodeURIComponent(clientId), { credentials: 'same-origin' })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); })
+      .then(function (j) { ga4ListCache = { id: clientId, list: j.properties || [] }; return ga4ListCache.list; });
+    load.then(function (list) {
+      var hostOfUri = function (u) { try { return new URL(u).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) { return ''; } };
+      var mine = function (p) { return !!host && (p.uris || []).some(function (u) { return hostOfUri(u) === host; }); };
+      var saved = input.value.trim(), ids = list.map(function (p) { return p.id; });
+      var pick = ids.indexOf(saved) >= 0 ? saved : ((list.filter(mine)[0] || {}).id || '');
+      var sel = document.createElement('select'); sel.className = 'arc-input'; sel.id = 'arc-g-ga4-sel'; sel.setAttribute('aria-label', 'GA4 のプロパティ');
+      sel.innerHTML = '<option value="">（GA4 を選ぶ：必須）</option>' + list.map(function (p) { return '<option value="' + esc(p.id) + '"' + (p.id === pick ? ' selected' : '') + '>' + esc(p.name || p.id) + '（' + esc(p.id) + '）' + (mine(p) ? '（このお客様のサイト）' : '') + '</option>'; }).join('');
+      input.hidden = true; input.value = pick; input.insertAdjacentElement('afterend', sel);
+      sel.addEventListener('change', function () { input.value = sel.value; });
+      if (!pick) {
+        var p = document.createElement('p'); p.className = 'arc-gmsg is-warn';
+        p.textContent = list.length
+          ? 'つないだ Google アカウントで見られる GA4 に、' + (host || 'このお客様のサイト') + ' のものが見つかりませんでした。一覧から選ぶか、お客様に GA4 の「管理 → プロパティのアクセス管理」で、つないだ Google アカウントを「閲覧者」として追加してもらってください。'
+          : 'つないだ Google アカウントで見られる GA4 がありません。お客様に GA4 の「管理 → プロパティのアクセス管理」で、つないだ Google アカウントを「閲覧者」として追加してもらってください。';
+        var box = input.closest('.arc-gbox'); if (box) box.insertBefore(p, input.closest('form'));
+      }
+    }).catch(function () {
+      // 一覧を読めないとき（Analytics Admin API が使えない等）は手で入れる。どこにあるかを案内する
+      var p = document.createElement('p'); p.className = 'arc-note';
+      p.textContent = 'GA4 のプロパティID は、GA4 の「管理 → プロパティの設定」に出ている数字です（「G-」で始まる測定ID ではありません）。';
+      var box = input.closest('.arc-gbox'); if (box) box.insertBefore(p, input.closest('form'));
+    });
+  }
   function bindGoogleSync(clientId, sites) {
     var form = $('#arc-google-sync'); if (!form) return;
     fillGscProperties(clientId, sites);
+    fillGa4Properties(clientId, sites);
     var dc = $('#arc-g-disconnect');
     if (dc) dc.addEventListener('click', function () {
       dc.disabled = true;
       fetch('/api/google/auth/?disconnect=1&client=' + encodeURIComponent(clientId), { method: 'POST', credentials: 'same-origin' }).then(function () {
-        gscListCache = null; openFolds.traffic = true;
+        gscListCache = null; ga4ListCache = null; openFolds.traffic = true;
         return clientStaff(clientId, 'traffic').then(function () { msg('この顧客の Google とのつながりを切りました。もう一度つなぐまで、この顧客は Google から取得できません（ほかの顧客のつながりはそのままです）。', 'ok'); });
       }).catch(function () { dc.disabled = false; msg('切断できませんでした。少し待ってからもう一度押してください。', 'error'); });
     });
@@ -616,6 +648,7 @@
         openFolds.traffic = true;
         return clientStaff(clientId, 'traffic').then(function () {
           if (errs.length) msg((got.length ? '保存: ' + got.join('、') + '。' : '') + '失敗: ' + errs.join(' / '), 'error');
+          else if (!ga4) msg('保存しました: ' + got.join('、') + '。GA4 がまだです（必須）。GA4 のプロパティを選んで、もう一度「Google から取得」を押してください。', 'error');
           else msg('保存しました: ' + got.join('、'), 'ok');
         });
       }).catch(fail);
