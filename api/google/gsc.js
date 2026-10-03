@@ -24,6 +24,19 @@ function setCors(req, res) {
 export default async function handler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
+  // GET: つないだ Google アカウントが見られる Search Console のプロパティの一覧（画面で選べるようにする）
+  if (req.method === 'GET') {
+    const tk = await getAccessToken(req);
+    if (!tk) return res.status(401).json({ error: 'Google connection required' });
+    const r0 = await fetch('https://searchconsole.googleapis.com/webmasters/v3/sites', { headers: { Authorization: `Bearer ${tk}` } });
+    const d0 = await r0.json().catch(() => ({}));
+    if (!r0.ok) return res.status(r0.status).json(d0);
+    const sites = (d0.siteEntry || [])
+      .filter((x) => x && x.siteUrl && x.permissionLevel !== 'siteUnverifiedUser')
+      .map((x) => ({ siteUrl: x.siteUrl, permissionLevel: x.permissionLevel }));
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json({ sites });
+  }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST required' });
   const token = await getAccessToken(req);
   if (!token) return res.status(401).json({ error: 'Google connection required' });
