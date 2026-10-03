@@ -113,6 +113,9 @@
     { group: '設定', items: [['members', '顧客側のメンバー']] }
   ];
   var SEC_LABEL = {}; SECTIONS.forEach(function (g) { g.items.forEach(function (it) { SEC_LABEL[it[0]] = it[1]; }); });
+  // 見出しは共通メニューの名前に合わせる
+  if (window.AirReachNav) Object.keys(SEC_LABEL).forEach(function (k) { var it = window.AirReachNav.item(k); if (it && k !== 'home') SEC_LABEL[k] = it.label; });
+  function secLead(k) { var it = window.AirReachNav && window.AirReachNav.item(k); return it && it.lead ? it.lead : ''; }
   // 左のメニューは Studio と共通（assets/js/airreach-nav.js）。ダッシュボードの節は同じページの中で、Studio の画面は Studio を開く
   function sideHtml(ctx) {
     var N = window.AirReachNav, cl = ctx.client, n = 0;
@@ -126,7 +129,7 @@
           var url = N.href(it, cl);
           if (it.where === 'dash') url = url.replace('/airreach/app/', ''); // 同じページの中は # だけで移る
           var badge = it.sec === 'reports' && ctx.reportBadge ? '<span class="arc-side-b">' + esc(ctx.reportBadge) + '</span>' : '';
-          return '<a class="arc-side-i' + (on ? ' is-on' : '') + (it.where === 'studio' ? ' is-studio' : '') + '" href="' + esc(url) + '"' + (on ? ' aria-current="page"' : '') + '><span class="arc-side-n">' + n + '</span><span class="arc-side-l">' + esc(it.label) + '</span>' + badge + '</a>';
+          return '<a class="arc-side-i' + (on ? ' is-on' : '') + (it.where === 'studio' ? ' is-studio' : '') + '" href="' + esc(url) + '"' + (on ? ' aria-current="page"' : '') + '><span class="arc-side-n">' + n + '</span><span class="arc-side-l">' + esc(it.label) + (it.desc ? '<small>' + esc(it.desc) + '</small>' : '') + '</span>' + badge + '</a>';
         }).join('');
       }).join('') + '</nav>';
   }
@@ -431,7 +434,7 @@
     return t.getFullYear() + '-' + p2(t.getMonth() + 1) + '-' + p2(t.getDate()) + ' ' + p2(t.getHours()) + ':' + p2(t.getMinutes());
   }
   function studioActionsCard(d) {
-    return '<section class="arc-card arc-studio-in"><h2 class="arc-h2">「直す材料」の下書きから、施策の候補が ' + d.items.length + '件あります</h2>' +
+    return '<section class="arc-card arc-studio-in"><h2 class="arc-h2">「直す材料を作る」の下書きから、施策の候補が ' + d.items.length + '件あります</h2>' +
       '<p class="arc-note">' + esc(localTime(d.createdAt)) + ' に ' + esc(d.url || '') + ' の下書きを作成。登録すると「実施した施策」に<b>予定</b>として入り、実施したら日付と証拠のURLを入れて「実施済み」にします。</p>' +
       '<ul class="arc-list">' + d.items.map(function (it, i) {
         return '<li><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" data-studio-item="' + i + '" checked><span>' + esc(it.title) + (it.file ? '<span class="arc-sub">（' + esc(it.file) + '）</span>' : '') + '</span></label></li>';
@@ -444,7 +447,7 @@
   var curSec = 'home';
   // 顧客の画面の各節。いまの節だけを見せる（ほかも DOM に置き、フォームの結び付けはそのまま使う）
   function fold(key, title, count) {
-    return '<section class="arc-card arc-sec" data-sec="' + key + '"' + (curSec === key ? '' : ' hidden') + '><div class="arv-home-head"><h2 class="arc-h2">' + esc(title) + '</h2><span class="arc-sub">' + esc(count) + '</span></div><div class="arc-fold-b">';
+    return '<section class="arc-card arc-sec" data-sec="' + key + '"' + (curSec === key ? '' : ' hidden') + '><div class="arv-home-head">' + (secLead(key) ? '<p class="arc-lead">' + esc(secLead(key)) + '</p>' : '<h2 class="arc-h2">' + esc(title) + '</h2>') + '<span class="arc-sub">' + esc(count) + '</span></div><div class="arc-fold-b">';
   }
 
   function ymJa(d) { var s = String(d || ''); return s.slice(0, 4) + '年' + Number(s.slice(5, 7)) + '月'; }
@@ -466,7 +469,7 @@
       '<input class="arc-input" id="arc-g-gsc" placeholder="Search Console のサイト（例: sc-domain:example.jp）" value="' + esc(p.gsc != null ? p.gsc : (host ? 'sc-domain:' + host : '')) + '">' +
       '<input class="arc-input" id="arc-g-ga4" inputmode="numeric" placeholder="GA4 プロパティID（数字）" value="' + esc(p.ga4 || '') + '">' +
       '<button class="arc-btn" type="submit">Google から取得</button></form>' +
-      '<p class="arc-note">先に、左のメニューの <a href="' + esc((window.AirReachNav ? window.AirReachNav.studioBase({ id: clientId, site: sites && sites[0] && sites[0].url }) : '/airreach/studio/') + '#google') + '">「Google 連携」</a>で「接続」してください。接続した Google アカウントが閲覧できるサイトだけ取得できます（顧客サイトは閲覧権限をもらう）。' +
+      '<p class="arc-note">先に、左のメニューの <a href="' + esc((window.AirReachNav ? window.AirReachNav.studioBase({ id: clientId, site: sites && sites[0] && sites[0].url }) : '/airreach/studio/') + '#google') + '">「Google とつなぐ」</a>で「接続」してください。接続した Google アカウントが閲覧できるサイトだけ取得できます（顧客サイトは閲覧権限をもらう）。' +
       'Search Console はサイト全体の表示・クリック、GA4 は ' + esc(host || '対象サイト') + ' のセッション・AI経由セッション（ChatGPT・Perplexity・Gemini 等からの流入）・キーイベントを取得します。対象ページ閲覧は手入力の値を使います。当月は昨日までの数値です。</p>';
   }
   function monthRange(ymStr) {
@@ -482,7 +485,7 @@
         return r.json().catch(function () { return {}; }).then(function (j) {
           if (r.ok) return j;
           var e = j.error && typeof j.error === 'object' ? (j.error.message || '') : (j.error || '');
-          if (r.status === 401) e = 'Google に接続していません（または接続が切れています）。左のメニューの「Google 連携」で「接続」してください';
+          if (r.status === 401) e = 'Google に接続していません（または接続が切れています）。左のメニューの「Google とつなぐ」で「接続」してください';
           else if (r.status === 403 && path.indexOf('gsc') >= 0) e = 'この Search Console のサイトを見る権限がありません。サイトの種類（sc-domain: か https://〜/ か）と、閲覧権限を確認してください';
           throw new Error(e || ('HTTP ' + r.status));
         });
@@ -586,25 +589,25 @@
       var hid = function (k) { return curSec === k ? '' : ' hidden'; };
       var repBadge = repNow ? (REPORT_STATUS[repNow.status] || [repNow.status])[0] : '';
       shell(curSec === 'home' ? c.name : SEC_LABEL[curSec], '<div data-sec="home"' + hid('home') + '>' + (fromMeasure ? studioMeasureCard(fromMeasure) : '') + (fromStudio ? studioActionsCard(fromStudio) : '') + overview + '</div>' +
-        '<section class="arc-card arc-sec" data-sec="reports"' + hid('reports') + '><div class="arv-home-head"><h2 class="arc-h2">月次レポート</h2></div>' +
+        '<section class="arc-card arc-sec" data-sec="reports"' + hid('reports') + '><div class="arv-home-head"><p class="arc-lead">' + esc(secLead('reports')) + '</p></div>' +
         '<form id="arc-make-report" class="arc-row"><input class="arc-input" type="month" id="arc-report-month" value="' + thisMonth() + '" required>' +
         '<button class="arc-btn" type="submit">この月の下書きを作る</button></form>' +
-        '<p class="arc-note">下の材料（診断・AI計測・流入・施策）から、数字と変化を自動で集めます。結論・次の3施策・判断事項は、作成後に編集画面で書きます。</p>' +
+        '<p class="arc-note">結論・次の3施策・判断事項は、下書きを作ったあとに編集画面で書きます。</p>' +
         '<table class="arc-table"><tbody>' + (repRows || '<tr><td class="arc-empty">まだありません</td></tr>') + '</tbody></table></section>' +
 
-        fold('sites', '対象サイト・診断履歴', sites.length + 'サイト・診断' + scans.length + '件') +
+        fold('sites', SEC_LABEL.sites, sites.length + 'サイト・診断' + scans.length + '件') +
         '<ul class="arc-list">' + (sites.map(function (s) { return '<li>' + esc(s.url) + ' <button class="arc-btn-sm" data-del-site="' + s.id + '">削除</button></li>'; }).join('') || '<li class="arc-empty">まだありません</li>') + '</ul>' +
         '<form id="arc-add-site" class="arc-row"><input class="arc-input" id="arc-site-url" placeholder="https://example.jp/" required><button class="arc-btn" type="submit">サイトを追加</button></form>' +
-        '<p class="arc-note">診断は、左のメニューの <a href="' + esc(studioHref(c, sites) + '#start') + '">「対象サイト・分析」</a>（または <a href="/airreach/" target="_blank" rel="noopener">無料診断</a>）で行います。同じサイト（www. の有無は同一）の診断がここに並びます。</p>' +
+        '<p class="arc-note">診断は、左のメニューの <a href="' + esc(studioHref(c, sites) + '#start') + '">「サイトを調べる」</a>（または <a href="/airreach/" target="_blank" rel="noopener">無料診断</a>）で行います。同じサイト（www. の有無は同一）の診断がここに並びます。</p>' +
         '<table class="arc-table"><thead><tr><th>日付</th><th>URL</th><th>点数</th><th>不足</th></tr></thead><tbody>' + (scanRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
-        fold('runs', 'AI計測の記録', runs.length + '回') +
-        '<p class="arc-note">「AI計測を実行」で測った結果は、自動でここに入ります。</p>' +
+        fold('runs', SEC_LABEL.runs, runs.length + '回') +
+        
         '<details class="arc-dev"><summary>社内向け：計測スクリプトの結果（summary.json）を取り込む</summary>' + '<form id="arc-add-run" class="arc-row"><input class="arc-input" type="date" id="arc-run-date" required><input class="arc-input" type="file" id="arc-run-file" accept=".json,application/json" required><button class="arc-btn" type="submit">summary.json を取り込む</button></form>' +
         '<p class="arc-note">社内の計測スクリプトが出力する summary.json（runs/&lt;実行名&gt;/summary.json）を選びます。</p></details>' +
         '<table class="arc-table"><thead><tr><th>計測日</th><th>質問の版</th><th>主な質問の引用率・言及率</th><th></th></tr></thead><tbody>' + (runRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
-        fold('traffic', '検索・アクセスの数値（月ごと）', traffic.length + '件') +
+        fold('traffic', SEC_LABEL.traffic, traffic.length + '件') +
         '<form id="arc-add-gsc" class="arc-row"><input class="arc-input" type="month" id="arc-gsc-month" value="' + thisMonth() + '" required><input class="arc-input" type="file" id="arc-gsc-file" accept=".csv,text/csv" required><button class="arc-btn" type="submit">Search Console の CSV を取り込む</button></form>' +
         '<p class="arc-note">Search Console の「検索パフォーマンス」→「エクスポート」→ CSV の、日付の表（グラフ.csv / Chart.csv）を選びます。</p>' +
         '<form id="arc-add-ga4" class="arc-row"><input class="arc-input" type="month" id="arc-ga4-month" value="' + thisMonth() + '" required>' +
@@ -616,13 +619,13 @@
         googleSyncForm(id, sites) +
         '<table class="arc-table"><thead><tr><th>月</th><th>取得元</th><th>数値</th><th></th></tr></thead><tbody>' + (trRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
-        fold('actions', '実施した施策', actions.length + '件') +
+        fold('actions', SEC_LABEL.actions, actions.length + '件') +
         '<form id="arc-add-action" class="arc-row"><input class="arc-input" type="date" id="arc-act-date"><input class="arc-input" id="arc-act-title" placeholder="やったこと（例: よくある質問を5問追加）" required>' +
         '<input class="arc-input" id="arc-act-url" placeholder="証拠のURL（公開ページ）"><select class="arc-input" id="arc-act-status"><option value="done">実施済み</option><option value="planned">予定</option></select>' +
         '<button class="arc-btn" type="submit">追加</button></form>' +
         '<table class="arc-table"><tbody>' + (actRows || '<tr><td class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
-        fold('members', '顧客側のメンバー', members.length + '人') +
+        fold('members', SEC_LABEL.members, members.length + '人') +
         '<ul class="arc-list">' + (members.map(function (m) { return '<li>' + esc(m.email) + ' <button class="arc-btn-sm" data-resend-member="' + esc(m.email) + '">ログインメールを再送</button> <button class="arc-btn-sm" data-del-member="' + esc(m.email) + '">削除</button></li>'; }).join('') || '<li class="arc-empty">まだいません</li>') + '</ul>' +
         '<form id="arc-add-member" class="arc-row"><input class="arc-input" type="email" id="arc-member-email" placeholder="client@example.jp" required><button class="arc-btn" type="submit">招待（ログイン用のメールを送る）</button></form>' +
         '<p class="arc-note">招待すると、お客様に「AirReach ログイン用リンク」のメール（送信元 no-reply@trillion-bank.com）が届きます。リンクの有効期限は1時間です。切れたら「ログインメールを再送」を押してください。お客様に見えるのは、自社の公開済みのレポートだけです。</p>' +

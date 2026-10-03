@@ -1338,7 +1338,7 @@
       var plannerKw = allKw.filter(function (k) { return k.volume_source === 'Official' && k.volume != null && k.volume !== '' && isFinite(Number(k.volume)); });
       if (!plannerKw.length) {
         demandEl.textContent = '—';
-        if (dUnit) dUnit.textContent = '（任意）Google 広告の Keyword Planner のファイルを「Google 連携」で取り込むと、月間の検索回数が出ます';
+        if (dUnit) dUnit.textContent = '（任意）Google 広告の Keyword Planner のファイルを「Google とつなぐ」で取り込むと、月間の検索回数が出ます';
       } else {
         var plannerTotal = plannerKw.reduce(function (s2, k) { return s2 + Number(k.volume); }, 0);
         demandEl.textContent = plannerTotal.toLocaleString('ja-JP');
@@ -1377,7 +1377,7 @@
     if (gscNote) {
       gscNote.textContent = hasGsc
         ? 'GSC の表示回数（Impressions）がある行だけ Google 実測を別列で表示しています。表示回数は検索回数ではありません。月間検索数は Keyword Planner の取り込み時だけ表示します。'
-        : '検索回数は出していません。左のメニューの「Google 連携」で Search Console を取り込むと、Google 実測の表示回数・クリックが別列で付きます（表示回数は検索回数ではありません）。';
+        : '検索回数は出していません。左のメニューの「Google とつなぐ」で Search Console を取り込むと、Google 実測の表示回数・クリックが別列で付きます（表示回数は検索回数ではありません）。';
       gscNote.hidden = false;
     }
 
