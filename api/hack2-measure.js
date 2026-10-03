@@ -260,7 +260,10 @@ function normalizeEngines(raw) {
     if (k === 'anthropic') k = 'claude';
     if (k === 'pplx' || k === 'sonar') k = 'perplexity';
     if (k === 'typesafe' || k === 'jev-latest') k = 'jev';
-    if (['jev', 'chatgpt', 'claude', 'perplexity'].indexOf(k) === -1) return;
+    if (k === 'google') k = 'gemini';
+    if (k === 'aio' || k === 'ai_overview' || k === 'ai_overviews') k = 'google_aio';
+    if (k === 'ai_mode' || k === 'aimode') k = 'google_ai_mode';
+    if (['jev', 'chatgpt', 'claude', 'perplexity', 'gemini', 'google_aio', 'google_ai_mode'].indexOf(k) === -1) return;
     if (seen[k]) return;
     seen[k] = true;
     out.push(k);
@@ -387,10 +390,21 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
   const keyMap = {
     chatgpt: process.env.OPENAI_API_KEY,
     claude: process.env.ANTHROPIC_API_KEY,
-    perplexity: process.env.PERPLEXITY_API_KEY
+    perplexity: process.env.PERPLEXITY_API_KEY,
+    // Gemini は Google の Gemini API を直接使う（Google 検索で調べてから答え、出典を返す）。AI Gateway は使わない
+    gemini: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    // Google の AI による概要・AI モードは SerpApi で検索結果の画面を取る（Google に公式の API が無いため）
+    google_aio: process.env.SERPAPI_API_KEY || process.env.SERPAPI_KEY,
+    google_ai_mode: process.env.SERPAPI_API_KEY || process.env.SERPAPI_KEY
   };
   const directKey = keyMap[engine];
   const useGateway = !!gatewayKey && (engine === 'chatgpt' || engine === 'claude' || engine === 'perplexity');
+  if ((engine === 'google_aio' || engine === 'google_ai_mode') && !directKey) {
+    return { rows: [], status: { ok: false, error: 'SerpApi の API キー（SERPAPI_API_KEY）がまだ設定されていません', engine } };
+  }
+  if (engine === 'gemini' && !directKey) {
+    return { rows: [], status: { ok: false, error: 'Gemini の API キー（GEMINI_API_KEY）がまだ設定されていません', engine } };
+  }
   if (!useGateway && !directKey) {
     return {
       rows: [],
@@ -430,7 +444,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
       if (!got) got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt)), deadline);
       // Gateway は出典の一覧も返すことがある（Perplexity）。一覧が取れたら出典で、取れなければ本文で判定する
       out = got && typeof got === 'object'
-        ? { answer: got.answer, citations: got.citations, searched: engine === 'perplexity', fields: got.fields }
+        ? { answer: got.answer, citations: got.citations, searched: got.searched != null ? got.searched : engine === 'perplexity', fields: got.fields, shown: got.shown }
         : { answer: got, citations: null, searched: engine === 'perplexity' };
     }
     if (mentionOnly) {
@@ -481,7 +495,8 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
       model: useGateway ? gatewayModel(engine) : engine,
       source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
       answer_excerpt: String(out.answer || '').slice(0, 400),
-      citation_fields: out.fields || null
+      citation_fields: out.fields || null,
+      ai_shown: out.shown == null ? null : !!out.shown
     };
   });
   return {
@@ -662,9 +677,117 @@ export function gatewayCitations(data) {
   return { urls: found ? urls.slice(0, 20) : null, fields };
 }
 
+/**
+ * Gemini（Google の Gemini API・Google 検索で調べてから答える）。出典は groundingMetadata.groundingChunks[].web。
+ * uri は Google の転送用 URL のことが多いので、title がドメインならそれを、違えば転送先（Location）を読んで実際の URL にする
+ */
+export async function callGemini(key, prompt) {
+  const model = process.env.AIRREACH_GEMINI_MODEL || 'gemini-2.5-flash';
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      tools: [{ google_search: {} }],
+      generationConfig: { temperature: 0.2 }
+    }),
+    signal: AbortSignal.timeout(90000)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = (data.error && data.error.message) || ('Gemini API failed (' + res.status + ')');
+    if (res.status === 429) {
+      const d = ((data.error && data.error.details) || []).map((x) => x && x.retryDelay).filter(Boolean)[0];
+      const sec = d ? parseInt(String(d), 10) : 30;
+      throw new Error('gemini の回数の上限に当たりました。' + sec + '秒ほどあけて、もう一度計測してください [rate limit; retry after ' + sec + 's]');
+    }
+    throw new Error(String(msg).slice(0, 200));
+  }
+  return parseGeminiResponse(data, resolveRedirect);
+}
+// ---- SerpApi：Google の AI による概要（AI Overviews）と AI モード（AI Mode）--------------------------
+// 日本の Google（google.co.jp・日本語・日本）で取る。答えの本文は text_blocks の snippet、出典は references[].link。
+// AI による概要は、検索結果の中に出ないこともある（出ない質問は shown=false：自社の名前も出典も無いので 0 として数える）
+const SERP_BASE = 'https://serpapi.com/search.json';
+async function serpGet(params, key) {
+  const q = new URLSearchParams(Object.assign({ hl: 'ja', gl: 'jp', api_key: key }, params));
+  const res = await fetch(SERP_BASE + '?' + q.toString(), { signal: AbortSignal.timeout(90000) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.error) {
+    const msg = String(data.error || ('SerpApi failed (' + res.status + ')'));
+    if (res.status === 429 || /rate|limit|run out|searches/i.test(msg)) throw new Error('SerpApi の回数の上限に当たりました（' + msg.slice(0, 80) + '） [rate limit; retry after 30s]');
+    throw new Error(msg.slice(0, 200));
+  }
+  return data;
+}
+export function serpBlocksText(blocks) {
+  const out = [];
+  const walk = (b) => {
+    if (!b) return;
+    if (b.title) out.push(String(b.title));
+    if (b.snippet) out.push(String(b.snippet));
+    (b.list || []).forEach(walk);
+    (b.text_blocks || []).forEach(walk);
+    if (Array.isArray(b.table)) b.table.forEach((row) => out.push([].concat(row).join(' ')));
+  };
+  (blocks || []).forEach(walk);
+  return out.join('\n');
+}
+export function serpAnswer(part) {
+  const p = part || {};
+  const refs = (p.references || []).map((r) => r && r.link).filter((u) => /^https?:\/\//i.test(String(u || '')));
+  return { answer: serpBlocksText(p.text_blocks), citations: refs.filter((u, i, a) => a.indexOf(u) === i).slice(0, 20) };
+}
+export async function callSerpAio(key, prompt) {
+  const data = await serpGet({ engine: 'google', q: prompt, google_domain: 'google.co.jp' }, key);
+  let aio = data.ai_overview || null;
+  // 後から読み込まれる形のときは、page_token でもう1回取る
+  if (aio && aio.page_token && !(aio.text_blocks && aio.text_blocks.length)) {
+    const d2 = await serpGet({ engine: 'google_ai_overview', page_token: aio.page_token }, key);
+    aio = d2.ai_overview || aio;
+  }
+  if (!aio || !(aio.text_blocks && aio.text_blocks.length)) return { answer: '', citations: [], searched: true, shown: false, fields: ['serpapi', 'aio_not_shown'] };
+  const a = serpAnswer(aio);
+  return { answer: a.answer, citations: a.citations, searched: true, shown: true, fields: ['serpapi', 'ai_overview'] };
+}
+export async function callSerpAiMode(key, prompt) {
+  const data = await serpGet({ engine: 'google_ai_mode', q: prompt }, key);
+  const a = serpAnswer(data);
+  return { answer: a.answer, citations: a.citations, searched: true, shown: !!a.answer, fields: ['serpapi', 'ai_mode'] };
+}
+
+async function resolveRedirect(uri) {
+  try {
+    const r = await fetch(uri, { method: 'GET', redirect: 'manual', signal: AbortSignal.timeout(4000) });
+    return r.headers.get('location') || '';
+  } catch (e) { return ''; }
+}
+export async function parseGeminiResponse(data, resolve) {
+  const cand = (data && data.candidates && data.candidates[0]) || {};
+  const answer = ((cand.content && cand.content.parts) || []).map((p) => p.text || '').join('');
+  const gm = cand.groundingMetadata || null;
+  const chunks = (gm && gm.groundingChunks) || [];
+  const urls = [];
+  await Promise.all(chunks.slice(0, 12).map(async (c, i) => {
+    const w = c && c.web; if (!w) return;
+    let u = '';
+    if (w.title && /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(String(w.title).trim())) u = 'https://' + String(w.title).trim().toLowerCase() + '/';
+    else if (w.uri && !/vertexaisearch\.cloud\.google\.com/.test(w.uri)) u = w.uri;
+    else if (w.uri && resolve) u = await resolve(w.uri);
+    if (/^https?:\/\//i.test(u)) urls[i] = u;
+  }));
+  const list = urls.filter(Boolean).filter((u, i, a) => a.indexOf(u) === i);
+  const searched = !!(gm && ((gm.webSearchQueries || []).length || chunks.length));
+  // 検索して出典が1つ以上あれば一覧で判定。出典が無ければ本文での判定に回す（0 にしない）
+  return { answer, citations: list.length ? list : null, searched, fields: ['gemini'].concat(gm ? ['groundingMetadata'] : []) };
+}
+
 async function callProvider(engine, key, prompt) {
   const system =
     'You are answering a Japanese business search question. Be concise. Prefer factual sources when known.';
+  if (engine === 'gemini') return callGemini(key, prompt);
+  if (engine === 'google_aio') return callSerpAio(key, prompt);
+  if (engine === 'google_ai_mode') return callSerpAiMode(key, prompt);
   if (engine === 'chatgpt') {
     const oai = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -733,6 +856,9 @@ async function callProvider(engine, key, prompt) {
 
 function engineLabel(engine) {
   if (engine === 'chatgpt') return 'ChatGPT';
+  if (engine === 'gemini') return 'Gemini';
+  if (engine === 'google_aio') return 'Google AI Overviews';
+  if (engine === 'google_ai_mode') return 'Google AI Mode';
   if (engine === 'claude') return 'Claude';
   if (engine === 'perplexity') return 'Perplexity';
   return engine;
