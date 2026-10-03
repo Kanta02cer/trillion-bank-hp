@@ -1,10 +1,11 @@
 /**
  * AirReach 月次レポートの見える化（主要指標のタイル・推移・内訳・AI比較）。
  * レポート表示（airreach-report-view.js）と顧客のホーム（airreach-console.js）で共用する。
- * 図は SVG をその場で組み立てる（外部ライブラリなし・印刷/PDF でもそのまま出る）。
+ * 図は HTML/SVG をその場で組み立てる（外部ライブラリなし・印刷/PDF でもそのまま出る）。
  *
  * 描き方の決まり
- *   - 値は材料にあるものだけ。無い月は点を打たず、線もつながない（0 と区別する）
+ *   - 値は材料にあるものだけ。無い月は「未計測」と書く（0 と区別する）
+ *   - 推移は折れ線にしない。今月の値・前月との差・一文のまとめ・値を書いた月ごとの棒で見せる
  *   - 1つの図に目盛りは1本（2軸の図は作らない）
  *   - 色だけに頼らない：区分は文字ラベル、系列は凡例と線の端の名前、増減は ▲▼ を併記
  *   - 数字や文字は黒系の文字色。系列の色は線・棒・点だけに使う
@@ -19,7 +20,7 @@
     claude: { label: 'Claude', color: '#1baf7a' },
     perplexity: { label: 'Perplexity', color: '#4a3aa7' }
   };
-  var INK = '#0f172a', MUTED = '#64748b', GRID = '#e2e8f0', PREV = '#b8c0cc', BAR = '#2a78d6';
+  var INK = '#0f172a', MUTED = '#64748b', PREV = '#b8c0cc';
   var FALLBACK_BANDS = [
     { key: 'low', label: '要対策', min: 0, max: 39, color: '#dc2626' },
     { key: 'mid', label: '要改善', min: 40, max: 69, color: '#d97706' },
@@ -101,7 +102,7 @@
     return '<div class="arv-tiles">' + t1 + t2 + t3 + t4 + '</div>';
   }
 
-  // ---- 推移（折れ線・棒）--------------------------------------------------------
+  // ---- 推移（数字と棒）--------------------------------------------------------
   /** 古いレポート（推移を持たない）でも、前月と当月の2点は描けるようにする */
   function historyOf(c) {
     if (c && Array.isArray(c.history) && c.history.length) return c.history;
@@ -114,116 +115,60 @@
     ];
   }
 
-  var CW = 300, CH = 190, PAD = { l: 34, r: 88, t: 14, b: 26 };
-  function frame(months, yMax, unit) {
-    var iw = CW - PAD.l - PAD.r, ih = CH - PAD.t - PAD.b, out = '';
-    var ticks = [0, yMax / 2, yMax];
-    ticks.forEach(function (v) {
-      var y = PAD.t + ih - v / yMax * ih;
-      out += '<line x1="' + PAD.l + '" x2="' + (PAD.l + iw) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '" stroke="' + GRID + '" stroke-width="1"/>' +
-        '<text x="' + (PAD.l - 5) + '" y="' + (y + 3).toFixed(1) + '" font-size="11" text-anchor="end" fill="' + MUTED + '">' + fmt(v) + esc(unit) + '</text>';
-    });
-    months.forEach(function (m, i) {
-      out += '<text x="' + xAt(i, months.length).toFixed(1) + '" y="' + (CH - 7) + '" font-size="11" text-anchor="middle" fill="' + MUTED + '">' + esc(ymShort(m)) + '</text>';
-    });
-    return out;
+  /** 前月から今月への変化の一文（数字で言う） */
+  function trendSentence(vals, unit) {
+    var idx = []; vals.forEach(function (v, i) { if (v != null) idx.push(i); });
+    if (!idx.length) return 'この6か月は計測がありません';
+    if (idx.length === 1) return '測ったのは1回だけです（比べる月がありません）';
+    var a = idx[0], b = idx[idx.length - 1], d = diff(vals[b], vals[a]);
+    var span = (b - a) + 'か月';
+    if (d === 0) return span + 'で変わっていません';
+    return span + 'で ' + (d > 0 ? '+' : '') + d + unit + (d > 0 ? ' 増えました' : ' 減りました');
   }
-  function fmt(v) { return Math.round(v * 10) / 10; }
-  function xAt(i, n) { var iw = CW - PAD.l - PAD.r; return PAD.l + (n === 1 ? iw / 2 : i / (n - 1) * iw); }
-  function yAt(v, yMax) { var ih = CH - PAD.t - PAD.b; return PAD.t + ih - Math.max(0, Math.min(yMax, v)) / yMax * ih; }
-  function niceMax(v, floor) {
-    var m = Math.max(floor || 1, v || 0);
-    var p = Math.pow(10, Math.floor(Math.log10(m))), n = m / p;
-    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
+  /** 月ごとの棒。棒の上に値、測っていない月は「未計測」。今月（最後）だけ濃くする */
+  function monthBars(months, vals, unit, max) {
+    var mx = max || Math.max.apply(null, vals.filter(function (v) { return v != null; }).concat([1]));
+    var n = months.length;
+    return '<div class="arv-bars" role="list">' + months.map(function (m, i) {
+      var v = vals[i], last = i === n - 1;
+      if (v == null) return '<div class="arv-bar is-na" role="listitem"><span class="arv-bar-v">未計測</span><span class="arv-bar-fill" style="height:3px"></span><span class="arv-bar-m">' + esc(ymShort(m)) + '</span></div>';
+      var h = Math.max(4, Math.round(56 * Math.max(0, v) / (mx || 1)));
+      return '<div class="arv-bar' + (last ? ' is-now' : '') + '" role="listitem"><span class="arv-bar-v">' + esc(v) + esc(unit) + '</span><span class="arv-bar-fill" style="height:' + h + 'px"></span><span class="arv-bar-m">' + esc(ymShort(m)) + '</span></div>';
+    }).join('') + '</div>';
   }
-  function svg(label, body) {
-    return '<svg class="arv-chart" viewBox="0 0 ' + CW + ' ' + CH + '" role="img" aria-label="' + esc(label) + '">' + body + '</svg>';
-  }
-  /** 折れ線1本分。null の月で線を切る。最後の点に系列名と値を直接書く */
-  function line(values, n, yMax, color, name, unit) {
-    var segs = [], seg = [], out = '', last = -1;
-    values.forEach(function (v, i) {
-      if (v == null) { if (seg.length) segs.push(seg); seg = []; return; }
-      seg.push([xAt(i, n), yAt(v, yMax), v, i]); last = i;
-    });
-    if (seg.length) segs.push(seg);
-    segs.forEach(function (s) {
-      if (s.length > 1) out += '<polyline fill="none" stroke="' + color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="' + s.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') + '"/>';
-      s.forEach(function (p) {
-        out += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="' + color + '" stroke="#fff" stroke-width="2"><title>' + esc(name) + ' ' + esc(p[2]) + esc(unit) + '</title></circle>';
-      });
-    });
-    if (last >= 0) {
-      out += '<text x="' + (xAt(last, n) + 8).toFixed(1) + '" y="' + (yAt(values[last], yMax) + 3).toFixed(1) + '" font-size="11" fill="' + INK + '">' +
-        (name ? esc(name) + ' ' : '') + esc(values[last]) + esc(unit) + '</text>';
-    }
-    return out;
+  /** 1指標のカード：今月の値・前月との差・一文のまとめ・月ごとの棒 */
+  function trendCard(title, months, vals, unit, opts) {
+    opts = opts || {};
+    var n = vals.length, now = vals[n - 1], prev = vals[n - 2];
+    var has = vals.some(function (v) { return v != null; });
+    var head = '<div class="arv-tc-h"><b>' + esc(title) + '</b>' + (opts.tag || '') + '</div>';
+    if (!has) return '<figure class="arv-tc">' + head + '<p class="arv-empty">この6か月は計測がありません</p></figure>';
+    var big = now == null ? '<span class="arv-tc-now is-na">今月は未計測</span>'
+      : '<span class="arv-tc-now">' + esc(now) + '<small>' + esc(unit) + '</small></span>' + deltaHtml(diff(now, prev), unit, opts.goodUp);
+    return '<figure class="arv-tc">' + head +
+      '<div class="arv-tc-big">' + big + '</div>' +
+      '<p class="arv-tc-say">' + esc(trendSentence(vals, unit)) + '</p>' +
+      monthBars(months, vals, unit, opts.max) + '</figure>';
   }
 
-  function scoreTrend(h) {
-    var months = h.map(function (x) { return x.month; }), n = months.length, body = '';
-    bands().forEach(function (b) {   // 区分の範囲を背景に薄く敷く（右端に区分名）
-      var y1 = yAt(Number(b.max) + (Number(b.max) === 100 ? 0 : 1), 100), y2 = yAt(Number(b.min), 100);
-      body += '<rect x="' + PAD.l + '" y="' + y1.toFixed(1) + '" width="' + (CW - PAD.l - PAD.r) + '" height="' + (y2 - y1).toFixed(1) + '" fill="' + b.color + '" opacity=".07"/>' +
-        '<text x="' + (PAD.l + 4) + '" y="' + (y1 + 11).toFixed(1) + '" font-size="9.5" fill="' + MUTED + '">' + esc(b.label) + '</text>';
-    });
-    body += frame(months, 100, '');
-    var vals = h.map(function (x) { return x.score; });
-    body += line(vals, n, 100, INK, '', '点');
-    return svg('情報整備の点数の推移', body);
-  }
-
-  function citeTrend(h, providers) {
-    var months = h.map(function (x) { return x.month; }), n = months.length;
-    var max = 0;
-    h.forEach(function (x) { providers.forEach(function (p) { var v = x.cite && x.cite[p]; if (v != null && v > max) max = v; }); });
-    var yMax = niceMax(max, 20), body = frame(months, yMax, '%');
-    providers.forEach(function (p) {
-      var s = series(p);
-      body += line(h.map(function (x) { return x.cite && x.cite[p] != null ? x.cite[p] : null; }), n, yMax, s.color, s.label, '%');
-    });
-    return svg('AIの回答で引用された割合の推移', body);
-  }
-
-  function barTrend(h, key, unit, label) {
-    var months = h.map(function (x) { return x.month; }), n = months.length;
-    var max = 0; h.forEach(function (x) { if (x[key] != null && x[key] > max) max = x[key]; });
-    var yMax = niceMax(max, 10), body = frame(months, yMax, ''), iw = CW - PAD.l - PAD.r;
-    var bw = Math.min(26, iw / n * 0.55);
-    h.forEach(function (x, i) {
-      var v = x[key];
-      if (v == null) {
-        body += '<text x="' + xAt(i, n).toFixed(1) + '" y="' + (yAt(0, yMax) - 4).toFixed(1) + '" font-size="10" text-anchor="middle" fill="' + MUTED + '">—</text>';
-        return;
-      }
-      var y = yAt(v, yMax), y0 = yAt(0, yMax), hgt = Math.max(1, y0 - y), x0 = xAt(i, n) - bw / 2, r = Math.min(4, hgt);
-      // 上端だけ角を丸め、基線側は四角のまま
-      body += '<path d="M' + x0.toFixed(1) + ',' + y0.toFixed(1) + 'V' + (y + r).toFixed(1) + 'Q' + x0.toFixed(1) + ',' + y.toFixed(1) + ' ' + (x0 + r).toFixed(1) + ',' + y.toFixed(1) +
-        'H' + (x0 + bw - r).toFixed(1) + 'Q' + (x0 + bw).toFixed(1) + ',' + y.toFixed(1) + ' ' + (x0 + bw).toFixed(1) + ',' + (y + r).toFixed(1) + 'V' + y0.toFixed(1) + 'Z" fill="' + BAR + '"' +
-        (i === n - 1 ? '' : ' opacity=".55"') + '><title>' + esc(ymShort(x.month)) + ' ' + esc(v) + esc(unit) + '</title></path>';
-      if (i === n - 1 || i === 0) body += '<text x="' + xAt(i, n).toFixed(1) + '" y="' + (y - 4).toFixed(1) + '" font-size="11" text-anchor="middle" fill="' + INK + '">' + esc(v) + '</text>';
-    });
-    return svg(label, body);
-  }
-
-  /** 推移の図（点数・AIの引用率・検索クリック）を横に並べる。目盛りは図ごとに1本 */
+  /** 推移（点数・AIの引用率・検索クリック・問い合わせ）。折れ線は使わず、数字と棒で読めるようにする */
   function trends(c) {
     var h = historyOf(c);
+    var months = h.map(function (x) { return x.month; });
     var providers = [];
     h.forEach(function (x) { Object.keys(x.cite || {}).forEach(function (p) { if (providers.indexOf(p) < 0) providers.push(p); }); });
-    var anyScore = h.some(function (x) { return x.score != null; });
-    var anyCite = h.some(function (x) { return providers.some(function (p) { return x.cite[p] != null; }); });
-    var anyClick = h.some(function (x) { return x.clicks != null; });
-    var legend = providers.map(function (p) { var s = series(p); return '<span class="arv-leg"><span class="arv-key" style="background:' + s.color + '"></span>' + esc(s.label) + '</span>'; }).join('');
-    function box(title, sub, inner, has) {
-      return '<figure class="arv-fig"><figcaption><b>' + esc(title) + '</b>' + (sub ? '<span>' + sub + '</span>' : '') + '</figcaption>' +
-        (has ? inner : '<p class="arv-empty">この期間の計測はありません</p>') + '</figure>';
-    }
-    return '<div class="arv-trends">' +
-      box('情報整備の点数', '0〜100点', scoreTrend(h), anyScore) +
-      box('AIに引用された割合', legend, citeTrend(h, providers), anyCite) +
-      box('検索からのクリック', '回／月', barTrend(h, 'clicks', '回', '検索からのクリックの推移'), anyClick) +
-      '</div>';
+    var pick = function (k) { return h.map(function (x) { return x[k] != null ? x[k] : null; }); };
+    var cards = [trendCard('情報整備の点数', months, pick('score'), '点', { max: 100 })];
+    if (providers.length) providers.forEach(function (p) {
+      var s = series(p);
+      cards.push(trendCard('AIに引用された割合', months, h.map(function (x) { return x.cite && x.cite[p] != null ? x.cite[p] : null; }), '%',
+        { tag: '<span class="arv-leg"><span class="arv-key" style="background:' + s.color + '"></span>' + esc(s.label) + '</span>' }));
+    });
+    else cards.push(trendCard('AIに引用された割合', months, months.map(function () { return null; }), '%'));
+    cards.push(trendCard('検索からのクリック', months, pick('clicks'), '回'));
+    cards.push(trendCard('問い合わせ・予約', months, pick('conversions'), '件'));
+    return '<div class="arv-trends">' + cards.join('') + '</div>' +
+      '<p class="arv-trend-note">濃い棒が今月です。測っていない月は「未計測」と書きます（0 ではありません）。</p>';
   }
 
   // ---- 情報整備の内訳（4項目の横棒）-------------------------------------------
