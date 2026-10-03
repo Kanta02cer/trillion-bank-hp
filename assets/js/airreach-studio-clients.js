@@ -248,8 +248,9 @@
   function syncStatus(text, kind, action) {
     var box = document.getElementById('ars-sync');
     if (!box) {
-      var host = document.getElementById('ars-client-sum'); if (!host) return;
-      box = document.createElement('div'); box.id = 'ars-sync'; box.className = 'ars-sync'; box.setAttribute('aria-live', 'polite'); host.appendChild(box);
+      // どの画面（競合・キーワードなど）を開いていても見えるように、作業エリアのいちばん上に出す
+      var host = document.getElementById('ars-main'); if (!host) return;
+      box = document.createElement('div'); box.id = 'ars-sync'; box.className = 'ars-sync'; box.setAttribute('aria-live', 'polite'); host.insertBefore(box, host.firstChild);
     }
     box.className = 'ars-sync' + (kind ? ' is-' + kind : '');
     box.innerHTML = '<span>' + esc(text) + '</span>' + (action || '');
@@ -297,7 +298,12 @@
     if (!client) return;
     sb().then(function (s) { return s.auth.getSession(); }).then(function (r) {
       var session = r && r.data && r.data.session;
-      if (!session) { syncStatus('このパソコンだけに保存しています。ダッシュボードにログインすると、社内で共有されます。', 'warn'); return; }
+      if (!session) {
+        // ログインしていないと、共有された作業（ほかのパソコンで入れた競合など）を読めない。目立つ形でログインへ案内する
+        syncStatus('ログインしていないため、ほかのパソコンで入れた作業（競合・キーワードなど）が表示されていません。ここでの作業もこのパソコンだけに保存されます。', 'warn',
+          ' <a class="ars-btn ars-btn-primary" href="/airreach/app/#/c/' + encodeURIComponent(client.id) + '">ログインする</a><small class="ars-sync-hint">ログインしたら、ダッシュボードからこの顧客の Studio を開き直してください。</small>');
+        return;
+      }
       sync.email = (session.user && session.user.email) || '';
       return fetchServer().then(function (server) {
         var meta = readMeta(), strs = localStrings(), sig = sigOf(strs);
@@ -323,6 +329,28 @@
           else if (now !== sync.sig && !sync.timer && !sync.saving) { sync.timer = setTimeout(upload, 2500); }
         }, 2000);
         window.addEventListener('pagehide', function () { if (sigOf(localStrings()) !== sync.sig) upload(); });
+        // 開いている間に、ほかのパソコン・ほかの人が保存した新しい作業が無いかを確かめる。
+        // このパソコンに共有していない変更が無く、画面に戻ってきたときは自動で読み込む。それ以外はボタンを出す
+        var checking = false;
+        function checkNewer(fromReturn) {
+          if (checking || !sync.on || sync.saving || sync.conflict) return;
+          checking = true;
+          sb().then(function (s) { return s.from('studio_workspaces').select('version,updated_by,updated_at').eq('client_id', client.id).maybeSingle(); })
+            .then(function (r) {
+              checking = false;
+              var sv = r && r.data;
+              if (!sv || sv.version <= sync.version) return;
+              var clean = sigOf(localStrings()) === sync.sig;
+              if (clean && fromReturn) { fetchServer().then(function (full) { if (full) adopt(full, false); }); return; }
+              syncStatus((sv.updated_by ? sv.updated_by.split('@')[0] + ' さん' : '別の人') + 'が ' + hhmm(sv.updated_at) + ' に新しい作業を保存しました。', 'warn',
+                ' <button type="button" class="ars-btn ars-btn-secondary" id="ars-sync-newer">最新を読み込む' + (clean ? '' : '（このパソコンの変更は控えに残す）') + '</button>');
+              var bt = document.getElementById('ars-sync-newer');
+              if (bt) bt.onclick = function () { fetchServer().then(function (full) { if (full) adopt(full, !clean); }); };
+            }, function () { checking = false; });
+        }
+        setInterval(function () { if (!document.hidden) checkNewer(false); }, 30000);
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) checkNewer(true); });
+        window.addEventListener('focus', function () { checkNewer(true); });
       });
     }).catch(function () { syncStatus('共有の状態を確かめられませんでした（このパソコンには保存されています）', 'warn'); });
   }
