@@ -76,6 +76,9 @@ export default async function handler(req, res) {
     cookieHeaders.push(`airreach_google_refresh=${encodeURIComponent(tokens.refresh_token)}; ${secure}; Max-Age=2592000`);
   }
   cookieHeaders.push(scopesCookie(features.join('.'), 2592000));
+  // どの Google アカウントでつないだか（画面に出すだけ。トークンではない）。id_token はトークン交換の応答で直接受け取ったもの
+  const email = emailFromIdToken(tokens.id_token);
+  cookieHeaders.push(`airreach_google_email=${encodeURIComponent(email)}; Path=/; Secure; SameSite=Lax; Max-Age=${email ? 2592000 : 0}`);
   res.setHeader('Set-Cookie', cookieHeaders);
   res.writeHead(302, { Location: backLocation(cookies.airreach_google_back, status) });
   res.end();
@@ -86,6 +89,15 @@ export function backLocation(backCookie, status) {
   const m = /^app:([0-9a-f-]{36})$/i.exec(String(backCookie || ''));
   if (m) return `/airreach/app/?google=${status}#/c/${m[1].toLowerCase()}/traffic`;
   return `/airreach/studio/?google=${status}#google`;
+}
+
+export function emailFromIdToken(idToken) {
+  try {
+    const part = String(idToken || '').split('.')[1];
+    if (!part) return '';
+    const json = JSON.parse(Buffer.from(part.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
+    return json && json.email && /^[^@\s]+@[^@\s]+$/.test(json.email) ? String(json.email).toLowerCase() : '';
+  } catch (e) { return ''; }
 }
 
 function parseCookies(raw) {

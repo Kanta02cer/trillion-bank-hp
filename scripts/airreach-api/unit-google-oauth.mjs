@@ -62,7 +62,7 @@ await auth(mkReq(), res);
 const loc = new URL(res.headers.location || 'about:blank');
 const q = loc.searchParams;
 expect('auth: 302 to accounts.google.com', res.statusCode === 302 && loc.host === 'accounts.google.com', res.headers.location);
-expect('auth: scope is exactly webmasters.readonly + analytics.readonly', q.get('scope') === `${GSC} ${GA4}`, q.get('scope'));
+expect('auth: scope is exactly webmasters.readonly + analytics.readonly + openid email（書き込み権限なし）', q.get('scope') === `${GSC} ${GA4} openid email`, q.get('scope'));
 expect('auth: no analytics write / edit scopes', !/analytics\.(edit|manage)|auth\/analytics(\s|$)/.test(q.get('scope')));
 expect('auth: redirect_uri = https://trillion-bank.jp/api/google/callback (from env, unchanged)', q.get('redirect_uri') === REDIRECT);
 expect('auth: client_id from env, offline + consent', q.get('client_id') === process.env.GOOGLE_CLIENT_ID && q.get('access_type') === 'offline' && q.get('prompt') === 'consent' && q.get('response_type') === 'code');
