@@ -208,6 +208,13 @@ expect('jstDay: 日付だけはそのまま', R.jstDay('2026-10-03'), '2026-10-0
   expect('月の判定: その診断は 10 月には入らない', c2.site.current, null);
 }
 
+{
+  // 同じ日に複数回測ったときは、保存した時刻が新しい計測を使う（日付だけだと同じ日のどれが選ばれるか決まらなかった）
+  const mk = (t, rate) => ({ measured_on: '2026-10-03', created_at: t, summary: { by: [{ provider: 'perplexity', group: 'main', denominator: 6, either: { rate }, service_mention_rate: rate == null ? 0 : 16.7 }] } });
+  const c3 = R.compileReport({ client: { id: 'x', name: 'テスト' }, periodMonth: '2026-10-01', scans: [], runs: [mk('2026-10-03T10:47:06Z', null), mk('2026-10-03T13:57:25Z', 100), mk('2026-10-03T13:23:07Z', null)], traffic: [], actions: [] });
+  expect('report: 同じ日に複数回の計測は新しい方', c3.ai.providers.map((p) => p.citeRate), [100]);
+}
+
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);
