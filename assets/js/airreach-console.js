@@ -306,13 +306,67 @@
     var list = '<ol class="arc-msteps">' + steps.map(function (s, i) {
       var st = s.ok ? 'is-ok' : i === nextI ? 'is-next' : '';
       return '<li class="arc-mstep ' + st + '"><span class="arc-mstep-n" aria-hidden="true">' + (s.ok ? '✓' : i + 1) + '</span>' +
-        '<div class="arc-mstep-b"><b>' + esc(s.title) + '</b><span>' + esc(s.what) + '</span><small>分かること・できること：' + esc(s.get) + '</small></div>' +
+        '<div class="arc-mstep-b"><b>' + esc(s.title) + '</b><span>' + esc(s.what) + '</span></div>' +
         '<div class="arc-mstep-s"><span class="arc-mstep-st">' + (s.ok ? '✓ 済み' : i === nextI ? '次はここ' : 'まだ') + (s.note ? '<small>' + esc(s.note) + '</small>' : '') + '</span>' +
         '<a class="arc-btn-sm" href="' + esc(s.href) + '">' + esc(s.ok ? '見る' : s.btn) + '</a></div></li>';
     }).join('') + '</ol>';
     return '<section class="arc-card"><div class="arv-home-head"><div><h2 class="arc-h2">' + esc(ymJa(mon + '-01')) + 'の進め方</h2>' +
-      '<p class="arc-note" style="margin:2px 0 0">毎月、上から順に進めると月次レポートが出せます。済んだものには ✓ が付きます（登録された材料から自動で判定）。</p></div>' +
+      '<p class="arc-note" style="margin:2px 0 0">上から順に進めると月次レポートが出せます。✓ は登録された材料から自動で付きます。</p></div>' +
       '<span class="arc-progress"><small>進み具合</small><b>' + doneN + ' / ' + steps.length + '</b></span></div>' + lead + list + '</section>';
+  }
+
+  /** ダッシュボード：AI での見え方（最新の計測の内訳。一般/指名・言及の順位） */
+  function dashAi(run, live, studio) {
+    var md = function (d) { return String(d).slice(5, 10).replace('-', '/'); };
+    var bd = run && run.summary && run.summary.breakdown;
+    var head = '<div class="arv-home-head"><h2 class="arc-h2">AI での見え方</h2><span class="arc-sub">' + (run ? esc(md(run.measured_on)) + ' の計測' + (bd && bd.types ? '・' + esc((bd.types.general.answers || 0) + (bd.types.branded.answers || 0)) + '回答' : '') : '') + '</span></div>';
+    var more = '<a class="arc-dash-more" href="' + esc(studio + '#hack2') + '">' + (run ? '質問ごとの結果を見る →' : 'AI で測る →') + '</a>';
+    if (!run) return '<section class="arc-card arc-dash-c">' + head + '<p class="arc-empty">まだ計測していません。質問を AI に聞くと、お客様の名前やサイトが回答に出るかが分かります。</p>' + more + '</section>';
+    var body = '';
+    var pctv = function (v) { return v == null ? '—' : esc(v) + '%'; };
+    if (bd && bd.types) {
+      var t = function (label, x, hint) {
+        return '<div class="arc-dash-type"><div class="arc-dash-type-h"><b>' + label + '</b><small>' + esc(x.answers || 0) + '回答・' + hint + '</small></div>' +
+          '<div class="arc-dash-kv"><span>名前が出た</span><b>' + pctv(x.mentionRate) + '</b></div>' +
+          '<div class="arc-dash-kv"><span>自社サイトが出典</span><b>' + pctv(x.citeRate) + '</b></div></div>';
+      };
+      body += '<div class="arc-dash-types">' + t('一般質問', bd.types.general, '名前を入れずに聞いた') + t('指名質問', bd.types.branded, '名前を入れて聞いた') + '</div>';
+      if (bd.ranks && bd.ranks.length) {
+        body += '<table class="arc-dash-rank"><thead><tr><th>名前</th><th>1番目に出た</th><th>回答に出た</th></tr></thead><tbody>' + bd.ranks.slice(0, 4).map(function (r) {
+          var all = r.first + r.second + r.thirdPlus + r.none;
+          return '<tr' + (r.self ? ' class="is-self"' : '') + '><td>' + esc(r.name) + (r.self ? ' <small>自社</small>' : '') + '</td><td>' + esc(r.first) + '回</td><td>' + esc(r.first + r.second + r.thirdPlus) + ' / ' + esc(all) + '</td></tr>';
+        }).join('') + '</tbody></table>';
+      }
+    } else if (live && live.ai) {
+      body += '<div class="arc-dash-types">' + live.ai.providers.map(function (p) {
+        return '<div class="arc-dash-type"><div class="arc-dash-type-h"><b>' + esc(PROVIDER_LABEL[p.provider] || p.provider) + '</b><small>' + esc(p.answers || 0) + '回答</small></div>' +
+          '<div class="arc-dash-kv"><span>名前が出た</span><b>' + pctv(p.mentionRate) + '</b></div>' +
+          '<div class="arc-dash-kv"><span>自社サイトが出典</span><b>' + pctv(p.citeRate) + '</b></div></div>';
+      }).join('') + '</div>';
+    } else body += '<p class="arc-empty">この計測の結果を読めませんでした。</p>';
+    return '<section class="arc-card arc-dash-c">' + head + body + more + '</section>';
+  }
+  /** ダッシュボード：AI が参照したサイト（引用元の分類と上位） */
+  function dashSources(run, studio) {
+    var bd = run && run.summary && run.summary.breakdown;
+    var CAT = { self: ['自社', '#2563eb'], comp: ['競合', '#f59e0b'], sns: ['SNS', '#8b5cf6'], portal: ['口コミ・予約・まとめ', '#14b8a6'], other: ['その他', '#94a3b8'] };
+    var head = '<div class="arv-home-head"><h2 class="arc-h2">AI が参照したサイト</h2><span class="arc-sub">回答の出典になったサイト</span></div>';
+    if (!bd || !bd.categories || !bd.domains || !bd.domains.length) return '<section class="arc-card arc-dash-c">' + head + '<p class="arc-empty">出典が分かる計測がまだありません（Perplexity で測ると出典まで分かります）。</p></section>';
+    var keys = Object.keys(CAT).filter(function (k) { return bd.categories[k] && bd.categories[k].count; });
+    var bar = '<div class="arc-dash-stack" aria-hidden="true">' + keys.map(function (k) { return '<i style="width:' + (bd.categories[k].share || 0) + '%;background:' + CAT[k][1] + '"></i>'; }).join('') + '</div>' +
+      '<ul class="arc-dash-legend">' + keys.map(function (k) { return '<li><span class="arv-key" style="background:' + CAT[k][1] + '"></span>' + CAT[k][0] + ' <b>' + esc(bd.categories[k].share) + '%</b></li>'; }).join('') + '</ul>';
+    var top = '<ol class="arc-dash-dom">' + bd.domains.slice(0, 5).map(function (d) {
+      return '<li><span>' + esc(d.host) + '</span><small style="color:' + (CAT[d.cat] || CAT.other)[1] + '">' + esc((CAT[d.cat] || CAT.other)[0]) + '</small><b>' + esc(d.answers) + '回答</b></li>';
+    }).join('') + '</ol>';
+    return '<section class="arc-card arc-dash-c">' + head + bar + top + '<a class="arc-dash-more" href="' + esc(studio + '#hack2') + '">すべての出典を見る →</a></section>';
+  }
+  /** ダッシュボード：直すこと（上位3件） */
+  function dashTodos(items, compiled, studio) {
+    var C = window.AirReachCharts, cur = compiled && compiled.site && compiled.site.current;
+    var head = '<div class="arv-home-head"><h2 class="arc-h2">直すこと' + (items && items.length ? '<small class="arc-sub"> 全' + items.length + '件</small>' : '') + '</h2>' + (cur ? '<span class="arc-sub">' + esc(day(cur.createdAt)) + ' の診断から・優先度の高い順</span>' : '') + '</div>';
+    if (!C || !cur) return '<section class="arc-card arc-dash-c">' + head + '<p class="arc-empty">まだ診断していません。サイトを調べると、直すべきところが優先度の順に出ます。</p><a class="arc-dash-more" href="' + esc(studio + '#start') + '">サイトを調べる →</a></section>';
+    return '<section class="arc-card arc-dash-c">' + head + C.todos(items.slice(0, 3), { audience: 'staff', studioHref: studio + '#generator' }) +
+      (items.length > 3 ? '<a class="arc-dash-more" href="' + esc(studio + '#gaps') + '">残り ' + (items.length - 3) + '件を見る →</a>' : '') + '</section>';
   }
 
   function todoCard(items, compiled, audience, studioHref) {
@@ -495,10 +549,12 @@
       var repNow = reports.filter(function (x) { return x.period_month === month; })[0];
       var overview = '';
       if (live && C) {
-        overview = monthSteps(c, sites, live, repNow, actions) +
-          '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(month)) + 'の数字</h2><span class="arc-sub">登録された材料からその場で集計</span></div>' +
+        // ダッシュボード：今月の数字 → AI での見え方・今月の進み具合 → 直すこと・AI が参照したサイト → 推移
+        var studioH = studioHref(c, sites);
+        overview = '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(month)) + 'の数字</h2><span class="arc-sub">登録された材料からその場で集計</span></div>' +
           C.tiles(live) + '</section>' +
-          todoCard(R.todoList(live), live, 'staff', studioHref(c, sites)) +
+          '<div class="arc-dash-2">' + dashAi(runs[0], live, studioH) + monthSteps(c, sites, live, repNow, actions) + '</div>' +
+          '<div class="arc-dash-2">' + dashTodos(R.todoList(live), live, studioH) + dashSources(runs[0], studioH) + '</div>' +
           '<section class="arc-card"><h2 class="arc-h2">推移（直近6か月）</h2>' + C.trends(live) + '</section>';
       }
 

@@ -99,6 +99,34 @@ a.arv-todo-studio{text-decoration:none}
 .arc-fold>summary .arc-sub{margin-left:8px}
 .arc-fold-b{padding:0 20px 18px}
 /* 社内: 材料のそろい具合 */
+.arc-dash-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch;margin:0 0 16px}
+.arc-dash-2>.arc-card{margin:0}
+.arc-dash-c{display:flex;flex-direction:column;gap:10px}
+.arc-dash-more{align-self:flex-start;font-size:.85rem;font-weight:700}
+.arc-dash-types{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.arc-dash-type{border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.arc-dash-type-h{display:flex;flex-direction:column}
+.arc-dash-type-h small{font-size:.7rem;color:#64748b}
+.arc-dash-kv{display:flex;justify-content:space-between;align-items:baseline;font-size:.8rem;color:#334155}
+.arc-dash-kv b{font-size:1.25rem;color:#0f172a;font-variant-numeric:tabular-nums}
+.arc-dash-rank{width:100%;border-collapse:collapse;font-size:.82rem}
+.arc-dash-rank th{text-align:left;font-size:.72rem;color:#64748b;font-weight:600;padding:4px 6px}
+.arc-dash-rank td{padding:6px;border-top:1px solid #e2e8f0;font-variant-numeric:tabular-nums}
+.arc-dash-rank tr.is-self td{font-weight:700;background:#eff6ff}
+.arc-dash-rank small{font-size:.68rem;color:#1d4ed8}
+.arc-dash-stack{display:flex;height:14px;border-radius:7px;overflow:hidden;background:#f1f5f9}
+.arc-dash-stack i{display:block;height:100%}
+.arc-dash-legend{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.78rem;color:#334155}
+.arc-dash-legend li{display:flex;align-items:center;gap:5px}
+.arc-dash-dom{margin:0;padding-left:20px;font-size:.82rem;display:flex;flex-direction:column;gap:4px}
+.arc-dash-dom li{padding-left:2px}
+.arc-dash-dom li>*{margin-right:8px}
+.arc-dash-dom span{word-break:break-all}
+.arc-dash-dom small{font-size:.7rem;font-weight:700}
+.arc-dash-dom b{font-weight:600;color:#64748b;font-size:.75rem}
+.arc-dash-2 .arc-mstep{padding:8px 12px}
+.arc-dash-2 .arc-next{padding:12px 14px}
+@media(max-width:1100px){.arc-dash-2{grid-template-columns:1fr}}
 .arc-progress{flex:none;display:flex;flex-direction:column;align-items:center;padding:6px 14px;border-radius:10px;background:#eff6ff;color:#1d4ed8}
 .arc-progress small{font-size:.7rem}
 .arc-progress b{font-size:1.4rem;font-variant-numeric:tabular-nums}
