@@ -426,7 +426,7 @@
   }
   function savedRun(key) { try { return (JSON.parse(get(SAVED_RUNS) || '[]') || []).indexOf(key) >= 0; } catch (e) { return false; } }
 
-  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); startSync(); renderRunHistory(); }
+  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); startSync(); renderRunHistory(); setTimeout(autoStart, 600); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   // ---- 分析したサイトを、この顧客のサイトとして登録する ------------------------------------------
   // ダッシュボードは「顧客に登録されたサイト」と同じサイトの診断だけを、その顧客の診断として出す。
@@ -450,5 +450,35 @@
     });
   }
 
-  window.AirReachStudioClients = { current: function () { return client; }, swapError: function () { return swapError; }, onMeasured: onMeasured, savedRun: savedRun, ensureSite: ensureSite };
+  // 今月この顧客を AI で測ったか（日本時間の月）。ログインしていなければ null
+  function measuredThisMonth() {
+    if (!client) return Promise.resolve(null);
+    var jst = new Date(Date.now() + 9 * 3600000), first = jst.toISOString().slice(0, 8) + '01';
+    return sb().then(function (s) {
+      return s.auth.getSession().then(function (r) {
+        if (!(r && r.data && r.data.session)) return null;
+        return s.from('measurement_runs').select('id').eq('client_id', client.id).gte('measured_on', first).limit(1).then(function (x) { if (x.error) throw x.error; return (x.data || []).length > 0; });
+      });
+    }).catch(function () { return null; });
+  }
+  // ダッシュボードで顧客をサイトつきで追加したとき（?auto=1）は、開いたらそのまま「サイトを調べる」を始める。
+  // 分析が終わると、足りない情報の判定と AI での見え方の計測も続けて自動で行う（airreach-studio.js）
+  function autoStart() {
+    var u = new URL(location.href);
+    if (u.searchParams.get('auto') !== '1') return;
+    u.searchParams.delete('auto');
+    try { history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) {}
+    if (!client) return;
+    var key = 'airreach_auto_started_v1:' + client.id;
+    try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch (e) {}
+    var tries = 0;
+    (function go() {
+      var run = document.getElementById('orch-run'), url = document.getElementById('orch-url'), ok = document.getElementById('orch-proxy');
+      if (!run || !url || !url.value || !window.AirReachStudio) { if (++tries < 40) setTimeout(go, 250); return; }
+      if (ok) ok.checked = true; // 社内の人が顧客のサイトとして登録して始めた分析（取得サーバーを使うことがある）
+      run.click();
+    })();
+  }
+
+  window.AirReachStudioClients = { current: function () { return client; }, swapError: function () { return swapError; }, onMeasured: onMeasured, savedRun: savedRun, ensureSite: ensureSite, measuredThisMonth: measuredThisMonth };
 })();

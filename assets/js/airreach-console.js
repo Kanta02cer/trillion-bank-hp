@@ -231,14 +231,31 @@
         }).join('') : '<li class="arc-empty">' + (me.is_staff ? 'まだ顧客がありません。' : '閲覧できる顧客がありません。担当者にお問い合わせください。') + '</li>') + '</ul>';
       }
       var add = me.is_staff ?
+        '<h2 class="arc-h2" style="margin-top:18px">顧客を追加する</h2><p class="arc-note" style="margin:0 0 6px">サイトの URL も入れると、追加したあとそのまま Studio でサイトを調べ、足りない情報の判定と AI での見え方の計測（Perplexity・ChatGPT）まで自動で行います。</p>' +
         '<form id="arc-add-client" class="arc-row"><input class="arc-input" id="arc-client-name" placeholder="顧客名（会社・店舗）" required>' +
+        '<input class="arc-input" id="arc-client-url" type="text" inputmode="url" autocomplete="url" placeholder="サイトの URL（例: https://example.jp/）">' +
         '<select class="arc-input" id="arc-client-ind">' + Object.keys(INDUSTRY).map(function (k) { return '<option value="' + k + '">' + INDUSTRY[k] + '</option>'; }).join('') + '</select>' +
         '<button class="arc-btn" type="submit">顧客を追加</button></form>' : '';
       shell(me.is_staff ? '顧客一覧' : 'レポート', '<section class="arc-card">' + list + add + '</section>', '', { sec: 'list' });
       if (me.is_staff) $('#arc-add-client').addEventListener('submit', function (e) {
         e.preventDefault();
-        sb.from('clients').insert({ name: $('#arc-client-name').value.trim(), industry_id: $('#arc-client-ind').value, created_by: me.email })
-          .then(function (res) { q(res); return clientList(); }).catch(fail);
+        var name = $('#arc-client-name').value.trim(), ind = $('#arc-client-ind').value, rawUrl = $('#arc-client-url').value.trim();
+        var site = null;
+        if (rawUrl) {
+          try { var u0 = new URL(/^https?:\/\//i.test(rawUrl) ? rawUrl : 'https://' + rawUrl); site = { url: u0.origin + '/', host: u0.hostname.replace(/^www\./, '').toLowerCase() }; }
+          catch (e2) { return fail(new Error('サイトの URL の形が正しくありません（例: https://example.jp/）')); }
+        }
+        sb.from('clients').insert({ name: name, industry_id: ind, created_by: me.email }).select('id,name,industry_id').single()
+          .then(function (res) {
+            var c = q(res);
+            if (!site) return clientList();
+            // サイトを登録して、Studio でそのまま調べ始める（分析 → 足りない情報 → AI での見え方）
+            return sb.from('client_sites').insert({ client_id: c.id, url: site.url, host: site.host }).then(function (r2) {
+              q(r2);
+              var h = studioHref(c, [site]);
+              location.href = h + (h.indexOf('?') >= 0 ? '&' : '?') + 'auto=1#start';
+            });
+          }).catch(fail);
       });
     });
   }
