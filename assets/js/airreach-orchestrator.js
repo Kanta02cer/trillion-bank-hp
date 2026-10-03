@@ -294,7 +294,9 @@
         k.gsc_position = g.positionWeight ? Math.round((g.positionSum / g.positionWeight) * 10) / 10 : null;
         applyGscAction(k, g);
         if (k.gsc_impressions > 50) k.strength = '普通';
-        if (k.gsc_impressions > 200 && k.priority === 'P2') k.priority = 'P1';
+        // 実際に検索で表示されている言葉を優先する（新しく足す検索語と同じ基準：表示200以上は必須、50以上は少なくとも推奨）
+        if (k.gsc_impressions >= 200) k.priority = 'P0';
+        else if (k.gsc_impressions > 50 && k.priority === 'P2') k.priority = 'P1';
       }
     });
     return keywords;
