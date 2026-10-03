@@ -278,3 +278,5 @@ body:not(.has-job) [data-needs-job]{display:none}
 #ars-main>.ars-sync{margin:0 0 16px}#ars-main>.ars-sync.is-ok{padding:4px 12px;font-size:12px}
 .ars-app .ars-side .ars-side-l{display:flex;flex-direction:column;min-width:0;line-height:1.35}.ars-app .ars-side .ars-side-l small{font-size:11px;font-weight:400;color:var(--ars-muted,#64748b);margin-top:1px}
 @media (max-width:900px){.ars-app .ars-side .ars-side-l small{display:none}}
+.ars-subtabs{display:flex;gap:4px;margin:0 0 16px;border-bottom:1px solid var(--ars-line,#e2e8f0);flex-wrap:wrap}.ars-subtabs button{font:inherit;font-size:14px;font-weight:600;background:none;border:0;border-bottom:2px solid transparent;color:var(--ars-muted,#475569);padding:8px 14px;cursor:pointer}.ars-subtabs button[aria-selected="true"]{color:var(--ars-blue-deep,#1d4ed8);border-bottom-color:var(--ars-blue,#2563eb);font-weight:700}.ars-subtabs button:focus-visible{outline:2px solid var(--ars-blue,#2563eb);outline-offset:2px}
+.ars-hist-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}.ars-hist-h h3{margin:0}.ars-hist-h a{font-size:13px;font-weight:700}

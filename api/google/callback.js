@@ -61,23 +61,31 @@ export default async function handler(req, res) {
   const features = OAUTH_SCOPES.filter((s) => !granted || hasScope(granted, s)).map((s) => SCOPE_FEATURES[s]).filter(Boolean);
   const scopesCookie = (v, age) => `airreach_google_scopes=${v}; Path=/; Secure; SameSite=Lax; Max-Age=${age}`;
   if (!gscOk && !ga4Ok) {
-    res.setHeader('Set-Cookie', [`airreach_google_state=; ${secure}; Max-Age=0`, scopesCookie('', 0)]);
-    res.writeHead(302, { Location: '/airreach/studio/?google=scope_missing#google' });
+    res.setHeader('Set-Cookie', [`airreach_google_state=; ${secure}; Max-Age=0`, `airreach_google_back=; ${secure}; Max-Age=0`, scopesCookie('', 0)]);
+    res.writeHead(302, { Location: backLocation(cookies.airreach_google_back, 'scope_missing') });
     res.end();
     return;
   }
   const status = !gscOk ? 'gsc_missing' : (wantGa4 && !ga4Ok ? 'ga4_missing' : 'connected');
   const cookieHeaders = [
     `airreach_google_access=${encodeURIComponent(tokens.access_token || '')}; ${secure}; Max-Age=${Number(tokens.expires_in || 3600)}`,
-    `airreach_google_state=; ${secure}; Max-Age=0`
+    `airreach_google_state=; ${secure}; Max-Age=0`,
+    `airreach_google_back=; ${secure}; Max-Age=0`
   ];
   if (tokens.refresh_token) {
     cookieHeaders.push(`airreach_google_refresh=${encodeURIComponent(tokens.refresh_token)}; ${secure}; Max-Age=2592000`);
   }
   cookieHeaders.push(scopesCookie(features.join('.'), 2592000));
   res.setHeader('Set-Cookie', cookieHeaders);
-  res.writeHead(302, { Location: `/airreach/studio/?google=${status}#google` });
+  res.writeHead(302, { Location: backLocation(cookies.airreach_google_back, status) });
   res.end();
+}
+
+/** 戻り先。ダッシュボードから始めた接続（Cookie airreach_google_back=app:<uuid>）はダッシュボードの「検索と訪問の数字を入れる」へ */
+export function backLocation(backCookie, status) {
+  const m = /^app:([0-9a-f-]{36})$/i.exec(String(backCookie || ''));
+  if (m) return `/airreach/app/?google=${status}#/c/${m[1].toLowerCase()}/traffic`;
+  return `/airreach/studio/?google=${status}#google`;
 }
 
 function parseCookies(raw) {

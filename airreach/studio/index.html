@@ -40,7 +40,7 @@ robots: "noindex, follow"
       <div class="group">準備</div>
       <button class="is-active" data-panel="start"><span class="n">1</span>対象サイト</button>
       <div class="group">分析</div>
-      <button data-panel="result" data-needs-job-dot><span class="n">2</span>分析結果</button>
+      <button data-panel="result" data-needs-job-dot hidden><span class="n">2</span>調べた結果を見る</button>
       <button data-panel="keywords"><span class="n">3</span>キーワード</button>
       <button data-panel="gaps"><span class="n">4</span>足りない情報</button>
       <div class="group">作る</div>
@@ -54,7 +54,7 @@ robots: "noindex, follow"
 
     <section class="ars-main" id="ars-main" tabindex="-1">
       <div class="ars-panel is-active" data-panel-view="start">
-        <div class="ars-title-row"><div><h2>対象サイト</h2><p class="ars-sub">分析するサイトと条件を入れて「サイト全体を分析する」を押します。分析は数十秒〜1分ほどで終わります。</p></div></div>
+        <div class="ars-title-row"><div><h2>対象サイト</h2><p class="ars-sub">分析するサイトと条件を入れて「サイト全体を分析する」を押します。分析は数十秒〜1分ほどで終わります。</p></div></div><div class="ars-subtabs" role="tablist" aria-label="サイトを調べる"><button type="button" role="tab" data-goto="start" aria-selected="true">条件を入れて調べる</button><button type="button" role="tab" data-goto="result" aria-selected="false">調べた結果を見る</button></div>
     <section class="ars-card ars-orch-launch" aria-labelledby="orch-launch-title">
       <h2 id="orch-launch-title" class="visually-hidden">分析の開始</h2>
       <div class="ars-form ars-orch-form">
@@ -131,7 +131,7 @@ robots: "noindex, follow"
       </div>
 
       <div class="ars-panel" data-panel-view="result">
-        <div class="ars-title-row"><div><h2>分析結果</h2></div></div>
+        <div class="ars-title-row"><div><h2>サイトを調べる</h2><p class="ars-sub">「サイトを調べる」の結果です。点数と、直すところ、まず対策する言葉が分かります。</p></div></div><div class="ars-subtabs" role="tablist" aria-label="サイトを調べる"><button type="button" role="tab" data-goto="start" aria-selected="false">条件を入れて調べる</button><button type="button" role="tab" data-goto="result" aria-selected="true">調べた結果を見る</button></div>
         <div class="ars-empty-job ars-note">まだ分析していません。「1 対象サイト」で分析すると、ここに結論と数字が出ます。</div>
         <section class="ars-orch-result" id="orch-result" hidden>
       <p class="orch-metric-legend">数字の見方：①対策に使う言葉の数　②月間の検索回数（Keyword Planner を取り込んだときだけ）　③公開ページの準備度（100点・AI掲載率ではない）　④いま着手すべき改善の件数</p>
@@ -328,6 +328,7 @@ robots: "noindex, follow"
             </div>
             <div class="ars-model-grid" id="hack2-models"></div>
             <div id="ai-breakdown"><!-- 質問ごと・言及の順位・引用元の分類（airreach-ai-breakdown.js） --></div>
+            <section class="ars-card" id="hack2-history" style="margin-top:16px" hidden><!-- これまでの記録（airreach-studio-clients.js の renderRunHistory） --></section>
             <details class="ars-dev" style="margin-top:16px"><summary>社内向け：計測のルールと、計測結果（JSON）の取り込み</summary><div class="ars-grid" style="margin-top:12px"><div class="ars-card ars-c6"><h3>JSON取込</h3><textarea id="hack2-json" class="ars-code" style="min-height:200px"></textarea><button id="import-hack2" class="ars-btn ars-btn-primary" type="button" style="margin-top:10px">取込</button></div><div class="ars-card ars-c6"><h3>ルール</h3><ul class="ars-list"><li><strong>準備度 ≠ 引用率</strong></li><li><strong>0% ≠ 失敗</strong></li><li><strong>同一条件で再計測</strong></li><li><strong>Jevは推定</strong>：ページ本文から「引用されそうか」を推定した値で、実際のAIの回答ではない。引用率には含めない</li><li>ChatGPTは検索なし（gpt-4o-mini）で、店名・サービス名が回答に出た割合（言及率）だけを測る。引用は測らない</li><li>Claudeは検索ありで回答させ、返ってきた引用URLに公式サイトがあるかで判定</li><li>Perplexityは引用URLの一覧が取れないため、回答本文に公式サイトのドメインがあるときだけ「引用あり」。無いときは判定できない（0%にしない）</li><li>GitHub Pages上でも計測APIはVercelへ接続します</li></ul></div></div></details>
           
       </div>
