@@ -1,3 +1,4 @@
+import { cookieNames } from './_lib/token.js';
 import { GA4_SCOPE, GSC_SCOPE, OAUTH_SCOPES, SCOPE_FEATURES, hasScope } from './_lib/scopes.js';
 
 function setCors(req, res) {
@@ -59,7 +60,10 @@ export default async function handler(req, res) {
   const ga4Ok = wantGa4 && (!granted || hasScope(granted, GA4_SCOPE));
   // 画面が「どの機能が使えるか」を知るための Cookie（トークンではない。HttpOnly にしない）
   const features = OAUTH_SCOPES.filter((s) => !granted || hasScope(granted, s)).map((s) => SCOPE_FEATURES[s]).filter(Boolean);
-  const scopesCookie = (v, age) => `airreach_google_scopes=${v}; Path=/; Secure; SameSite=Lax; Max-Age=${age}`;
+  // ダッシュボードの顧客の画面から始めた接続は、その顧客だけのつながりとして保存する（ほかの顧客には使わない）
+  const backClient = (/^app:([0-9a-f-]{36})$/i.exec(String(cookies.airreach_google_back || '')) || [])[1] || '';
+  const N = cookieNames(backClient);
+  const scopesCookie = (v, age) => `${N.scopes}=${v}; Path=/; Secure; SameSite=Lax; Max-Age=${age}`;
   if (!gscOk && !ga4Ok) {
     res.setHeader('Set-Cookie', [`airreach_google_state=; ${secure}; Max-Age=0`, `airreach_google_back=; ${secure}; Max-Age=0`, scopesCookie('', 0)]);
     res.writeHead(302, { Location: backLocation(cookies.airreach_google_back, 'scope_missing') });
@@ -68,17 +72,17 @@ export default async function handler(req, res) {
   }
   const status = !gscOk ? 'gsc_missing' : (wantGa4 && !ga4Ok ? 'ga4_missing' : 'connected');
   const cookieHeaders = [
-    `airreach_google_access=${encodeURIComponent(tokens.access_token || '')}; ${secure}; Max-Age=${Number(tokens.expires_in || 3600)}`,
+    `${N.access}=${encodeURIComponent(tokens.access_token || '')}; ${secure}; Max-Age=${Number(tokens.expires_in || 3600)}`,
     `airreach_google_state=; ${secure}; Max-Age=0`,
     `airreach_google_back=; ${secure}; Max-Age=0`
   ];
   if (tokens.refresh_token) {
-    cookieHeaders.push(`airreach_google_refresh=${encodeURIComponent(tokens.refresh_token)}; ${secure}; Max-Age=2592000`);
+    cookieHeaders.push(`${N.refresh}=${encodeURIComponent(tokens.refresh_token)}; ${secure}; Max-Age=2592000`);
   }
   cookieHeaders.push(scopesCookie(features.join('.'), 2592000));
   // どの Google アカウントでつないだか（画面に出すだけ。トークンではない）。id_token はトークン交換の応答で直接受け取ったもの
   const email = emailFromIdToken(tokens.id_token);
-  cookieHeaders.push(`airreach_google_email=${encodeURIComponent(email)}; Path=/; Secure; SameSite=Lax; Max-Age=${email ? 2592000 : 0}`);
+  cookieHeaders.push(`${N.email}=${encodeURIComponent(email)}; Path=/; Secure; SameSite=Lax; Max-Age=${email ? 2592000 : 0}`);
   res.setHeader('Set-Cookie', cookieHeaders);
   res.writeHead(302, { Location: backLocation(cookies.airreach_google_back, status) });
   res.end();
