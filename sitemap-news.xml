@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 互換エイリアス。Google News用ではない。正本は sitemap-insights.xml -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/llmo-company-selection/</loc>
+    <lastmod>2026-09-16T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/geo-consulting-company/</loc>
+    <lastmod>2026-09-16T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/generative-ai-citation-analysis/</loc>
+    <lastmod>2026-09-16T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-search-sov/</loc>
+    <lastmod>2026-09-16T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-search-optimization-company/</loc>
+    <lastmod>2026-09-16T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-search-marketing-support/</loc>
+    <lastmod>2026-09-16T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-search-inquiry-conversion/</loc>
+    <lastmod>2026-09-16T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-search-competitor-analysis/</loc>
+    <lastmod>2026-09-16T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-brand-visibility-tool/</loc>
+    <lastmod>2026-09-16T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/aeo-support-company/</loc>
+    <lastmod>2026-09-16T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-when-not-to-outsource/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-vs-competitor-ai-visibility/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-seo-vendor-questions/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-owner-ceo-ai-search-decision/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-measure-before-tools/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-manufacturing-ai-search/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-local-brand-ai-and-maps/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-franchise-hq-ai-search/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-faq-schema-starter/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-entity-consistency-checklist/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-education-school-ai-search/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-content-inventory-for-ai/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-contact-ready-checklist/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-chatgpt-not-mentioned/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-btob-services-ai-recommend/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-board-proposal-template/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-ai-seo-myths/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-ai-search-first-30-days/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-ai-search-common-first-mistakes/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/sme-ai-search-budget-justification/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/partner-who-fits/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/partner-web-production-add-on/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/partner-seo-firm-add-on/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/partner-program-overview/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/partner-not-becoming-your-agent/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/partner-meeting-prep-checklist/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/partner-first-client-playbook/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/partner-faq-scope-roles/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/partner-co-sell-process/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/partner-ad-agency-pitch/</loc>
+    <lastmod>2026-09-15T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/llms-txt-guide/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/json-ld-eeat-ai-search/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/chatgpt-search-optimization/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-search-tools-vendors/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-search-statistics/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-overviews-optimization/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-crawler-list-control/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/seo-aeo-geo-aio-llmo-difference/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/pay-per-crawl-pay-per-use-difference/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-search-monitoring-rfp-checklist/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-search-measurement-method/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/ai-citation-rate-calculation/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/not-cited-by-ai/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/llmo-geo-aeo/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/aeo-tools/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/pay-per-crawl-towa/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/latest-ai-models/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/prompt-collection/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://trillion-bank.jp/trillionbank/news/llmo-towa/</loc>
+    <lastmod>2026-09-06T00:00:00+09:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+</urlset>
