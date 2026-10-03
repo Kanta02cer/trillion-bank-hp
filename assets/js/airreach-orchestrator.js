@@ -326,22 +326,26 @@
     };
   }
 
+  // 業種ごとの付け足す言葉（お客さんが AI や検索で実際に使う形）。飲食店は buildRestaurantKeywords で別に作る
+  var KEYWORD_MODS = {
+    b2b: ['おすすめ', '比較', '料金', '導入事例', '評判', '選び方', 'メリット', 'デメリット', 'とは', '導入', '無料', '相談'],
+    clinic: ['おすすめ', '口コミ', '料金', '評判', '予約', '効果', '痛み', 'ダウンタイム', '比較', '初めて', 'カウンセリング', '選び方'],
+    media: ['とは', '意味', '一覧', 'まとめ', '人気', '有名', '歴史', '由来', '種類', '解説', '最新', 'ランキング'],
+    other: ['おすすめ', '口コミ', '料金', '評判', '比較', '予約', '選び方', '初めて', '相談', '体験談']
+  };
   function buildKeywords(service, region, limit, gscMap, opts) {
     opts = opts || {};
     var s = service || 'サービス';
     var brand = opts.brand || '';
     var url = opts.url || '';
     var loc = region && region !== '全国' && region !== '指定' ? region : '';
-    var seeds = [
-      s, s + ' おすすめ', s + ' 比較', s + ' 費用', s + ' 料金', s + ' 口コミ', s + ' 評判',
-      s + ' メリット', s + ' デメリット', s + ' 選び方', s + ' 流れ', s + ' とは', s + ' 効果',
-      s + ' 導入', s + ' 事例', s + ' 料金プラン', s + ' 相談', s + ' FAQ'
-    ];
+    // 付け足す言葉は業種ごと（メディアに「料金」「料金プラン」、会社向けに「予約」のような合わない言葉を作らない）
+    var seeds = [s].concat((KEYWORD_MODS[opts.industry] || KEYWORD_MODS.other).map(function (m) { return s + ' ' + m; }));
     if (brand && normKw(brand) !== normKw(s)) {
       seeds = seeds.concat([brand, brand + ' ' + s, s + ' ' + brand]);
     }
     if (loc) {
-      seeds = seeds.concat([s + ' ' + loc, loc + ' ' + s, s + ' ' + loc + ' おすすめ', s + ' ' + loc + ' 費用']);
+      seeds = seeds.concat(opts.industry === 'media' ? [s + ' ' + loc, loc + ' ' + s] : [s + ' ' + loc, loc + ' ' + s, s + ' ' + loc + ' おすすめ']);
     }
 
     // Real GSC queries — only keep those that belong to this entity (avoid other-client CSV mix)
@@ -437,18 +441,16 @@
     return out.slice(0, limit);
   }
 
-  function promptsForKeyword(kw) {
+  function promptsForKeyword(kw, industry) {
     var k = kw.keyword;
-    var templates = [
-      k + 'でおすすめは？',
-      k + 'の費用はいくら？',
-      k + 'を選ぶポイントは？',
-      k + 'で失敗しないには？',
-      k + 'の口コミ・評判は？',
-      k + 'と他社の違いは？',
-      k + 'は誰に向いている？',
-      k + 'の予約・相談はどうする？'
-    ];
+    // 業種ごとの聞き方（メディアに「費用」「予約」、クリニックに「他社との違い」のような合わない質問を作らない）
+    var T = {
+      media: [k + 'とは？', k + 'について詳しく書いてあるサイトは？', k + 'にはどんなものがある？', k + 'で有名なものは？', k + 'の由来や歴史は？', k + 'の最新の話題は？', k + 'を詳しく解説して', k + 'のおすすめの記事は？'],
+      clinic: [k + 'でおすすめのところは？', k + 'の料金の目安は？', k + 'の口コミ・評判は？', k + 'の予約方法は？', k + 'の痛みやダウンタイムは？', k + 'を選ぶポイントは？', k + 'で失敗しないには？', k + 'は初めてでも大丈夫？'],
+      b2b: [k + 'でおすすめは？', k + 'の費用はいくら？', k + 'を選ぶポイントは？', k + 'で失敗しないには？', k + 'の口コミ・評判は？', k + 'と他社の違いは？', k + 'は誰に向いている？', k + 'の導入・相談はどうする？'],
+      other: [k + 'でおすすめは？', k + 'の料金の目安は？', k + 'を選ぶポイントは？', k + 'の口コミ・評判は？', k + 'は初めてでも大丈夫？', k + 'の予約・相談はどうする？', k + 'で失敗しないには？', k + 'は誰に向いている？']
+    };
+    var templates = T[industry] || T.other;
     return templates.slice(0, 4 + (hashStr(k) % 5)).map(function (p, i) {
       return {
         prompt: p,
@@ -656,12 +658,14 @@
     var brand = p.brand || hostOf(job.url);
     var service = p.service || 'サービス';
     var isFood = job.industry === 'restaurant';
-    var faqItems = isFood ? restaurantFaq(job.diagnose) : [
-      service + 'の対象者は誰ですか？',
-      '費用の目安は？',
-      '予約・相談の流れは？',
-      '他社との違いは？'
-    ].map(function (q) { return { q: q, a: '（下書き）公開前に事実確認してください。' }; });
+    var FAQ_BY_INDUSTRY = {
+      b2b: [service + 'はどんな会社に向いていますか？', '料金の目安と、プランの違いを教えてください', '導入までの流れと期間は？', '他のサービスとの違いは？', '無料で試せますか？資料はありますか？'],
+      clinic: ['初めてでも予約できますか？予約方法を教えてください', '料金の目安と、追加料金がかかる場合を教えてください', '施術（診察）にかかる時間はどのくらいですか？', '施術後の注意点やダウンタイムはありますか？', 'キャンセルや日時の変更はできますか？'],
+      media: [brand + 'はどんなサイトですか？', 'だれが運営・執筆していますか？', '記事の内容はどのように確認していますか？', '情報はいつ更新していますか？', '取材や掲載の依頼はどこからできますか？'],
+      other: [brand + 'ではどんなことをお願いできますか？', '料金の目安を教えてください', '申し込みから利用までの流れは？', '営業時間・定休日を教えてください', '初めてでも大丈夫ですか？']
+    };
+    var faqItems = isFood ? restaurantFaq(job.diagnose) : (FAQ_BY_INDUSTRY[job.industry] || FAQ_BY_INDUSTRY.other)
+      .map(function (q) { return { q: q, a: '（下書き）公開前に事実確認してください。' }; });
     var faq = faqItems.map(function (f) { return f.q; });
     var kwa = (job.diagnose && job.diagnose.page && job.diagnose.page.keywordAuto) || {};
     var area = kwa.area || {};
@@ -1108,7 +1112,7 @@
       });
     job.keywords.forEach(function (k) {
       if (!k.prompts || !k.prompts.length) {
-        k.prompts = job.industry === 'restaurant' ? restaurantPrompts(k) : promptsForKeyword(k);
+        k.prompts = job.industry === 'restaurant' ? restaurantPrompts(k) : promptsForKeyword(k, job.industry);
         k.prompt_count = k.prompts.length;
       }
     });
@@ -1204,6 +1208,7 @@
 
     setStep(3, 'running', 20);
     var keywords = isFood ? buildRestaurantKeywords(diagnose, job.keyword_limit, gscMap, (input.profile && input.profile.brand) || '') : buildKeywords(job.profile.service, job.region, job.keyword_limit, gscMap, {
+      industry: job.industry,
       brand: job.profile.brand,
       url: job.url || job.profile.url
     });
@@ -1222,7 +1227,7 @@
     await sleep(180);
 
     setStep(4, 'running', 30);
-    keywords.forEach(function (k) { k.prompts = isFood ? restaurantPrompts(k) : promptsForKeyword(k); k.prompt_count = k.prompts.length; });
+    keywords.forEach(function (k) { k.prompts = isFood ? restaurantPrompts(k) : promptsForKeyword(k, job.industry); k.prompt_count = k.prompts.length; });
     setStep(4, 'done', 100);
     await sleep(180);
 
@@ -1817,7 +1822,10 @@
     renderResult: renderResult,
     parseCsv: parseCsv,
     STEPS: STEPS,
-    PackageSchema: window.AirReachPackageSchema || null
+    PackageSchema: window.AirReachPackageSchema || null,
+    // テスト用（業種ごとのキーワード・質問の確認）
+    _buildKeywords: buildKeywords,
+    _promptsForKeyword: promptsForKeyword
   };
 
   document.addEventListener('DOMContentLoaded', bindOverview);

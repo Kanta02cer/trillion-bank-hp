@@ -54,10 +54,34 @@ const GAP_DEFS_CLINIC = [
   { id: 'faq', label: 'よくある質問', action: 'よく聞かれる質問と答えをまとめて置く', why: 'AIが答えを抜き出しにくい' },
   { id: 'schema', label: 'お店の情報（構造化データ）', action: '名前・住所・電話・営業時間を検索やAIが読み取れる形で埋め込む', why: '検索やAIが基本情報を読み取れない' }
 ];
+// メディア・広報（記事を読んでもらう・運営者を信頼してもらう）
+const GAP_DEFS_MEDIA = [
+  { id: 'about', label: '運営者・編集方針', action: '運営している会社・人と、記事の作り方（取材・確認の方針）を書く', why: '誰が書いているか分からず、信頼されにくい' },
+  { id: 'author', label: '書き手・監修者', action: '記事ごとに書き手（必要なら監修者）の名前と紹介を書く（書面で確認できるものだけ）', why: '内容を信頼してよいか判断できない' },
+  { id: 'sources', label: '出典・参考資料', action: '記事の根拠になった資料や取材先を記事の中に書く', why: 'AI が引用するときの裏付けにならない' },
+  { id: 'dates', label: '公開日・更新日', action: '記事に公開日と最終更新日を出す', why: '情報が古いか新しいか分からない' },
+  { id: 'categories', label: 'カテゴリ・テーマの一覧', action: '扱うテーマと記事の一覧ページを用意する', why: '何のサイトか・どの記事を読めばよいか分からない' },
+  { id: 'faq', label: 'よくある質問', action: 'よく聞かれることをまとめて置く', why: 'AIが答えを抜き出しにくい' },
+  { id: 'contact', label: '問い合わせ・取材依頼', action: '問い合わせ・取材や掲載の依頼先を書く', why: '連絡したい人が連絡できない' },
+  { id: 'schema', label: '記事の情報（構造化データ）', action: '記事の見出し・書き手・公開日を検索やAIが読み取れる形で埋め込む', why: '検索やAIが記事の基本情報を読み取れない' }
+];
+// その他（地域の事業・教室・小売など。初めての人が利用するかを決める）
+const GAP_DEFS_OTHER = [
+  { id: 'service', label: 'できること・扱うもの', action: '何をしてくれるのか・何を扱っているのかを具体的に書く', why: '何のお店・会社か分からない' },
+  { id: 'price', label: '料金の目安', action: '主な料金と、追加でかかるものを書く', why: 'いくらかかるか分からない' },
+  { id: 'flow', label: '利用の流れ', action: '申し込みから利用までの流れと所要時間を書く', why: '初めてで何をすればよいか分からない' },
+  { id: 'hours', label: '営業時間・定休日', action: '営業時間・定休日・受付時間を書く', why: 'いつ行けば・連絡すればよいか分からない' },
+  { id: 'access', label: 'アクセス・対応地域', action: '所在地・最寄り駅・駐車場、または対応している地域を書く', why: '行けるか・来てもらえるか分からない' },
+  { id: 'voice', label: 'お客様の声・実績', action: '利用した人の声や実績を書く（掲載の同意を取ったものだけ）', why: '頼んでよいか判断できない' },
+  { id: 'faq', label: 'よくある質問', action: 'よく聞かれる質問と答えをまとめて置く', why: 'AIが答えを抜き出しにくい' },
+  { id: 'schema', label: 'お店・会社の情報（構造化データ）', action: '名前・住所・電話・営業時間を検索やAIが読み取れる形で埋め込む', why: '検索やAIが基本情報を読み取れない' }
+];
 const GAP_SETS = {
   restaurant: { defs: GAP_DEFS_RESTAURANT, reader: 'a first-time customer deciding whether to visit or reserve' },
   clinic: { defs: GAP_DEFS_CLINIC, reader: 'a first-time customer or patient deciding whether to book' },
-  b2b: { defs: GAP_DEFS_B2B, reader: 'a first-time business reader evaluating' }
+  b2b: { defs: GAP_DEFS_B2B, reader: 'a first-time business reader evaluating' },
+  media: { defs: GAP_DEFS_MEDIA, reader: 'a first-time reader deciding whether to trust and read the site' },
+  other: { defs: GAP_DEFS_OTHER, reader: 'a first-time customer deciding whether to use this business' }
 };
 export function gapSetFor(industry) { return GAP_SETS[industry] || GAP_SETS.b2b; }
 
