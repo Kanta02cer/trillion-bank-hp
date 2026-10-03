@@ -426,7 +426,7 @@
   }
   function savedRun(key) { try { return (JSON.parse(get(SAVED_RUNS) || '[]') || []).indexOf(key) >= 0; } catch (e) { return false; } }
 
-  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); startSync(); renderRunHistory(); setTimeout(autoStart, 600); }
+  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); startSync(); renderRunHistory(); setTimeout(function () { takeCustomerQuestions(); autoStart(); }, 600); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   // ---- 分析したサイトを、この顧客のサイトとして登録する ------------------------------------------
   // ダッシュボードは「顧客に登録されたサイト」と同じサイトの診断だけを、その顧客の診断として出す。
@@ -463,6 +463,27 @@
   }
   // ダッシュボードで顧客をサイトつきで追加したとき（?auto=1）は、開いたらそのまま「サイトを調べる」を始める。
   // 分析が終わると、足りない情報の判定と AI での見え方の計測も続けて自動で行う（airreach-studio.js）
+  // 顧客の追加時に入れた「お客様によく聞かれる質問」を受け取り、作業（state.customerQuestions）と測る質問の先頭に入れる
+  function takeCustomerQuestions() {
+    if (!client || !window.AirReachStudio) return;
+    var key = 'airreach_customer_qs_v1:' + client.id, qs = [];
+    try { qs = JSON.parse(localStorage.getItem(key) || '[]') || []; } catch (e) { qs = []; }
+    if (!qs.length) return;
+    var st = window.AirReachStudio.getState();
+    var have = (st.customerQuestions || []).slice();
+    qs.forEach(function (x) { if (have.indexOf(x) < 0) have.push(x); });
+    st.customerQuestions = have;
+    if (st.prompts && st.prompts.length) {
+      var texts = st.prompts.map(function (p) { return String(p.text || '').replace(/\s/g, ''); });
+      var brand = (st.profile && st.profile.brand) || client.name || '';
+      var cp = window.AirReachStudio.customerPrompt || function (x) { return x; };
+      var add = qs.map(function (x) { return cp(x, brand); }).filter(function (x) { return texts.indexOf(x.replace(/\s/g, '')) < 0; }).map(function (x) { return { id: 'c' + Math.random().toString(36).slice(2, 9), text: x, on: true, src: 'customer' }; });
+      st.prompts = add.concat(st.prompts);
+      var n = 0; st.prompts.forEach(function (p) { if (p.on !== false) { n += 1; if (n > 8) p.on = false; } });
+    }
+    window.AirReachStudio.save();
+    try { localStorage.removeItem(key); } catch (e) {}
+  }
   function autoStart() {
     var u = new URL(location.href);
     if (u.searchParams.get('auto') !== '1') return;

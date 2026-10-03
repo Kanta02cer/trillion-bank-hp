@@ -231,15 +231,18 @@
         }).join('') : '<li class="arc-empty">' + (me.is_staff ? 'まだ顧客がありません。' : '閲覧できる顧客がありません。担当者にお問い合わせください。') + '</li>') + '</ul>';
       }
       var add = me.is_staff ?
-        '<h2 class="arc-h2" style="margin-top:18px">顧客を追加する</h2><p class="arc-note" style="margin:0 0 6px">サイトの URL も入れると、追加したあとそのまま Studio でサイトを調べ、足りない情報の判定と AI での見え方の計測（Perplexity・ChatGPT）まで自動で行います。</p>' +
+        '<h2 class="arc-h2" style="margin-top:18px">顧客を追加する</h2><p class="arc-note" style="margin:0 0 6px">サイトの URL も入れると、追加したあとそのまま Studio でサイトを調べ、足りない情報の判定と AI での見え方の計測（Perplexity・ChatGPT）まで自動で行います。お客様によく聞かれる質問を入れておくと、AI に聞く質問の先頭に入ります。</p>' +
         '<form id="arc-add-client" class="arc-row"><input class="arc-input" id="arc-client-name" placeholder="顧客名（会社・店舗）" required>' +
         '<input class="arc-input" id="arc-client-url" type="text" inputmode="url" autocomplete="url" placeholder="サイトの URL（例: https://example.jp/）">' +
+        '<textarea class="arc-input arc-client-qs" id="arc-client-qs" rows="3" placeholder="お客様によく聞かれる質問（任意・1行に1つ）&#10;例：個室はありますか？&#10;例：子ども連れでも大丈夫ですか？"></textarea>' +
         '<select class="arc-input" id="arc-client-ind">' + Object.keys(INDUSTRY).map(function (k) { return '<option value="' + k + '">' + INDUSTRY[k] + '</option>'; }).join('') + '</select>' +
         '<button class="arc-btn" type="submit">顧客を追加</button></form>' : '';
       shell(me.is_staff ? '顧客一覧' : 'レポート', '<section class="arc-card">' + list + add + '</section>', '', { sec: 'list' });
       if (me.is_staff) $('#arc-add-client').addEventListener('submit', function (e) {
         e.preventDefault();
         var name = $('#arc-client-name').value.trim(), ind = $('#arc-client-ind').value, rawUrl = $('#arc-client-url').value.trim();
+        // お客様によく聞かれる質問は、Studio の「AI での見え方を測る」の質問の先頭に入る（Studio が開いたときに受け取る）
+        var qs = $('#arc-client-qs').value.split(/\n+/).map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 8);
         var site = null;
         if (rawUrl) {
           try { var u0 = new URL(/^https?:\/\//i.test(rawUrl) ? rawUrl : 'https://' + rawUrl); site = { url: u0.origin + '/', host: u0.hostname.replace(/^www\./, '').toLowerCase() }; }
@@ -248,6 +251,7 @@
         sb.from('clients').insert({ name: name, industry_id: ind, created_by: me.email }).select('id,name,industry_id').single()
           .then(function (res) {
             var c = q(res);
+            if (qs.length) { try { localStorage.setItem('airreach_customer_qs_v1:' + c.id, JSON.stringify(qs)); } catch (e3) {} }
             if (!site) return clientList();
             // サイトを登録して、Studio でそのまま調べ始める（分析 → 足りない情報 → AI での見え方）
             return sb.from('client_sites').insert({ client_id: c.id, url: site.url, host: site.host }).then(function (r2) {

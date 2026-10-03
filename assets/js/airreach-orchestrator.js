@@ -94,6 +94,7 @@
       return '自社GSCで表示あり（' + Number(k.gsc_impressions).toLocaleString('ja-JP') + '）';
     }
     if (k.seed_source === 'KeywordPlanner') return 'Keyword Plannerの公式需要';
+    if (k.seed_source === 'Site') return 'サイトのメニュー・見出しにある、扱っているもの';
     if (k.priority === 'P0') return '購買・比較意図が強く、先に対策すべき';
     if (k.priority === 'P1') return 'サービス名に沿い、伸ばしやすい候補';
     return '関連候補（優先度は低め）';
@@ -346,6 +347,15 @@
     if (brand && normKw(brand) !== normKw(s)) {
       seeds = seeds.concat([brand, brand + ' ' + s, s + ' ' + brand]);
     }
+    // サイトのメニュー・小見出しから拾った「扱っているもの」（例：眉毛サロンの「眉毛ワックス」「メンズ眉毛」）。
+    // そのもの単体と、業種でいちばん使う言葉を付けた形を、サービス名の言葉のすぐ後に入れる
+    var topicSeeds = [];
+    (opts.topics || []).slice(0, 8).forEach(function (t) {
+      if (normKw(t) === normKw(s) || (brand && normKw(t) === normKw(brand))) return;
+      var first = (KEYWORD_MODS[opts.industry] || KEYWORD_MODS.other)[0];
+      topicSeeds.push(t, t + ' ' + first);
+    });
+    seeds = seeds.slice(0, 7).concat(topicSeeds, seeds.slice(7));
     if (loc) {
       seeds = seeds.concat(opts.industry === 'media' ? [s + ' ' + loc, loc + ' ' + s] : [s + ' ' + loc, loc + ' ' + s, s + ' ' + loc + ' おすすめ']);
     }
@@ -372,7 +382,8 @@
       var nk = normKw(text);
       if (!nk || seen[nk]) return;
       if (isForeignBrandKeyword(text, brand, s)) { skippedForeign++; return; }
-      if (!belongsToEntity(text, brand, s, url)) return;
+      // サイトから拾った「扱っているもの」はサービス名を含まなくてもよい（そのサイト自身の言葉なので）
+      if (topicSeeds.indexOf(text) < 0 && !belongsToEntity(text, brand, s, url)) return;
       seen[nk] = 1;
       var gsc = lookupGsc(gscMap, text);
       // volume（月間検索数）は Keyword Planner を取り込んだときだけ入る。GSC の表示回数は別列（gsc_impressions）で、volume には入れない。
@@ -402,7 +413,7 @@
         gap: gap,
         action: action,
         cluster: /費用|料金/.test(text) ? 'Price' : /比較|おすすめ/.test(text) ? 'Comparison' : 'Core',
-        seed_source: fromGsc ? 'GSC' : 'Generated',
+        seed_source: fromGsc ? 'GSC' : (topicSeeds.indexOf(text) >= 0 ? 'Site' : 'Generated'),
         prompts: []
       };
       row.why = whyForKeyword(row);
@@ -1218,6 +1229,7 @@
     setStep(3, 'running', 20);
     var keywords = isFood ? buildRestaurantKeywords(diagnose, job.keyword_limit, gscMap, (input.profile && input.profile.brand) || '') : buildKeywords(job.profile.service, job.region, job.keyword_limit, gscMap, {
       industry: job.industry,
+      topics: (diagnose && diagnose.page && diagnose.page.topics) || [],
       brand: job.profile.brand,
       url: job.url || job.profile.url
     });
