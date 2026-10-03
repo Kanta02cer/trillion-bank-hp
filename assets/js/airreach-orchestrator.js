@@ -91,7 +91,7 @@
 
   function whyForKeyword(k) {
     if (k.seed_source === 'GSC' && k.gsc_impressions) {
-      return '自社GSCで表示あり（' + Number(k.gsc_impressions).toLocaleString('ja-JP') + '）';
+      return '自社GSCで表示あり（' + Number(k.gsc_impressions).toLocaleString('ja-JP') + (k.related_count ? '・言い換え ' + k.related_count + '語を合算' : '') + '）';
     }
     if (k.seed_source === 'KeywordPlanner') return 'Keyword Plannerの公式需要';
     if (k.seed_source === 'Site') return 'サイトのメニュー・見出しにある、扱っているもの';
@@ -252,37 +252,61 @@
     return map;
   }
 
+  // 同じ話題の言い換え（「しんちゃん 死亡」「クレヨンしんちゃん 死亡」など）を1つにまとめる。
+  // 表示の多い順に見て、文字の2文字ずつの重なり（Dice 係数）が 0.6 以上なら同じ話題とし、表示の多い言葉を代表にして合算する。
+  // 言い換えの一覧は related（表示の多い順・最大8）。言い換えからも代表を引けるよう、見えない索引 _member を持つ
+  function bigrams(t) { var o = {}; for (var i = 0; i < t.length - 1; i++) o[t.slice(i, i + 2)] = 1; return o; }
+  function dice(a, b) { var na = 0, nb = 0, both = 0; for (var k in a) { na++; if (b[k]) both++; } for (var k2 in b) nb++; return na + nb ? (2 * both) / (na + nb) : 0; }
+  function groupGsc(map) {
+    var entries = Object.keys(map).map(function (k) { return { key: k, g: map[k], bg: bigrams(k) }; })
+      .sort(function (a, b) { return b.g.impressions - a.g.impressions; });
+    var heads = [], out = {}, member = {};
+    entries.forEach(function (e) {
+      var host = null;
+      if (e.key.length >= 3) {
+        for (var i = 0; i < heads.length; i++) {
+          // 長さが大きく違うもの（「都市伝説」と「鬼滅の刃 都市伝説」など）は、短い方が別の話題なのでまとめない
+          var hk = heads[i].key, ratio = Math.min(hk.length, e.key.length) / Math.max(hk.length, e.key.length);
+          if (hk.length >= 3 && ratio >= 0.6 && dice(e.bg, heads[i].bg) >= 0.6) { host = heads[i]; break; }
+        }
+      }
+      if (!host) {
+        var g0 = e.g;
+        host = { key: e.key, bg: e.bg, g: { keyword: g0.keyword, impressions: g0.impressions, clicks: g0.clicks, positionSum: g0.positionSum, positionWeight: g0.positionWeight, pages: Object.assign({}, g0.pages), related: [] } };
+        heads.push(host); out[e.key] = host.g; member[e.key] = e.key; return;
+      }
+      var h = host.g, g = e.g;
+      h.impressions += g.impressions; h.clicks += g.clicks; h.positionSum += g.positionSum; h.positionWeight += g.positionWeight;
+      Object.keys(g.pages || {}).forEach(function (u) { var pp = h.pages[u] || (h.pages[u] = { url: u, impressions: 0, clicks: 0 }); pp.impressions += g.pages[u].impressions; pp.clicks += g.pages[u].clicks; });
+      h.related.push(g.keyword); member[e.key] = host.key;
+    });
+    Object.keys(out).forEach(function (k) { out[k].relatedCount = out[k].related.length; out[k].related = out[k].related.slice(0, 8); });
+    Object.defineProperty(out, '_member', { value: member, enumerable: false });
+    return out;
+  }
+
   function gscMapFromStudio() {
     try {
       if (window.AirReachStudio && window.AirReachStudio.getState) {
-        return gscMapFromMeasurements(window.AirReachStudio.getState().measurements || []);
+        return groupGsc(gscMapFromMeasurements(window.AirReachStudio.getState().measurements || []));
       }
       var raw = localStorage.getItem('airreach_studio_v1');
       if (!raw) return {};
       var st = JSON.parse(raw);
-      return gscMapFromMeasurements(st.measurements || []);
+      return groupGsc(gscMapFromMeasurements(st.measurements || []));
     } catch (e) {
       return {};
     }
   }
 
   function lookupGsc(gscMap, keyword) {
+    // 言葉がそのまま一致したとき（空白の違いは同じとみる）、またはまとめた言い換えのどれかと一致したときだけ。
+    // 「都市伝説 費用」に「都市伝説」の数字を付けるような部分一致はしない（実際には検索されていない言葉に数字が付くため）
     if (!gscMap) return null;
     var key = normKw(keyword);
     if (gscMap[key]) return gscMap[key];
-    var best = null;
-    var bestScore = 0;
-    Object.keys(gscMap).forEach(function (gk) {
-      if (!gk) return;
-      if (gk === key || key.indexOf(gk) !== -1 || gk.indexOf(key) !== -1) {
-        var score = gscMap[gk].impressions + (gk === key ? 1e9 : 0);
-        if (score > bestScore) {
-          bestScore = score;
-          best = gscMap[gk];
-        }
-      }
-    });
-    return best;
+    var head = gscMap._member && gscMap._member[key];
+    return head && gscMap[head] ? gscMap[head] : null;
   }
 
   function attachGsc(keywords, gscMap) {
@@ -291,6 +315,9 @@
       if (g && g.impressions > 0) {
         k.gsc_impressions = Math.round(g.impressions);
         k.gsc_clicks = Math.round(g.clicks || 0);
+        k.related_count = g.relatedCount || 0;
+        k.related = g.related || [];
+        k.why = whyForKeyword(k);
         k.gsc_position = g.positionWeight ? Math.round((g.positionSum / g.positionWeight) * 10) / 10 : null;
         applyGscAction(k, g);
         if (k.gsc_impressions > 50) k.strength = '普通';
@@ -417,6 +444,8 @@
         action: action,
         cluster: /費用|料金/.test(text) ? 'Price' : /比較|おすすめ/.test(text) ? 'Comparison' : 'Core',
         seed_source: fromGsc ? 'GSC' : (topicSeeds.indexOf(text) >= 0 ? 'Site' : 'Generated'),
+        related_count: fromGsc ? (gsc.relatedCount || 0) : 0,
+        related: fromGsc ? (gsc.related || []) : [],
         prompts: []
       };
       row.why = whyForKeyword(row);
@@ -1026,7 +1055,7 @@
         return {
           id: k.id, text: k.keyword, intent: k.intent, cluster: k.cluster,
           priority: k.priority, targetUrl: '', status: '未対策', volume: k.volume, answered: k.answered === undefined ? null : k.answered,
-          gsc_impressions: k.gsc_impressions, why: k.why || '', action: k.action || '',
+          gsc_impressions: k.gsc_impressions, related_count: k.related_count || 0, related: k.related || [], why: k.why || '', action: k.action || '',
           brandScope: (job.profile && job.profile.brand) || '',
           serviceScope: (job.profile && job.profile.service) || ''
         };
@@ -1129,9 +1158,12 @@
           action: '',
           cluster: 'Core',
           seed_source: 'GSC',
+          related_count: g.relatedCount || 0,
+          related: g.related || [],
           prompts: promptsForKeyword({ keyword: g.keyword })
         });
         applyGscAction(job.keywords[job.keywords.length - 1], g);
+        job.keywords[job.keywords.length - 1].why = whyForKeyword(job.keywords[job.keywords.length - 1]);
       });
     job.keywords.forEach(function (k) {
       if (!k.prompts || !k.prompts.length) {
@@ -1849,7 +1881,9 @@
     PackageSchema: window.AirReachPackageSchema || null,
     // テスト用（業種ごとのキーワード・質問の確認）
     _buildKeywords: buildKeywords,
-    _promptsForKeyword: promptsForKeyword
+    _promptsForKeyword: promptsForKeyword,
+    _groupGsc: function (measurements) { return groupGsc(gscMapFromMeasurements(measurements)); },
+    _lookupGsc: lookupGsc
   };
 
   document.addEventListener('DOMContentLoaded', bindOverview);
