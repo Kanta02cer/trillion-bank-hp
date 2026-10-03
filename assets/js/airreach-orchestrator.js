@@ -351,7 +351,8 @@
     // そのもの単体と、業種でいちばん使う言葉を付けた形を、サービス名の言葉のすぐ後に入れる
     var topicSeeds = [];
     (opts.topics || []).slice(0, 8).forEach(function (t) {
-      if (normKw(t) === normKw(s) || (brand && normKw(t) === normKw(brand))) return;
+      // 店名を含むもの（「更科堀井のそば」など）は指名の言葉として別にあるので、ここでは使わない
+      if (normKw(t) === normKw(s) || (brand && normKw(t).indexOf(normKw(brand)) >= 0)) return;
       var first = (KEYWORD_MODS[opts.industry] || KEYWORD_MODS.other)[0];
       topicSeeds.push(t, t + ' ' + first);
     });

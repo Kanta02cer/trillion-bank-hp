@@ -288,11 +288,21 @@
     var keywordAuto = buildKeywordAuto(kwSrc);
     var hasContact = /お問い合わせ|contact|inquiry|相談|予約/i.test(text) || !!doc.querySelector('a[href*="contact"], a[href*="meeting"], form');
     // サイトが扱っているもの（メニュー・小見出し）。キーワードの材料にする。ナビの定番の項目や文になっているものは除く
-    var TOPIC_NOISE = /^(ホーム|トップ|home|top|top\s*page|お問い合わせ|問い合わせ|contact|会社概要|運営会社|会社情報|about|about us|プライバシー|privacy|個人情報|利用規約|サイトマップ|sitemap|アクセス|お知らせ|news|ニュース|新着|ブログ|blog|採用|recruit|faq|よくある質問|ログイン|login|検索|search|menu|メニュー|もっと見る|詳しく見る|詳細|一覧|戻る|次へ|前へ|more|instagram|twitter|facebook|line|x|youtube|tiktok|english|日本語|cart|カート|料金|料金表|価格|価格表|料金・メニュー|メニュー表|プラン|plan|price|pricing|サービス|service|services|店舗情報|店舗一覧|店舗案内|スタッフ|staff|ギャラリー|gallery|予約|ご予約|web予約|reservation|reserve|コンセプト|concept|特徴|選ばれる理由|お客様の声|voice|実績|works|事例|会社案内|代表挨拶|ご挨拶|はじめての方へ|初めての方へ|for beginners|流れ|ご利用の流れ|q&a|資料請求|お見積り|見積もり|カテゴリー|カテゴリ|category|tag|タグ|記事一覧|人気記事|おすすめ記事|関連記事|最新記事|運営者情報|著者|author|プロフィール|profile)$/i;
+    var TOPIC_NOISE = /^(ホーム|トップ|home|top|top\s*page|お問い合わせ|問い合わせ|contact|会社概要|運営会社|会社情報|about|about us|プライバシー|privacy|個人情報|利用規約|サイトマップ|sitemap|アクセス|お知らせ|news|ニュース|新着|ブログ|blog|採用|recruit|faq|よくある質問|ログイン|login|検索|search|menu|メニュー|もっと見る|詳しく見る|詳細|一覧|戻る|次へ|前へ|more|instagram|twitter|facebook|line|x|youtube|tiktok|english|日本語|cart|カート|料金|料金表|価格|価格表|料金・メニュー|メニュー表|プラン|plan|price|pricing|サービス|service|services|店舗情報|店舗一覧|店舗案内|スタッフ|staff|ギャラリー|gallery|予約|ご予約|web予約|reservation|reserve|コンセプト|concept|特徴|選ばれる理由|お客様の声|voice|実績|works|事例|会社案内|代表挨拶|ご挨拶|はじめての方へ|初めての方へ|for beginners|流れ|ご利用の流れ|q&a|資料請求|お見積り|見積もり|カテゴリー|カテゴリ|category|tag|タグ|記事一覧|人気記事|おすすめ記事|関連記事|最新記事|運営者情報|著者|author|プロフィール|profile|プライバシーポリシー|免責事項|特定商取引法.*|採用情報|求人|オンラインショップ|オンラインストア|online ?shop|on-?line ?shop|english( page)?|メディア情報|メディア掲載|掲載情報|取材情報|店舗|店舗紹介|トップページ|すべて見る|一覧を見る|もっと読む|最新の.*|メニュー・料金|料金・メニュー|メニュー・価格|店舗一覧.*|おしながき|お品書き|ご予約.*)$/i;
     var topics = [], seenTopic = {};
-    var topicNodes = Array.prototype.slice.call(doc.querySelectorAll('nav a, header a, h2, h3'), 0, 300);
+    // メニュー（nav・header）を先に、小見出し（h2・h3）はその後に見る（キーワードには先頭の8つだけ使う）
+    var topicNodes = Array.prototype.slice.call(doc.querySelectorAll('nav a, header a'), 0, 200).concat(Array.prototype.slice.call(doc.querySelectorAll('h2, h3'), 0, 100));
     topicNodes.forEach(function (n) {
       var t = (n.textContent || '').replace(/\s+/g, ' ').trim().replace(/[「」『』【】\[\]]/g, '');
+      // 「Menuメニュー・料金」「Company会社概要」のような英語の飾り＋日本語は日本語だけに。「〜 すべて見る ›」「LATEST」などの飾りも外す
+      t = t.replace(/^[A-Za-z][A-Za-z ]{1,20}(?=[\u3040-\u30ff\u4e00-\u9fff])/, '').replace(/\s*(すべて見る|一覧を見る|もっと見る|詳しく見る)?\s*[›»>＞]+\s*$/, '').replace(/\s+[A-Z]{3,}$/, '').trim();
+      // 英字だけの見出し（Salon・Style など）、「〜する」「〜について」の文の形は使わない
+      if (/^[\x20-\x7e]+$/.test(t) || /(する|ください|について)$/.test(t)) return;
+      // 支店名（〜店）は扱っているものではないので除く
+      if (/店$/.test(t) && t.length >= 3) return;
+      // 「〜がない」「〜が分からない」「〜様」のような見出しの文や、記号から始まるものは除く
+      t = t.replace(/^[・･\-–—\s]+/, '');
+      if (!t || /(ない|ある|いる|れる|られる|ます|です|様|方へ|たち)$/.test(t) || /(私たち|当社|弊社|わたしたち)/.test(t)) return;
       if (!t || t.length < 2 || t.length > 16 || /[。！？!?、,]/.test(t) || /^\d+$/.test(t) || TOPIC_NOISE.test(t)) return;
       var k = t.toLowerCase();
       if (seenTopic[k]) return; seenTopic[k] = 1;
