@@ -420,7 +420,13 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
   const rows = await mapLimit(prompts, 2, async (p) => {
     let out;
     if (withSearch) out = await withRateRetry(() => callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt), deadline);
-    else out = { answer: await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt)), deadline), citations: null, searched: engine === 'perplexity' };
+    else {
+      const got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt)), deadline);
+      // Gateway は出典の一覧も返すことがある（Perplexity）。一覧が取れたら出典で、取れなければ本文で判定する
+      out = got && typeof got === 'object'
+        ? { answer: got.answer, citations: got.citations, searched: engine === 'perplexity', fields: got.fields }
+        : { answer: got, citations: null, searched: engine === 'perplexity' };
+    }
     if (mentionOnly) {
       return {
         engine: engineLabel(engine),
@@ -465,7 +471,8 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
       evidenceClass: 'Observed',
       model: useGateway ? gatewayModel(engine) : engine,
       source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
-      answer_excerpt: String(out.answer || '').slice(0, 400)
+      answer_excerpt: String(out.answer || '').slice(0, 400),
+      citation_fields: out.fields || null
     };
   });
   return {
@@ -565,9 +572,40 @@ async function callViaGateway(engine, key, prompt) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(gatewayError(res.status, data, model));
-  return data.choices && data.choices[0] && data.choices[0].message
-    ? data.choices[0].message.content
-    : '';
+  const msg = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message : {};
+  const cites = gatewayCitations(data);
+  return { answer: msg.content || '', citations: cites.urls, fields: cites.fields };
+}
+
+/**
+ * AI Gateway（OpenAI 互換）の応答から、AI が参照した URL（出典）を取り出す。
+ * 検索する AI（Perplexity など）は、出典を次のどこかで返す：data.citations / data.search_results / message.annotations（url_citation）/ message.citations / choices[0].citations。
+ * どこにも無ければ urls は null（出典の一覧が無い＝本文での判定にする）。項目はあるが空なら []（出典なし）。
+ * fields は、どの項目が返ってきたかの名前だけ（中身は含めない。返り方の確認用）
+ */
+export function gatewayCitations(data) {
+  const d = data || {};
+  const ch = (d.choices && d.choices[0]) || {};
+  const msg = ch.message || {};
+  const srcs = [['citations', d.citations], ['search_results', d.search_results], ['annotations', msg.annotations], ['message.citations', msg.citations], ['choice.citations', ch.citations], ['sources', d.sources]];
+  const fields = [];
+  let found = false;
+  const urls = [];
+  const pick = (x) => {
+    if (!x) return '';
+    if (typeof x === 'string') return x;
+    if (x.url) return x.url;
+    if (x.url_citation && x.url_citation.url) return x.url_citation.url;
+    if (x.source && x.source.url) return x.source.url;
+    return '';
+  };
+  srcs.forEach(([name, v]) => {
+    if (!Array.isArray(v)) return;
+    fields.push(name);
+    found = true;
+    v.forEach((x) => { const u = pick(x); if (/^https?:\/\//i.test(u) && urls.indexOf(u) < 0) urls.push(u); });
+  });
+  return { urls: found ? urls.slice(0, 20) : null, fields };
 }
 
 async function callProvider(engine, key, prompt) {

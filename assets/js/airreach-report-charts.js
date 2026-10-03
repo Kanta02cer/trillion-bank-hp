@@ -83,8 +83,10 @@
     if (ai && ai.providers && ai.providers.length) {
       t2 += '<div class="arv-ai">' + ai.providers.map(function (p) {
         var s = series(p.provider);
+        // 判定できないとき「—」だけだと理由が分からないので一言添える（ChatGPT は検索しないので出典を判定しない）
+        var why = p.citeRate != null ? '' : (p.provider === 'openai' ? '検索しない AI のため出典は判定しません' : '出典を判定できた回答がありません');
         return '<div class="arv-ai-row"><span class="arv-key" style="background:' + s.color + '"></span><span class="arv-ai-name">' + esc(s.label) + '</span>' +
-          '<span class="arv-ai-val">' + (p.citeRate == null ? '—' : esc(p.citeRate) + '%') + '</span>' + deltaHtml(p.citeDelta, 'ポイント') + '</div>';
+          '<span class="arv-ai-val">' + (p.citeRate == null ? '—' : esc(p.citeRate) + '%') + '</span>' + (why ? '<small class="arv-ai-why">' + esc(why) + '</small>' : deltaHtml(p.citeDelta, 'ポイント')) + '</div>';
       }).join('') + '</div>';
     } else t2 += '<div class="arv-big"><span class="arv-na">未計測</span></div>';
     t2 += '<div class="arv-tile-f">AIに同じ質問をして、公式サイトが出典に入った回答の割合</div></div>';
