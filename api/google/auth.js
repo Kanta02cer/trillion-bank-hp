@@ -1,4 +1,5 @@
 import { OAUTH_SCOPES, EMAIL_SCOPES } from './_lib/scopes.js';
+import { cookieNames } from './_lib/token.js';
 
 function setCors(req, res) {
   const origin = req.headers.origin || '';
@@ -29,10 +30,11 @@ export default async function handler(req, res) {
   // 切断（POST ?disconnect=1）：Google 側の許可を取り消し、このブラウザの接続（Cookie）を消す
   if (req.method === 'POST' && (req.query || {}).disconnect === '1') {
     const ck = parseCookies(req.headers.cookie || '');
-    const tok = ck.airreach_google_refresh || ck.airreach_google_access;
+    const N = cookieNames((req.query || {}).client); // ?client=<uuid> ならその顧客のつながりだけを切る
+    const tok = ck[N.refresh] || ck[N.access];
     if (tok) { try { await fetch('https://oauth2.googleapis.com/revoke', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ token: tok }) }); } catch (e) {} }
     const gone = (n, http) => `${n}=; Path=/; ${http ? 'HttpOnly; ' : ''}Secure; SameSite=Lax; Max-Age=0`;
-    res.setHeader('Set-Cookie', [gone('airreach_google_access', true), gone('airreach_google_refresh', true), gone('airreach_google_scopes', false), gone('airreach_google_email', false)]);
+    res.setHeader('Set-Cookie', [gone(N.access, true), gone(N.refresh, true), gone(N.scopes, false), gone(N.email, false)]);
     res.setHeader('Content-Type', 'application/json');
     res.statusCode = 200; res.end(JSON.stringify({ ok: true, revoked: !!tok }));
     return;

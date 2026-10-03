@@ -487,17 +487,22 @@
   // Google とつないで戻ってきたとき（?google=connected など）。一度だけ知らせ、アドレスからは消す
   var googleRet = (location.search.match(/[?&]google=([a-z_]+)/) || [])[1] || '';
   if (googleRet) { try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {} }
-  function googleEmail() { try { return decodeURIComponent((document.cookie.match(/(?:^|;\s*)airreach_google_email=([^;]*)/) || [])[1] || ''); } catch (e) { return ''; } }
+  // Google のつながりは顧客ごと（api/google/_lib/token.js と同じ Cookie 名）
+  function gKey(clientId) { return String(clientId || '').toLowerCase().replace(/-/g, ''); }
+  function gCookie(clientId, kind) { try { return decodeURIComponent((document.cookie.match(new RegExp('(?:^|;\\s*)airreach_g_' + gKey(clientId) + '_' + kind + '=([^;]*)')) || [])[1] || ''); } catch (e) { return ''; } }
+  var gClient = '';
+  function googleEmail(clientId) { return gCookie(clientId || gClient, 'e'); }
   function googleSyncForm(clientId, sites, traffic) {
     var p = googleProps(clientId), host = sites[0] && sites[0].host;
-    var feats = ((document.cookie.match(/(?:^|;\s*)airreach_google_scopes=([^;]*)/) || [])[1] || '').split('.').filter(Boolean);
+    gClient = clientId;
+    var feats = gCookie(clientId, 's').split('.').filter(Boolean);
     var hasGsc = feats.indexOf('gsc') >= 0, hasGa4 = feats.indexOf('ga4') >= 0;
     var connect = '/api/google/auth/?back=app&client=' + encodeURIComponent(clientId);
     var studioG = (window.AirReachNav ? window.AirReachNav.studioBase({ id: clientId, site: sites && sites[0] && sites[0].url }) : '/airreach/studio/') + '#google';
     var ret = googleRet; googleRet = '';
     var RET = { connected: ['ok', 'Google とつながりました。月を選んで「Google から取得」を押してください。'], gsc_missing: ['warn', 'Search Console の閲覧が許可されませんでした。もう一度つなぎ、Search Console にチェックを入れてください。'],
       ga4_missing: ['warn', 'GA4 の閲覧が許可されませんでした（Search Console だけつながりました）。GA4 も使うときは、もう一度つないでチェックを入れてください。'], scope_missing: ['warn', '閲覧の許可がありませんでした。もう一度つないで、チェックを入れてください。'] };
-    var email = googleEmail();
+    var email = googleEmail(clientId);
     // この顧客の数字を前回取ったときの Google アカウント（保存した数字に記録してある）
     var lastBy = ((traffic || []).filter(function (t) { return /_api$/.test(t.source) && t.metrics && t.metrics.google_email; })[0] || {}).metrics;
     var lastEmail = lastBy ? lastBy.google_email : '';
@@ -505,8 +510,8 @@
       ? '<span class="arc-chip is-ok">Google とつながっています</span> <span class="arc-sub">' + (email ? '<b>' + esc(email) + '</b>・' : '') + 'Search Console ' + (hasGsc ? '✓' : '—') + '・GA4 ' + (hasGa4 ? '✓' : '—') + '</span> <a class="arc-btn-sm" href="' + esc(connect) + '">別のアカウントでつなぎ直す</a> <button type="button" class="arc-btn-sm" id="arc-g-disconnect">切断する</button>' +
         (lastEmail && email && lastEmail !== email ? '<p class="arc-gmsg is-warn" style="flex-basis:100%">この顧客の数字は前回 <b>' + esc(lastEmail) + '</b> で取りました。今は <b>' + esc(email) + '</b> でつながっています。別の会社のアカウントでないか確かめてから取得してください。</p>' : '') +
         (!email ? '<p class="arc-note" style="flex-basis:100%;margin:0">どの Google アカウントでつないだかを表示するには、一度「別のアカウントでつなぎ直す」からつなぎ直してください。</p>' : '') +
-        '<p class="arc-note" style="flex-basis:100%;margin:0">Google のつながりはこのブラウザに残り、どの顧客を開いても同じアカウントが使われます。顧客ごとに、その会社のサイトを選んで取得してください。</p>'
-      : '<span class="arc-chip is-warn">まだ Google とつながっていません</span> <a class="arc-btn" href="' + esc(connect) + '">Google とつなぐ</a>';
+        '<p class="arc-note" style="flex-basis:100%;margin:0">このつながりは、この顧客だけのものです（このブラウザに30日残ります）。ほかの顧客は、それぞれの画面でつなぎます。</p>'
+      : '<span class="arc-chip is-warn">この顧客はまだ Google とつながっていません</span> <a class="arc-btn" href="' + esc(connect) + '">Google とつなぐ</a><p class="arc-note" style="flex-basis:100%;margin:0">つなぐと、この顧客だけのつながりになります（ほかの顧客には使いません）。お客様のサイトを見られる Google アカウントでつないでください。</p>';
     return '<div class="arc-gbox"><div class="arc-gbox-h"><b>Google から取り込む（おすすめ）</b>' + state + '</div>' +
       (RET[ret] ? '<p class="arc-gmsg is-' + RET[ret][0] + '">' + esc(RET[ret][1]) + '</p>' : '') +
       '<form id="arc-google-sync" class="arc-row"><input class="arc-input" type="month" id="arc-g-month" value="' + thisMonth() + '" required>' +
@@ -530,7 +535,7 @@
         return r.json().catch(function () { return {}; }).then(function (j) {
           if (r.ok) return j;
           var e = j.error && typeof j.error === 'object' ? (j.error.message || '') : (j.error || '');
-          if (r.status === 401) e = 'Google に接続していません（または接続が切れています）。左のメニューの「Google とつなぐ」で「接続」してください';
+          if (r.status === 401) e = 'この顧客は Google とつながっていません（または切れています）。上の「Google とつなぐ」で、この顧客のサイトを見られるアカウントでつないでください';
           else if (r.status === 403 && path.indexOf('gsc') >= 0) e = 'この Search Console のサイトを、つないだ Google アカウントでは見られません。上の一覧から「このお客様のサイト」を選ぶか、お客様に Search Console の「設定 → ユーザーと権限」でこのアカウントを追加してもらってください';
           throw new Error(e || ('HTTP ' + r.status));
         });
@@ -541,9 +546,9 @@
   var gscListCache = null;
   function gscCandidates(host) { return host ? ['sc-domain:' + host, 'https://' + host + '/', 'https://www.' + host + '/', 'http://' + host + '/', 'http://www.' + host + '/'] : []; }
   function fillGscProperties(clientId, sites) {
-    var input = $('#arc-g-gsc'); if (!input || !/(?:^|;\s*)airreach_google_scopes=[^;]*gsc/.test(document.cookie)) return;
+    var input = $('#arc-g-gsc'); if (!input || gCookie(clientId, 's').split('.').indexOf('gsc') < 0) return;
     var host = sites[0] && sites[0].host;
-    var load = gscListCache ? Promise.resolve(gscListCache) : fetch('/api/google/gsc/', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }).then(function (j) { gscListCache = j.sites || []; return gscListCache; });
+    var load = gscListCache && gscListCache.id === clientId ? Promise.resolve(gscListCache.list) : fetch('/api/google/gsc/?client=' + encodeURIComponent(clientId), { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }).then(function (j) { gscListCache = { id: clientId, list: j.sites || [] }; return gscListCache.list; });
     load.then(function (list) {
       var note = $('#arc-g-gsc-note'); if (note) note.remove();
       var urls = list.map(function (x) { return x.siteUrl; });
@@ -568,9 +573,9 @@
     var dc = $('#arc-g-disconnect');
     if (dc) dc.addEventListener('click', function () {
       dc.disabled = true;
-      fetch('/api/google/auth/?disconnect=1', { method: 'POST', credentials: 'same-origin' }).then(function () {
+      fetch('/api/google/auth/?disconnect=1&client=' + encodeURIComponent(clientId), { method: 'POST', credentials: 'same-origin' }).then(function () {
         gscListCache = null; openFolds.traffic = true;
-        return clientStaff(clientId, 'traffic').then(function () { msg('Google との接続を切りました。このブラウザでは、もう一度つなぐまで Google から取得できません。', 'ok'); });
+        return clientStaff(clientId, 'traffic').then(function () { msg('この顧客の Google とのつながりを切りました。もう一度つなぐまで、この顧客は Google から取得できません（ほかの顧客のつながりはそのままです）。', 'ok'); });
       }).catch(function () { dc.disabled = false; msg('切断できませんでした。少し待ってからもう一度押してください。', 'error'); });
     });
     form.addEventListener('submit', function (e) {
@@ -591,19 +596,19 @@
       saveGoogleProps(clientId, { gsc: gsc, ga4: ga4 });
       msg('Google から取得しています…');
       var period = month + '-01', jobs = [], got = [];
-      if (gsc) jobs.push(googlePost('/api/google/gsc/', { siteUrl: gsc, startDate: range.start, endDate: range.end, totalsOnly: true }).then(function (d) {
+      if (gsc) jobs.push(googlePost('/api/google/gsc/', { clientId: clientId, siteUrl: gsc, startDate: range.start, endDate: range.end, totalsOnly: true }).then(function (d) {
         var t = d.totals; if (!t) throw new Error('Search Console の合計を取得できませんでした');
         got.push('Search Console（' + t.days + '日間 クリック ' + t.clicks + ' / 表示 ' + t.impressions + '）');
         return sb.from('traffic_snapshots').upsert({ client_id: clientId, period_month: period, source: 'gsc_api',
-          metrics: { clicks: t.clicks, impressions: t.impressions, ctr: t.ctr, position: t.position, days: t.days, start_date: t.startDate, end_date: t.endDate, property: gsc, google_email: googleEmail() || null },
+          metrics: { clicks: t.clicks, impressions: t.impressions, ctr: t.ctr, position: t.position, days: t.days, start_date: t.startDate, end_date: t.endDate, property: gsc, google_email: googleEmail(clientId) || null },
           created_by: me.email }, { onConflict: 'client_id,period_month,source' }).then(q);
       }));
-      if (ga4) jobs.push(googlePost('/api/google/ga4/', { propertyId: ga4, siteUrl: sites[0].url, startDate: range.start, endDate: range.end, summaryOnly: true }).then(function (d) {
+      if (ga4) jobs.push(googlePost('/api/google/ga4/', { clientId: clientId, propertyId: ga4, siteUrl: sites[0].url, startDate: range.start, endDate: range.end, summaryOnly: true }).then(function (d) {
         var g = d.summary; if (!g) throw new Error('GA4 の合計を取得できませんでした');
         got.push('GA4（セッション ' + g.sessions + ' / AI経由 ' + g.aiSessions + ' / キーイベント ' + g.keyEvents + '）');
         return sb.from('traffic_snapshots').upsert({ client_id: clientId, period_month: period, source: 'ga4_api',
           metrics: { sessions: g.sessions, ai_sessions: g.aiSessions, conversions: g.keyEvents, target_page_views: null, ai_sources: g.aiSources,
-            property_id: ga4, host: d.host, start_date: range.start, end_date: range.end, google_email: googleEmail() || null },
+            property_id: ga4, host: d.host, start_date: range.start, end_date: range.end, google_email: googleEmail(clientId) || null },
           created_by: me.email }, { onConflict: 'client_id,period_month,source' }).then(q);
       }));
       Promise.allSettled(jobs).then(function (rs) {

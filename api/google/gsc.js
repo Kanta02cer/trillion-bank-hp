@@ -1,3 +1,4 @@
+import { getAccessToken, requestClientId } from './_lib/token.js';
 function setCors(req, res) {
   const origin = req.headers.origin || '';
   let allow = 'https://trillion-bank.jp';
@@ -26,7 +27,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
   // GET: つないだ Google アカウントが見られる Search Console のプロパティの一覧（画面で選べるようにする）
   if (req.method === 'GET') {
-    const tk = await getAccessToken(req);
+    const tk = await getAccessToken(req, requestClientId(req));
     if (!tk) return res.status(401).json({ error: 'Google connection required' });
     const r0 = await fetch('https://searchconsole.googleapis.com/webmasters/v3/sites', { headers: { Authorization: `Bearer ${tk}` } });
     const d0 = await r0.json().catch(() => ({}));
@@ -38,7 +39,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ sites });
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST required' });
-  const token = await getAccessToken(req);
+  const token = await getAccessToken(req, requestClientId(req));
   if (!token) return res.status(401).json({ error: 'Google connection required' });
   const { siteUrl, startDate, endDate, rowLimit = 25000 } = req.body || {};
   if (!siteUrl || !startDate || !endDate) return res.status(400).json({ error: 'siteUrl, startDate, endDate are required' });
@@ -108,22 +109,3 @@ export default async function handler(req, res) {
   return res.status(200).json({ rows, count: rows.length, siteUrl, totals });
 }
 
-async function getAccessToken(req) {
-  const cookies = parseCookies(req.headers.cookie || '');
-  if (cookies.airreach_google_access) return cookies.airreach_google_access;
-  if (!cookies.airreach_google_refresh) return null;
-  const body = new URLSearchParams({
-    client_id: process.env.GOOGLE_CLIENT_ID || '',
-    client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
-    refresh_token: cookies.airreach_google_refresh,
-    grant_type: 'refresh_token'
-  });
-  const r = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
-  const data = await r.json();
-  return r.ok ? data.access_token : null;
-}
-function parseCookies(raw) {
-  return raw.split(';').reduce((acc, pair) => {
-    const i = pair.indexOf('='); if (i > -1) acc[pair.slice(0, i).trim()] = decodeURIComponent(pair.slice(i + 1).trim()); return acc;
-  }, {});
-}
