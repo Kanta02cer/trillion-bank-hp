@@ -408,7 +408,14 @@
     });
 
     // Meaningful variants only — never pad with 「関連 N」
-    var modifiers = ['始め方', 'やり方', '自社', '外注', 'ツール', '会社', '代理店', 'ポイント', '注意点', 'チェックリスト'];
+    // 件数が足りないときに足す言葉も業種ごと（メディアに「外注」「代理店」を作らない）
+    var PAD = {
+      b2b: ['始め方', 'やり方', '自社', '外注', 'ツール', '会社', '代理店', 'ポイント', '注意点', 'チェックリスト'],
+      clinic: ['ポイント', '注意点', '期間', '回数', '持続', '男性', '人気', '安い', '近く', '土日'],
+      media: ['本当', '実話', '考察', '検証', 'おすすめ', '話題', 'ニュース', '特集', '読み物', '入門'],
+      other: ['ポイント', '注意点', '人気', '安い', '近く', '口コミ 良い', '始め方', '準備', '持ち物', '期間']
+    };
+    var modifiers = PAD[opts.industry] || PAD.other;
     var mi = 0;
     while (out.length < limit && mi < modifiers.length * 3) {
       var mod = modifiers[mi % modifiers.length];
