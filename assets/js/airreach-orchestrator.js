@@ -1045,6 +1045,26 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
   }
 
+  // 無料診断の「直す材料を作る」用：診断の結果から下書き一式を作り、確認のダイアログを出さずに -DRAFT.zip として保存する
+  // （一般の方向け。公開前の確認はファイルの中の手順書で案内する）
+  function downloadDraftFromDiagnose(opts) {
+    var o = opts || {};
+    var job = { url: o.url, industry: o.industry || 'other', profile: { brand: o.brand || hostOf(o.url), service: o.service || '' }, diagnose: o.diagnose || {}, keywords: o.keywords || [], goal: o.goal || '' };
+    var files = buildPackageFiles(job);
+    var clean = {};
+    Object.keys(files || {}).forEach(function (k) { if (k !== '_validation') clean[k] = files[k]; });
+    var host = (hostOf(o.url) || 'site').replace(/[^a-z0-9.-]/gi, '');
+    var data = buildZip(clean);
+    var blob = new Blob([data], { type: 'application/zip' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'airreach-' + host + '-DRAFT.zip';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+    return clean;
+  }
+
   function persistJob(job) {
     try { localStorage.setItem(ORCH_KEY, JSON.stringify({ lastJob: job })); } catch (e) {}
     try {
@@ -1880,6 +1900,7 @@
     STEPS: STEPS,
     PackageSchema: window.AirReachPackageSchema || null,
     // テスト用（業種ごとのキーワード・質問の確認）
+    downloadDraftFromDiagnose: downloadDraftFromDiagnose,
     _buildKeywords: buildKeywords,
     _promptsForKeyword: promptsForKeyword,
     _groupGsc: function (measurements) { return groupGsc(gscMapFromMeasurements(measurements)); },
