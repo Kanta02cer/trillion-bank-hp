@@ -1314,11 +1314,11 @@ details.ar-panel>summary:focus{outline:3px solid rgba(37,99,235,.35);outline-off
             <a class="ar-tool" id="ar-cta-share" href="/airreach/result/" hidden><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">診断結果を共有</span><span class="ar-tool-desc">共有リンクをコピーする。リンクを知っている人だけがこの結果を開ける</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
             <p class="ar-tool-note" id="ar-share-note" hidden aria-live="polite"></p>
             <!-- 直す材料を作る：だれでも無料で使える。診断の結果から下書き一式（ZIP）をこの場で作ってダウンロードする（自動では公開しない） -->
-            <a class="ar-tool" href="/airreach/studio/" id="ar-cta-actions"><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6M9 13h7M9 17h7"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">直す材料を作る（無料）</span><span class="ar-tool-desc">よくある質問・お店の情報・AI 向けの案内ファイルの下書きを、この画面で作ってコピー・ダウンロード。自動では公開しない</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
+            <a class="ar-tool" href="/airreach/studio/" id="ar-cta-actions"><span class="ar-tool-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6M9 13h7M9 17h7"/></svg></span><span class="ar-tool-body"><span class="ar-tool-title">サイトに足す文章を作る（無料）</span><span class="ar-tool-desc">診断の結果をもとに、サイトに足すとよい文章をこの場で作ります</span></span><span class="ar-tool-chev" aria-hidden="true">›</span></a>
             <p class="ar-tool-note" id="ar-materials-note" hidden aria-live="polite"></p>
             <!-- 直す材料（下書き）の欄：押すとここに作って見せる。コピーと、まとめてダウンロード（ZIP） -->
             <section class="ar-materials" id="ar-materials" hidden aria-label="直す材料（下書き）">
-              <div class="ar-materials-h"><b>直す材料（下書き）</b><button type="button" class="ar-btn ar-btn-primary" id="ar-materials-zip">まとめてダウンロード（ZIP）</button></div>
+              <div class="ar-materials-h"><b>サイトに足すとよい文章</b><button type="button" class="ar-btn ar-btn-primary" id="ar-materials-zip">まとめて保存する</button></div>
               <p class="ar-materials-lead" id="ar-materials-lead"></p>
               <div id="ar-materials-list"></div>
             </section>
@@ -2945,10 +2945,10 @@ document.addEventListener('DOMContentLoaded', function () {
   var matFiles = null, matUrl = '';
   function escMat(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   var MAT_PARTS = [
-    ['content/faq.md', 'よくある質問の下書き', 'サイトに「よくある質問」として載せる文章。回答は事実に合わせて書き直してください'],
-    ['schema/faq.jsonld', 'よくある質問（検索・AI が読む形）', 'よくある質問のページの HTML に、script type="application/ld+json" として入れるデータ'],
-    ['schema/organization.jsonld', 'お店・会社の情報（検索・AI が読む形）', 'トップページの HTML に入れるデータ。住所・電話・営業時間など、分かるものを足してください'],
-    ['public/llms.txt', 'AI 向けの案内ファイル（llms.txt）', 'サイトの一番上の階層に llms.txt という名前で置くファイル']
+    ['content/faq.md', 'よくある質問', 'サイトに「よくある質問」として載せる文章です。答えの部分は、お店の実際の内容に書き換えてください'],
+    ['schema/faq.jsonld', 'ホームページを作った人に渡すもの（1）', '上の「よくある質問」を、Google や ChatGPT が読み取れるようにするための設定です'],
+    ['schema/organization.jsonld', 'ホームページを作った人に渡すもの（2）', 'お店の名前・住所・電話番号などを、Google や ChatGPT に正しく伝えるための設定です'],
+    ['public/llms.txt', 'ホームページを作った人に渡すもの（3）', 'ChatGPT などに、サイトの中身を案内するためのファイルです']
   ];
   if ($('ar-cta-actions')) $('ar-cta-actions').addEventListener('click', function (e) {
     e.preventDefault();
@@ -2961,8 +2961,8 @@ document.addEventListener('DOMContentLoaded', function () {
       matFiles = O.buildDraftFromDiagnose({ url: matUrl, industry: pageIndustry || 'other', brand: kwa.shopName || '', service: (kwa.genre && kwa.genre.value) || '', diagnose: lastDiagnose || {} });
     } catch (err) { if (note) { note.hidden = false; note.textContent = '下書きを作れませんでした。もう一度診断してから押してください。'; } return; }
     if (note) note.hidden = true;
-    $('ar-materials-lead').innerHTML = '<b>自動では公開しません。</b>公開する前に、内容が事実と合っているかを確認してください。' +
-      (lastDiagnose ? '' : '（今回はサイトの中身を読んでいないため、一般的な下書きです。最初の画面で「診断のための取得に同意」にチェックを入れて診断し直すと、サイトの情報が入った下書きになります）');
+    $('ar-materials-lead').innerHTML = 'この文章が勝手にサイトに載ることはありません。お店の実際の内容に合わせて直してから、サイトに載せてください。' +
+      (lastDiagnose ? '' : '<br>今回はサイトを読み込んでいないため、どのお店にも使える文章になっています。お店に合わせた文章にするには、最初の画面で「サイト情報の取得に同意する」にチェックを入れて、もう一度診断してください。');
     $('ar-materials-list').innerHTML = MAT_PARTS.filter(function (p) { return matFiles[p[0]]; }).map(function (p, i) {
       return '<details class="ar-mat"' + (i === 0 ? ' open' : '') + '><summary>' + escMat(p[1]) + '<small>' + escMat(p[2]) + '</small></summary><pre>' + escMat(matFiles[p[0]]) + '</pre>' +
         '<button type="button" data-mat-copy="' + escMat(p[0]) + '">コピー</button></details>';
@@ -2979,7 +2979,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if ($('ar-materials-zip')) $('ar-materials-zip').addEventListener('click', function () {
     var O = window.AirReachOrchestrator; if (!O || !matFiles) return;
     O.downloadDraftZip(matFiles, matUrl);
-    var n = $('ar-materials-note'); if (n) { n.hidden = false; n.textContent = '下書き一式（よくある質問・お店の情報・AI 向けの案内ファイル・作業の手順）をダウンロードしました。'; }
+    var n = $('ar-materials-note'); if (n) { n.hidden = false; n.textContent = 'まとめて保存しました。ホームページを作った人に、このファイルを渡してください。'; }
   });
   if ($('ar-cta-details')) {
     $('ar-cta-details').addEventListener('click', function (e) {
