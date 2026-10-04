@@ -1047,14 +1047,19 @@
 
   // 無料診断の「直す材料を作る」用：診断の結果から下書き一式を作り、確認のダイアログを出さずに -DRAFT.zip として保存する
   // （一般の方向け。公開前の確認はファイルの中の手順書で案内する）
-  function downloadDraftFromDiagnose(opts) {
+  // 無料診断の「直す材料を作る」用：診断の結果から下書き一式を作る（画面に見せる・ZIP で渡す）
+  function buildDraftFromDiagnose(opts) {
     var o = opts || {};
     var job = { url: o.url, industry: o.industry || 'other', profile: { brand: o.brand || hostOf(o.url), service: o.service || '' }, diagnose: o.diagnose || {}, keywords: o.keywords || [], goal: o.goal || '' };
     var files = buildPackageFiles(job);
     var clean = {};
     Object.keys(files || {}).forEach(function (k) { if (k !== '_validation') clean[k] = files[k]; });
-    var host = (hostOf(o.url) || 'site').replace(/[^a-z0-9.-]/gi, '');
-    var data = buildZip(clean);
+    return clean;
+  }
+  // 下書き一式を、確認のダイアログを出さずに -DRAFT.zip として保存する（一般の方向け。公開前の確認は手順書で案内する）
+  function downloadDraftZip(files, url) {
+    var host = (hostOf(url) || 'site').replace(/[^a-z0-9.-]/gi, '');
+    var data = buildZip(files);
     var blob = new Blob([data], { type: 'application/zip' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -1062,7 +1067,11 @@
     document.body.appendChild(a);
     a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
-    return clean;
+  }
+  function downloadDraftFromDiagnose(opts) {
+    var files = buildDraftFromDiagnose(opts);
+    downloadDraftZip(files, (opts || {}).url);
+    return files;
   }
 
   function persistJob(job) {
@@ -1901,6 +1910,8 @@
     PackageSchema: window.AirReachPackageSchema || null,
     // テスト用（業種ごとのキーワード・質問の確認）
     downloadDraftFromDiagnose: downloadDraftFromDiagnose,
+    buildDraftFromDiagnose: buildDraftFromDiagnose,
+    downloadDraftZip: downloadDraftZip,
     _buildKeywords: buildKeywords,
     _promptsForKeyword: promptsForKeyword,
     _groupGsc: function (measurements) { return groupGsc(gscMapFromMeasurements(measurements)); },
