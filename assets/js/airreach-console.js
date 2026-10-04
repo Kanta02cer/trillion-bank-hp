@@ -187,6 +187,8 @@
       if (!session) { renderLogin(); return; }
       return sb.rpc('airreach_me').then(function (r) {
         me = q(r) || {};
+        // 社内の人の端末に印を付ける（無料診断の結果に「担当者向けのツール」（直す材料を作る など）を出すため）
+        if (me.is_staff) { try { localStorage.setItem('airreach_staff_device_v1', '1'); } catch (e) {} }
         var h = location.hash || '';
         var m;
         if ((m = /^#\/c\/([0-9a-f-]{36})(?:\/([a-z]+))?$/.exec(h))) return me.is_staff ? clientStaff(m[1], SEC_LABEL[m[2]] ? m[2] : 'home') : clientMember(m[1]);
