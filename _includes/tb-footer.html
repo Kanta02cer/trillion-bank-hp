@@ -165,6 +165,8 @@
   });
   /* page transition — fade out on navigate, fade in on load */
   document.addEventListener('click',function(e){
+    // ほかの処理がリンクの移動を止めた（preventDefault）ときや、新しいタブで開く操作（⌘/Ctrl/Shift・中ボタン）のときは何もしない
+    if(e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
     var a=e.target.closest('a');
     var raw=a?a.getAttribute('href')||'':'';
     if(!a||!a.href||a.target==='_blank'||raw.startsWith('#')||a.href.startsWith('mailto:')||a.href.startsWith('tel:'))return;
