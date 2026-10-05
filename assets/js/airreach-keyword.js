@@ -384,7 +384,60 @@
     return out;
   }
 
-  var api = { derive: derive, deriveAll: deriveAll, candidates: candidates, shopName: shopName, parseAddress: parseAddress, genreIn: genreIn, version: 'keyword-v2' };
+  /**
+   * サイトの本文から、お客さんがよく聞く事実（営業時間・定休日・電話・住所・アクセス・駐車場・料金・予約・支払い）を拾う。
+   *   値は本文に書かれた文字のまま（言い換えない・推測で埋めない）。それぞれ「どこに書いてあったか」（前後の文と URL）を付ける。
+   *   見つからない項目は入れない（＝確認が必要）
+   * @returns {{ hours?, closed?, phone?, address?, access?, parking?, price?, reservation?, payment? }} 各 { value, quote, url }
+   */
+  function facts(src) {
+    src = src || {};
+    var docs = [{ text: [src.title, src.metaDesc, src.text].filter(Boolean).join(' '), url: src.url || '' }]
+      .concat((src.pages || []).filter(function (p) { return p && p.text; }).map(function (p) { return { text: String(p.text), url: p.url || '' }; }));
+    var out = {};
+    function clean(t) { return String(t || '').replace(/\s+/g, ' ').trim(); }
+    function quote(text, at, len) { var a = Math.max(0, at - 20), b = Math.min(text.length, at + len + 30); return (a > 0 ? '…' : '') + clean(text.slice(a, b)) + (b < text.length ? '…' : ''); }
+    function find(key, rx, pick, guard) {
+      if (out[key]) return;
+      for (var i = 0; i < docs.length; i++) {
+        var t = docs[i].text, m, re = new RegExp(rx.source, rx.flags.indexOf('g') >= 0 ? rx.flags : rx.flags + 'g');
+        while ((m = re.exec(t))) {
+          if (guard && !guard(t, m)) continue;
+          var v = clean(pick ? pick(m) : m[0]);
+          // 開いたかっこだけが残ったら閉じる（値を途中で切ったとき）
+          if ((v.match(/（/g) || []).length > (v.match(/）/g) || []).length) v += '）';
+          if ((v.match(/\(/g) || []).length > (v.match(/\)/g) || []).length) v += ')';
+          if (!v) continue;
+          out[key] = { value: v.slice(0, 80), quote: quote(t, m.index, m[0].length), url: docs[i].url };
+          return;
+        }
+      }
+    }
+    var TIME = '\\d{1,2}[:：]\\d{2}';
+    // 営業時間：見出し語のあとに時刻があるもの
+    find('hours', new RegExp('(?:営業時間|受付時間|診療時間|営業|open(?:ing)? hours?)[\\s:：\\-]*((?:[^。\\n]{0,12})' + TIME + '\\s*[〜~～ー\\-－–]\\s*' + TIME + '(?:[^。\\n]{0,30}?' + TIME + '\\s*[〜~～ー\\-－–]\\s*' + TIME + ')?(?:[（(][^）)]{1,24}[）)])?)', 'i'), function (m) { return m[1]; });
+    find('closed', /(?:定休日|休診日|休業日|店休日)[\s:：]*([^\s。]{1,30})/, function (m) { return m[1].replace(/[】）)]+$/, ''); });
+    // 電話：「TEL」「電話」の近くの番号（FAX は除く）
+    find('phone', /(?:TEL|Tel|tel|電話(?:番号)?|☎|お電話)[\s.:：はがを]{0,6}((?:0\d{1,4}|\(0\d{1,4}\))[-‐ー−\s)]?\d{1,4}[-‐ー−\s]?\d{3,4})/, function (m) { return m[1].replace(/[‐ー−]/g, '-'); },
+      function (t, m) { return !/FAX|fax|ファックス/.test(t.slice(Math.max(0, m.index - 6), m.index)); });
+    find('address', /〒\s?(\d{3}[-‐ー−]\d{4})\s*([^\s　]{4,40}?(?:\d+(?:[-‐ー−]\d+){0,3}(?:番地?|号)?|$))/, function (m) { return '〒' + m[1].replace(/[‐ー−]/g, '-') + ' ' + m[2]; });
+    find('access', /([^\s。、・「」（）()]{1,12}駅)[^。\n]{0,12}?(?:から|より)?\s*(?:徒歩|歩いて)\s*(?:約)?\s*(\d{1,2})\s*分/, function (m) { return m[1] + 'から徒歩' + m[2] + '分'; });
+    find('parking', /駐車場[^。\n]{0,40}/, function (m) {
+      var t = m[0];
+      if (/(?:なし|無し|ございません|ありません|ない)/.test(t)) return '駐車場なし';
+      var n = /(\d+)\s*台/.exec(t);
+      return n ? '駐車場あり（' + n[1] + '台）' : '駐車場の記載あり';
+    });
+    // 料金：直前の品名・メニュー名も一緒に（例「天重 2,013円」）
+    find('price', /(?:[^\s。、:：|｜]{1,14}\s*)?(?:[¥￥]\s*\d{1,3}(?:,\d{3})+|\d{1,3}(?:,\d{3})+\s*円|\d{3,6}\s*円)(?:\s*[〜~～ー\-－–]\s*(?:[¥￥]?\s*\d{1,3}(?:,\d{3})*\s*円?))?(?:（税込）|\(税込\)|税込|（税別）|税別)?/);
+    // 予約：方法（電話・Web・LINE など）が書かれた文だけ。見出しの言葉は除いて、予約の文の始まりから取る
+    find('reservation', /[^\s。]{0,20}(?:ご予約|予約)[^\s。\n]{0,40}?(?:電話|web|ネット|LINE|フォーム|予約サイト|ホットペッパー|食べログ|承|受け付け|受付)[^\s。\n]{0,20}/i, null,
+      function (t, m) { return !/^[^\s]*(?:ご予約|予約)・お問い?合わせ$/.test(m[0]); });
+    find('payment', /(?:クレジットカード|カード払い|電子マネー|PayPay|QR\s*コード決済|交通系IC|現金のみ)[^。\n]{0,30}/);
+    return out;
+  }
+
+  var api = { facts: facts, derive: derive, deriveAll: deriveAll, candidates: candidates, shopName: shopName, parseAddress: parseAddress, genreIn: genreIn, version: 'keyword-v2' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachKeyword = api;
 })(typeof window !== 'undefined' ? window : null);

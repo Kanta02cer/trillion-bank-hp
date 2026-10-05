@@ -2945,7 +2945,8 @@ document.addEventListener('DOMContentLoaded', function () {
   var matFiles = null, matUrl = '';
   function escMat(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   var MAT_PARTS = [
-    ['content/faq.md', 'よくある質問', 'サイトに「よくある質問」として載せる文章です。答えの部分は、お店の実際の内容に書き換えてください'],
+    ['content/site-info.md', 'サイトから読めた情報', '営業時間・電話・住所などで、サイトに書かれていたものです。「確認が必要」の項目は実際の内容を確かめてください'],
+    ['content/faq.md', 'よくある質問', 'サイトに「よくある質問」として載せる文章です。「【確認が必要】」の答えは、実際の内容に書き換えてください'],
     ['schema/faq.jsonld', 'ホームページを作った人に渡すもの（1）', '上の「よくある質問」を、Google や ChatGPT が読み取れるようにするための設定です'],
     ['schema/organization.jsonld', 'ホームページを作った人に渡すもの（2）', 'お店の名前・住所・電話番号などを、Google や ChatGPT に正しく伝えるための設定です'],
     ['public/llms.txt', 'ホームページを作った人に渡すもの（3）', 'ChatGPT などに、サイトの中身を案内するためのファイルです']
