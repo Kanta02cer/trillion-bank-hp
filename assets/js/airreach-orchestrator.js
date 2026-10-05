@@ -646,30 +646,79 @@
     return list.map(function (p) { return { prompt: p, intent: kw.cluster === 'Brand' ? 'Navigational' : 'Comparison', commercial_score: '' }; });
   }
 
-  // 飲食店の FAQ: お客様が来店前に聞くこと。サイトに記載があれば、その抜粋を回答の下書きに添える
-  var RESTAURANT_FAQ = [
-    { q: '予約はできますか？', mod: '予約' },
-    { q: '営業時間と定休日を教えてください。', mod: '営業時間' },
-    { q: '駐車場はありますか？', mod: '駐車場' },
-    { q: '個室はありますか？', mod: '個室' },
-    { q: '子ども連れでも利用できますか？', mod: '子連れ' },
-    { q: 'テイクアウトはできますか？', mod: 'テイクアウト' },
-    { q: '宴会や貸切はできますか？', mod: '宴会' },
-    { q: '支払い方法（カード・電子マネー）は何が使えますか？', mod: null },
-    { q: 'アレルギーへの対応はできますか？', mod: null },
-    { q: '最寄り駅からの行き方を教えてください。', mod: 'アクセス' }
-  ];
-  function restaurantFaq(diagnose) {
-    var cands = ((diagnose && diagnose.page && diagnose.page.keywordAuto) || {}).candidates || [];
-    return RESTAURANT_FAQ.map(function (f) {
-      var hit = f.mod ? cands.filter(function (c) { return c.modifier === f.mod && c.answered === true; })[0] : null;
-      return {
-        q: f.q,
-        found: !!hit,
-        a: hit ? '（サイトに「' + hit.evidence.replace(/…/g, '').trim() + '」と書かれています。これをもとに答えを書いてください）'
-          : '（サイトには書かれていませんでした。お店の実際の答えを書いてください。当てはまらない質問は消してください）'
-      };
+  // よくある質問（業種ごと）。fact＝サイトから読めた事実で答えの下書きを作る項目、mod＝言葉の候補で「書いてあるか」を見た項目
+  function faqSpec(industry, brand, service) {
+    var S = {
+      restaurant: [
+        { q: '予約はできますか？', fact: 'reservation', mod: '予約' }, { q: '営業時間と定休日を教えてください。', fact: 'hours', mod: '営業時間' },
+        { q: '駐車場はありますか？', fact: 'parking', mod: '駐車場' }, { q: '個室はありますか？', mod: '個室' }, { q: '子ども連れでも利用できますか？', mod: '子連れ' },
+        { q: 'テイクアウトはできますか？', mod: 'テイクアウト' }, { q: '宴会や貸切はできますか？', mod: '宴会' }, { q: '支払い方法（カード・電子マネー）は何が使えますか？', fact: 'payment' },
+        { q: 'アレルギーへの対応はできますか？' }, { q: '最寄り駅からの行き方を教えてください。', fact: 'access', mod: 'アクセス' }],
+      clinic: [
+        { q: '初めてでも予約できますか？予約方法を教えてください。', fact: 'reservation', mod: '予約' }, { q: '料金の目安と、追加料金がかかる場合を教えてください。', fact: 'price', mod: '料金' },
+        { q: '受付時間と休みの日を教えてください。', fact: 'hours' }, { q: '施術（診察）にかかる時間はどのくらいですか？' }, { q: '施術後の注意点やダウンタイムはありますか？', mod: 'ダウンタイム' },
+        { q: '最寄り駅からの行き方と、駐車場を教えてください。', fact: 'access', mod: 'アクセス' }, { q: 'キャンセルや日時の変更はできますか？' }],
+      b2b: [
+        { q: service + 'はどんな会社に向いていますか？' }, { q: '料金の目安と、プランの違いを教えてください。', fact: 'price', mod: '料金' }, { q: '導入までの流れと期間は？' },
+        { q: '他のサービスとの違いは？' }, { q: '相談や資料の請求はどこからできますか？', fact: 'phone', mod: '問い合わせ' }],
+      media: [{ q: brand + 'はどんなサイトですか？' }, { q: 'だれが運営・執筆していますか？' }, { q: '記事の内容はどのように確認していますか？' }, { q: '情報はいつ更新していますか？' }, { q: '取材や掲載の依頼はどこからできますか？', fact: 'phone' }],
+      other: [
+        { q: brand + 'ではどんなことをお願いできますか？' }, { q: '料金の目安を教えてください。', fact: 'price', mod: '料金' }, { q: '申し込みや予約の方法を教えてください。', fact: 'reservation', mod: '予約' },
+        { q: '営業時間・定休日を教えてください。', fact: 'hours', mod: '営業時間' }, { q: '場所と行き方を教えてください。', fact: 'access', mod: 'アクセス' }, { q: '初めてでも大丈夫ですか？', mod: '初めて' }]
+    };
+    return S[industry] || S.other;
+  }
+  /** サイトから読めた事実で、答えの下書きの文を作る（値は本文のまま。推測で足さない） */
+  function factAnswer(key, F) {
+    var f = F[key];
+    if (!f) return '';
+    if (key === 'hours') return '営業時間は ' + f.value + ' です。' + (F.closed ? '定休日は ' + F.closed.value + ' です。' : '');
+    if (key === 'access') return f.value + 'です。' + (F.address ? '住所は ' + F.address.value + ' です。' : '') + (F.parking ? parkingText(F.parking.value) : '');
+    if (key === 'parking') return parkingText(f.value) + (F.access ? '電車の場合は' + F.access.value + 'です。' : '');
+    if (key === 'price') return '料金の例：' + f.value + '。詳しくはサイトの料金ページをご覧ください。';
+    if (key === 'reservation') return f.value.replace(/。$/, '') + '。';
+    if (key === 'payment') return f.value.replace(/。$/, '') + '。';
+    if (key === 'phone') return 'お電話（' + f.value + '）でご相談いただけます。';
+    return f.value;
+  }
+  function parkingText(v) { return v === '駐車場なし' ? '駐車場はありません。' : /台）$/.test(v) ? v.replace('駐車場あり（', '駐車場があります（') + '。' : 'サイトに駐車場の案内があります。'; }
+  var CHECK = '【確認が必要】';
+  /**
+   * FAQ の下書き。status: 'site'（サイトの記載から答えを作った）/ 'hint'（関係する記載はあるが、答えは書く）/ 'missing'（見つからない）
+   *   site の答えには、どこに書いてあったか（前後の文と URL）を付ける。missing は推測で埋めない
+   */
+  function faqDraft(job, brand, service) {
+    var kwa = (job.diagnose && job.diagnose.page && job.diagnose.page.keywordAuto) || {};
+    var F = kwa.facts || {}, cands = kwa.candidates || [];
+    return faqSpec(job.industry, brand, service).map(function (f) {
+      var ans = f.fact ? factAnswer(f.fact, F) : '', key = f.fact;
+      // 駅からの行き方が無くても、住所が書いてあれば住所で答える
+      if (!ans && f.fact === 'access' && F.address) { ans = '住所は ' + F.address.value + ' です。' + (F.parking ? parkingText(F.parking.value) : ''); key = 'address'; }
+      if (ans) { var src = F[key]; return { q: f.q, a: ans, status: 'site', found: true, source: { quote: src.quote, url: src.url } }; }
+      var hit = f.mod ? cands.filter(function (c) { return c.modifier === f.mod && c.answered === true && c.evidence; })[0] : null;
+      if (hit) return { q: f.q, a: CHECK + 'サイトに「' + hit.evidence.replace(/…/g, '').trim() + '」と書かれています。これをもとに答えを書いてください。', status: 'hint', found: true, source: { quote: hit.evidence, url: hit.evidenceUrl || '' } };
+      return { q: f.q, a: CHECK + 'サイトには書かれていませんでした。実際の答えを書いてください（当てはまらない質問は消してください）。', status: 'missing', found: false };
     });
+  }
+  // 互換：飲食店の FAQ（以前の呼び出し元のため）
+  function restaurantFaq(diagnose) { return faqDraft({ industry: 'restaurant', diagnose: diagnose }, '', ''); }
+
+  /** 構造化データの不足（業種ごとの必要な項目と、サイトの構造化データ・ページの記載を比べる。airreach-schema-gaps.js） */
+  function schemaCheckMd(job) {
+    var G = window.AirReachSchemaGaps, pg = (job.diagnose && job.diagnose.page) || {};
+    if (!G) return '';
+    if (!pg.ld) return '# 構造化データの不足（確認用）\n\nサイトの中身を読んでいないため、判定していません。診断のための取得に同意して診断し直すと判定します。\n';
+    return G.markdown(G.check(pg.ld, job.industry, (pg.keywordAuto || {}).facts || null));
+  }
+  /** サイトから読めた情報の一覧（確認用）。見つからない項目は「確認が必要」 */
+  function siteInfoMd(job, brand) {
+    var kwa = (job.diagnose && job.diagnose.page && job.diagnose.page.keywordAuto) || {};
+    var F = kwa.facts || {};
+    var L = [['店名・会社名', brand ? { value: brand } : null], ['営業時間', F.hours], ['定休日', F.closed], ['電話番号', F.phone], ['住所', F.address], ['最寄り駅からの行き方', F.access], ['駐車場', F.parking], ['料金の例', F.price], ['予約の方法', F.reservation], ['支払い方法', F.payment]];
+    var lines = ['# サイトから読めた情報（確認用）', '', 'サイトの文章に書かれていたものだけを、書かれていたとおりに入れています。「確認が必要」の項目は推測で埋めず、実際の内容を確かめて書いてください。', '',
+      '| 項目 | サイトの記載 | どこに書いてあったか |', '|---|---|---|'];
+    L.forEach(function (x) { var v = x[1]; lines.push('| ' + x[0] + ' | ' + (v ? String(v.value).replace(/\|/g, '｜') : '**確認が必要**（見つかりませんでした）') + ' | ' + (v && v.quote ? '「' + String(v.quote).replace(/\|/g, '｜') + '」' + (v.url ? ' ' + v.url : '') : '') + ' |'); });
+    return lines.join('\n') + '\n';
   }
 
   function restaurantActionRows(job, faqItems, org) {
@@ -684,40 +733,14 @@
     ];
   }
 
-  function restaurantInfoMd(job, org, faqItems) {
-    var lines = ['# お店の基本情報チェックリスト（下書き）', '', 'サイトから読めた値だけを入れています。空欄は推測で埋めず、お店に確認して記入してください。', ''];
-    function row(label, v) { lines.push('- ' + label + '：' + (v || '（未確認・要記入）')); }
-    row('店名', org.name);
-    row('業態（servesCuisine）', org.servesCuisine);
-    row('住所', org.address ? [org.address.addressRegion, org.address.addressLocality].filter(Boolean).join('') + '（番地は要記入）' : '');
-    var byMod = {};
-    (job.keywords || []).forEach(function (k) {
-      var mod = String(k.keyword || '').split(' ').pop();
-      if (k.answered === true && k.evidence && !byMod[mod]) byMod[mod] = k.evidence;
-    });
-    function seen(mod) { return byMod[mod] ? 'サイトに記載あり（抜粋：' + byMod[mod] + '）→ 正確な値を記入' : ''; }
-    row('電話番号', '');
-    row('営業時間・定休日', seen('営業時間'));
-    row('予約方法（電話・予約サイトURL）', seen('予約'));
-    row('価格帯', '');
-    lines.push('', '## FAQ で記載が見つからなかった質問');
-    faqItems.filter(function (f) { return !f.found; }).forEach(function (f) { lines.push('- ' + f.q); });
-    return lines.join('\n') + '\n';
-  }
+
 
   function buildPackageFiles(job) {
     var p = job.profile || {};
     var brand = p.brand || hostOf(job.url);
     var service = p.service || 'サービス';
     var isFood = job.industry === 'restaurant';
-    var FAQ_BY_INDUSTRY = {
-      b2b: [service + 'はどんな会社に向いていますか？', '料金の目安と、プランの違いを教えてください', '導入までの流れと期間は？', '他のサービスとの違いは？', '無料で試せますか？資料はありますか？'],
-      clinic: ['初めてでも予約できますか？予約方法を教えてください', '料金の目安と、追加料金がかかる場合を教えてください', '施術（診察）にかかる時間はどのくらいですか？', '施術後の注意点やダウンタイムはありますか？', 'キャンセルや日時の変更はできますか？'],
-      media: [brand + 'はどんなサイトですか？', 'だれが運営・執筆していますか？', '記事の内容はどのように確認していますか？', '情報はいつ更新していますか？', '取材や掲載の依頼はどこからできますか？'],
-      other: [brand + 'ではどんなことをお願いできますか？', '料金の目安を教えてください', '申し込みから利用までの流れは？', '営業時間・定休日を教えてください', '初めてでも大丈夫ですか？']
-    };
-    var faqItems = isFood ? restaurantFaq(job.diagnose) : (FAQ_BY_INDUSTRY[job.industry] || FAQ_BY_INDUSTRY.other)
-      .map(function (q) { return { q: q, a: '（ここに、お店の実際の答えを書いてください）' }; });
+    var faqItems = faqDraft(job, brand, service);
     var faq = faqItems.map(function (f) { return f.q; });
     var kwa = (job.diagnose && job.diagnose.page && job.diagnose.page.keywordAuto) || {};
     var area = kwa.area || {};
@@ -734,16 +757,22 @@
     } else {
       org = { '@context': 'https://schema.org', '@type': 'Organization', name: brand, url: job.url };
     }
+    // サイトの本文に書かれていた電話番号と郵便番号だけを足す（推測で埋めない）
+    var F0 = kwa.facts || {};
+    if (F0.phone) org.telephone = F0.phone.value;
+    var zip = F0.address ? (/〒(\d{3}-\d{4})/.exec(F0.address.value) || [])[1] : '';
+    if (zip) { org.address = org.address || { '@type': 'PostalAddress', addressCountry: 'JP' }; org.address.postalCode = zip; }
     var svc = isFood ? null : {
       '@context': 'https://schema.org',
       '@type': 'Service',
       name: service,
       provider: { '@type': 'Organization', name: brand, url: job.url }
     };
+    // 検索や AI が読む形には、サイトの記載から答えを作った質問だけを入れる（確認が必要な下書きは入れない）
     var faqLd = {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: faqItems.map(function (f) {
+      mainEntity: faqItems.filter(function (f) { return f.status === 'site'; }).map(function (f) {
         return {
           '@type': 'Question',
           name: f.q,
@@ -841,43 +870,41 @@
     ].join('\n');
 
     var readme = [
-      '# AirReach Tools / AirReach Tools Studio implementation package',
+      '# サイトに足す文章とデータ（下書き）',
       '',
-      'Generated: ' + manifest.generated_at,
-      'Site: ' + job.url,
-      'Service: ' + service,
-      'Goal: ' + (job.goal || ''),
+      '作成日：' + manifest.generated_at.slice(0, 10) + '　対象：' + brand + '（' + job.url + '）',
       '',
-      'This package is a **draft**. It does not publish anything.',
+      'AirReach が作った**下書き**です。このファイルを開いただけでは、どこにも公開されません。',
+      'お店・会社の方が内容を確かめ、ホームページを作った人（制作会社など）にサイトへ入れてもらいます。',
       '',
-      '## Directory layout',
+      '## 作業の手順',
       '',
-      '```',
-      'airreach-implementation/',
-      '  README.md',
-      '  MANIFEST.json',
-      '  AGENT_PROMPT.md',
-      '  strategy/keywords.csv',
-      '  strategy/prompts.csv',
-      '  strategy/actions.csv',
-      '  schema/*.jsonld',
-      '  public/llms.txt',
-      '  public/llms-full.txt',
-      '  content/faq.md',
-      '  validation/VALIDATION.md',
-      '```',
+      '1. **content/site-info.md を開く**：サイトから読めた情報（営業時間・電話・住所など）の一覧です。「確認が必要」の項目は、実際の内容を書き足してください。',
+      '2. **content/faq.md を直す**：よくある質問の下書きです。「' + CHECK + '」の答えを書き、当てはまらない質問は消してください。サイトの記載から作った答え（' + siteN + '問）も、最新の内容か確かめてください。',
+      '3. **よくある質問をサイトに載せる**：直した faq.md の質問と答えを、サイトの「よくある質問」のページに載せます（制作会社に依頼）。',
+      '4. **検索や AI が読む形のデータを入れる**：schema フォルダの3つのファイルを、制作会社に渡します。',
+      '   - organization.jsonld：トップページに入れる、お店・会社の情報（電話・郵便番号はサイトに書かれていた値だけを入れています）',
+      '   - faq.jsonld：よくある質問のページに入れる。**サイトの記載から作った答えだけ**を入れています（' + siteN + '問）。手順2で書き足した質問は、載せたあとに追加してください',
+      '   - service.jsonld：サービスの説明（飲食店はありません）',
+      '5. **AI 向けの案内ファイルを置く**：public/llms.txt を、サイトの一番上の階層に llms.txt という名前で置きます（制作会社に依頼）。',
+      '6. **公開前の確認**：validation/VALIDATION.md の項目を確かめます。',
       '',
-      '## Evidence',
+      '## 守ること',
       '',
-      '- Market demand (`volume`): empty unless `volume_source=Official` (Keyword Planner CSV)',
-      '- GSC impressions: Official, separate from market demand',
-      '- Acquisition score: Observed diagnose or Estimated fallback',
-      '- AirReach Consulting mention/citation: Observed JSON import only',
+      '- 料金・実績・お客様の声・順位などを、推測で書き足さない',
+      '- 検索や AI が読む形のデータ（schema）は、ページに実際に書いてある内容と同じにする',
       '',
-      '## Publish',
+      '## そのほかのファイル（担当者向け）',
       '',
-      'Human review required. No auto-merge and no production auto-deploy from Studio.',
-      'See `validation/VALIDATION.md` and `MANIFEST.json`.'
+      '- strategy/keywords.csv・prompts.csv・actions.csv：対策する言葉・AI に聞く質問・作業の一覧',
+      '- MANIFEST.json・AGENT_PROMPT.md：作業の記録と、制作の手伝いをする AI への指示',
+      '- public/llms-full.txt：llms.txt の詳しい版',
+      '',
+      '## 根拠の区分',
+      '',
+      '- 検索の多さ：' + manifest.evidence.market_demand,
+      '- 集客の点数：' + manifest.evidence.acquisition_score,
+      '- Search Console：' + manifest.evidence.gsc
     ].join('\n');
 
     var validationItems = (window.AirReachPackageSchema && window.AirReachPackageSchema.VALIDATION_ITEMS) || [
@@ -907,9 +934,14 @@
       '- Draft generated by AirReach Tools Studio. Verify before publish.'
     ].join('\n');
 
-    var faqMd = '# よくある質問\n\n' + faqItems.map(function (f, i) {
-      return '## Q' + (i + 1) + '. ' + f.q + '\n\n' + f.a + '\n';
-    }).join('\n');
+    var siteN = faqItems.filter(function (f) { return f.status === 'site'; }).length;
+    var faqMd = '# よくある質問（下書き）\n\n' +
+      'サイトに書かれていたことから答えを作った質問が ' + siteN + ' 問、確認が必要な質問が ' + (faqItems.length - siteN) + ' 問あります。\n' +
+      '「' + CHECK + '」の答えは、実際の内容を確かめて書き直してください。サイトの記載から作った答えも、最新の内容か確かめてから載せてください。\n\n' +
+      faqItems.map(function (f, i) {
+        return '## Q' + (i + 1) + '. ' + f.q + '\n\n' + f.a + '\n' +
+          (f.status === 'site' && f.source ? '\n> 元にしたサイトの記載：「' + f.source.quote + '」' + (f.source.url ? '（' + f.source.url + '）' : '') + '\n' : '');
+      }).join('\n');
 
     var files = {
       'README.md': readme,
@@ -924,11 +956,12 @@
       'public/llms.txt': llms,
       'public/llms-full.txt': llms + '\n## FAQ\n' + faq.map(function (q) { return '- ' + q; }).join('\n') + '\n',
       'content/faq.md': faqMd,
+      'content/site-info.md': siteInfoMd(job, brand),
+      'content/schema-check.md': schemaCheckMd(job),
       'validation/VALIDATION.md': validation
     };
     if (isFood) {
       delete files['schema/service.jsonld'];
-      files['content/restaurant-info.md'] = restaurantInfoMd(job, org, faqItems);
     }
     if (window.AirReachPackageSchema && window.AirReachPackageSchema.validatePackageFiles) {
       var check = window.AirReachPackageSchema.validatePackageFiles(files, { targetUrl: job.url, industry: job.industry || '' });
@@ -1518,7 +1551,7 @@
     // 施策の名前はお客様の画面とレポートにも出るので、専門用語を使わない（正式なファイル名は file に残す）
     if (f['schema/organization.jsonld']) out.push({ file: 'schema/organization.jsonld', title: food ? 'お店の基本情報（店名・住所・電話番号・営業時間など）を、検索やAIが読み取れる形でサイトに埋め込む' : '会社の基本情報を、検索やAIが読み取れる形でサイトに埋め込む' });
     if (f['schema/service.jsonld']) out.push({ file: 'schema/service.jsonld', title: '提供しているサービスの内容を、検索やAIが読み取れる形でサイトに埋め込む' });
-    if (f['content/restaurant-info.md']) out.push({ file: 'content/restaurant-info.md', title: '店舗情報（営業時間・予約・駐車場など）を公式ページに書き足す' });
+    if (f['content/site-info.md'] && /確認が必要/.test(f['content/site-info.md'])) out.push({ file: 'content/site-info.md', title: food ? '店舗情報（営業時間・予約・駐車場など）を公式ページに書き足す' : '会社の基本情報（電話・住所・営業時間など）を公式ページに書き足す' });
     if (f['content/faq.md'] || f['schema/faq.jsonld']) out.push({ file: 'content/faq.md・schema/faq.jsonld', title: 'よくある質問をページに追加し、検索やAIが読み取れる形でも埋め込む' });
     if (f['public/llms.txt']) out.push({ file: 'public/llms.txt', title: 'AI向けのサイト案内ファイルを置く' });
     return out;
