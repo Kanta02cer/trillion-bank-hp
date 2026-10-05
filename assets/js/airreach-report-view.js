@@ -219,7 +219,7 @@
         (window.AirReachReport && (cur.gaps || []).length ? '<h3 class="arr-h3">直すこと（優先度の高い順）</h3>' + C.todos(window.AirReachReport.todoList(c), { audience: 'client', limit: 3, moreText: '（すべての項目は AirReach の画面で確認できます）' }) : '')
         : '<p class="arr-na">診断の記録がありません。</p>') + '</section>' +
       '<section><h2 class="arr-h2">AI回答の計測' + tag(ai ? 'reference' : 'unknown') + '</h2>' +
-      (ai ? '<p class="arr-sub">' + (ai.basis === 'monthly' ? '今月の計測 ' + esc(ai.runs) + '回（' + esc(ai.firstOn) + (ai.runs > 1 ? '〜' + esc(ai.lastOn) : '') + '）の合計' : '計測日 ' + esc(ai.measuredOn)) + '・質問の版 ' + esc((ai.versions && ai.versions.length ? ai.versions : [ai.querySetVersion || '—']).join('、')) + (ai.comparable ? '' : '（前月と条件が異なる、または前月の計測なしのため、差は出していません）') + '</p>' +
+      (ai ? '<p class="arr-sub">' + (ai.basis === 'monthly' ? '今月の計測 ' + esc(ai.runs) + '回（' + esc(ai.firstOn) + (ai.runs > 1 ? '〜' + esc(ai.lastOn) : '') + '）の合計' + (ai.excludedOld ? '（判定方法を変える前の計測 ' + esc(ai.excludedOld) + '回は含めていません）' : '') : '計測日 ' + esc(ai.measuredOn)) + '・質問の版 ' + esc((ai.versions && ai.versions.length ? ai.versions : [ai.querySetVersion || '—']).join('、')) + (ai.comparable ? '' : '（前月と条件が異なる、または前月の計測なしのため、差は出していません）') + '</p>' +
         C.aiCompare(c) +
         '<table class="arr-table"><thead><tr><th>AI</th><th>回答の数</th><th>公式サイトが出典になった割合<br><small>出典になった回答 ÷ 判定できた回答</small></th><th>店名・社名が出た割合<br><small>名前が出た回答 ÷ 回答</small></th><th>割合に入れなかった回答</th></tr></thead><tbody>' +
         ai.providers.map(function (p) {

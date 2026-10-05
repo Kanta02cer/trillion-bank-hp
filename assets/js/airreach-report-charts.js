@@ -98,7 +98,7 @@
           ((nd || aside) ? '<small class="arv-ai-nd">' + esc(nd) + (nd && aside ? '（' + esc(aside) + '）' : esc(aside)) + '</small>' : '') + '</div>';
       }).join('') + '</div>';
     } else t2 += '<div class="arv-big"><span class="arv-na">未計測</span></div>';
-    t2 += '<div class="arv-tile-f">' + (monthly ? '今月の計測 ' + esc(ai.runs) + '回（' + esc(md(ai.firstOn)) + (ai.runs > 1 ? '〜' + esc(md(ai.lastOn)) : '') + '）の合計。引用された回答 ÷ 出典の有無を判定できた回答。最新の計測は ' + esc(md(ai.latest && ai.latest.measuredOn)) :
+    t2 += '<div class="arv-tile-f">' + (monthly ? '今月の計測 ' + esc(ai.runs) + '回（' + esc(md(ai.firstOn)) + (ai.runs > 1 ? '〜' + esc(md(ai.lastOn)) : '') + '）の合計' + (ai.excludedOld ? '（判定方法を変える前の ' + esc(ai.excludedOld) + '回は除く）' : '') + '。引用された回答 ÷ 出典の有無を判定できた回答。最新の計測は ' + esc(md(ai.latest && ai.latest.measuredOn)) :
       'AIに同じ質問をして、公式サイトが出典に入った回答の割合') + '</div></div>';
 
     var clicks = tr.gsc ? tr.gsc.clicks : null, clicksPrev = tr.gscPrev ? tr.gscPrev.clicks : null;

@@ -55,6 +55,17 @@ const c4 = R.compileReport({ client: { name: 'Hana' }, periodMonth: '2026-10-01'
   runs: [{ measured_on: '2026-10-10', summary: sm('v1', [prov('openai', 10, 0, 0, 3)], null) }] });
 expect('出典を判定できた回答が0 → 引用率は null（0% にしない）・判定できない10', c4.ai.providers[0].citeRate === null && c4.ai.providers[0].undetermined === 10, JSON.stringify(c4.ai.providers[0]));
 
+// 判定方法を変える前の Studio の計測（not_shown_count・answers が無い）は、同じ月に新しい計測があれば合計に入れない
+{
+  const oldStudio = { measured_on: '2026-10-03', created_at: '2026-10-03T06:00:00Z', summary: { source: 'studio', query_set_version: 'v1', by: [{ provider: 'google_aio', group: 'main', model: 'serp', denominator: 5, judged: 5, either: { rate: 0, numerator: 0 }, service_mention_rate: 0 }] } };
+  const script = { measured_on: '2026-10-04', summary: { query_set_version: 'v1', by: [{ provider: 'openai', model: 'gpt', group: 'main', denominator: 10, either: { rate: 10, numerator: 1 }, service_mention_rate: 20 }] } };
+  const cA = R.compileReport({ client: { name: 'Hana' }, periodMonth: '2026-10-01', now: new Date('2026-10-31T00:00:00Z'), scans: [], traffic: [], actions: [], runs: [oldStudio, script].concat(runs.slice(1)) });
+  const aioA = cA.ai.providers.find((p) => p.provider === 'google_aio');
+  expect('古い Studio の計測は除く（AI による概要の分母は新しい計測の16だけ）・計測スクリプトは残す・除いた数', cA.ai.excludedOld === 1 && aioA.judged === 16 && cA.ai.providers.some((p) => p.provider === 'openai') && cA.ai.runs === 3, JSON.stringify({ ex: cA.ai.excludedOld, j: aioA.judged, runs: cA.ai.runs }));
+  const cB = R.compileReport({ client: { name: 'Hana' }, periodMonth: '2026-10-01', now: new Date('2026-10-31T00:00:00Z'), scans: [], traffic: [], actions: [], runs: [oldStudio] });
+  expect('新しい計測が無い月は、古い計測をそのまま使う（何も出ないよりよい）', cB.ai.excludedOld === 0 && cB.ai.providers[0].judged === 5);
+}
+
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);
