@@ -6,7 +6,8 @@
  */
 const TYPESAFE_URL = 'https://api.typesafe.ai/v1/systemone';
 const MAX_CHARS = 10000;
-const MAX_PROMPTS = 8;
+// 1回の要求で受ける質問の数。Studio は10問を5問ずつに分けて送る（関数の制限時間と AI の回数の上限に収めるため）
+const MAX_PROMPTS = 10;
 
 const ALLOWED_HOSTS = new Set([
   'trillion-bank.jp',

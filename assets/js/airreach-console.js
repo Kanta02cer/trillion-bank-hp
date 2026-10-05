@@ -244,7 +244,7 @@
         e.preventDefault();
         var name = $('#arc-client-name').value.trim(), ind = $('#arc-client-ind').value, rawUrl = $('#arc-client-url').value.trim();
         // お客様によく聞かれる質問は、Studio の「AI での見え方を測る」の質問の先頭に入る（Studio が開いたときに受け取る）
-        var qs = $('#arc-client-qs').value.split(/\n+/).map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 8);
+        var qs = $('#arc-client-qs').value.split(/\n+/).map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 10);
         var site = null;
         if (rawUrl) {
           try { var u0 = new URL(/^https?:\/\//i.test(rawUrl) ? rawUrl : 'https://' + rawUrl); site = { url: u0.origin + '/', host: u0.hostname.replace(/^www\./, '').toLowerCase() }; }
