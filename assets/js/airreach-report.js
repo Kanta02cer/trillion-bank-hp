@@ -397,7 +397,14 @@
    *   判定できない回答（出典が取れず本文にも URL が無い）＝ 回答の数 − 判定できた数
    */
   function monthlyAi(runs, month) {
-    var list = (runs || []).filter(function (r) { return r && r.summary && inMonth(r.measured_on, month); })
+    var list0 = (runs || []).filter(function (r) { return r && r.summary && inMonth(r.measured_on, month); });
+    // 判定方法を変える前（2026-10-05 より前）の Studio の計測は、AI による概要が出なかった質問を「引用なし」として数えていた。
+    //   同じ月に新しい判定の計測があれば、古い Studio の計測は合計に入れない（計測スクリプトの summary はそのまま使う）
+    var isNew = function (r) { var s = r.summary || {}; return Array.isArray(s.answers) || (Array.isArray(s.by) && s.by.some(function (b) { return b && 'not_shown_count' in b; })); };
+    var isOldStudio = function (r) { var s = r.summary || {}; return s.source === 'studio' && !isNew(r); };
+    var hasNew = list0.some(isNew);
+    var excludedOld = hasNew ? list0.filter(isOldStudio).length : 0;
+    var list = (hasNew ? list0.filter(function (r) { return !isOldStudio(r); }) : list0)
       .sort(function (a, b) { var x = String(a.measured_on) + String(a.created_at || ''), y = String(b.measured_on) + String(b.created_at || ''); return x < y ? -1 : x > y ? 1 : 0; });
     var by = {}, order = [], versions = {}, used = 0, evidence = [], doms = {}, hasTypes = false;
     var zero = function () { return { answers: 0, mention: 0, cite: 0, citeJudged: 0, notShown: 0, errors: 0 }; };
@@ -445,7 +452,7 @@
     if (!used) return null;
     var t2 = function (t) { return Object.assign({}, t, { mentionRate: t.answers ? round1(t.mention / t.answers * 100) : null, citeRate: t.citeJudged ? round1(t.cite / t.citeJudged * 100) : null, undetermined: Math.max(0, t.answers - t.citeJudged) }); };
     return {
-      runs: used, firstOn: first, lastOn: last, versions: Object.keys(versions),
+      runs: used, firstOn: first, lastOn: last, versions: Object.keys(versions), excludedOld: excludedOld,
       providers: order.map(function (k) {
         var a = by[k];
         return { provider: a.provider, model: a.model, runs: a.runs, answers: a.answers, mentionCount: a.mentionKnown ? a.mention : null, mentionRate: a.mentionKnown && a.answers ? round1(a.mention / a.answers * 100) : null,
@@ -511,7 +518,7 @@
       ai = {
         basis: 'monthly',
         measuredOn: aiNow.measuredOn, querySetVersion: aiNow.querySetVersion, source: aiNow.source,
-        runs: monNow.runs, firstOn: monNow.firstOn, lastOn: monNow.lastOn, versions: monNow.versions,
+        runs: monNow.runs, firstOn: monNow.firstOn, lastOn: monNow.lastOn, versions: monNow.versions, excludedOld: monNow.excludedOld,
         citedDomains: monNow.citedDomains.length ? monNow.citedDomains : aiNow.citedDomains, targetCitations: aiNow.targetCitations,
         comparable: comparableMonth,
         types: monNow.types,
