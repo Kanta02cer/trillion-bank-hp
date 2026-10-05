@@ -63,6 +63,10 @@ export default async function handler(req, res) {
   const brand = String(body.brand || '').trim();
   if (!brand) return json(res, 400, { error: 'brand is required' });
 
+  // 外部の AI に送ってよい質問か（確定済み・Search Console 由来でない）。1問でも違えば、どの AI にも聞かない
+  const policy = promptPolicyError(body.prompts);
+  if (policy) return json(res, 400, policy);
+
   const prompts = normalizePrompts(body.prompts);
   if (!prompts.length) {
     return json(res, 400, { error: 'prompts[] with prompt text is required (max ' + MAX_PROMPTS + ')' });
@@ -250,6 +254,30 @@ export function studioKeyOk(req, env = process.env) {
   if (!keys.length) return true; // 未設定のあいだは従来どおり（設定した時点から有効）
   const got = String((req.headers && (req.headers['x-airreach-key'] || req.headers['X-AirReach-Key'])) || '').trim();
   return !!got && keys.indexOf(got) !== -1;
+}
+
+/**
+ * 外部の AI に送る質問の決まり（Google OAuth の審査・Google API Services User Data Policy の Limited Use 対応）。
+ *   - 送れるのは、お客様または担当者が確定した質問（confirmed: true）だけ
+ *   - Search Console のデータから作った質問（origin / src が gsc、google: true）は送らない
+ *   文字列だけの質問（確定の印が無い）も断る。定期計測（schedule-run）は担当者が保存した設定の質問を使うため、ここを通らない
+ * 戻り値: 断るときは { error, code }、よければ null
+ */
+export function promptPolicyError(raw) {
+  if (!Array.isArray(raw)) return null;
+  for (const p of raw) {
+    if (!p || typeof p !== 'object') {
+      return { error: '確定していない質問は外部の AI に送れません。Studio で質問を確かめて「確定」してください。', code: 'prompt_not_confirmed' };
+    }
+    const origin = String(p.origin || p.src || '').toLowerCase();
+    if (p.google === true || origin === 'gsc' || origin === 'google') {
+      return { error: 'Search Console のデータから作った質問は外部の AI に送れません。', code: 'google_data_not_allowed' };
+    }
+    if (p.confirmed !== true) {
+      return { error: '確定していない質問は外部の AI に送れません。Studio で質問を確かめて「確定」してください。', code: 'prompt_not_confirmed' };
+    }
+  }
+  return null;
 }
 
 function normalizePrompts(raw) {

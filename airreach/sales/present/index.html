@@ -43,6 +43,9 @@ body{background:#0b1220 !important}
 .arp .ai h2{margin:0 0 6px;font-size:1.25rem;color:#f8fafc}
 .arp .ai .lead{margin:0 0 16px;color:#94a3b8;line-height:1.6}
 .arp .ai-form{display:grid;gap:12px}
+.arp .ai-qs{border:0;padding:0;margin:0;display:grid;gap:6px}
+.arp .ai-qs legend{color:#cbd5e1;margin-bottom:6px;font-size:.9rem}
+.arp .ai-qs label{display:flex;align-items:flex-start;gap:8px;color:#e2e8f0}
 .arp .ai-comps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .arp .ai input[type=text],.arp .ai input[type=password]{min-height:48px;padding:0 14px;border-radius:10px;border:1px solid #475569;background:#0f172a;color:#f8fafc;font:inherit;font-size:1rem}
 .arp .ai input:focus{outline:2px solid #60a5fa;outline-offset:1px}
@@ -88,6 +91,7 @@ body{background:#0b1220 !important}
         <input type="text" id="arp-c2" placeholder="競合の名前（任意）" aria-label="競合の名前 2">
         <input type="text" id="arp-c3" placeholder="競合の名前（任意）" aria-label="競合の名前 3">
       </div>
+      <fieldset class="ai-qs" id="arp-qs"><legend>AI に聞く質問（チェックした質問だけを外部の AI に送ります）</legend><div id="arp-qs-list"></div></fieldset>
       <div><label class="eng"><input type="checkbox" data-eng value="perplexity" checked> Perplexity（検索あり）</label><label class="eng"><input type="checkbox" data-eng value="chatgpt" checked> ChatGPT</label></div>
       <div id="arp-key-row" hidden><input type="password" id="arp-key" placeholder="社内キー" aria-label="社内キー" autocomplete="off"> <span style="color:#94a3b8;font-size:.85rem">社内キーはこの端末にだけ保存します</span></div>
       <div><button type="submit" class="btn" id="arp-ai-run">AIに聞いてみる</button></div>
@@ -135,7 +139,7 @@ body{background:#0b1220 !important}
 
   function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   var ka = (scan.previewDiagnose && scan.previewDiagnose.page && scan.previewDiagnose.page.keywordAuto) || null;
-  var cands = ((ka && ka.candidates) || []).filter(function (c) { return c.group === 'condition' && c.answered !== null && c.answered !== undefined; });
+  var cands = ((ka && ka.candidates) || []).filter(function (c) { return c.group === 'condition' && c.answered !== null && c.answered !== undefined && c.source !== 'gsc'; });
 
   // お客さんが調べること（答えの有無）を主役にする。点数は脇役
   if (cands.length) {
@@ -161,6 +165,14 @@ body{background:#0b1220 !important}
     if (qs.length < 2) cands.filter(function (c) { return c.answered; }).slice(0, 2).forEach(function (c) { qs.push(c.text + 'のお店を教えて'); });
     return qs.slice(0, 4).map(function (t) { return { keyword: t, prompt: t }; });
   }
+  // 送る質問は画面に出し、担当者がチェックしたものだけを送る（外部の AI に送るのは確定した質問だけ）
+  (function renderQs() {
+    var box = document.getElementById('arp-qs-list');
+    if (!box) return;
+    var qs = questions();
+    box.innerHTML = qs.length ? qs.map(function (x, i) { return '<label><input type="checkbox" data-q="' + i + '"> <span>' + esc(x.prompt) + '</span></label>'; }).join('')
+      : '<p class="legend">質問を作れませんでした（調べる言葉がありません）。</p>';
+  })();
   var brand = scan.siteTitle || (ka && ka.shopName) || scan.displayName || '';
   var saved = scan.aiCompare || null;
   if (saved && saved.competitors) saved.competitors.forEach(function (n, i) { var el = document.getElementById('arp-c' + (i + 1)); if (el) el.value = n; });
@@ -197,8 +209,11 @@ body{background:#0b1220 !important}
     if (!brand) { st.className = 'ai-status is-err'; st.textContent = 'お店の名前が分かりません。案件詳細で名前を確認してください。'; return; }
     if (!comps.length) { st.className = 'ai-status is-err'; st.textContent = '競合の名前を1つ以上入れてください。'; document.getElementById('arp-c1').focus(); return; }
     if (!engines.length) { st.className = 'ai-status is-err'; st.textContent = 'AIを1つ以上選んでください。'; return; }
-    var qs = questions();
-    if (!qs.length) { st.className = 'ai-status is-err'; st.textContent = '質問を作れませんでした（調べる言葉がありません）。'; return; }
+    var all = questions();
+    if (!all.length) { st.className = 'ai-status is-err'; st.textContent = '質問を作れませんでした（調べる言葉がありません）。'; return; }
+    var qs = [].map.call(document.querySelectorAll('[data-q]:checked'), function (x) { return all[+x.getAttribute('data-q')]; }).filter(Boolean)
+      .map(function (x) { return { keyword: x.keyword, prompt: x.prompt, confirmed: true, origin: 'sales' }; });
+    if (!qs.length) { st.className = 'ai-status is-err'; st.textContent = 'AI に聞く質問を1つ以上チェックしてください（チェックした質問だけを送ります）。'; return; }
     var btn = document.getElementById('arp-ai-run'); btn.disabled = true;
     st.className = 'ai-status'; st.innerHTML = qs.length + 'つの質問を AI に聞いています…<div class="bar" aria-hidden="true"><i></i></div>';
     (window.AirReachStaffAuth ? window.AirReachStaffAuth.headers() : Promise.resolve({ 'Content-Type': 'application/json', 'X-AirReach-Key': getKey() })).then(function (hdr) {

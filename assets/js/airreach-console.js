@@ -465,6 +465,71 @@
       '<div class="arc-row"><button type="button" class="arc-btn" id="arc-studio-add">選んだものを予定として登録</button><button type="button" class="arc-btn arc-btn-line" id="arc-studio-discard">登録しない</button></div></section>';
   }
 
+  // ---- 契約の状態と Google データの削除（Google OAuth の審査対応）-------------------------------
+  //   契約終了にすると、終了から 90 日以内（80 日後の毎日の処理）に、この顧客の Google 由来のデータを DB から消す。
+  //   削除依頼は、管理者が顧客名を打ち込んで一括で消す（airreach_delete_google_data）。消した記録は google_data_deletions に残る
+  var GDEL_DAYS = 80;
+  function jstDate(iso) { var t = Date.parse(iso || ''); return isNaN(t) ? '' : new Date(t + 9 * 3600000).toISOString().slice(0, 10); }
+  function googleDataBlock(c) {
+    var st = c.status || 'active';
+    var opt = function (v, label) { return '<option value="' + v + '"' + (st === v ? ' selected' : '') + '>' + label + '</option>'; };
+    var plan = c.ended_at ? '契約終了日：' + jstDate(c.ended_at) + '。この顧客の Google 由来のデータは ' + jstDate(new Date(Date.parse(c.ended_at) + GDEL_DAYS * 86400000).toISOString()) + ' ごろ（終了から90日以内）に自動で消します。'
+      : '契約終了にすると、終了から90日以内に、この顧客の Google 由来のデータ（検索・訪問の数字、Studio の作業、AI 計測の記録、定期計測の設定、月次レポートの検索・訪問の数字）を自動で消します。';
+    return '<section class="arc-card" id="arc-gdata" style="margin-top:16px"><h2 class="arc-h2">契約の状態と Google データの削除</h2>' +
+      '<form id="arc-client-status" class="arc-row"><label for="arc-status-sel">契約の状態</label> <select class="arc-input" id="arc-status-sel">' + opt('active', '契約中') + opt('paused', '一時停止（契約は続いている）') + opt('ended', '契約終了') + '</select>' +
+      '<button class="arc-btn" type="submit">変更する</button></form>' +
+      '<p class="arc-note">' + esc(plan) + (c.google_purged_at ? ' 最後に Google 由来のデータを消した日：' + esc(jstDate(c.google_purged_at)) + '。' : '') + '</p>' +
+      (me && me.is_admin
+        ? '<h3 class="arc-h3">削除依頼による一括削除（管理者）</h3>' +
+          '<p class="arc-note">この顧客の Google 由来のデータを、いますぐ DB からまとめて消します（検索・訪問の数字、Studio の作業、AI 計測の記録、定期計測の設定。月次レポートは残し、その中の検索・訪問の数字だけを消します）。元に戻せません。消した記録（日時・実行した人・件数・メモ）は残ります。担当者が結論などの文章に数字を書いていた場合は、レポートの編集画面で直してください。</p>' +
+          '<form id="arc-gdel-form" class="arc-row"><input class="arc-input" id="arc-gdel-note" maxlength="500" placeholder="メモ（受付日・受付番号など。Google のデータは書かない）">' +
+          '<input class="arc-input" id="arc-gdel-name" placeholder="確認のため顧客名「' + esc(c.name) + '」を入力" autocomplete="off">' +
+          '<button class="arc-btn" type="submit">Google データを一括で削除する</button></form>'
+        : '<p class="arc-note">削除依頼による一括削除は、管理者だけが行えます。</p>') +
+      '<h3 class="arc-h3">削除の記録</h3><div id="arc-gdel-log"><p class="arc-note">読み込んでいます…</p></div></section>';
+  }
+  var GDEL_REASON = { contract_end: '契約終了（自動）', user_request: '削除依頼' };
+  var GDEL_TABLE = { traffic_snapshots: '検索・訪問の数字', studio_workspaces: 'Studio の作業', measurement_runs: 'AI 計測の記録', measurement_schedules: '定期計測の設定', measurement_jobs: '定期計測の実行記録', reports_cleaned: '数字を消したレポート' };
+  function bindGoogleData(c) {
+    var log = $('#arc-gdel-log');
+    if (log) sb.from('google_data_deletions').select('executed_at,reason,executed_by,counts,request_note').eq('client_id', c.id).order('executed_at', { ascending: false }).limit(20).then(function (r) {
+      if (r.error) { log.innerHTML = '<p class="arc-note">削除の記録を読めませんでした（DB の更新が未適用の可能性があります）。</p>'; return; }
+      var rows = r.data || [];
+      log.innerHTML = rows.length ? '<div class="arc-table-wrap"><table class="arc-table"><thead><tr><th>日時</th><th>理由</th><th>実行した人</th><th>消した件数</th><th>メモ</th></tr></thead><tbody>' + rows.map(function (x) {
+        var cnt = Object.keys(x.counts || {}).filter(function (k) { return x.counts[k]; }).map(function (k) { return (GDEL_TABLE[k] || k) + ' ' + x.counts[k]; }).join('・') || '0件';
+        return '<tr><td>' + esc(jstDate(x.executed_at)) + '</td><td>' + esc(GDEL_REASON[x.reason] || x.reason) + '</td><td>' + esc(x.executed_by) + '</td><td>' + esc(cnt) + '</td><td>' + esc(x.request_note || '') + '</td></tr>';
+      }).join('') + '</tbody></table></div>' : '<p class="arc-note">まだありません。</p>';
+    });
+    var sf = $('#arc-client-status');
+    if (sf) sf.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = $('#arc-status-sel').value;
+      if (v === c.status) { msg('契約の状態は変わっていません'); return; }
+      if (v === 'ended' && !confirm('「' + c.name + '」を契約終了にします。終了から90日以内に、この顧客の Google 由来のデータを自動で消します。よろしいですか？')) return;
+      sb.from('clients').update({ status: v }).eq('id', c.id).then(function (r) { q(r); pickCache = null; openFolds.members = true; return clientStaff(c.id, 'members'); })
+        .then(function () { msg(v === 'ended' ? '契約終了にしました。終了から90日以内に Google 由来のデータを消します。' : '契約の状態を変えました', 'ok'); }).catch(fail);
+    });
+    var df = $('#arc-gdel-form');
+    if (df) df.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = $('#arc-gdel-name').value.trim();
+      if (name !== String(c.name).trim()) { msg('確認のため、顧客名「' + c.name + '」をそのまま入力してください', 'error'); return; }
+      if (!confirm('「' + c.name + '」の Google 由来のデータを、いますぐ DB から消します。元に戻せません。よろしいですか？')) return;
+      sb.rpc('airreach_delete_google_data', { p_client_id: c.id, p_confirm_name: name, p_note: $('#arc-gdel-note').value.trim() || null }).then(function (r) {
+        var res = q(r) || {};
+        // このブラウザに残っている分（Studio の作業・Google の設定）も消し、この顧客の Google とのつながりも切る
+        if (window.AirReachGoogleGuard) window.AirReachGoogleGuard.purgeLocal({ clientId: c.id, ack: new Date().toISOString() });
+        return fetch('/api/google/auth/?disconnect=1&client=' + encodeURIComponent(c.id), { method: 'POST', credentials: 'same-origin' }).catch(function () {}).then(function () {
+          gscListCache = null; ga4ListCache = null; openFolds.members = true;
+          var cnt = res.counts || {};
+          return clientStaff(c.id, 'members').then(function () {
+            msg('Google 由来のデータを消しました（' + Object.keys(cnt).filter(function (k) { return cnt[k]; }).map(function (k) { return (GDEL_TABLE[k] || k) + ' ' + cnt[k]; }).join('・') + '）。このブラウザの分と、この顧客の Google とのつながりも消しました。ほかのパソコンに残っている分は、そのパソコンで Studio を開いたときに消えます。', 'ok');
+          });
+        });
+      }).catch(fail);
+    });
+  }
+
   // 材料のカードは折りたたむ（開いた状態は再描画しても保つ）
   var openFolds = {};
   var curSec = 'home';
@@ -499,7 +564,9 @@
     gClient = clientId;
     var feats = gCookie(clientId, 's').split('.').filter(Boolean);
     var hasGsc = feats.indexOf('gsc') >= 0, hasGa4 = feats.indexOf('ga4') >= 0;
-    var connect = '/api/google/auth/?back=app&client=' + encodeURIComponent(clientId);
+    // つなぐ前に、担当者が Google のデータを閲覧することへの同意を取る（チェックしないとつなげない。api/google/auth.js も確かめる）
+    var consent = '<label class="arc-g-consent" style="flex-basis:100%"><input type="checkbox" id="arc-g-consent"> <span>AirReach の担当者が、分析・改善提案・月次レポート作成・サポートのために必要な範囲で、この接続で取得する Google のデータ（Search Console・Google アナリティクス）を閲覧することに同意します。</span></label>' +
+      '<p class="arc-note" style="flex-basis:100%;margin:0">担当者がお客様の代わりにつなぐときは、お客様からこの同意をもらってからつないでください。</p>';
     var studioG = (window.AirReachNav ? window.AirReachNav.studioBase({ id: clientId, site: sites && sites[0] && sites[0].url }) : '/airreach/studio/') + '#google';
     var ret = googleRet; googleRet = '';
     var RET = { connected: ['ok', 'Google とつながりました。月を選んで「Google から取得」を押してください。'], gsc_missing: ['warn', 'Search Console の閲覧が許可されませんでした。もう一度つなぎ、Search Console にチェックを入れてください。'],
@@ -509,12 +576,12 @@
     var lastBy = ((traffic || []).filter(function (t) { return /_api$/.test(t.source) && t.metrics && t.metrics.google_email; })[0] || {}).metrics;
     var lastEmail = lastBy ? lastBy.google_email : '';
     var state = feats.length
-      ? '<span class="arc-chip is-ok">Google とつながっています</span> <span class="arc-sub">' + (email ? '<b>' + esc(email) + '</b>・' : '') + 'Search Console ' + (hasGsc ? '✓' : '—') + '・GA4 ' + (hasGa4 ? '✓' : '—') + '</span> <a class="arc-btn-sm" href="' + esc(connect) + '">別のアカウントでつなぎ直す</a> <button type="button" class="arc-btn-sm" id="arc-g-disconnect">切断する</button>' +
+      ? '<span class="arc-chip is-ok">Google とつながっています</span> <span class="arc-sub">' + (email ? '<b>' + esc(email) + '</b>・' : '') + 'Search Console ' + (hasGsc ? '✓' : '—') + '・GA4 ' + (hasGa4 ? '✓' : '—') + '</span> <button type="button" class="arc-btn-sm" data-g-connect>別のアカウントでつなぎ直す</button> <button type="button" class="arc-btn-sm" id="arc-g-disconnect">切断する</button>' +
         (lastEmail && email && lastEmail !== email ? '<p class="arc-gmsg is-warn" style="flex-basis:100%">この顧客の数字は前回 <b>' + esc(lastEmail) + '</b> で取りました。今は <b>' + esc(email) + '</b> でつながっています。別の会社のアカウントでないか確かめてから取得してください。</p>' : '') +
         (!email ? '<p class="arc-note" style="flex-basis:100%;margin:0">どの Google アカウントでつないだかを表示するには、一度「別のアカウントでつなぎ直す」からつなぎ直してください。</p>' : '') +
         '<p class="arc-note" style="flex-basis:100%;margin:0">このつながりは、この顧客だけのものです（このブラウザに30日残ります）。ほかの顧客は、それぞれの画面でつなぎます。</p>'
-      : '<span class="arc-chip is-warn">この顧客はまだ Google とつながっていません</span> <a class="arc-btn" href="' + esc(connect) + '">Google とつなぐ</a><p class="arc-note" style="flex-basis:100%;margin:0">つなぐと、この顧客だけのつながりになります（ほかの顧客には使いません）。お客様のサイトを見られる Google アカウントでつないでください。</p>';
-    return '<div class="arc-gbox"><div class="arc-gbox-h"><b>Google から取り込む（おすすめ）</b>' + state + '</div>' +
+      : '<span class="arc-chip is-warn">この顧客はまだ Google とつながっていません</span> <button type="button" class="arc-btn" data-g-connect>Google とつなぐ</button><p class="arc-note" style="flex-basis:100%;margin:0">つなぐと、この顧客だけのつながりになります（ほかの顧客には使いません）。お客様のサイトを見られる Google アカウントでつないでください。</p>';
+    return '<div class="arc-gbox"><div class="arc-gbox-h"><b>Google から取り込む（おすすめ）</b>' + state + consent + '<p class="arc-gmsg is-warn" id="arc-g-connect-msg" style="flex-basis:100%" hidden></p></div>' +
       (RET[ret] ? '<p class="arc-gmsg is-' + RET[ret][0] + '">' + esc(RET[ret][1]) + '</p>' : '') +
       '<form id="arc-google-sync" class="arc-row"><input class="arc-input" type="month" id="arc-g-month" value="' + thisMonth() + '" required>' +
       '<input class="arc-input" id="arc-g-gsc" placeholder="Search Console のサイト（例: sc-domain:example.jp）" value="' + esc(p.gsc != null ? p.gsc : (host ? 'sc-domain:' + host : '')) + '">' +
@@ -531,13 +598,20 @@
     var end = last < yest ? last : yest;
     return end < start ? null : { start: start, end: end };
   }
+  // Google 連携の API は、ログインのトークンで「社内スタッフか契約中のお客様か」を確かめる（api/google/_lib/access.js）
+  function googleHeaders(extra) {
+    var h = Object.assign({}, extra || {});
+    return (sb ? sb.auth.getSession() : Promise.resolve(null)).then(function (r) { var t = r && r.data && r.data.session && r.data.session.access_token; if (t) h.Authorization = 'Bearer ' + t; return h; }, function () { return h; });
+  }
+  function googleGet(path) { return googleHeaders().then(function (h) { return fetch(path, { credentials: 'same-origin', headers: h }); }); }
   function googlePost(path, body) {
-    return fetch(path, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    return googleHeaders({ 'Content-Type': 'application/json' }).then(function (h) { return fetch(path, { method: 'POST', credentials: 'same-origin', headers: h, body: JSON.stringify(body) }); })
       .then(function (r) {
         return r.json().catch(function () { return {}; }).then(function (j) {
           if (r.ok) return j;
           var e = j.error && typeof j.error === 'object' ? (j.error.message || '') : (j.error || '');
-          if (r.status === 401) e = 'この顧客は Google とつながっていません（または切れています）。上の「Google とつなぐ」で、この顧客のサイトを見られるアカウントでつないでください';
+          if (/^(login_required|not_contracted|contract_ended|consent_required|access_check_failed|auth_not_configured)$/.test(String(j.code || ''))) e = j.error || e;
+          else if (r.status === 401) e = 'この顧客は Google とつながっていません（または切れています）。上の「Google とつなぐ」で、この顧客のサイトを見られるアカウントでつないでください';
           else if (r.status === 403 && path.indexOf('gsc') >= 0) e = 'この Search Console のサイトを、つないだ Google アカウントでは見られません。上の一覧から「このお客様のサイト」を選ぶか、お客様に Search Console の「設定 → ユーザーと権限」でこのアカウントを追加してもらってください';
           throw new Error(e || ('HTTP ' + r.status));
         });
@@ -550,7 +624,7 @@
   function fillGscProperties(clientId, sites) {
     var input = $('#arc-g-gsc'); if (!input || gCookie(clientId, 's').split('.').indexOf('gsc') < 0) return;
     var host = sites[0] && sites[0].host;
-    var load = gscListCache && gscListCache.id === clientId ? Promise.resolve(gscListCache.list) : fetch('/api/google/gsc/?client=' + encodeURIComponent(clientId), { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }).then(function (j) { gscListCache = { id: clientId, list: j.sites || [] }; return gscListCache.list; });
+    var load = gscListCache && gscListCache.id === clientId ? Promise.resolve(gscListCache.list) : googleGet('/api/google/gsc/?client=' + encodeURIComponent(clientId)).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }).then(function (j) { gscListCache = { id: clientId, list: j.sites || [] }; return gscListCache.list; });
     load.then(function (list) {
       var note = $('#arc-g-gsc-note'); if (note) note.remove();
       var urls = list.map(function (x) { return x.siteUrl; });
@@ -574,7 +648,7 @@
   function fillGa4Properties(clientId, sites) {
     var input = $('#arc-g-ga4'); if (!input || gCookie(clientId, 's').split('.').indexOf('ga4') < 0) return;
     var host = sites[0] && sites[0].host;
-    var load = ga4ListCache && ga4ListCache.id === clientId ? Promise.resolve(ga4ListCache.list) : fetch('/api/google/ga4/?client=' + encodeURIComponent(clientId), { credentials: 'same-origin' })
+    var load = ga4ListCache && ga4ListCache.id === clientId ? Promise.resolve(ga4ListCache.list) : googleGet('/api/google/ga4/?client=' + encodeURIComponent(clientId))
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || r.status); return j; }); })
       .then(function (j) { ga4ListCache = { id: clientId, list: j.properties || [] }; return ga4ListCache.list; });
     load.then(function (list) {
@@ -604,6 +678,17 @@
     var form = $('#arc-google-sync'); if (!form) return;
     fillGscProperties(clientId, sites);
     fillGa4Properties(clientId, sites);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-g-connect]'), function (b) {
+      b.addEventListener('click', function () {
+        var cm = $('#arc-g-connect-msg'), say = function (t) { if (cm) { cm.hidden = false; cm.textContent = t; } };
+        if (!($('#arc-g-consent') || {}).checked) { say('つなぐ前に、Google のデータの閲覧についての同意にチェックしてください。'); var cb = $('#arc-g-consent'); if (cb) cb.focus(); return; }
+        b.disabled = true;
+        googlePost('/api/google/auth/', { consent: true, back: 'app', client: clientId }).then(function (j) {
+          if (!j || !/^https:\/\/accounts\.google\.com\//.test(String(j.url || ''))) throw new Error('Google の接続画面を開けませんでした');
+          location.href = j.url;
+        }).catch(function (e) { b.disabled = false; say((e && e.message) || String(e)); });
+      });
+    });
     var dc = $('#arc-g-disconnect');
     if (dc) dc.addEventListener('click', function () {
       dc.disabled = true;
@@ -704,9 +789,14 @@
     $('#arc-sched-from-studio').addEventListener('click', function () {
       sb.from('studio_workspaces').select('data').eq('client_id', c.id).maybeSingle().then(function (r) {
         var d = q(r), list = d && d.data && d.data.studio && d.data.studio.prompts;
-        var on = (list || []).filter(function (x) { return x.on !== false && String(x.text || '').trim(); }).slice(0, 10).map(function (x) { return x.text; });
-        if (!on.length) { msg('Studio に「毎月測る質問」がまだありません。Studio の「AI での見え方を測る」で質問を決めてください。', 'error'); return; }
-        $('#arc-sched-prompts').value = on.join('\n'); msg('Studio の質問を ' + on.length + ' 問読み込みました。「設定を保存」で保存します。', 'ok');
+        // 外部の AI に送るのは、Studio で確定した質問だけ。Search Console 由来の質問は読み込まない（airreach-google-guard.js）
+        var G = window.AirReachGoogleGuard;
+        if (!G) { msg('質問を確かめる部品を読み込めなかったため、読み込んでいません。ページを開き直してください。', 'error'); return; }
+        var pick = G.sendablePrompts(list || [], G.ctxOf(d.data.studio, d.data.orch && d.data.orch.lastJob));
+        var on = pick.send.slice(0, 10).map(function (x) { return x.text; });
+        var skipped = (pick.unconfirmed ? '未確定の ' + pick.unconfirmed + '問' : '') + (pick.unconfirmed && pick.google ? '・' : '') + (pick.google ? 'Search Console 由来の ' + pick.google + '問' : '');
+        if (!on.length) { msg('Studio に確定した「毎月測る質問」がありません。Studio の「AI での見え方を測る」で質問を確かめて「確定」してください。' + (skipped ? '（' + skipped + 'は読み込みません）' : ''), 'error'); return; }
+        $('#arc-sched-prompts').value = on.join('\n'); msg('Studio の確定した質問を ' + on.length + ' 問読み込みました。' + (skipped ? skipped + 'は読み込んでいません。' : '') + '「設定を保存」で保存します。', 'ok');
       }).catch(fail);
     });
     $('#arc-sched-form').addEventListener('submit', function (e) {
@@ -841,6 +931,7 @@
         '<ul class="arc-list">' + (members.map(function (m) { return '<li>' + esc(m.email) + ' <button class="arc-btn-sm" data-resend-member="' + esc(m.email) + '">ログインメールを再送</button> <button class="arc-btn-sm" data-del-member="' + esc(m.email) + '">削除</button></li>'; }).join('') || '<li class="arc-empty">まだいません</li>') + '</ul>' +
         '<form id="arc-add-member" class="arc-row"><input class="arc-input" type="email" id="arc-member-email" placeholder="client@example.jp" required><button class="arc-btn" type="submit">招待（ログイン用のメールを送る）</button></form>' +
         '<p class="arc-note">招待すると、お客様に「AirReach ログイン用リンク」のメール（送信元 no-reply@trillion-bank.com）が届きます。リンクの有効期限は1時間です。切れたら「ログインメールを再送」を押してください。お客様に見えるのは、自社の公開済みのレポートだけです。</p>' +
+        googleDataBlock(c) +
         '</div></section>',
         '', { client: { id: c.id, name: c.name, site: sites[0] && sites[0].url, industry: c.industry_id }, sec: curSec, reportBadge: repBadge, kicker: curSec === 'home' ? '' : c.name,
           action: '' });
@@ -898,6 +989,7 @@
           evidence_url: $('#arc-act-url').value.trim() || null, status: $('#arc-act-status').value, created_by: me.email }));
       });
       loadSchedule(c, sites);
+      bindGoogleData(c);
       $('#arc-add-run').addEventListener('submit', function (e) {
         e.preventDefault();
         readFile($('#arc-run-file')).then(function (text) {

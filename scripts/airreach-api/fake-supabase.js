@@ -19,6 +19,7 @@
     if (table === 'clients') return isMember(row.id);
     if (table === 'client_members') return row.email === email();
     if (table === 'reports') return row.status === 'published' && isMember(row.client_id);
+    if (table === 'google_data_deletions' || table === 'studio_workspaces') return false; // 社内だけ
     if (row.client_id) return isMember(row.client_id);
     return false;
   }
@@ -27,6 +28,7 @@
   function Query(table) { this.t = table; this.filters = []; this.op = 'select'; this.ord = null; this.one = null; this.embed = null; this.retSelect = false; }
   Query.prototype.select = function (cols) { if (this.op !== 'select') this.retSelect = true; var m = /(\w+)\((\w+)\)/.exec(cols || ''); if (m) this.embed = m; return this; };
   Query.prototype.eq = function (k, v) { this.filters.push([k, v]); return this; };
+  Query.prototype.in = function (k, vs) { this.filters.push([k, vs, 'in']); return this; };
   Query.prototype.order = function (k, o) { this.ord = [k, !(o && o.ascending === false)]; return this; };
   Query.prototype.limit = function () { return this; };
   Query.prototype.maybeSingle = function () { this.one = 'maybe'; return this; };
@@ -35,7 +37,7 @@
   Query.prototype.update = function (row) { this.op = 'update'; this.row = row; return this; };
   Query.prototype.upsert = function (row, o) { this.op = 'upsert'; this.row = row; this.conflict = (o && o.onConflict || 'id').split(','); return this; };
   Query.prototype.delete = function () { this.op = 'delete'; return this; };
-  Query.prototype.match = function (r) { return this.filters.every(function (f) { return String(r[f[0]]) === String(f[1]); }); };
+  Query.prototype.match = function (r) { return this.filters.every(function (f) { return f[2] === 'in' ? f[1].map(String).indexOf(String(r[f[0]])) >= 0 : String(r[f[0]]) === String(f[1]); }); };
   Query.prototype.then = function (res, rej) {
     var self = this, t = db[this.t] || (db[this.t] = []), out = null, err = null;
     try {
@@ -71,7 +73,7 @@
   window.AirReachSupabaseFactory = function () {
     return {
       auth: {
-        getSession: function () { return Promise.resolve({ data: { session: email() ? { user: { email: email() } } : null } }); },
+        getSession: function () { return Promise.resolve({ data: { session: email() ? { user: { email: email() }, access_token: 'fake-access-token-' + email().replace(/[^a-z0-9]/g, '') } : null } }); },
         onAuthStateChange: function (cb) { listeners.push(cb); return { data: { subscription: { unsubscribe: function () {} } } }; },
         signInWithOtp: function (o) { sessionStorage.setItem('fake_email', o.email); window.__fakeOtp = o; setTimeout(function () { listeners.forEach(function (cb) { cb('SIGNED_IN'); }); }, 300); return Promise.resolve({ error: null }); },
         signOut: function () { sessionStorage.removeItem('fake_email'); return Promise.resolve({ error: null }); }
@@ -83,6 +85,21 @@
           if (!(isStaff() || isMember(args.p_client_id))) return Promise.resolve({ data: null, error: { message: 'forbidden' } });
           var hosts = db.client_sites.filter(function (s) { return s.client_id === args.p_client_id; }).map(function (s) { return s.host; });
           return Promise.resolve({ data: (db.scans || []).filter(function (s) { return hosts.indexOf(String(s.host).replace(/^www\./, '')) >= 0; }), error: null });
+        }
+        // 削除依頼（supabase/migrations/20261007120000 の airreach_delete_google_data を簡易に真似る）
+        if (name === 'airreach_delete_google_data') {
+          if (STAFF[email()] !== 'admin') return Promise.resolve({ data: null, error: { message: 'forbidden' } });
+          var c = db.clients.filter(function (x) { return x.id === args.p_client_id; })[0];
+          if (!c) return Promise.resolve({ data: null, error: { message: 'client not found' } });
+          if (String(args.p_confirm_name || '').trim() !== String(c.name).trim()) return Promise.resolve({ data: null, error: { message: 'confirm name mismatch' } });
+          var counts = {};
+          ['traffic_snapshots', 'studio_workspaces', 'measurement_runs'].forEach(function (t) {
+            var before = (db[t] || []).length; db[t] = (db[t] || []).filter(function (r) { return r.client_id !== c.id; }); counts[t] = before - db[t].length;
+          });
+          c.google_purged_at = new Date().toISOString();
+          (db.google_data_deletions = db.google_data_deletions || []).push({ client_id: c.id, client_name: c.name, reason: 'user_request', request_note: args.p_note || null, executed_by: email(), executed_at: c.google_purged_at, counts: counts });
+          save(db);
+          return Promise.resolve({ data: { ok: true, counts: counts }, error: null });
         }
         return Promise.resolve({ data: null, error: { message: 'unknown rpc' } });
       }

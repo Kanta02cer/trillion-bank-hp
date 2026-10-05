@@ -1,4 +1,5 @@
 import { getAccessToken, requestClientId } from './_lib/token.js';
+import { googleAccess, denyAccess } from './_lib/access.js';
 import { isGa4Enabled } from './_lib/scopes.js';
 import { ga4Host, siteHost } from './_lib/host.js';
 
@@ -20,7 +21,7 @@ function setCors(req, res) {
   } catch (e) {}
   res.setHeader('Access-Control-Allow-Origin', allow);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Vary', 'Origin');
 }
@@ -28,6 +29,9 @@ function setCors(req, res) {
 export default async function handler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return; }
+  // Google 連携は、社内スタッフか契約中の顧客のメンバーだけ（ログインのトークンで確かめる。_lib/access.js）
+  const access = await googleAccess(req, requestClientId(req) || null);
+  if (!access.ok) return denyAccess(res, access);
   // GET：つないだアカウントで見られる GA4 プロパティの一覧（画面で選べるようにする）。
   // 名前と、ウェブのデータストリームの URL（お客様のサイトに合うものを選ぶため）を返す。読み取りのみ（analytics.readonly）
   if (req.method === 'GET') {

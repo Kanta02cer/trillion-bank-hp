@@ -23,10 +23,17 @@ const REDIRECT = 'https://trillion-bank.jp/api/google/callback';
 process.env.GOOGLE_CLIENT_ID = 'test-client-id.apps.googleusercontent.com';
 process.env.GOOGLE_CLIENT_SECRET = 'test-client-secret';
 process.env.GOOGLE_REDIRECT_URI = REDIRECT;
+// Google 連携を使ってよい人か（api/google/_lib/access.js）は Supabase の RPC で確かめる。テストではモックする
+process.env.SUPABASE_URL = 'https://sb.test';
+process.env.SUPABASE_ANON_KEY = 'anon-test-key';
+const STAFF = 'staff-token-0123456789abcdef';      // RPC が allowed: true を返すトークン
+const OUTSIDER = 'outsider-token-0123456789abcdef'; // 契約していない人
+const ENDED = 'ended-token-0123456789abcdef';       // 契約が終わった顧客
+let rpcCalls = [];
 
-// Vercel の req / res 相当
-function mkReq({ method = 'GET', query = {}, body, cookie = '', host = 'trillion-bank.jp', origin } = {}) {
-  return { method, query, body, headers: { host, cookie, 'x-forwarded-proto': 'https', ...(origin ? { origin } : {}) } };
+// Vercel の req / res 相当（既定で社内スタッフとしてログインしている）
+function mkReq({ method = 'GET', query = {}, body, cookie = '', host = 'trillion-bank.jp', origin, token = STAFF } = {}) {
+  return { method, query, body, headers: { host, cookie, 'x-forwarded-proto': 'https', ...(origin ? { origin } : {}), ...(token ? { authorization: 'Bearer ' + token } : {}) } };
 }
 function mkRes() {
   const r = { statusCode: 200, headers: {}, body: undefined, ended: false };
@@ -42,6 +49,12 @@ let calls = [];
 function mockFetch(handler) {
   calls = [];
   globalThis.fetch = async (url, init = {}) => {
+    if (String(url) === 'https://sb.test/rest/v1/rpc/airreach_google_access') {
+      const tok = String((init.headers || {}).Authorization || '').replace(/^Bearer /, '');
+      rpcCalls.push({ tok, body: init.body });
+      const data = tok === STAFF ? { allowed: true, role: 'staff' } : tok === ENDED ? { allowed: false, reason: 'contract_ended' } : { allowed: false, reason: 'not_contracted' };
+      return { ok: true, status: 200, json: async () => data };
+    }
     calls.push({ url: String(url), init });
     const { status = 200, json = {} } = handler(String(url), init) || {};
     return { ok: status >= 200 && status < 300, status, json: async () => json };
@@ -55,13 +68,26 @@ expect('scopes: no write scopes (only *.readonly)', scopes.OAUTH_SCOPES.every((x
 expect('scopes: GA4 enabled', scopes.isGa4Enabled() === true);
 expect('scopes: hasScope parses space-separated scope', scopes.hasScope(`openid ${GSC}`, GSC) && !scopes.hasScope(GA4, GSC) && !scopes.hasScope('', GSC));
 
-// ---- /api/google/auth ----
-mockFetch(() => { throw new Error('auth must not call fetch'); });
+// ---- /api/google/auth（社内スタッフか契約中のお客様だけ・同意が必要・POST で始める）----
+mockFetch(() => { throw new Error('auth must not call Google'); });
+const startBody = { consent: true };
 let res = mkRes();
-await auth(mkReq(), res);
-const loc = new URL(res.headers.location || 'about:blank');
+await auth(mkReq({ method: 'GET' }), res);
+expect('auth: URL を開いただけ（GET）では始めない → 405・state なし', res.statusCode === 405 && !cookiesOf(res).some((c) => c.startsWith('airreach_google_state=')) && !res.headers.location, res.statusCode);
+res = mkRes(); await auth(mkReq({ method: 'POST', body: {} }), res);
+expect('auth: 閲覧の同意が無い → 400 consent_required・state なし', res.statusCode === 400 && res.body.code === 'consent_required' && !cookiesOf(res).length);
+res = mkRes(); await auth(mkReq({ method: 'POST', body: startBody, token: '' }), res);
+expect('auth: ログインしていない → 401 login_required・state なし', res.statusCode === 401 && res.body.code === 'login_required' && !cookiesOf(res).length);
+res = mkRes(); await auth(mkReq({ method: 'POST', body: startBody, token: OUTSIDER }), res);
+expect('auth: 契約していない人 → 403 not_contracted・state なし', res.statusCode === 403 && res.body.code === 'not_contracted' && !cookiesOf(res).length);
+res = mkRes(); await auth(mkReq({ method: 'POST', body: { ...startBody, back: 'app', client: '59824617-70f0-4a9d-a52e-d6353910f3e5' }, token: ENDED }), res);
+expect('auth: 契約が終わった顧客 → 403 contract_ended', res.statusCode === 403 && res.body.code === 'contract_ended');
+expect('auth: 顧客の画面からは、その顧客について確かめる', rpcCalls.some((c) => c.tok === ENDED && JSON.parse(c.body).p_client_id === '59824617-70f0-4a9d-a52e-d6353910f3e5'));
+res = mkRes();
+await auth(mkReq({ method: 'POST', body: startBody }), res);
+const loc = new URL((res.body && res.body.url) || 'about:blank');
 const q = loc.searchParams;
-expect('auth: 302 to accounts.google.com', res.statusCode === 302 && loc.host === 'accounts.google.com', res.headers.location);
+expect('auth: 社内スタッフ＋同意 → 200 で accounts.google.com の URL を返す', res.statusCode === 200 && loc.host === 'accounts.google.com', JSON.stringify(res.body));
 expect('auth: scope is exactly webmasters.readonly + analytics.readonly + openid email（書き込み権限なし）', q.get('scope') === `${GSC} ${GA4} openid email`, q.get('scope'));
 expect('auth: no analytics write / edit scopes', !/analytics\.(edit|manage)|auth\/analytics(\s|$)/.test(q.get('scope')));
 expect('auth: redirect_uri = https://trillion-bank.jp/api/google/callback (from env, unchanged)', q.get('redirect_uri') === REDIRECT);
@@ -69,13 +95,14 @@ expect('auth: client_id from env, offline + consent', q.get('client_id') === pro
 const stateCookie = cookiesOf(res).find((c) => c.startsWith('airreach_google_state='));
 const state = q.get('state');
 expect('auth: state cookie matches state param (HttpOnly, Secure)', !!stateCookie && stateCookie.startsWith(`airreach_google_state=${state};`) && /HttpOnly/.test(stateCookie) && /Secure/.test(stateCookie));
+expect('auth: state is long and random (not Math.random)', /^[A-Za-z0-9_-]{32}$/.test(state || ''), state);
 delete process.env.GOOGLE_REDIRECT_URI;
-res = mkRes(); await auth(mkReq(), res);
-expect('auth: without GOOGLE_REDIRECT_URI falls back to https://<host>/api/google/callback', new URL(res.headers.location).searchParams.get('redirect_uri') === REDIRECT);
+res = mkRes(); await auth(mkReq({ method: 'POST', body: startBody }), res);
+expect('auth: without GOOGLE_REDIRECT_URI falls back to https://<host>/api/google/callback', new URL(res.body.url).searchParams.get('redirect_uri') === REDIRECT);
 process.env.GOOGLE_REDIRECT_URI = REDIRECT;
 const cid = process.env.GOOGLE_CLIENT_ID; delete process.env.GOOGLE_CLIENT_ID;
-res = mkRes(); await auth(mkReq(), res);
-expect('auth: missing client id → 500, no redirect', res.statusCode === 500 && !res.headers.location);
+res = mkRes(); await auth(mkReq({ method: 'POST', body: startBody }), res);
+expect('auth: missing client id → 500, no URL', res.statusCode === 500 && !(res.body && res.body.url));
 process.env.GOOGLE_CLIENT_ID = cid;
 
 // ---- /api/google/callback ----

@@ -735,7 +735,26 @@
 
 
 
-  function buildPackageFiles(job) {
+  // GitHub など外部へ出すときの分析結果。Search Console 由来の語と、Search Console の数字（表示回数・クリック・順位・
+  // 表示されているページ）と、その数字で決めた優先度・やることを除く（Google のデータは GitHub に出さない）
+  function googleFreeJob(job) {
+    var G = window.AirReachGoogleGuard;
+    var copy = JSON.parse(JSON.stringify(job || {}));
+    var isGsc = function (k) { return G ? G.isGscKeyword(k) : (k.seed_source === 'GSC' || k.cluster === 'GSC'); };
+    copy.keywords = (copy.keywords || []).filter(function (k) { return k && !isGsc(k); }).map(function (k) {
+      var touched = (Number(k.gsc_impressions) || 0) > 0 || (Number(k.gsc_clicks) || 0) > 0 || k.gsc_page != null;
+      ['gsc_impressions', 'gsc_clicks', 'gsc_position', 'gsc_page', 'gsc_page_count'].forEach(function (f) { delete k[f]; });
+      if (k.action_auto) { k.action = 'ページ改善'; delete k.action_detail; delete k.action_auto; }
+      if (touched) { k.priority = 'P2'; k.strength = '普通'; }
+      k.why = whyForKeyword(k);
+      return k;
+    });
+    if (G) copy.keywords = G.promptKeywords(copy.keywords, { gsc: {} });
+    delete copy.files;
+    return copy;
+  }
+  function buildPackageFiles(job, opts) {
+    var noGoogle = !!(opts && opts.noGoogle);
     var p = job.profile || {};
     var brand = p.brand || hostOf(job.url);
     var service = p.service || 'サービス';
@@ -818,7 +837,7 @@
       { type: 'internal_link', count: c.internalLinks || 0, note: '内部リンク' }
     ];
 
-    var gscKeys = Object.keys(gscMapFromStudio()).length;
+    var gscKeys = noGoogle ? 0 : Object.keys(gscMapFromStudio()).length;
     var manifest = {
       generated_at: new Date().toISOString(),
       url: job.url,
@@ -831,7 +850,7 @@
         market_demand: isFood ? ((job.keywords || []).some(function (k) { return k.gsc_impressions > 0; }) ? 'GSC impressions only (no market volume)' : 'Unavailable (no search volume shown)')
           : ((job.keywords || []).some(function (k) { return k.volume_source === 'Official'; }) ? 'Official (partial, Keyword Planner)' : 'Unavailable (no search volume shown)'),
         acquisition_score: job.diagnose_source === 'Observed' ? 'Observed' : 'Estimated',
-        gsc: gscKeys ? 'Official (partial)' : 'Unavailable',
+        gsc: noGoogle ? 'Not included (Google user data is not exported)' : (gscKeys ? 'Official (partial)' : 'Unavailable'),
         hack2: job.hack2_imported ? 'Observed (imported JSON)' : 'Unavailable',
         deployment: (job.deployment_run && job.deployment_run.pr_url) ? 'Draft PR awaiting human review' : 'ZIP only'
       },
@@ -1118,6 +1137,8 @@
           id: k.id, text: k.keyword, intent: k.intent, cluster: k.cluster,
           priority: k.priority, targetUrl: '', status: '未対策', volume: k.volume, answered: k.answered === undefined ? null : k.answered,
           gsc_impressions: k.gsc_impressions, related_count: k.related_count || 0, related: k.related || [], why: k.why || '', action: k.action || '',
+          // 出どころ（Search Console 由来の語は AI計測の質問に使わない。airreach-google-guard.js）
+          seed_source: k.seed_source || '',
           brandScope: (job.profile && job.profile.brand) || '',
           serviceScope: (job.profile && job.profile.service) || ''
         };
@@ -1933,6 +1954,7 @@
   window.AirReachOrchestrator = {
     runJob: runJob,
     buildPackageFiles: buildPackageFiles,
+    googleFreeJob: googleFreeJob,
     downloadZip: downloadZip,
     importGscRows: importGscRows,
     reattachGscToJob: reattachGscToJob,

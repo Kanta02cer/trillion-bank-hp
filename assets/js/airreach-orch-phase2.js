@@ -279,10 +279,15 @@
     var baseCommit = await gh('/repos/' + owner + '/' + repo + '/git/commits/' + baseSha, token);
     var baseTree = baseCommit.tree && baseCommit.tree.sha;
 
+    // GitHub には Google のデータ（Search Console の検索語句・表示回数・クリックなど）を出さない。
+    // 画面のパッケージ（job.files）ではなく、Google のデータを除いた分析結果から作り直したものを送る
+    var Orch = window.AirReachOrchestrator;
+    if (!Orch || !Orch.googleFreeJob || !Orch.buildPackageFiles) throw new Error('Google のデータを除く部品を読み込めなかったため、送っていません');
+    var built = Orch.buildPackageFiles(Orch.googleFreeJob(job), { noGoogle: true });
     var files = {};
-    Object.keys(job.files || {}).forEach(function (k) {
+    Object.keys(built || {}).forEach(function (k) {
       if (k === '_validation') return;
-      files[k] = job.files[k];
+      files[k] = built[k];
     });
     if (window.AirReachPackageSchema && window.AirReachPackageSchema.validatePackageFiles) {
       var chk = window.AirReachPackageSchema.validatePackageFiles(files);
@@ -567,9 +572,11 @@
           // Google のトークンは開いているドメインの HttpOnly Cookie にある。別ドメインの API ホスト（tb-api-base）へ送ると
           // Cookie が付かず 401 になるため、同一オリジンで呼ぶ
           var gscUrl = '/api/google/gsc/';
+          // Google 連携は社内の人か契約中のお客様だけ（ログインのトークンを付ける。api/google/_lib/access.js）
+          var gh0 = window.AirReachStaffAuth ? await window.AirReachStaffAuth.headers() : { 'Content-Type': 'application/json' };
           var res = await fetch(gscUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: gh0,
             credentials: 'include',
             body: JSON.stringify({ siteUrl: site, startDate: start, endDate: end })
           });
@@ -622,9 +629,10 @@
         if (!check.id || !site.url || !start || !end) { msg('warn', 'GA4 プロパティID（数字）・GA4 対象サイトURL・期間を入力するか、「GA4 CSV」を使ってください。'); return; }
         msg('', '/api/google/ga4 に接続中…');
         try {
+          var gh1 = window.AirReachStaffAuth ? await window.AirReachStaffAuth.headers() : { 'Content-Type': 'application/json' };
           var res = await fetch('/api/google/ga4/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: gh1,
             credentials: 'include',
             body: JSON.stringify({ propertyId: check.id, siteUrl: site.url, startDate: start, endDate: end })
           });

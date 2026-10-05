@@ -60,8 +60,10 @@ process.env.PERPLEXITY_API_KEY = 'test';
 delete process.env.AI_GATEWAY_API_KEY;
 delete process.env.AIRREACH_STUDIO_KEY;
 delete process.env.SUPABASE_URL;
+// 計測 API に送るのは確定した質問だけ（confirmed: true。api/hack2-measure.js の promptPolicyError）
+const confirmed = (t) => ({ keyword: t, prompt: t, confirmed: true, origin: 'manual' });
 const res = { headers: {}, statusCode: 0, body: '', setHeader(k, v) { this.headers[k] = v; }, end(b) { this.body = b || ''; }, status(c) { this.statusCode = c; return this; }, json(o) { this.body = JSON.stringify(o); } };
-await M.default({ method: 'POST', headers: {}, body: { brand: 'サンプル美容室 Hana', url: 'https://hana-salon.example/', text: '本文', prompts: ['渋谷 美容室 おすすめ', '失敗する質問'], engines: ['perplexity'] } }, res);
+await M.default({ method: 'POST', headers: {}, body: { brand: 'サンプル美容室 Hana', url: 'https://hana-salon.example/', text: '本文', prompts: ['渋谷 美容室 おすすめ', '失敗する質問'].map(confirmed), engines: ['perplexity'] } }, res);
 const out = JSON.parse(res.body || '{}');
 const ok = (out.rows || []).find((x) => x.prompt === '渋谷 美容室 おすすめ');
 const bad = (out.rows || []).find((x) => x.prompt === '失敗する質問');
@@ -71,7 +73,7 @@ expect('API: 計測の状態に回答数とエラー数', out.engineStatus && ou
 // 10問を1回で受けられる（切り捨てない）。11問目以降は受けない
 {
   const res2 = { headers: {}, statusCode: 0, body: '', setHeader(k, v) { this.headers[k] = v; }, end(b) { this.body = b || ''; }, status(c) { this.statusCode = c; return this; }, json(o) { this.body = JSON.stringify(o); } };
-  const ten = Array.from({ length: 11 }, (_, i) => '美容室 質問' + (i + 1));
+  const ten = Array.from({ length: 11 }, (_, i) => confirmed('美容室 質問' + (i + 1)));
   await M.default({ method: 'POST', headers: {}, body: { brand: 'Hana', url: 'https://hana-salon.example/', text: '本文', prompts: ten, engines: ['perplexity'] } }, res2);
   const o2 = JSON.parse(res2.body || '{}');
   expect('API: 1回で10問まで受ける（11問目は受けない）', (o2.rows || []).length === 10 && o2.rows.every((r) => r.status === 'ok') && !o2.rows.some((r) => r.prompt === '美容室 質問11'), (o2.rows || []).length);
