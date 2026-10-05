@@ -17,6 +17,18 @@ begin
   raise exception 'FAIL: % (通ってしまった)', p_name;
 end $$;
 grant execute on function pg_temp.as_user(text), pg_temp.ok(text, boolean), pg_temp.denied(text, text) to authenticated, service_role;
+-- 「今すぐ1回」の1件の取り出し：20261006 以降は単価を受け取る3引数、それより前（取り消し後）は2引数
+create or replace function pg_temp.claim_job(p_job uuid, p_cost jsonb) returns jsonb language plpgsql as $$
+declare v jsonb;
+begin
+  if exists (select 1 from pg_proc where proname = 'airreach_schedule_claim_job' and pronargs = 3) then
+    execute 'select public.airreach_schedule_claim_job($1, now(), $2)' into v using p_job, p_cost;
+  else
+    execute 'select public.airreach_schedule_claim_job($1, now())' into v using p_job;
+  end if;
+  return v;
+end $$;
+grant execute on function pg_temp.claim_job(uuid, jsonb) to service_role;
 
 -- 2026-10-05（月）10:00 日本時間 = 01:00 UTC
 \set NOW '''2026-10-05 01:00:00+00'''
@@ -100,8 +112,8 @@ select pg_temp.ok('今すぐ実行を受け付ける', (select (r ->> 'ok')::boo
 select pg_temp.ok('待っている回があれば、もう一度押しても作らない', not (select (public.airreach_schedule_request_now((select id from public.measurement_schedules where brand = 'A店'), :COST) ->> 'ok')::boolean));
 reset role;
 set local role service_role;
-select pg_temp.ok('計測サーバーがその1件を取り出す', (select public.airreach_schedule_claim_job((select (r ->> 'job_id')::uuid from rn), now()) ->> 'brand') = 'A店');
-select pg_temp.ok('同じ job は2回取り出せない', public.airreach_schedule_claim_job((select (r ->> 'job_id')::uuid from rn), now()) is null);
+select pg_temp.ok('計測サーバーがその1件を取り出す', (select pg_temp.claim_job((select (r ->> 'job_id')::uuid from rn), :COST) ->> 'brand') = 'A店');
+select pg_temp.ok('同じ job は2回取り出せない', pg_temp.claim_job((select (r ->> 'job_id')::uuid from rn), :COST) is null);
 reset role;
 select pg_temp.ok('今すぐ実行は trigger=manual・頼んだ人が残る', (select trigger = 'manual' and requested_by = 's@tb.test' from public.measurement_jobs where id = (select (r ->> 'job_id')::uuid from rn)));
 
