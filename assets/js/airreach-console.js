@@ -345,7 +345,7 @@
   function dashAi(run, live, studio) {
     var md = function (d) { return String(d).slice(5, 10).replace('-', '/'); };
     var bd = run && run.summary && run.summary.breakdown;
-    var head = '<div class="arv-home-head"><h2 class="arc-h2">AI での見え方</h2><span class="arc-sub">' + (run ? esc(md(run.measured_on)) + ' の計測' + (bd && bd.types ? '・' + esc((bd.types.general.answers || 0) + (bd.types.branded.answers || 0)) + '回答' : '') : '') + '</span></div>';
+    var head = '<div class="arv-home-head"><h2 class="arc-h2">AI での見え方</h2><span class="arc-sub">' + (run ? '最新1回（' + esc(md(run.measured_on)) + '）の計測' + (bd && bd.types ? '・' + esc((bd.types.general.answers || 0) + (bd.types.branded.answers || 0)) + '回答' : '') : '') + '</span></div>';
     var more = '<a class="arc-dash-more" href="' + esc(studio + '#hack2') + '">' + (run ? '質問ごとの結果を見る →' : 'AI で測る →') + '</a>';
     if (!run) return '<section class="arc-card arc-dash-c">' + head + '<p class="arc-empty">まだ計測していません。質問を AI に聞くと、お客様の名前やサイトが回答に出るかが分かります。</p>' + more + '</section>';
     var body = '';

@@ -9,7 +9,7 @@
 
   var root = document.getElementById('arr-root');
   if (!root) return;
-  var PROVIDER = { openai: 'ChatGPT（OpenAI）', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity' };
+  var PROVIDER = { openai: 'ChatGPT（OpenAI）', chatgpt_search: 'ChatGPT（検索あり）', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity', google_aio: 'Google の AI による概要', google_ai_mode: 'Google の AI モード' };
   function prov(p) { return PROVIDER[p] || p; }
   // 前月から直った不足を、お客様向けの肯定の言い方にする（airreach-report.js の PLAIN）
   function resolved(g) { return window.AirReachReport && window.AirReachReport.plainResolved ? window.AirReachReport.plainResolved(g) : g; }
@@ -28,6 +28,42 @@
   function diff(a, b) { return a == null || b == null ? null : Math.round((Number(a) - Number(b)) * 10) / 10; }
   function ym(s) { var t = String(s || ''); return t.slice(0, 4) + '年' + Number(t.slice(5, 7)) + '月'; }
 
+  // 一般質問（店名を含まない）と指名質問（店名を含む）の月の合計
+  function typesHtml(ai) {
+    var t = ai && ai.types;
+    if (!t) return '';
+    var row = function (label, x) {
+      return '<tr><th>' + label + '</th><td>' + esc(x.answers) + '</td><td>' + (x.citeRate == null ? '<span class="arr-na">—</span>' : esc(x.citeRate) + '%') + ' <small class="arr-na">（' + esc(x.cite) + ' ÷ ' + esc(x.citeJudged) + '）</small></td><td>' + (x.mentionRate == null ? '<span class="arr-na">—</span>' : esc(x.mentionRate) + '%') + ' <small class="arr-na">（' + esc(x.mention) + ' ÷ ' + esc(x.answers) + '）</small></td><td>' +
+        ([x.undetermined ? '判定できない ' + x.undetermined : '', x.notShown ? '表示なし ' + x.notShown : '', x.errors ? 'エラー ' + x.errors : ''].filter(Boolean).join('・') || '0') + '</td></tr>';
+    };
+    return '<h3 class="arr-h3">一般質問・指名質問ごと（すべての AI の合計）</h3><table class="arr-table"><thead><tr><th></th><th>回答の数</th><th>公式サイトが出典</th><th>店名・社名が出た</th><th>割合に入れなかった回答</th></tr></thead><tbody>' +
+      row('一般質問<br><small class="arr-na">店名・社名を含まない</small>', t.general) + row('指名質問<br><small class="arr-na">店名・社名を含む</small>', t.branded) + '</tbody></table>';
+  }
+  // 最新1回の結果（月の合計とは別）
+  function latestHtml(ai) {
+    var lt = ai && ai.latest;
+    if (!lt || ai.basis !== 'monthly' || ai.runs < 2) return '';
+    return '<p class="arr-sub">最新の計測（' + esc(lt.measuredOn) + '）だけの結果：' + lt.providers.map(function (p) { return esc(prov(p.provider)) + ' ' + (p.citeRate == null ? '—' : esc(p.citeRate) + '%'); }).join('、') + '</p>';
+  }
+  // 回答ごとの根拠（質問・AI・計測日時・判定・出典）。印刷では開いた状態で出す
+  function evidenceHtml(ai) {
+    var ev = (ai && ai.evidence) || [];
+    if (!ev.length) return '';
+    var HOW = { ai_sources: 'AI が返した出典で判定', answer_text: '回答の本文の URL で判定', none: '出典が取れず判定できない', not_measured: '検索しない AI（引用は判定しない）', not_shown: 'AI の回答が表示されなかった', error: 'エラー' };
+    var byQ = {}, order = [];
+    ev.forEach(function (e) { if (!byQ[e.prompt]) { byQ[e.prompt] = []; order.push(e.prompt); } byQ[e.prompt].push(e); });
+    return '<details class="arr-evi"><summary>回答の記録（根拠）を見る（' + esc(ev.length) + '件' + (ai.evidenceTotal > ev.length ? '・新しい順に' + ev.length + '件まで' : '') + '）</summary>' +
+      order.map(function (q) {
+        return '<div class="arr-evi-q"><h4>' + esc(q) + '</h4><table class="arr-table"><thead><tr><th>計測日時</th><th>AI</th><th>結果</th><th>出典・回答</th></tr></thead><tbody>' + byQ[q].map(function (e) {
+          var res = e.status === 'not_shown' ? 'AI の回答なし' : e.status === 'error' ? 'エラー' + (e.error ? '<br><small class="arr-na">' + esc(e.error) + '</small>' : '') :
+            (e.mentioned ? '名前あり' : '名前なし') + '・' + (e.cited === 1 ? '出典あり' : e.cited === 0 ? '出典なし' : '判定できない') + '<br><small class="arr-na">' + esc(HOW[e.citeSource] || '') + '</small>';
+          var src = (e.citations || []).length ? '<ol class="arr-evi-src">' + e.citations.map(function (u) { return '<li>' + esc(String(u).replace(/^https?:\/\//, '').slice(0, 80)) + '</li>'; }).join('') + '</ol>' :
+            ((e.urlsInAnswer || []).length ? '<small class="arr-na">本文の URL：' + esc(e.urlsInAnswer.map(function (u) { return String(u).replace(/^https?:\/\//, ''); }).join('、').slice(0, 160)) + '</small>' : '');
+          return '<tr><td>' + esc(e.measuredAt ? (window.AirReachReport ? window.AirReachReport.jstTime(e.measuredAt) : e.measuredAt) : e.measuredOn) + '</td><td>' + esc(prov(e.engine)) + (e.model ? '<br><small class="arr-na">' + esc(e.model) + (e.search ? '・検索あり' : '') + '</small>' : '') + '</td><td>' + res + '</td><td>' + src +
+            (e.answer ? '<div class="arr-evi-a">' + esc(e.answer) + (e.answer.length >= 400 ? '…' : '') + '</div>' : '') + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+      }).join('') + '</details>';
+  }
   // AI が参照したページ（対象のURLが引用された記録と、参照されたサイトの上位）
   function citedHtml(ai) {
     var tc = (ai && ai.targetCitations) || [], cd = (ai && ai.citedDomains) || [];
@@ -169,12 +205,19 @@
         (window.AirReachReport && (cur.gaps || []).length ? '<h3 class="arr-h3">直すこと（優先度の高い順）</h3>' + C.todos(window.AirReachReport.todoList(c), { audience: 'client', limit: 3, moreText: '（すべての項目は AirReach の画面で確認できます）' }) : '')
         : '<p class="arr-na">診断の記録がありません。</p>') + '</section>' +
       '<section><h2 class="arr-h2">AI回答の計測' + tag(ai ? 'reference' : 'unknown') + '</h2>' +
-      (ai ? '<p class="arr-sub">計測日 ' + esc(ai.measuredOn) + '・質問の版 ' + esc(ai.querySetVersion || '—') + (ai.comparable ? '' : '（前月と条件が異なる、または前月の計測なしのため、差は出していません）') + '</p>' +
+      (ai ? '<p class="arr-sub">' + (ai.basis === 'monthly' ? '今月の計測 ' + esc(ai.runs) + '回（' + esc(ai.firstOn) + (ai.runs > 1 ? '〜' + esc(ai.lastOn) : '') + '）の合計' : '計測日 ' + esc(ai.measuredOn)) + '・質問の版 ' + esc((ai.versions && ai.versions.length ? ai.versions : [ai.querySetVersion || '—']).join('、')) + (ai.comparable ? '' : '（前月と条件が異なる、または前月の計測なしのため、差は出していません）') + '</p>' +
         C.aiCompare(c) +
-        '<table class="arr-table"><thead><tr><th>AI</th><th>質問した回数</th><th>公式サイトが出典になった割合</th><th>店名・社名が出た割合</th><th>取得できなかった回数</th></tr></thead><tbody>' +
-        ai.providers.map(function (p) { return '<tr><td>' + esc(prov(p.provider)) + ' <small class="arr-na">' + esc(p.model) + '</small></td><td>' + v(p.answers) + '</td><td>' + v(p.citeRate, '%') + '</td><td>' + v(p.mentionRate, '%') + '</td><td>' + v(p.errors) + '</td></tr>'; }).join('') +
-        '</tbody></table><p class="arr-note">同じ質問をAIに複数回して集計。計測は無料枠のモデルで行っており、一般の人が使う最新の ChatGPT・Gemini とは結果が異なることがあります。</p>' +
-        citedHtml(ai)
+        '<table class="arr-table"><thead><tr><th>AI</th><th>回答の数</th><th>公式サイトが出典になった割合<br><small>出典になった回答 ÷ 判定できた回答</small></th><th>店名・社名が出た割合<br><small>名前が出た回答 ÷ 回答</small></th><th>割合に入れなかった回答</th></tr></thead><tbody>' +
+        ai.providers.map(function (p) {
+          var nd = function (n, dd) { return n != null && dd ? '<small class="arr-na">（' + esc(n) + ' ÷ ' + esc(dd) + '）</small>' : ''; };
+          var aside = [p.undetermined ? '出典が取れず判定できない ' + p.undetermined : '', p.notShown ? 'AI の回答が表示されなかった ' + p.notShown : '', p.errors ? 'エラー ' + p.errors : ''].filter(Boolean).join('<br>');
+          return '<tr><td>' + esc(prov(p.provider)) + ' <small class="arr-na">' + esc(p.model) + '</small></td><td>' + v(p.answers) + (p.runs > 1 ? '<small class="arr-na">（' + esc(p.runs) + '回の計測）</small>' : '') + '</td><td>' + v(p.citeRate, '%') + nd(p.citeCount, p.judged) + '</td><td>' + v(p.mentionRate, '%') + nd(p.mentionCount, p.answers) + '</td><td>' + (aside || '0') + '</td></tr>';
+        }).join('') +
+        '</tbody></table>' +
+        typesHtml(ai) +
+        latestHtml(ai) +
+        '<p class="arr-note">「判定できない」は、AI が出典の一覧を返さず、回答の本文にも URL が無かった回答です（0% として数えません）。「AI の回答が表示されなかった」は、Google の検索結果に AI による概要が出なかった質問です。計測は API で行っており、一般の人が使う最新の ChatGPT・Gemini とは結果が異なることがあります。</p>' +
+        citedHtml(ai) + evidenceHtml(ai)
         : '<p class="arr-na">今月は計測していません。</p>') + '</section>' +
       '<section' + (c.first ? ' class="arr-first"' : '') + '><h2 class="arr-h2">' + (c.first ? '数値の一覧（初回の基準値）' : '数値の一覧（前月との比較）') + '</h2><table class="arr-table"><thead><tr><th></th><th>' + esc(ym(c.previousMonth)) + '</th><th>' + esc(ym(r.period_month)) + '</th><th>差</th></tr></thead><tbody>' + kpi.join('') +
       '<tr><th>検索の表示回数' + tag(trafficKind(tr.gsc)) + '</th><td>' + v(tr.gscPrev && tr.gscPrev.impressions) + '</td><td>' + v(tr.gsc && tr.gsc.impressions) + '</td><td>' + d(diff(tr.gsc && tr.gsc.impressions, tr.gscPrev && tr.gscPrev.impressions)) + '</td></tr>' +
@@ -208,4 +251,6 @@
     }).catch(function (e) { root.innerHTML = '<p>' + esc(e.message) + '</p>'; });
   }
   boot();
+  // 印刷（PDF で保存）では、回答の記録を開いた状態で出す
+  if (typeof window !== 'undefined') window.addEventListener('beforeprint', function () { document.querySelectorAll('details.arr-evi').forEach(function (d) { d.open = true; }); });
 })();

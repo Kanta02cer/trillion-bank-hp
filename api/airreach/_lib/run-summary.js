@@ -87,7 +87,7 @@ export function buildRunSummary(rows, { brand = '', siteUrl = '', competitors = 
       Object.keys(b.comp).forEach((x) => { cr[x] = pct(b.comp[x], b.n); });
       return {
         provider: PROVIDER_ID[b.engine] || String(b.engine).toLowerCase(), model: b.model, group: 'main', label: source === 'schedule' ? '定期計測' : 'Studio',
-        denominator: b.n, judged: b.judged, either: { rate: pct(b.cited, b.judged), numerator: b.cited, denominator: b.judged }, cited_by_sources: b.bySources,
+        denominator: b.n, judged: b.judged, either: { rate: pct(b.cited, b.judged), numerator: b.cited, denominator: b.judged }, cited_by_sources: b.bySources, mention_count: b.self,
         service_mention_rate: pct(b.self, b.n), sov: b.self + compSum ? pct(b.self, b.self + compSum) : null, competitor_mention_rates: cr,
         not_shown_count: b.notShown, error_count: b.errors
       };
