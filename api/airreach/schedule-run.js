@@ -134,7 +134,8 @@ export default async function handler(req, res) {
       if (!/^[0-9a-f-]{36}$/i.test(sid)) return send(res, 400, { error: 'scheduleId が正しくありません' });
       const reqd = await userRpc('airreach_schedule_request_now', { p_schedule_id: sid, p_cost_per_answer: costTable() }, token);
       if (!reqd || !reqd.ok) return send(res, 409, { ok: false, error: (reqd && reqd.reason) || '受け付けられませんでした' });
-      const job = await svcRpc('airreach_schedule_claim_job', { p_job_id: reqd.job_id, p_now: new Date().toISOString() });
+      // 取り出す直前に、いまの条件とこの単価で予定回答数・費用を計算し直して上限を確かめる（DB 側）
+      const job = await svcRpc('airreach_schedule_claim_job', { p_job_id: reqd.job_id, p_now: new Date().toISOString(), p_cost_per_answer: costTable() });
       // 取り出す直前に上限を確かめ直して見送った（受け付けたあとに設定が変わった）か、ほかの計測サーバーが先に取り出した
       if (!job) return send(res, 409, { ok: false, error: '実行しませんでした。上限を確かめ直して見送ったか、ほかの計測サーバーが実行しています。下の「実行の記録」で理由を確かめてください' });
       const out = await runJob(job);

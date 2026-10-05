@@ -96,9 +96,45 @@ reset role;
 select pg_temp.ok('今すぐ1回測るを受け付けた', (select (r ->> 'ok')::boolean from rn));
 update public.measurement_schedules set monthly_cost_cap_usd = 0 where brand = '手動・回数';
 set local role service_role;
-select pg_temp.ok('取り出す前に費用の上限を0に下げたら取り出さない', public.airreach_schedule_claim_job((select (r ->> 'job_id')::uuid from rn), now()) is null);
+select pg_temp.ok('取り出す前に費用の上限を0に下げたら取り出さない', public.airreach_schedule_claim_job((select (r ->> 'job_id')::uuid from rn), now(), :COST) is null);
 reset role;
 select pg_temp.ok('その回は「見送り」・理由は費用', (select status = 'skipped' and skip_reason like '%月の費用の上限%' from public.measurement_jobs where id = (select (r ->> 'job_id')::uuid from rn)));
+
+-- ---- 4) 受け付けたあとに条件を変えたら、取り出す直前にいまの条件で計算し直す ----
+update public.measurement_jobs set status = 'succeeded', finished_at = now() where trigger = 'manual' and status in ('queued', 'running');
+delete from public.measurement_jobs where client_id = '00000000-0000-0000-0000-0000000000d1';
+-- 1問 × Perplexity × 1回 ＝ 0.006ドル。月の費用の上限 0.01ドル
+update public.measurement_schedules set prompts = '[{"prompt":"q1"}]', engines = array['perplexity'], repeats = 1, monthly_cost_cap_usd = 0.01, monthly_answer_cap = 100, max_runs_per_month = 4 where brand = '手動・回数';
+set local role authenticated;
+select pg_temp.as_user('g@tb.test');
+create temp table rn2 as select public.airreach_schedule_request_now((select id from public.measurement_schedules where brand = '手動・回数'), :COST) r;
+grant select on rn2 to service_role;
+reset role;
+select pg_temp.ok('4) 1問（0.006ドル）なら受け付ける', (select (r ->> 'ok')::boolean and (r ->> 'est_cost_usd')::numeric = 0.006 from rn2));
+-- 受け付けたあと、取り出す前に質問を2問に増やす（0.012ドル ＞ 上限 0.01）
+update public.measurement_schedules set prompts = '[{"prompt":"q1"},{"prompt":"q2"}]' where brand = '手動・回数';
+set local role service_role;
+select pg_temp.ok('4) 質問を2問に増やしたら（見込み 0.012 ＞ 上限 0.01）取り出さない', public.airreach_schedule_claim_job((select (r ->> 'job_id')::uuid from rn2), now(), :COST) is null);
+reset role;
+select pg_temp.ok('4) 見送りの理由は費用・予定回答数はいまの条件の2', (select status = 'skipped' and skip_reason like '%月の費用の上限%' and answers_planned = 2 from public.measurement_jobs where id = (select (r ->> 'job_id')::uuid from rn2)));
+-- 上限の範囲で条件を変えたときは、予約値と返す条件がいまの条件にそろう（AI を2つ・回数2 ＝ 1問 × 2 × 2 ＝ 4回答）
+-- このテストは1つのトランザクションの中（now() が変わらない）なので、同じ分の回を消してから受け付け直す
+delete from public.measurement_jobs where client_id = '00000000-0000-0000-0000-0000000000d1';
+update public.measurement_schedules set prompts = '[{"prompt":"q1"}]', engines = array['perplexity', 'chatgpt'], repeats = 1, monthly_cost_cap_usd = 5 where brand = '手動・回数';
+set local role authenticated;
+select pg_temp.as_user('g@tb.test');
+create temp table rn3 as select public.airreach_schedule_request_now((select id from public.measurement_schedules where brand = '手動・回数'), '{"perplexity":0.006,"chatgpt":0.0003}') r;
+grant select on rn3 to service_role;
+reset role;
+update public.measurement_schedules set repeats = 2 where brand = '手動・回数';
+set local role service_role;
+create temp table cj3 as select public.airreach_schedule_claim_job((select (r ->> 'job_id')::uuid from rn3), now(), '{"perplexity":0.006,"chatgpt":0.0003}') v;
+reset role;
+select pg_temp.ok('4) 受け付けた（1問 × AI 2つ × 1回）', (select (r ->> 'ok')::boolean and (r ->> 'answers_planned')::int = 2 from rn3));
+select pg_temp.ok('4) 返す条件はいまの設定（回数2・AI 2つ）', (select (v ->> 'repeats')::int = 2 and jsonb_array_length(v -> 'engines') = 2 from cj3));
+select pg_temp.ok('4) 予約値もいまの条件（4回答・0.0126ドル）で、返す値と同じ', (select j.answers_planned = 4 and j.est_cost_usd = 0.0126 and (v ->> 'answers_planned')::int = 4 and (v ->> 'est_cost_usd')::numeric = 0.0126 from public.measurement_jobs j, cj3 where j.id = (select (r ->> 'job_id')::uuid from rn3)));
+-- 単価を渡さない（null）なら費用 0 として数える（関数がエラーにならない）
+select pg_temp.ok('4) 単価が無くても動く（費用の見込み 0）', (select (c).cost = 0 from (select public.airreach_schedule_limit_check((select id from public.measurement_schedules where brand = '手動・回数'), date_trunc('month', now()), '{}', null) c) x));
 
 -- ---- 権限：上限の確かめ・使用量の関数は直接呼べない ----
 set local role authenticated;

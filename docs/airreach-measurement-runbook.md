@@ -77,6 +77,7 @@
 4. **環境変数**：`CRON_SECRET`（長いランダムな文字列）と `AIRREACH_SCHEDULE_ENABLED=true` を Vercel の本番に入れる（値はクリップボード経由で、記録に残さない）
 5. **cron**：**`.github/workflows/deploy-vercel-static.yml` が作る配信用の vercel.json** に `"crons": [{ "path": "/api/airreach/schedule-run/", "schedule": "0 * * * *" }]`（または1日1回）を足す。リポジトリ直下の vercel.json だけでは本番に入らない
 6. **1社の設定**：ダッシュボードの「テスト」→ AI計測 → 定期計測で、AI・10問・曜日・時刻・上限を入れ、まず「今すぐ1回測る」で1回だけ試す → 問題なければ「有効にする」
+   - ローカルでの事前確認：`schedule-test.sql`・`schedule-guards-test.sql`・`schedule-concurrency-test.sh`（複数セッション。PGHOST は 127.0.0.1 のみ）
 7. **確かめる**：実行の記録（成功・一部成功・見送りの理由）、計測の記録（`source=schedule`）、月次の合計、同じ時刻の二重実行が無いこと、失敗の取り直し、回数・回答数・費用の見込みの上限で見送られること。費用は「アプリの見込み」と「実際の請求」を分けて報告する
 
 ### 戻し方

@@ -128,6 +128,7 @@ begin
 end;
 $$;
 
+drop function if exists public.airreach_schedule_claim_job(uuid, timestamptz, jsonb);
 drop function if exists public.airreach_schedule_limit_check(uuid, timestamptz, jsonb, uuid);
 drop function if exists public.airreach_schedule_usage(uuid, timestamptz, uuid);
 revoke all on function public.airreach_schedule_claim(timestamptz, jsonb, integer), public.airreach_schedule_request_now(uuid, jsonb), public.airreach_schedule_claim_job(uuid, timestamptz) from public, anon, authenticated, service_role;
