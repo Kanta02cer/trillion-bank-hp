@@ -20,7 +20,8 @@
     claude: { label: 'Claude', color: '#1baf7a' },
     perplexity: { label: 'Perplexity', color: '#4a3aa7' },
     google_aio: { label: 'Google AI による概要', color: '#c2410c' },
-    google_ai_mode: { label: 'Google AI モード', color: '#0e7490' }
+    google_ai_mode: { label: 'Google AI モード', color: '#0e7490' },
+    chatgpt_search: { label: 'ChatGPT（検索あり）', color: '#15803d' }
   };
   var INK = '#0f172a', MUTED = '#64748b', PREV = '#b8c0cc';
   var FALLBACK_BANDS = [

@@ -38,8 +38,12 @@
   }
   // 質問の種類ごとのまとめ（言及割合・言及の順位・引用割合・引用された URL の上位）
   function typeSummary(rows, ctx) {
-    var n = rows.length, mention = 0, citeN = 0, cite = 0, r1 = 0, r2 = 0, r3 = 0, none = 0, withOrder = 0, urls = {}, withSrc = 0;
+    // AI の回答が表示されなかった質問・失敗した質問は、割合の分母に入れず件数だけ数える
+    var notShown = rows.filter(function (r) { return r.status === 'not_shown'; }).length, errors = rows.filter(function (r) { return r.status === 'error'; }).length;
+    rows = rows.filter(function (r) { return r.status !== 'not_shown' && r.status !== 'error'; });
+    var n = rows.length, mention = 0, citeN = 0, cite = 0, r1 = 0, r2 = 0, r3 = 0, none = 0, withOrder = 0, urls = {}, withSrc = 0, bySrc = 0;
     rows.forEach(function (r) {
+      if (r.cite_source === 'ai_sources') bySrc += 1;
       if (r.mentioned) mention += 1;
       if (r.cited === 0 || r.cited === 1) { citeN += 1; if (r.cited === 1) cite += 1; }
       if (Array.isArray(r.order)) { withOrder += 1; if (r.self_rank === 1) r1 += 1; else if (r.self_rank === 2) r2 += 1; else if (r.self_rank >= 3) r3 += 1; else none += 1; }
@@ -50,7 +54,7 @@
     var top = Object.keys(urls).map(function (k) { return { url: k, href: urls[k].url, cat: urls[k].cat, answers: urls[k].n, share: pct(urls[k].n, withSrc) }; })
       .sort(function (a, b) { return b.answers - a.answers; }).slice(0, 3);
     return { answers: n, mentionRate: pct(mention, n), mention: mention, citeRate: pct(cite, citeN), cite: cite, citeJudged: citeN,
-      ranks: { first: r1, second: r2, thirdPlus: r3, none: none, counted: withOrder }, topUrls: top, answersWithSource: withSrc };
+      ranks: { first: r1, second: r2, thirdPlus: r3, none: none, counted: withOrder }, topUrls: top, answersWithSource: withSrc, notShown: notShown, errors: errors, citedBySources: bySrc };
   }
 
   /** いちばん新しい計測（run_id）の、実際の AI の行だけ */
@@ -70,7 +74,12 @@
     var byQ = {};
     rows.forEach(function (r) {
       var k = r.prompt || r.keyword || '';
-      var q = byQ[k] || (byQ[k] = { prompt: k, n: 0, selfMention: 0, selfCiteN: 0, selfCite: 0, compMention: 0, compCiteN: 0, compCite: 0, ranks: [], engines: {}, answers: [] });
+      var q = byQ[k] || (byQ[k] = { prompt: k, n: 0, selfMention: 0, selfCiteN: 0, selfCite: 0, compMention: 0, compCiteN: 0, compCite: 0, ranks: [], engines: {}, answers: [], notShown: 0, errors: 0 });
+      if (r.status === 'not_shown' || r.status === 'error') {
+        if (r.status === 'not_shown') q.notShown += 1; else q.errors += 1;
+        q.answers.push({ engine: r.engine, status: r.status, error: r.error || '', mentioned: null, cited: null, rank: null, order: null, comps: [], text: '', citations: [], urls: [], citeSource: r.cite_source || '', at: r.measured_at || '' });
+        return;
+      }
       q.n += 1;
       q.engines[r.engine] = 1;
       if (r.mentioned) q.selfMention += 1;
@@ -80,7 +89,9 @@
       var cj = (r.competitors || []).filter(function (c) { return c.cited === 0 || c.cited === 1; });
       if (cj.length) { q.compCiteN += 1; if (cj.some(function (c) { return c.cited === 1; })) q.compCite += 1; }
       q.answers.push({ engine: r.engine, mentioned: r.mentioned, cited: r.cited, rank: r.self_rank || null, order: r.order || null,
-        comps: (r.competitors || []).filter(function (c) { return c.mentioned; }).map(function (c) { return c.name; }), text: r.answer_excerpt || '' });
+        comps: (r.competitors || []).filter(function (c) { return c.mentioned; }).map(function (c) { return c.name; }), text: r.answer_text || r.answer_excerpt || '',
+        status: r.status || 'ok', citeSource: r.cite_source || (r.citeMethod === 'citations' ? 'ai_sources' : r.citeMethod === 'text' ? 'answer_text' : ''), citations: (r.citations || []).slice(0, 8), urls: (r.urls_in_answer || []).slice(0, 8),
+        selfInText: r.self_url_in_text, at: r.measured_at || '' });
       if (r.self_rank) q.ranks.push(r.self_rank);
     });
     var questions = Object.keys(byQ).map(function (k) {
@@ -92,6 +103,9 @@
     }).sort(function (a, b) { return (a.selfMentionRate == null ? -1 : a.selfMentionRate) - (b.selfMentionRate == null ? -1 : b.selfMentionRate); });
 
     // 言及の順位（自社と、登録した競合それぞれ）
+    // ここから下（言及の順位・引用元の分類）は、回答があった行だけで数える（表示なし・エラーは除く）
+    var allRows = rows;
+    rows = rows.filter(function (r) { return r.status !== 'not_shown' && r.status !== 'error'; });
     var withOrder = rows.filter(function (r) { return Array.isArray(r.order); });
     var names = [brand].concat((opts.competitors || []).map(function (c) { return c.name; })).filter(Boolean);
     var ranks = names.map(function (nm, i) {
@@ -129,9 +143,9 @@
     var totalCites = domains.reduce(function (s, d) { return s + d.count; }, 0);
     Object.keys(cats).forEach(function (k) { cats[k].share = pct(cats[k].count, totalCites); });
 
-    var types = { general: typeSummary(rows.filter(function (r) { return !isBranded(r.prompt || r.keyword, brand); }), ctx),
-      branded: typeSummary(rows.filter(function (r) { return isBranded(r.prompt || r.keyword, brand); }), ctx) };
-    return { types: types, answers: rows.length, answersWithOrder: withOrder.length, answersWithSource: answersWithSource, questions: questions, ranks: ranks, domains: domains, categories: cats, totalCites: totalCites };
+    var types = { general: typeSummary(allRows.filter(function (r) { return !isBranded(r.prompt || r.keyword, brand); }), ctx),
+      branded: typeSummary(allRows.filter(function (r) { return isBranded(r.prompt || r.keyword, brand); }), ctx) };
+    return { types: types, answers: rows.length, notShown: allRows.length - rows.length - allRows.filter(function (r) { return r.status === 'error'; }).length, errors: allRows.filter(function (r) { return r.status === 'error'; }).length, answersWithOrder: withOrder.length, answersWithSource: answersWithSource, questions: questions, ranks: ranks, domains: domains, categories: cats, totalCites: totalCites };
   }
 
   function bar(v, color) { return '<span class="aib-bar"><i style="width:' + Math.max(0, Math.min(100, v || 0)) + '%;background:' + color + '"></i></span>'; }
@@ -151,11 +165,12 @@
     var CAT2 = CAT;
     function typeCard(key, title, note) {
       var t = s.types[key];
-      if (!t.answers) return '<div class="ars-card aib-type"><h3>' + title + '</h3><p class="ars-gnote">' + note + '</p><p class="ars-gnote">この計測には、この種類の質問がありません。</p></div>';
+      if (!t.answers) return '<div class="ars-card aib-type"><h3>' + title + '</h3><p class="ars-gnote">' + note + '</p><p class="ars-gnote">' + (t.notShown || t.errors ? '判定できる回答がありません（AI の回答が表示されなかった ' + t.notShown + '問・エラー ' + t.errors + '問）。' : 'この計測には、この種類の質問がありません。') + '</p></div>';
       var rk = t.ranks;
       return '<div class="ars-card aib-type"><h3>' + title + ' <small>' + t.answers + '回答</small></h3><p class="ars-gnote">' + note + '</p>' +
         '<div class="aib-kpis"><div><span>名前が出た割合</span><b>' + (t.mentionRate == null ? '—' : esc(t.mentionRate) + '%') + '</b><small>' + rate(t.mention, t.answers) + '</small></div>' +
-        '<div><span>自社が出典の割合</span><b>' + (t.citeRate == null ? '—' : esc(t.citeRate) + '%') + '</b><small>' + (t.citeJudged ? rate(t.cite, t.citeJudged) : '出典が返る回答なし') + '</small></div></div>' +
+        '<div><span>自社が出典の割合</span><b>' + (t.citeRate == null ? '—' : esc(t.citeRate) + '%') + '</b><small>' + (t.citeJudged ? rate(t.cite, t.citeJudged) + '（判定できた回答のうち）' : '判定できる回答なし') + '</small></div></div>' +
+        ((t.notShown || t.errors || t.answers - t.citeJudged > 0) ? '<p class="ars-gnote aib-counts">' + [t.answers - t.citeJudged > 0 ? '出典が取れず判定できない ' + (t.answers - t.citeJudged) + '回答' : '', t.notShown ? 'AI の回答が表示されなかった ' + t.notShown + '問' : '', t.errors ? 'エラー ' + t.errors + '問' : ''].filter(Boolean).join('・') + '（いずれも割合の分母に入れていません）</p>' : '') +
         '<div class="aib-mini"><span>言及の順位</span>' + (rk.counted ? '<ul><li>1位 <b>' + rk.first + '</b>件</li><li>2位 <b>' + rk.second + '</b>件</li><li>3位以下 <b>' + rk.thirdPlus + '</b>件</li><li>言及なし <b>' + rk.none + '</b>件</li></ul>' : '<small>順位の記録なし（再計測で出ます）</small>') + '</div>' +
         '<div class="aib-mini"><span>引用された URL（上位3）</span>' + (t.topUrls.length ? '<ol>' + t.topUrls.map(function (u) {
           return '<li><a href="' + esc(u.href) + '" target="_blank" rel="noopener noreferrer">' + esc(u.url.length > 60 ? u.url.slice(0, 60) + '…' : u.url) + '</a> <span class="aib-chip is-' + u.cat + '">' + esc(CAT2[u.cat]) + '</span> ' + (u.share == null ? '' : esc(u.share) + '%') + '</li>';
@@ -168,12 +183,17 @@
       '<div class="ars-table-wrap"><table class="ars-table aib-q"><thead><tr><th>質問（押すと回答）</th><th>AI</th><th>自社の名前</th><th>自社が出典</th><th>競合の名前</th><th>競合が出典</th><th>自社の順位（最高）</th></tr></thead><tbody>' +
       s.questions.map(function (q) {
         var det = '<details class="aib-ans"><summary>' + esc(q.prompt) + '</summary>' + q.detail.map(function (a) {
+          if (a.status === 'not_shown' || a.status === 'error') return '<div class="aib-ans-i"><div class="aib-ans-h"><b>' + esc(a.engine) + '</b><span>' + (a.status === 'not_shown' ? 'AI の回答が表示されなかった（割合には入れない）' : 'エラー（割合には入れない）' + (a.error ? '：' + esc(a.error.slice(0, 120)) : '')) + '</span></div></div>';
+          var HOW = { ai_sources: 'AI が返した出典で判定', answer_text: '回答の本文の URL で判定', none: '出典が取れず判定できない', not_measured: '検索なしのため引用は測っていない' };
+          var src = a.citations.length ? '<div class="aib-src"><span>AI が返した出典</span><ol>' + a.citations.map(function (u) { return '<li><a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(String(u).replace(/^https?:\/\//, '').slice(0, 70)) + '</a></li>'; }).join('') + '</ol></div>' :
+            (a.urls.length ? '<div class="aib-src"><span>回答の本文に書かれた URL（AI の出典の一覧ではありません）</span><ol>' + a.urls.map(function (u) { return '<li>' + esc(String(u).replace(/^https?:\/\//, '').slice(0, 70)) + '</li>'; }).join('') + '</ol></div>' : '');
           return '<div class="aib-ans-i"><div class="aib-ans-h"><b>' + esc(a.engine) + '</b>' +
             '<span>' + (a.mentioned ? '自社の名前あり' : '自社の名前なし') + (a.cited === 1 ? '・自社が出典' : a.cited === 0 ? '・自社は出典でない' : '') + (a.rank ? '・' + a.rank + '位' : '') + '</span>' +
+            (HOW[a.citeSource] ? '<span>' + HOW[a.citeSource] + '</span>' : '') +
             (a.comps.length ? '<span>競合: ' + esc(a.comps.join('、')) + '</span>' : '') +
             (a.order && a.order.length ? '<span>名前が出た順: ' + esc(a.order.join(' → ')) + '</span>' : '') + '</div>' +
-            '<p>' + (a.text ? esc(a.text) + (a.text.length >= 400 ? '…' : '') : '<span class="ars-muted">回答の記録なし</span>') + '</p></div>';
-        }).join('') + '<p class="ars-gnote">回答は冒頭の400文字まで保存しています。</p></details>';
+            '<p>' + (a.text ? esc(a.text) + (a.text.length >= 4000 ? '…' : '') : '<span class="ars-muted">回答の記録なし</span>') + '</p>' + src + '</div>';
+        }).join('') + '<p class="ars-gnote">回答は4,000文字まで保存しています（2026年10月より前の計測は冒頭の400文字まで）。</p></details>';
         return '<tr><td>' + det + '</td><td>' + esc(q.engines.join('・')) + '</td>' +
           '<td>' + bar(q.selfMentionRate, '#2563eb') + rate(q.selfMention, q.answers) + '</td>' +
           '<td>' + (q.selfCiteJudged ? bar(q.selfCiteRate, '#047857') + rate(q.selfCite, q.selfCiteJudged) : '<span class="ars-muted">判定なし</span>') + '</td>' +

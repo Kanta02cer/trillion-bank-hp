@@ -20,7 +20,7 @@
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
   function $(sel, el) { return (el || root).querySelector(sel); }
-  var PROVIDER_LABEL = { openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity', google_aio: 'Google AI による概要', google_ai_mode: 'Google AI モード' };
+  var PROVIDER_LABEL = { openai: 'ChatGPT', chatgpt_search: 'ChatGPT（検索あり）', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity', google_aio: 'Google AI による概要', google_ai_mode: 'Google AI モード' };
   var SOURCE_LABEL = { gsc_csv: 'Search Console（CSV）', gsc_api: 'Search Console（連携）', ga4_manual: 'GA4（手入力）', ga4_api: 'GA4（連携）' };
   function msg(text, kind) {
     var el = document.getElementById('arc-msg');
