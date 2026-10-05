@@ -703,6 +703,13 @@
   // 互換：飲食店の FAQ（以前の呼び出し元のため）
   function restaurantFaq(diagnose) { return faqDraft({ industry: 'restaurant', diagnose: diagnose }, '', ''); }
 
+  /** 構造化データの不足（業種ごとの必要な項目と、サイトの構造化データ・ページの記載を比べる。airreach-schema-gaps.js） */
+  function schemaCheckMd(job) {
+    var G = window.AirReachSchemaGaps, pg = (job.diagnose && job.diagnose.page) || {};
+    if (!G) return '';
+    if (!pg.ld) return '# 構造化データの不足（確認用）\n\nサイトの中身を読んでいないため、判定していません。診断のための取得に同意して診断し直すと判定します。\n';
+    return G.markdown(G.check(pg.ld, job.industry, (pg.keywordAuto || {}).facts || null));
+  }
   /** サイトから読めた情報の一覧（確認用）。見つからない項目は「確認が必要」 */
   function siteInfoMd(job, brand) {
     var kwa = (job.diagnose && job.diagnose.page && job.diagnose.page.keywordAuto) || {};
@@ -950,6 +957,7 @@
       'public/llms-full.txt': llms + '\n## FAQ\n' + faq.map(function (q) { return '- ' + q; }).join('\n') + '\n',
       'content/faq.md': faqMd,
       'content/site-info.md': siteInfoMd(job, brand),
+      'content/schema-check.md': schemaCheckMd(job),
       'validation/VALIDATION.md': validation
     };
     if (isFood) {
