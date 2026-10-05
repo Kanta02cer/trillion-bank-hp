@@ -135,7 +135,8 @@ export default async function handler(req, res) {
       const reqd = await userRpc('airreach_schedule_request_now', { p_schedule_id: sid, p_cost_per_answer: costTable() }, token);
       if (!reqd || !reqd.ok) return send(res, 409, { ok: false, error: (reqd && reqd.reason) || '受け付けられませんでした' });
       const job = await svcRpc('airreach_schedule_claim_job', { p_job_id: reqd.job_id, p_now: new Date().toISOString() });
-      if (!job) return send(res, 409, { ok: false, error: 'ほかの計測サーバーが実行しています' });
+      // 取り出す直前に上限を確かめ直して見送った（受け付けたあとに設定が変わった）か、ほかの計測サーバーが先に取り出した
+      if (!job) return send(res, 409, { ok: false, error: '実行しませんでした。上限を確かめ直して見送ったか、ほかの計測サーバーが実行しています。下の「実行の記録」で理由を確かめてください' });
       const out = await runJob(job);
       return send(res, 200, { ok: true, result: out });
     }

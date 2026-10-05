@@ -250,9 +250,11 @@ def cmd_apply_schedules():
     confirm_project()
     if 'measurement_runs' not in tables():
         die('Phase 2 の measurement_runs がありません。先に apply-db を実行してください')
-    path = ROOT / 'supabase/migrations/20261005120000_airreach_measurement_schedules.sql'
-    call('POST', f'/projects/{REF}/database/migrations', {'name': 'airreach_measurement_schedules', 'query': path.read_text()})
-    print('migration を適用しました: airreach_measurement_schedules')
+    # 表と RPC（20261005）と、上限・停止の確かめ方の修正（20261006）を順に入れる
+    for name, fn in [('airreach_measurement_schedules', '20261005120000_airreach_measurement_schedules.sql'), ('airreach_schedule_guards', '20261006120000_airreach_schedule_guards.sql')]:
+        path = ROOT / 'supabase/migrations' / fn
+        call('POST', f'/projects/{REF}/database/migrations', {'name': name, 'query': path.read_text()})
+        print('migration を適用しました: ' + name)
     checks = [
         ('measurement_schedules・measurement_jobs があり RLS が有効', "select bool_and(relrowsecurity) as ok from pg_class where oid in ('public.measurement_schedules'::regclass, 'public.measurement_jobs'::regclass)"),
         ('anon は2つの表に権限なし', "select not exists(select 1 from information_schema.role_table_grants where table_name in ('measurement_schedules', 'measurement_jobs') and grantee = 'anon') as ok"),
@@ -261,6 +263,7 @@ def cmd_apply_schedules():
         ('RPC はすべて search_path 固定・SECURITY DEFINER', "select bool_and(prosecdef and proconfig is not null) as ok from pg_proc where proname like 'airreach_schedule%'"),
         ('authenticated は取り出し・記録の RPC を実行できない', "select not has_function_privilege('authenticated', 'public.airreach_schedule_claim(timestamptz,jsonb,integer)', 'EXECUTE') and not has_function_privilege('authenticated', 'public.airreach_schedule_finish(uuid,text,jsonb,integer,integer,integer,numeric,text,timestamptz)', 'EXECUTE') as ok"),
         ('定期実行の設定はまだ0件（既定で何も動かない）', "select count(*) = 0 as ok from public.measurement_schedules where enabled"),
+        ('上限の確かめ（20261006）が入っている・直接は呼べない', "select exists(select 1 from pg_proc where proname = 'airreach_schedule_limit_check') and not has_function_privilege('authenticated', 'public.airreach_schedule_limit_check(uuid,timestamptz,jsonb,uuid)', 'EXECUTE') as ok"),
     ]
     bad = 0
     for label, q in checks:

@@ -28,6 +28,8 @@
 |---|---|
 | `migrations/20260928120000_airreach_phase1.sql` | Phase 1 スキーマ（6 テーブル）、RPC `airreach_insert_scan()` / `airreach_get_shared_scan()`（SECURITY DEFINER）、RLS 有効化と権限設定 |
 | `seed/airreach_rule_versions.sql` | 判定ルール版 `airreach-common-v1` の登録（冪等） |
+| `migrations/20261005120000_airreach_measurement_schedules.sql` | AI計測の定期実行（`measurement_schedules`・`measurement_jobs`・RPC）。**本番は未適用**（2026-10-06 時点） |
+| `migrations/20261006120000_airreach_schedule_guards.sql` | 定期実行の上限・停止の確かめ方の修正（今すぐ1回の回数上限・止めた顧客の再試行・取り直す前の上限の再確認）。20261005 の RPC を置き換える。**本番は未適用**。適用は `phase2-apply.py apply-schedules`（2本を順に入れる）。テスト `scripts/airreach-api/schedule-test.sql`・`schedule-guards-test.sql`。取り消し `rollback/20261006120000_airreach_schedule_guards_rollback.sql` → `rollback/20261005120000_…` |
 
 ## 適用手順（承認後にのみ実行）
 
