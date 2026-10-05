@@ -59,7 +59,7 @@
     return '<p class="arr-sub">最新の計測（' + esc(lt.measuredOn) + '）だけの結果：' + lt.providers.map(function (p) { return esc(prov(p.provider)) + ' ' + (p.citeRate == null ? '—' : esc(p.citeRate) + '%'); }).join('、') + '</p>';
   }
   // 回答ごとの根拠（質問・AI・計測日時・判定・出典）。印刷では開いた状態で出す
-  function evidenceHtml(ai) {
+  function answerRecordsHtml(ai) {
     var ev = (ai && ai.evidence) || [];
     if (!ev.length) return '';
     var HOW = { ai_sources: 'AI が返した出典で判定', answer_text: '回答の本文の URL で判定', none: '出典が取れず判定できない', not_measured: '検索しない AI（引用は判定しない）', not_shown: 'AI の回答が表示されなかった', error: 'エラー' };
@@ -231,7 +231,7 @@
         typesHtml(ai) +
         latestHtml(ai) +
         '<p class="arr-note">「判定できない」は、AI が出典の一覧を返さず、回答の本文にも URL が無かった回答です（0% として数えません）。「AI の回答が表示されなかった」は、Google の検索結果に AI による概要が出なかった質問です。計測は API で行っており、一般の人が使う最新の ChatGPT・Gemini とは結果が異なることがあります。</p>' +
-        citedHtml(ai) + evidenceHtml(ai)
+        citedHtml(ai) + answerRecordsHtml(ai)
         : '<p class="arr-na">今月は計測していません。</p>') + '</section>' +
       '<section' + (c.first ? ' class="arr-first"' : '') + '><h2 class="arr-h2">' + (c.first ? '数値の一覧（初回の基準値）' : '数値の一覧（前月との比較）') + '</h2><table class="arr-table"><thead><tr><th></th><th>' + esc(ym(c.previousMonth)) + '</th><th>' + esc(ym(r.period_month)) + '</th><th>差</th></tr></thead><tbody>' + kpi.join('') +
       '<tr><th>検索の表示回数' + tag(trafficKind(tr.gsc)) + '</th><td>' + v(tr.gscPrev && tr.gscPrev.impressions) + '</td><td>' + v(tr.gsc && tr.gsc.impressions) + '</td><td>' + d(diff(tr.gsc && tr.gsc.impressions, tr.gscPrev && tr.gscPrev.impressions)) + '</td></tr>' +
