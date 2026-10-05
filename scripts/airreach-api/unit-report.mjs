@@ -113,7 +113,7 @@ expect('traffic: GSC は連携（サイト全体）の値を使う（並び順�
   expect('cited: compiled ai has cited domains and target citations', [rc.ai.citedDomains.length, rc.ai.targetCitations.length], [2, 1]);
   const ev = R.evidenceList(rc);
   expect('evidence: site row has date, url, rule version', /2026-10-05 \d\d:\d\d に https:\/\/example\.com\/ .*判定基準 r9/.test(ev[0].detail), true);
-  expect('evidence: ai row has date, version, model and answers', /計測日 2026-10-20・質問の版 v1・ChatGPT（gpt-x） 10回答/.test(ev[1].detail), true);
+  expect('evidence: ai row has month total, latest date, version, model and answers', /今月の計測 1回（2026-10-20）の合計・最新の計測 2026-10-20・質問の版 v1・ChatGPT（gpt-x） 10回答/.test(ev[1].detail), true);
   expect('evidence: gsc row has source and period', ev[2].source === 'Google Search Console（連携で取得）' && /2026-10-01〜2026-10-28（28日間）・sc-domain:example\.com・サイト全体の合計/.test(ev[2].detail), true);
   expect('evidence: ga4 missing → 未取得', ev[3].source, '未取得');
 }

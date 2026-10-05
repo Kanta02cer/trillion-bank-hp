@@ -143,6 +143,8 @@
       // 業種ごとの「調べた言葉」と一覧（診断時点では業種が未確定のため全業種分）
       if (window.AirReachKeyword.deriveAll) k.industries = window.AirReachKeyword.deriveAll(kwSrc, 20);
       k.pagesRead = (kwSrc.pages || []).map(function (p) { return p.url; });
+      // サイトに書かれた事実（営業時間・電話・住所など）。直す材料の FAQ の下書きに使う。値は本文のまま・書いてあった場所つき
+      if (window.AirReachKeyword.facts) k.facts = window.AirReachKeyword.facts(kwSrc);
       return k;
     } catch (e) { return null; }
   }
@@ -677,6 +679,7 @@
         }).catch(function () { tried.push({ url: sp.url, role: sp.role, ok: false, status: null }); return null; });
       })).then(function (pages) {
         parsed.kwSrc.pages = pages.filter(function (x) { return x && x.text; });
+        parsed.kwSrc.url = pageRes.finalUrl || url.href;
         parsed.keywordAuto = buildKeywordAuto(parsed.kwSrc);
         var result = analyze(parsed, pageRes, parts[1], parts[2], url.href);
         // 診断の範囲: 点数に使ったページ、答えの判定に読んだ下層ページ、案内ファイル。時刻はトップページを取得した時刻
