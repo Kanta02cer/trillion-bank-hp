@@ -28,6 +28,19 @@
   function diff(a, b) { return a == null || b == null ? null : Math.round((Number(a) - Number(b)) * 10) / 10; }
   function ym(s) { var t = String(s || ''); return t.slice(0, 4) + '年' + Number(t.slice(5, 7)) + '月'; }
 
+  // 構造化データの不足（業種で必要な項目がそろっているか）。airreach-schema-gaps.js
+  function schemaGapHtml(ld, industry) {
+    var G = window.AirReachSchemaGaps;
+    if (!G || !ld) return '';
+    var r = G.check(ld, industry || 'other', null);
+    var ST = { ok: '<span class="arr-ok">あり</span>', on_page_only: '<b class="arr-ng">無い</b>（ページには書いてある）', missing: '<b class="arr-ng">無い</b>' };
+    return '<h3 class="arr-h3">構造化データの不足（' + esc(r.industryLabel) + 'で必要な項目）' + tag('judged') + '</h3>' +
+      '<p class="arr-sub">必要な項目のうち、そろっているもの ' + esc(r.summary.requiredOk) + ' / ' + esc(r.summary.required) + (r.mainType ? '（判定に使った種類：' + esc(r.mainType) + '）' : '') + '</p>' +
+      (r.typeNote ? '<p class="arr-note">' + esc(r.typeNote) + '</p>' : '') +
+      '<table class="arr-table"><thead><tr><th>項目</th><th>必要度</th><th>構造化データ</th><th>直し方</th></tr></thead><tbody>' + r.items.map(function (x) {
+        return '<tr><td>' + esc(x.label) + ' <small class="arr-na">' + esc(x.key) + '</small></td><td>' + (x.level === 'required' ? '必要' : 'あるとよい') + '</td><td>' + ST[x.status] + (x.schemaValue ? '<br><small class="arr-na">' + esc(x.schemaValue) + '</small>' : '') + '</td><td>' + (x.status === 'ok' ? '—' : esc(x.fix)) + '</td></tr>';
+      }).join('') + '</tbody></table><p class="arr-note">' + esc(r.basis) + '「足りない情報」（点数の項目）は構造化データの種類があるか、この表は見つかった構造化データの中に業種で必要な項目がそろっているかを見ています。</p>';
+  }
   // 一般質問（店名を含まない）と指名質問（店名を含む）の月の合計
   function typesHtml(ai) {
     var t = ai && ai.types;
@@ -102,7 +115,7 @@
 
   // ---- 診断の根拠（範囲・内訳・項目ごとの結果・構造化データ・AIのロボット）-------------------
   var STATE_JA = { ok: '○', ng: '×', unknown: '—' };
-  function siteEvidenceHtml(cur) {
+  function siteEvidenceHtml(cur, industry) {
     var R = window.AirReachReport, dt = cur && cur.detail;
     if (!dt) return '<p class="arr-note">この診断には項目ごとの記録がありません。診断し直すと、項目ごとの結果と根拠を表示できます。</p>';
     var sc = dt.scope, bd = dt.breakdown;
@@ -141,6 +154,7 @@
       }).join('') + '</tbody></table>' + (dt.ld.errors ? '<p class="arr-note">形式の誤りで読めない記述が ' + esc(dt.ld.errors) + 'か所ありました。</p>' : '');
     } else if (dt.ld) h += '<p class="arr-sub">トップページに構造化データはありませんでした。</p>';
     else h += '<p class="arr-sub">見つかった種類：' + (dt.types.length ? esc(dt.types.join('、')) : 'なし') + '</p>';
+    h += schemaGapHtml(dt.ld, industry);
     // AIのロボット
     h += '<h3 class="arr-h3">AIのロボットへの許可（robots.txt）' + tag('measured') + tag('judged') + '</h3>';
     if (dt.robots && dt.robots.bots && dt.robots.bots.length) {
@@ -199,7 +213,7 @@
       '<p class="arr-note">計測していない月は点を打たず、線もつないでいません（0 ではありません）。</p></section>') +
       '<section><h2 class="arr-h2">ホームページの情報整備の内訳' + tag('judged') + '</h2>' +
       (cur ? '<p class="arr-sub">' + esc(day(cur.createdAt)) + ' に ' + esc(cur.url || '') + ' を診断' + (cur.inMonth ? '' : '<span class="arr-na">（当月の診断が無いため、この日の結果を使用）</span>') + '</p>' +
-        C.factors(c) + siteEvidenceHtml(cur) +
+        C.factors(c) + siteEvidenceHtml(cur, (c.client && c.client.industryId) || '') +
         (c.first ? '' : '<div class="arr-cols"><div><h3 class="arr-h3">前月から直ったこと</h3><ul class="arr-ul arr-ok">' + ((site.resolved || []).map(function (g) { return '<li>' + esc(resolved(g)) + '</li>'; }).join('') || '<li class="arr-na">なし</li>') + '</ul></div>' +
         '<div><h3 class="arr-h3">まだ足りないこと</h3><p class="arr-sub">' + ((cur.gaps || []).length ? (cur.gaps || []).length + '件（直し方は下の「直すこと」）' : 'なし') + '</p></div></div>') +
         (window.AirReachReport && (cur.gaps || []).length ? '<h3 class="arr-h3">直すこと（優先度の高い順）</h3>' + C.todos(window.AirReachReport.todoList(c), { audience: 'client', limit: 3, moreText: '（すべての項目は AirReach の画面で確認できます）' }) : '')
