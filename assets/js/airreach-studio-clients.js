@@ -365,7 +365,7 @@
   }
 
   // ---- これまでの AI 計測（顧客の measurement_runs）を「AI での見え方を測る」の下に出す ----------------
-  var PROV = { openai: 'ChatGPT', chatgpt: 'ChatGPT', perplexity: 'Perplexity', claude: 'Claude', gemini: 'Gemini', google_aio: 'Google AI による概要', google_ai_mode: 'Google AI モード', jev: '推定' };
+  var PROV = { openai: 'ChatGPT', chatgpt: 'ChatGPT', chatgpt_search: 'ChatGPT（検索あり）', perplexity: 'Perplexity', claude: 'Claude', gemini: 'Gemini', google_aio: 'Google AI による概要', google_ai_mode: 'Google AI モード', jev: '推定' };
   function pct(v) { return v == null || v === '' || isNaN(Number(v)) ? '—' : (Math.round(Number(v) * 10) / 10) + '%'; }
   function renderRunHistory() {
     var box = document.getElementById('hack2-history');
@@ -531,7 +531,7 @@
       var cp = window.AirReachStudio.customerPrompt || function (x) { return x; };
       var add = qs.map(function (x) { return cp(x, brand); }).filter(function (x) { return texts.indexOf(x.replace(/\s/g, '')) < 0; }).map(function (x) { return { id: 'c' + Math.random().toString(36).slice(2, 9), text: x, on: true, src: 'customer' }; });
       st.prompts = add.concat(st.prompts);
-      var n = 0; st.prompts.forEach(function (p) { if (p.on !== false) { n += 1; if (n > 8) p.on = false; } });
+      var n = 0; st.prompts.forEach(function (p) { if (p.on !== false) { n += 1; if (n > 10) p.on = false; } });
     }
     window.AirReachStudio.save();
     try { localStorage.removeItem(key); } catch (e) {}

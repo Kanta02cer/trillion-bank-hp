@@ -20,7 +20,8 @@
     claude: { label: 'Claude', color: '#1baf7a' },
     perplexity: { label: 'Perplexity', color: '#4a3aa7' },
     google_aio: { label: 'Google AI による概要', color: '#c2410c' },
-    google_ai_mode: { label: 'Google AI モード', color: '#0e7490' }
+    google_ai_mode: { label: 'Google AI モード', color: '#0e7490' },
+    chatgpt_search: { label: 'ChatGPT（検索あり）', color: '#15803d' }
   };
   var INK = '#0f172a', MUTED = '#64748b', PREV = '#b8c0cc';
   var FALLBACK_BANDS = [
@@ -72,6 +73,7 @@
   }
 
   /** 1ページ目の上に置く4枚のタイル（数字と前月比） */
+  function md(d) { var m = /^\d{4}-(\d{2})-(\d{2})/.exec(String(d || '')); return m ? Number(m[1]) + '/' + Number(m[2]) : ''; }
   function tiles(c) {
     c = c || {};
     var site = c.site || {}, cur = site.current, prev = site.previous, ai = c.ai, tr = c.traffic || {};
@@ -81,17 +83,23 @@
       (sc == null ? '' : ' <span class="arv-band" style="border-color:' + b.color + ';color:' + b.color + '">' + esc(b.label) + '</span>') + '</div>' +
       scoreBar(sc) + deltaHtml(site.overallDelta, '点') + '</div>';
 
-    var t2 = '<div class="arv-tile"><div class="arv-tile-h">AIの回答で引用された割合</div>';
+    var monthly = ai && ai.basis === 'monthly';
+    var t2 = '<div class="arv-tile"><div class="arv-tile-h">AIの回答で引用された割合' + (monthly ? '<small class="arv-tile-basis">今月の合計</small>' : '') + '</div>';
     if (ai && ai.providers && ai.providers.length) {
       t2 += '<div class="arv-ai">' + ai.providers.map(function (p) {
         var s = series(p.provider);
         // 判定できないとき「—」だけだと理由が分からないので一言添える（ChatGPT は検索しないので出典を判定しない）
         var why = p.citeRate != null ? '' : (p.provider === 'openai' ? '検索しない AI のため出典は判定しません' : '出典を判定できた回答がありません');
+        // 分子／分母（引用された回答の数／出典の有無を判定できた回答の数）と、割合に入れなかった回答の数
+        var nd = p.judged != null && p.citeCount != null && p.judged > 0 ? p.citeCount + '/' + p.judged + '回答' : '';
+        var aside = [p.undetermined ? '判定できない ' + p.undetermined : '', p.notShown ? 'AI の回答なし ' + p.notShown : '', p.errors ? 'エラー ' + p.errors : ''].filter(Boolean).join('・');
         return '<div class="arv-ai-row"><span class="arv-key" style="background:' + s.color + '"></span><span class="arv-ai-name">' + esc(s.label) + '</span>' +
-          '<span class="arv-ai-val">' + (p.citeRate == null ? '—' : esc(p.citeRate) + '%') + '</span>' + (why ? '<small class="arv-ai-why">' + esc(why) + '</small>' : deltaHtml(p.citeDelta, 'ポイント')) + '</div>';
+          '<span class="arv-ai-val">' + (p.citeRate == null ? '—' : esc(p.citeRate) + '%') + '</span>' + (why ? '<small class="arv-ai-why">' + esc(why) + '</small>' : deltaHtml(p.citeDelta, 'ポイント')) +
+          ((nd || aside) ? '<small class="arv-ai-nd">' + esc(nd) + (nd && aside ? '（' + esc(aside) + '）' : esc(aside)) + '</small>' : '') + '</div>';
       }).join('') + '</div>';
     } else t2 += '<div class="arv-big"><span class="arv-na">未計測</span></div>';
-    t2 += '<div class="arv-tile-f">AIに同じ質問をして、公式サイトが出典に入った回答の割合</div></div>';
+    t2 += '<div class="arv-tile-f">' + (monthly ? '今月の計測 ' + esc(ai.runs) + '回（' + esc(md(ai.firstOn)) + (ai.runs > 1 ? '〜' + esc(md(ai.lastOn)) : '') + '）の合計。引用された回答 ÷ 出典の有無を判定できた回答。最新の計測は ' + esc(md(ai.latest && ai.latest.measuredOn)) :
+      'AIに同じ質問をして、公式サイトが出典に入った回答の割合') + '</div></div>';
 
     var clicks = tr.gsc ? tr.gsc.clicks : null, clicksPrev = tr.gscPrev ? tr.gscPrev.clicks : null;
     var t3 = '<div class="arv-tile"><div class="arv-tile-h">検索からのクリック</div>' +

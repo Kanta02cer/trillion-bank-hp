@@ -6,7 +6,8 @@
  */
 const TYPESAFE_URL = 'https://api.typesafe.ai/v1/systemone';
 const MAX_CHARS = 10000;
-const MAX_PROMPTS = 8;
+// 1回の要求で受ける質問の数。Studio は10問を5問ずつに分けて送る（関数の制限時間と AI の回数の上限に収めるため）
+const MAX_PROMPTS = 10;
 
 const ALLOWED_HOSTS = new Set([
   'trillion-bank.jp',
@@ -95,40 +96,9 @@ export default async function handler(req, res) {
   const rows = [];
   const engineStatus = {};
 
-  await Promise.all(engines.map(async (engine) => {
-    try {
-      if (engine === 'jev') {
-        const apiKey = process.env.TYPESAFE_API_KEY;
-        if (!apiKey) {
-          engineStatus.jev = { ok: false, error: 'TYPESAFE_API_KEY is not configured' };
-          return;
-        }
-        const judged = await measureWithJev({
-          apiKey,
-          brand,
-          pageText: truncate(pageText || '', MAX_CHARS),
-          pageUrl,
-          pageTitle,
-          prompts
-        });
-        judged.forEach((r) => {
-          rows.push(Object.assign({ measurement_date: date, engine: 'Jev', url: pageUrl || '' }, r));
-        });
-        engineStatus.jev = { ok: true, count: judged.length, evidenceClass: 'Estimated' };
-      } else {
-        const live = await measureWithProvider(engine, brand, prompts, pageUrl, competitors);
-        live.rows.forEach((r) => {
-          rows.push(Object.assign({ measurement_date: date, url: pageUrl || '' }, r));
-        });
-        engineStatus[engine] = live.status;
-      }
-    } catch (err) {
-      engineStatus[engine] = {
-        ok: false,
-        error: err && err.message ? err.message : 'measurement failed'
-      };
-    }
-  }));
+  const measured = await measureEngines({ brand, prompts, engines, competitors, pageText, pageUrl, pageTitle, date });
+  measured.rows.forEach((r) => rows.push(r));
+  Object.assign(engineStatus, measured.engineStatus);
 
   const judgments = [];
   engines.forEach((engine) => {
@@ -166,12 +136,58 @@ export default async function handler(req, res) {
     rows,
     note:
       'Jev results are Estimated proxy judgments from page text + prompt, not live AI-search captures. ' +
-      'ChatGPT (gpt-4o-mini, no web search) is measured for mentions only; cited is null. ' +
-      'Claude answers with web search; cited = the official host is in the returned citation URLs. ' +
-      'Perplexity citation URLs are not returned through the gateway, so cited is judged only from the answer text (null when not found).',
+      'mentioned = the brand name appears in the answer. cited_by_sources = the official host is in the source URLs the AI returned (null when no source list). ' +
+      'self_url_in_text = the official host is in URLs written in the answer text (null when the answer has no URL). cited uses sources first, then answer text; null is never counted as 0. ' +
+      'status: ok / not_shown (no AI answer on the results page) / error. ChatGPT without search measures mentions only.',
     fetchNote: fetchNote
   });
 }
+
+/**
+ * 計測の本体（Studio の計測 API と定期計測の両方から使う）。AI ごとに並べて聞き、行と AI ごとの状態を返す
+ *   prompts: [{ keyword, prompt }] / engines: normalizeEngines 済み / competitors: [{ name, url }]
+ */
+export async function measureEngines({ brand, prompts, engines, competitors, pageText = '', pageUrl = null, pageTitle = null, date = new Date().toISOString().slice(0, 10) }) {
+  const rows = [];
+  const engineStatus = {};
+  await Promise.all(engines.map(async (engine) => {
+    try {
+      if (engine === 'jev') {
+        const apiKey = process.env.TYPESAFE_API_KEY;
+        if (!apiKey) {
+          engineStatus.jev = { ok: false, error: 'TYPESAFE_API_KEY is not configured' };
+          return;
+        }
+        const judged = await measureWithJev({
+          apiKey,
+          brand,
+          pageText: truncate(pageText || '', MAX_CHARS),
+          pageUrl,
+          pageTitle,
+          prompts
+        });
+        judged.forEach((r) => {
+          rows.push(Object.assign({ measurement_date: date, engine: 'Jev', url: pageUrl || '' }, r));
+        });
+        engineStatus.jev = { ok: true, count: judged.length, evidenceClass: 'Estimated' };
+      } else {
+        const live = await measureWithProvider(engine, brand, prompts, pageUrl, competitors);
+        live.rows.forEach((r) => {
+          rows.push(Object.assign({ measurement_date: date, url: pageUrl || '' }, r));
+        });
+        engineStatus[engine] = live.status;
+      }
+    } catch (err) {
+      engineStatus[engine] = {
+        ok: false,
+        error: err && err.message ? err.message : 'measurement failed'
+      };
+    }
+  }));
+
+  return { rows, engineStatus };
+}
+export { normalizeEngines, normalizePrompts };
 
 // ログインのトークンが AirReach の社内メンバーのものかを、その人のトークンで airreach_me を呼んで確かめる。
 // トークンの署名と期限は Supabase（PostgREST）が検証する。同じトークンの結果は5分だけ覚える
@@ -257,13 +273,14 @@ function normalizeEngines(raw) {
   list.forEach((e) => {
     let k = String(e || '').toLowerCase().trim();
     if (k === 'gpt' || k === 'openai') k = 'chatgpt';
+    if (k === 'chatgpt-search' || k === 'openai_search' || k === 'chatgpt_web') k = 'chatgpt_search';
     if (k === 'anthropic') k = 'claude';
     if (k === 'pplx' || k === 'sonar') k = 'perplexity';
     if (k === 'typesafe' || k === 'jev-latest') k = 'jev';
     if (k === 'google') k = 'gemini';
     if (k === 'aio' || k === 'ai_overview' || k === 'ai_overviews') k = 'google_aio';
     if (k === 'ai_mode' || k === 'aimode') k = 'google_ai_mode';
-    if (['jev', 'chatgpt', 'claude', 'perplexity', 'gemini', 'google_aio', 'google_ai_mode'].indexOf(k) === -1) return;
+    if (['jev', 'chatgpt', 'chatgpt_search', 'claude', 'perplexity', 'gemini', 'google_aio', 'google_ai_mode'].indexOf(k) === -1) return;
     if (seen[k]) return;
     seen[k] = true;
     out.push(k);
@@ -385,10 +402,53 @@ export function competitorHits(answer, citations, competitors) {
   });
 }
 
+/**
+ * 1つの回答の判定。次の3つを分けて記録する（混ぜない）
+ *   - mentioned：回答の本文に社名が出たか（社名への言及）
+ *   - cited_by_sources：AI が返した出典の一覧に自社サイトがあるか（出典の一覧が返らなければ null）
+ *   - self_url_in_text：回答の本文に書かれた URL・ドメインに自社サイトがあるか（本文に URL が1つも無ければ null）
+ * cited（引用率に使う値）は、出典の一覧があればそれで、無ければ本文の URL で決める。どちらでも判定できなければ null（0 にしない）。
+ * shown=false（Google の AI による概要が検索結果に出なかった など）は、回答そのものが無いので status='not_shown'・すべて null
+ */
+export function judgeAnswer({ answer, citations, shown, brand, host, competitors, searched }) {
+  const comps = competitors || [];
+  if (shown === false) {
+    return { status: 'not_shown', mentioned: null, cited: null, cite_source: 'not_shown', citeMethod: 'none', cited_by_sources: null, self_url_in_text: null,
+      sources_available: false, searched: !!searched, citations: [], urls_in_answer: [], competitors: comps.map((c) => ({ name: c.name, mentioned: null, cited: null })), order: [], self_rank: null };
+  }
+  const text = String(answer || '');
+  const lower = text.toLowerCase();
+  const sources = Array.isArray(citations) && citations.length ? citations.slice(0, 20) : null;
+  const inText = urlsInAnswer(text);
+  const bySources = sources && host ? (sources.some((u) => hostMatches(u, host)) ? 1 : 0) : null;
+  // 本文：自社のドメインがあれば 1。ほかのサイトの URL だけが並んでいれば 0。URL が無ければ判定できない（null）
+  const selfInText = host ? (lower.indexOf(host) !== -1 ? 1 : (inText.length ? 0 : null)) : null;
+  let cited = null, source = 'none';
+  if (bySources !== null) { cited = bySources; source = 'ai_sources'; }
+  else if (selfInText !== null) { cited = selfInText; source = 'answer_text'; }
+  return {
+    status: 'ok',
+    mentioned: nameIn(text, brand) ? 1 : 0,
+    cited,
+    cite_source: source,
+    citeMethod: source === 'ai_sources' ? 'citations' : (source === 'answer_text' ? 'text' : 'none'),
+    cited_by_sources: bySources,
+    self_url_in_text: selfInText,
+    sources_available: !!sources,
+    searched: !!searched,
+    citations: sources || [],
+    urls_in_answer: inText,
+    competitors: competitorHits(text, sources, comps),
+    ...mentionOrder(text, brand, comps)
+  };
+}
+
 async function measureWithProvider(engine, brand, prompts, pageUrl, competitors) {
   const gatewayKey = process.env.AI_GATEWAY_API_KEY || '';
   const keyMap = {
     chatgpt: process.env.OPENAI_API_KEY,
+    // ChatGPT（検索あり）：OpenAI の Responses API の web_search。出典（url_citation）が返る
+    chatgpt_search: process.env.OPENAI_API_KEY,
     claude: process.env.ANTHROPIC_API_KEY,
     perplexity: process.env.PERPLEXITY_API_KEY,
     // Gemini は Google の Gemini API を直接使う（Google 検索で調べてから答え、出典を返す）。AI Gateway は使わない
@@ -398,7 +458,10 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
     google_ai_mode: process.env.SERPAPI_API_KEY || process.env.SERPAPI_KEY
   };
   const directKey = keyMap[engine];
-  const useGateway = !!gatewayKey && (engine === 'chatgpt' || engine === 'claude' || engine === 'perplexity');
+  // 出典が返る直接の API（Perplexity・Claude の検索・ChatGPT の検索）は、キーがあれば AI Gateway より優先する。
+  // AI Gateway は Perplexity の出典を渡さない（2026-10-03 実測）
+  const preferDirect = !!directKey && (engine === 'perplexity' || engine === 'claude' || engine === 'chatgpt_search');
+  const useGateway = !!gatewayKey && !preferDirect && ['chatgpt', 'chatgpt_search', 'claude', 'perplexity'].indexOf(engine) >= 0;
   if ((engine === 'google_aio' || engine === 'google_ai_mode') && !directKey) {
     return { rows: [], status: { ok: false, error: 'SerpApi の API キー（SERPAPI_API_KEY）がまだ設定されていません', engine } };
   }
@@ -423,90 +486,85 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
   if (pageUrl) {
     try { host = new URL(pageUrl).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) {}
   }
-  // 検索つき（Responses API）は Claude だけ。ChatGPT は費用を抑えるため検索なしで言及率だけを測る（引用は判定しない）。
-  // Perplexity は出典URLが gateway から返らないため本文で判定
-  const withSearch = useGateway && engine === 'claude';
+  // 検索つき（AI Gateway の Responses API）は Claude と ChatGPT（検索あり）。ChatGPT（検索なし）は費用を抑えて言及だけを測る（引用は判定しない）。
+  // Perplexity は直接の API なら出典の一覧、AI Gateway なら本文で判定
+  const withSearch = useGateway && (engine === 'claude' || engine === 'chatgpt_search');
   const mentionOnly = engine === 'chatgpt';
+  const measuredAt = new Date().toISOString();
+  const conditions = { engine, model: useGateway ? gatewayModel(engine) : directModel(engine), via: useGateway ? 'ai-gateway' : 'direct', search: mentionOnly ? false : true, location: 'JP' };
 
   // Gateway の無料枠は1分あたりの回数に上限がある（Perplexity は5回/分）。同時に2問までにし、
   // 上限に当たったら返ってきた待ち時間だけ待って聞き直す（関数の制限時間に収まる範囲で）
   const deadline = Date.now() + 240000;
   const rows = await mapLimit(prompts, 2, async (p) => {
+    const base = { engine: engineLabel(engine), keyword: p.keyword || p.prompt, prompt: p.prompt, evidenceClass: 'Observed',
+      model: conditions.model, source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API', measured_at: measuredAt, conditions };
     let out;
-    if (withSearch) out = await withRateRetry(() => callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt), deadline);
-    else {
-      let got = null;
-      if (useGateway && engine === 'perplexity') {
-        try { got = await withRateRetry(() => callPerplexityResponses(gatewayModel(engine), gatewayKey, p.prompt), deadline); }
-        catch (e) { if (/rate limit|回数の上限|429/i.test(String((e && e.message) || e))) throw e; got = null; }
-        if (got && !got.answer) got = null;
+    try {
+      if (withSearch) out = await withRateRetry(() => callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt), deadline);
+      else {
+        let got = null;
+        if (useGateway && engine === 'perplexity') {
+          try { got = await withRateRetry(() => callPerplexityResponses(gatewayModel(engine), gatewayKey, p.prompt), deadline); }
+          catch (e) { if (/rate limit|回数の上限|429/i.test(String((e && e.message) || e))) throw e; got = null; }
+          if (got && !got.answer) got = null;
+        }
+        if (!got) got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt)), deadline);
+        out = got && typeof got === 'object'
+          ? { answer: got.answer, citations: got.citations, searched: got.searched != null ? got.searched : engine === 'perplexity', fields: got.fields, shown: got.shown }
+          : { answer: got, citations: null, searched: engine === 'perplexity' };
       }
-      if (!got) got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt)), deadline);
-      // Gateway は出典の一覧も返すことがある（Perplexity）。一覧が取れたら出典で、取れなければ本文で判定する
-      out = got && typeof got === 'object'
-        ? { answer: got.answer, citations: got.citations, searched: got.searched != null ? got.searched : engine === 'perplexity', fields: got.fields, shown: got.shown }
-        : { answer: got, citations: null, searched: engine === 'perplexity' };
+    } catch (err) {
+      // この質問だけ失敗（回数の上限・タイムアウトなど）。言及も引用も判定できないので null。集計では「エラー」として別に数える
+      return Object.assign(base, { status: 'error', error: String((err && err.message) || err || 'failed').slice(0, 300), mentioned: null, cited: null, cite_source: 'error', citeMethod: 'none',
+        cited_by_sources: null, self_url_in_text: null, sources_available: false, searched: false, citations: [], urls_in_answer: [],
+        competitors: (competitors || []).map((c) => ({ name: c.name, mentioned: null, cited: null })), order: [], self_rank: null, answer_excerpt: '' });
     }
     if (mentionOnly) {
-      return {
-        engine: engineLabel(engine),
-        keyword: p.keyword || p.prompt,
-        prompt: p.prompt,
+      return Object.assign(base, {
+        status: 'ok',
         mentioned: nameIn(out.answer, brand) ? 1 : 0,
         cited: null,
+        cite_source: 'not_measured',
         citeMethod: 'none',
+        cited_by_sources: null,
+        self_url_in_text: null,
+        sources_available: false,
         searched: false,
         citations: [],
+        urls_in_answer: urlsInAnswer(out.answer),
         competitors: competitorHits(out.answer, null, competitors).map((h) => ({ name: h.name, mentioned: h.mentioned, cited: null })),
         ...mentionOrder(out.answer, brand, competitors),
-        evidenceClass: 'Observed',
-        model: useGateway ? gatewayModel(engine) : engine,
-        source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
-        answer_excerpt: String(out.answer || '').slice(0, 400)
-      };
+        answer_excerpt: String(out.answer || '').slice(0, 400),
+        answer_text: String(out.answer || '').slice(0, 4000)
+      });
     }
-    const lower = String(out.answer || '').toLowerCase();
-    const mentioned = nameIn(out.answer, brand) ? 1 : 0;
-    let cited = 0;
-    let citeMethod = 'citations';
-    if (Array.isArray(out.citations)) {
-      cited = host && out.citations.some((u) => hostMatches(u, host)) ? 1 : 0;
-    } else {
-      // 出典URLの一覧が無い: 本文にドメインがあれば引用ありとし、無ければ判定できない（0 にしない）
-      citeMethod = 'text';
-      // 本文に自社のドメインがあれば引用あり。本文にほかのサイトの URL を出典として並べていて、自社が無ければ引用なし（0）。
-      // URL がまったく無い回答は判定できない（null。0 にしない）
-      const inText = urlsInAnswer(out.answer);
-      cited = host && lower.indexOf(host) !== -1 ? 1 : (host && inText.length ? 0 : null);
-    }
-    return {
-      engine: engineLabel(engine),
-      keyword: p.keyword || p.prompt,
-      prompt: p.prompt,
-      mentioned,
-      cited,
-      citeMethod,
-      searched: !!out.searched,
-      citations: Array.isArray(out.citations) ? out.citations.slice(0, 20) : [],
-      urls_in_answer: Array.isArray(out.citations) ? [] : urlsInAnswer(out.answer),
-      competitors: competitorHits(out.answer, out.citations, competitors),
-      ...mentionOrder(out.answer, brand, competitors),
-      evidenceClass: 'Observed',
-      model: useGateway ? gatewayModel(engine) : engine,
-      source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API',
+    const j = judgeAnswer({ answer: out.answer, citations: out.citations, shown: out.shown, brand, host, competitors, searched: out.searched });
+    return Object.assign(base, j, {
       answer_excerpt: String(out.answer || '').slice(0, 400),
+      // 根拠の確認用に、回答の本文を残す（長すぎる分は切る）
+      answer_text: String(out.answer || '').slice(0, 4000),
       citation_fields: out.fields || null,
       ai_shown: out.shown == null ? null : !!out.shown
-    };
+    });
   });
+  const okN = rows.filter((r) => r.status === 'ok').length;
+  const errRows = rows.filter((r) => r.status === 'error');
+  if (!okN && errRows.length && !rows.some((r) => r.status === 'not_shown')) {
+    return { rows, status: { ok: false, error: errRows[0].error, errors: errRows.length, count: rows.length, engine } };
+  }
   return {
     rows,
     status: {
       ok: true,
       count: rows.length,
+      answered: okN,
+      not_shown: rows.filter((r) => r.status === 'not_shown').length,
+      errors: errRows.length,
+      error: errRows.length ? errRows[0].error : undefined,
       evidenceClass: 'Observed',
-      search: withSearch || engine === 'perplexity',
-      citeMethod: mentionOnly ? 'none' : (withSearch ? 'citations' : 'text'),
+      search: !mentionOnly,
+      citeMethod: mentionOnly ? 'none' : (rows.some((r) => r.cite_source === 'ai_sources') ? 'citations' : 'text'),
       model: useGateway ? gatewayModel(engine) : engine,
       via: useGateway ? 'ai-gateway' : 'direct'
     }
@@ -540,21 +598,27 @@ async function callResponsesWithSearch(model, key, prompt) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(gatewayError(res.status, data, model));
+  return parseSearchResponses(data);
+}
+/** Responses API（web_search つき）の応答：本文と、本文に付いた出典（url_citation）。検索したか（web_search_call）も返す */
+export function parseSearchResponses(data) {
   let answer = '';
   const citations = [];
   let searched = false;
-  for (const o of data.output || []) {
+  for (const o of (data && data.output) || []) {
     if (o.type === 'web_search_call') searched = true;
     if (o.type !== 'message') continue;
     for (const c of o.content || []) {
       if (c.type !== 'output_text') continue;
       answer += c.text || '';
       for (const a of c.annotations || []) {
-        if (a.type === 'url_citation' && a.url && citations.indexOf(a.url) < 0) citations.push(a.url);
+        const u = a && (a.url || (a.url_citation && a.url_citation.url));
+        if (a && a.type === 'url_citation' && u && citations.indexOf(u) < 0) citations.push(u);
       }
     }
   }
-  return { answer, citations, searched };
+  // 出典が1つも無いときは null（「引用なし」と決めつけず、本文で判定する）
+  return { answer, citations: citations.length ? citations.slice(0, 20) : null, searched, fields: ['responses', 'web_search'] };
 }
 
 /**
@@ -611,9 +675,22 @@ function gatewayError(status, data, model) {
   return String(msg || ('AI Gateway failed (' + status + ')')).slice(0, 200);
 }
 
+function directModel(engine) {
+  if (engine === 'chatgpt') return process.env.AIRREACH_OPENAI_MODEL || 'gpt-4o-mini';
+  if (engine === 'chatgpt_search') return process.env.AIRREACH_OPENAI_SEARCH_MODEL_DIRECT || 'gpt-5-mini';
+  if (engine === 'claude') return process.env.AIRREACH_CLAUDE_MODEL || 'claude-haiku-4-5';
+  if (engine === 'perplexity') return process.env.AIRREACH_PERPLEXITY_MODEL || 'sonar';
+  if (engine === 'gemini') return process.env.AIRREACH_GEMINI_MODEL || 'gemini-2.5-flash';
+  if (engine === 'google_aio') return 'serpapi/google_ai_overview';
+  if (engine === 'google_ai_mode') return 'serpapi/google_ai_mode';
+  return engine;
+}
+
 function gatewayModel(engine) {
   // ChatGPT は検索なしの言及率だけ（1回答 約0.0002ドル・2026-09-30 実測）
   if (engine === 'chatgpt') return process.env.AIRREACH_OPENAI_MODEL || 'openai/gpt-4o-mini';
+  // ChatGPT（検索あり）: 2026-09-30 実測 gpt-5-mini・検索1回まで 約0.015ドル/回答、引用URLは8〜12件
+  if (engine === 'chatgpt_search') return process.env.AIRREACH_OPENAI_SEARCH_MODEL || 'openai/gpt-5-mini';
   if (engine === 'claude') return process.env.AIRREACH_CLAUDE_MODEL || 'anthropic/claude-haiku-4.5';
   if (engine === 'perplexity') return process.env.AIRREACH_PERPLEXITY_MODEL || 'perplexity/sonar';
   return null;
@@ -707,7 +784,7 @@ export async function callGemini(key, prompt) {
 }
 // ---- SerpApi：Google の AI による概要（AI Overviews）と AI モード（AI Mode）--------------------------
 // 日本の Google（google.co.jp・日本語・日本）で取る。答えの本文は text_blocks の snippet、出典は references[].link。
-// AI による概要は、検索結果の中に出ないこともある（出ない質問は shown=false：自社の名前も出典も無いので 0 として数える）
+// AI による概要は、検索結果の中に出ないこともある（出ない質問は shown=false。回答が無いので言及・引用とも判定せず「表示なし」として別に数える）
 const SERP_BASE = 'https://serpapi.com/search.json';
 async function serpGet(params, key) {
   const q = new URLSearchParams(Object.assign({ hl: 'ja', gl: 'jp', api_key: key }, params));
@@ -788,6 +865,7 @@ async function callProvider(engine, key, prompt) {
   if (engine === 'gemini') return callGemini(key, prompt);
   if (engine === 'google_aio') return callSerpAio(key, prompt);
   if (engine === 'google_ai_mode') return callSerpAiMode(key, prompt);
+  if (engine === 'chatgpt_search') return callOpenAISearch(key, prompt);
   if (engine === 'chatgpt') {
     const oai = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -810,52 +888,93 @@ async function callProvider(engine, key, prompt) {
       ? oaiData.choices[0].message.content
       : '';
   }
-  if (engine === 'claude') {
-    const ant = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: process.env.AIRREACH_CLAUDE_MODEL || 'claude-haiku-4-5',
-        max_tokens: 800,
-        system,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const antData = await ant.json().catch(() => ({}));
-    if (!ant.ok) throw new Error((antData && antData.error && antData.error.message) || 'Anthropic failed');
-    const blocks = antData.content || [];
-    return blocks.map((b) => b.text || '').join('\n');
-  }
-  if (engine === 'perplexity') {
-    const pplx = await fetch('https://api.perplexity.ai/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + key,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: process.env.AIRREACH_PERPLEXITY_MODEL || 'sonar',
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: prompt }
-        ]
-      })
-    });
-    const pplxData = await pplx.json().catch(() => ({}));
-    if (!pplx.ok) throw new Error((pplxData && pplxData.error && pplxData.error.message) || 'Perplexity failed');
-    return pplxData.choices && pplxData.choices[0] && pplxData.choices[0].message
-      ? pplxData.choices[0].message.content
-      : '';
-  }
+  if (engine === 'claude') return callClaudeSearch(key, prompt);
+  if (engine === 'perplexity') return callPerplexityDirect(key, prompt);
   throw new Error('Unknown engine');
+}
+
+/** 回数の上限（429）のときの共通の文。末尾の英語は自動で待って聞き直すための目印（rateLimitWait が読む） */
+function limitError(name, sec) {
+  const s2 = sec || 30;
+  return new Error(name + ' の回数の上限に当たりました。' + s2 + '秒ほどあけて、もう一度計測してください [rate limit; retry after ' + s2 + 's]');
+}
+/**
+ * Perplexity の API（直接）。出典は citations（URL の配列）と search_results[].url で返る。
+ * 費用（2026-10 公開価格）: sonar は 1回の検索つき回答あたり request fee＋トークン料。PERPLEXITY_API_KEY が必要
+ */
+export async function callPerplexityDirect(key, prompt) {
+  const res = await fetch('https://api.perplexity.ai/chat/completions', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: directModel('perplexity'), messages: [{ role: 'user', content: prompt }] }),
+    signal: AbortSignal.timeout(90000)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 429) throw limitError('perplexity');
+  if (!res.ok) throw new Error(String((data && data.error && (data.error.message || data.error)) || ('Perplexity failed (' + res.status + ')')).slice(0, 200));
+  return parsePerplexityDirect(data);
+}
+export function parsePerplexityDirect(data) {
+  const d = data || {};
+  const msg = (d.choices && d.choices[0] && d.choices[0].message) || {};
+  const urls = [];
+  (Array.isArray(d.citations) ? d.citations : []).forEach((u) => { if (typeof u === 'string' && /^https?:\/\//i.test(u) && urls.indexOf(u) < 0) urls.push(u); });
+  (Array.isArray(d.search_results) ? d.search_results : []).forEach((r) => { const u = r && r.url; if (/^https?:\/\//i.test(String(u || '')) && urls.indexOf(u) < 0) urls.push(u); });
+  const fields = ['perplexity'].concat(Array.isArray(d.citations) ? ['citations'] : [], Array.isArray(d.search_results) ? ['search_results'] : []);
+  return { answer: msg.content || '', citations: urls.length ? urls.slice(0, 20) : null, searched: true, fields };
+}
+/**
+ * Claude（Anthropic の API・直接）を Web 検索つきで聞く。出典は本文ブロックの citations（web_search_result_location）。
+ * 費用: 検索 1,000回あたり 10ドル＋トークン料（Haiku 4.5）。検索は1回までに抑える。ANTHROPIC_API_KEY が必要
+ */
+export async function callClaudeSearch(key, prompt) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: directModel('claude'),
+      max_tokens: 1200,
+      messages: [{ role: 'user', content: prompt }],
+      tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 1, user_location: { type: 'approximate', country: 'JP' } }]
+    }),
+    signal: AbortSignal.timeout(120000)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 429) throw limitError('claude');
+  if (!res.ok) throw new Error(String((data && data.error && data.error.message) || ('Anthropic failed (' + res.status + ')')).slice(0, 200));
+  return parseClaudeSearch(data);
+}
+export function parseClaudeSearch(data) {
+  let answer = '';
+  const urls = [];
+  let searched = false;
+  for (const b of (data && data.content) || []) {
+    if (b.type === 'server_tool_use' && b.name === 'web_search') searched = true;
+    if (b.type === 'web_search_tool_result') searched = true;
+    if (b.type !== 'text') continue;
+    answer += b.text || '';
+    for (const c of b.citations || []) { const u = c && c.url; if (/^https?:\/\//i.test(String(u || '')) && urls.indexOf(u) < 0) urls.push(u); }
+  }
+  return { answer, citations: urls.length ? urls.slice(0, 20) : null, searched, fields: ['claude'].concat(searched ? ['web_search'] : []) };
+}
+/** ChatGPT（OpenAI の API・直接）を Web 検索つきで聞く（Responses API）。OPENAI_API_KEY が必要 */
+export async function callOpenAISearch(key, prompt) {
+  const model = directModel('chatgpt_search');
+  const res = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, input: prompt, tools: [{ type: 'web_search', user_location: { type: 'approximate', country: 'JP' } }], max_tool_calls: 1, reasoning: { effort: 'low' }, store: false }),
+    signal: AbortSignal.timeout(120000)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 429) throw limitError('openai');
+  if (!res.ok) throw new Error(String((data && data.error && data.error.message) || ('OpenAI failed (' + res.status + ')')).slice(0, 200));
+  return parseSearchResponses(data);
 }
 
 function engineLabel(engine) {
   if (engine === 'chatgpt') return 'ChatGPT';
+  if (engine === 'chatgpt_search') return 'ChatGPT（検索あり）';
   if (engine === 'gemini') return 'Gemini';
   if (engine === 'google_aio') return 'Google AI Overviews';
   if (engine === 'google_ai_mode') return 'Google AI Mode';
