@@ -657,6 +657,86 @@
     });
   }
 
+  // ---- AI計測の定期実行（社内だけ）-------------------------------------------------------
+  // 設定（measurement_schedules）と実行の記録（measurement_jobs）。自動で動くのは、設定を「有効」にし、
+  // さらに計測サーバーの AIRREACH_SCHEDULE_ENABLED を true にしたときだけ（既定は止めてある）
+  var SCHED_ENGINES = [['perplexity', 'Perplexity'], ['gemini', 'Gemini'], ['google_aio', 'Google AI による概要'], ['google_ai_mode', 'Google AI モード'], ['chatgpt_search', 'ChatGPT（検索あり）'], ['claude', 'Claude（検索あり）'], ['chatgpt', 'ChatGPT（検索なし）']];
+  var WD = ['日', '月', '火', '水', '木', '金', '土'];
+  var JOB_STATUS = { queued: ['待ち', 'is-warn'], running: ['実行中', 'is-warn'], succeeded: ['成功', 'is-ok'], partial: ['一部成功', 'is-warn'], failed: ['失敗', 'is-bad'], skipped: ['見送り', ''] };
+  function schedPrompts(text) { return String(text || '').split(/\n+/).map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 10).map(function (t) { return { prompt: t, keyword: t }; }); }
+  function loadSchedule(c, sites) {
+    var box = $('#arc-schedule'); if (!box) return;
+    Promise.all([
+      sb.from('measurement_schedules').select('*').eq('client_id', c.id).maybeSingle(),
+      sb.from('measurement_jobs').select('id,slot,trigger,status,attempts,answers_planned,answers_done,errors,not_shown,est_cost_usd,skip_reason,last_error,run_id,finished_at').eq('client_id', c.id).order('slot', { ascending: false }).limit(20)
+    ]).then(function (rs) {
+      if (rs[0].error && /measurement_schedules|relation|schema cache/i.test(String(rs[0].error.message || ''))) {
+        box.innerHTML = '<p class="arc-note">定期計測の表がまだデータベースにありません（migration 20261005120000 の適用待ち）。</p>'; return;
+      }
+      renderSchedule(box, c, sites, q(rs[0]), q(rs[1]) || []);
+    }).catch(function (e) { box.innerHTML = '<p class="arc-note">定期計測の設定を読めませんでした：' + esc(e.message || e) + '</p>'; });
+  }
+  function renderSchedule(box, c, sites, sc, jobs) {
+    var s = sc || { enabled: false, brand: c.name, site_url: (sites[0] && sites[0].url) || '', engines: ['perplexity', 'gemini', 'google_aio', 'google_ai_mode'], prompts: [], weekdays: [1], hour_jst: 9, repeats: 1, max_runs_per_month: 4, monthly_answer_cap: 200, monthly_cost_cap_usd: 5 };
+    var per = (s.prompts || []).length * (s.engines || []).length * (s.repeats || 1);
+    var jobRows = jobs.map(function (j) {
+      var st = JOB_STATUS[j.status] || [j.status, ''];
+      return '<tr><td>' + esc(jst(j.slot).slice(0, 16)) + (j.trigger === 'manual' ? ' <span class="arc-sub">手動</span>' : '') + '</td><td><span class="arc-chip ' + st[1] + '">' + esc(st[0]) + '</span>' + (j.attempts > 1 ? ' <span class="arc-sub">' + j.attempts + '回目</span>' : '') + '</td>' +
+        '<td>' + esc(j.answers_done) + ' / ' + esc(j.answers_planned) + (j.errors ? ' · エラー ' + esc(j.errors) : '') + (j.not_shown ? ' · AI の回答なし ' + esc(j.not_shown) : '') + '</td><td>' + esc(Number(j.est_cost_usd || 0).toFixed(3)) + 'ドル</td>' +
+        '<td>' + esc(j.skip_reason || j.last_error || '') + '</td></tr>';
+    }).join('');
+    box.innerHTML = '<section class="arc-card arc-sched"><div class="arv-home-head"><h2 class="arc-h2">定期計測 <span class="arc-chip ' + (s.enabled ? 'is-ok' : '') + '">' + (s.enabled ? '有効' : '止めています') + '</span></h2></div>' +
+      '<p class="arc-note">決めた曜日・時刻に、同じ質問を同じ AI に聞いて記録します。<b>自動で動くのは、ここで「有効」にし、さらに計測サーバー側の設定（AIRREACH_SCHEDULE_ENABLED）を入れたときだけ</b>です（いまは計測の条件と費用の上限が決まるまで止めています）。「今すぐ1回測る」はいつでも使えます。</p>' +
+      '<form id="arc-sched-form" class="arc-sched-form">' +
+      '<label class="arc-sched-chk"><input type="checkbox" id="arc-sched-enabled"' + (s.enabled ? ' checked' : '') + '> 有効にする</label>' +
+      '<fieldset><legend>聞く AI</legend>' + SCHED_ENGINES.map(function (e) { return '<label><input type="checkbox" name="arc-sched-eng" value="' + e[0] + '"' + ((s.engines || []).indexOf(e[0]) >= 0 ? ' checked' : '') + '> ' + esc(e[1]) + '</label>'; }).join('') + '</fieldset>' +
+      '<label class="arc-sched-full">質問（1行に1問・10問まで） <button type="button" class="arc-btn-sm" id="arc-sched-from-studio">Studio の「毎月測る質問」を読み込む</button><textarea class="arc-input" id="arc-sched-prompts" rows="6">' + esc((s.prompts || []).map(function (p) { return p.prompt; }).join('\n')) + '</textarea></label>' +
+      '<fieldset><legend>曜日</legend>' + WD.map(function (w, i) { return '<label><input type="checkbox" name="arc-sched-wd" value="' + i + '"' + ((s.weekdays || []).indexOf(i) >= 0 ? ' checked' : '') + '> ' + w + '</label>'; }).join('') + '</fieldset>' +
+      '<div class="arc-row"><label>時刻（日本時間）<select class="arc-input" id="arc-sched-hour">' + Array.from({ length: 24 }, function (_, h) { return '<option value="' + h + '"' + (h === s.hour_jst ? ' selected' : '') + '>' + h + '時</option>'; }).join('') + '</select></label>' +
+      '<label>1回に同じ質問を聞く回数<select class="arc-input" id="arc-sched-repeats">' + [1, 2, 3].map(function (n) { return '<option' + (n === s.repeats ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label></div>' +
+      '<div class="arc-row"><label>月の実行回数の上限<input class="arc-input" type="number" min="1" max="31" id="arc-sched-runs" value="' + esc(s.max_runs_per_month) + '"></label>' +
+      '<label>月の回答数の上限<input class="arc-input" type="number" min="1" max="5000" id="arc-sched-answers" value="' + esc(s.monthly_answer_cap) + '"></label>' +
+      '<label>月の費用の上限（ドル・見込み）<input class="arc-input" type="number" min="0" max="500" step="0.5" id="arc-sched-cost" value="' + esc(s.monthly_cost_cap_usd) + '"></label></div>' +
+      '<p class="arc-note" id="arc-sched-calc">1回の実行で ' + per + ' 回答（質問 ' + (s.prompts || []).length + ' × AI ' + (s.engines || []).length + ' × ' + (s.repeats || 1) + '回）。月 ' + s.max_runs_per_month + ' 回なら最大 ' + per * s.max_runs_per_month + ' 回答。上限を超える回は実行せず「見送り」として理由を残します。</p>' +
+      '<div class="arc-row"><button class="arc-btn" type="submit">設定を保存</button>' + (sc ? '<button class="arc-btn-sm" type="button" id="arc-sched-now">今すぐ1回測る</button>' : '') + '</div></form>' +
+      '<h3 class="arc-h3">実行の記録（直近20回）</h3><div class="arc-table-wrap"><table class="arc-table"><thead><tr><th>予定の時刻</th><th>結果</th><th>回答</th><th>費用の見込み</th><th>見送り・失敗の理由</th></tr></thead><tbody>' +
+      (jobRows || '<tr><td colspan="5" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>';
+    $('#arc-sched-from-studio').addEventListener('click', function () {
+      sb.from('studio_workspaces').select('data').eq('client_id', c.id).maybeSingle().then(function (r) {
+        var d = q(r), list = d && d.data && d.data.studio && d.data.studio.prompts;
+        var on = (list || []).filter(function (x) { return x.on !== false && String(x.text || '').trim(); }).slice(0, 10).map(function (x) { return x.text; });
+        if (!on.length) { msg('Studio に「毎月測る質問」がまだありません。Studio の「AI での見え方を測る」で質問を決めてください。', 'error'); return; }
+        $('#arc-sched-prompts').value = on.join('\n'); msg('Studio の質問を ' + on.length + ' 問読み込みました。「設定を保存」で保存します。', 'ok');
+      }).catch(fail);
+    });
+    $('#arc-sched-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var engs = Array.prototype.map.call(document.querySelectorAll('input[name="arc-sched-eng"]:checked'), function (x) { return x.value; });
+      var wds = Array.prototype.map.call(document.querySelectorAll('input[name="arc-sched-wd"]:checked'), function (x) { return Number(x.value); });
+      var ps = schedPrompts($('#arc-sched-prompts').value);
+      if (!engs.length || !wds.length) { msg('AI と曜日を1つ以上選んでください。', 'error'); return; }
+      if ($('#arc-sched-enabled').checked && !ps.length) { msg('有効にするには、質問を1問以上入れてください。', 'error'); return; }
+      var row = { client_id: c.id, enabled: $('#arc-sched-enabled').checked, brand: s.brand || c.name, site_url: s.site_url || (sites[0] && sites[0].url) || null, engines: engs, prompts: ps, weekdays: wds,
+        hour_jst: Number($('#arc-sched-hour').value), repeats: Number($('#arc-sched-repeats').value), max_runs_per_month: Number($('#arc-sched-runs').value), monthly_answer_cap: Number($('#arc-sched-answers').value),
+        monthly_cost_cap_usd: Number($('#arc-sched-cost').value), updated_by: me.email, updated_at: new Date().toISOString() };
+      if (!sc) row.created_by = me.email;
+      sb.from('measurement_schedules').upsert(row, { onConflict: 'client_id' }).then(function (r) { if (r.error) throw r.error; msg('定期計測の設定を保存しました。', 'ok'); loadSchedule(c, sites); }).catch(fail);
+    });
+    var now = $('#arc-sched-now');
+    if (now) now.addEventListener('click', function () {
+      now.disabled = true; now.textContent = '測っています…（数分かかります）';
+      sb.auth.getSession().then(function (r) {
+        var tok = r && r.data && r.data.session && r.data.session.access_token;
+        return fetch('/api/airreach/schedule-run/', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok }, body: JSON.stringify({ action: 'run_now', scheduleId: sc.id }) });
+      }).then(function (res) { return res.json().then(function (d) { return { ok: res.ok, d: d }; }); }).then(function (x) {
+        if (!x.ok || !x.d.ok) throw new Error((x.d && x.d.error) || '計測できませんでした');
+        var o = x.d.result || {};
+        msg('測りました：回答 ' + o.answers + (o.not_shown ? '・AI の回答なし ' + o.not_shown : '') + (o.errors ? '・エラー ' + o.errors : '') + '（費用の見込み ' + Number(o.cost_usd || 0).toFixed(3) + 'ドル）。', o.errors ? 'error' : 'ok');
+        loadSchedule(c, sites);
+      }).catch(function (e2) { now.disabled = false; now.textContent = '今すぐ1回測る'; fail(e2); });
+    });
+  }
+
   function clientStaff(id, sec) {
     curSec = sec || 'home';
     return Promise.all([
@@ -732,7 +812,7 @@
         '<table class="arc-table"><thead><tr><th>日付</th><th>URL</th><th>点数</th><th>不足</th></tr></thead><tbody>' + (scanRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
         fold('runs', SEC_LABEL.runs, runs.length + '回') +
-        
+        '<div id="arc-schedule" class="arc-schedule"><p class="arc-note">定期計測の設定を読み込んでいます…</p></div>' +
         '<details class="arc-dev"><summary>社内向け：計測スクリプトの結果（summary.json）を取り込む</summary>' + '<form id="arc-add-run" class="arc-row"><input class="arc-input" type="date" id="arc-run-date" required><input class="arc-input" type="file" id="arc-run-file" accept=".json,application/json" required><button class="arc-btn" type="submit">summary.json を取り込む</button></form>' +
         '<p class="arc-note">社内の計測スクリプトが出力する summary.json（runs/&lt;実行名&gt;/summary.json）を選びます。</p></details>' +
         '<table class="arc-table"><thead><tr><th>計測日</th><th>質問の版</th><th>主な質問の引用率・言及率</th><th></th></tr></thead><tbody>' + (runRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
@@ -817,6 +897,7 @@
         done(sb.from('action_items').insert({ client_id: id, title: $('#arc-act-title').value.trim(), done_on: $('#arc-act-date').value || null,
           evidence_url: $('#arc-act-url').value.trim() || null, status: $('#arc-act-status').value, created_by: me.email }));
       });
+      loadSchedule(c, sites);
       $('#arc-add-run').addEventListener('submit', function (e) {
         e.preventDefault();
         readFile($('#arc-run-file')).then(function (text) {
