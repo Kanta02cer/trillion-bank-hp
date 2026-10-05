@@ -68,6 +68,14 @@ const bad = (out.rows || []).find((x) => x.prompt === '失敗する質問');
 expect('API: 成功した質問は出典で判定（直接の Perplexity を AI Gateway より優先）', ok && ok.cited === 1 && ok.cite_source === 'ai_sources' && ok.conditions && ok.conditions.via === 'direct' && ok.measured_at, JSON.stringify(ok));
 expect('API: 失敗した質問は status=error・言及も引用も null（ほかの質問は残る）', bad && bad.status === 'error' && bad.cited === null && bad.mentioned === null && /server error/.test(bad.error), JSON.stringify(bad));
 expect('API: 計測の状態に回答数とエラー数', out.engineStatus && out.engineStatus.perplexity.answered === 1 && out.engineStatus.perplexity.errors === 1 && out.engineStatus.perplexity.ok === true, JSON.stringify(out.engineStatus));
+// 10問を1回で受けられる（切り捨てない）。11問目以降は受けない
+{
+  const res2 = { headers: {}, statusCode: 0, body: '', setHeader(k, v) { this.headers[k] = v; }, end(b) { this.body = b || ''; }, status(c) { this.statusCode = c; return this; }, json(o) { this.body = JSON.stringify(o); } };
+  const ten = Array.from({ length: 11 }, (_, i) => '美容室 質問' + (i + 1));
+  await M.default({ method: 'POST', headers: {}, body: { brand: 'Hana', url: 'https://hana-salon.example/', text: '本文', prompts: ten, engines: ['perplexity'] } }, res2);
+  const o2 = JSON.parse(res2.body || '{}');
+  expect('API: 1回で10問まで受ける（11問目は受けない）', (o2.rows || []).length === 10 && o2.rows.every((r) => r.status === 'ok') && !o2.rows.some((r) => r.prompt === '美容室 質問11'), (o2.rows || []).length);
+}
 globalThis.fetch = realFetch;
 Object.keys(process.env).forEach((k) => { if (!(k in env0)) delete process.env[k]; });
 Object.assign(process.env, env0);

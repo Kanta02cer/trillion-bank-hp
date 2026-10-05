@@ -13,6 +13,7 @@ Change ID（DEV-YYYY-NNN）の承認後にだけ使う。各手順は単独で�
   python3 scripts/airreach-api/phase2-apply.py apply-report-2026-10      # 10月の追加: レポートの根拠＋承認フロー（2本）を適用して検証
   python3 scripts/airreach-api/phase2-apply.py set-approver <email> on|off  # 月次レポートの承認者を設定（apply-report-2026-10 の後）
   python3 scripts/airreach-api/phase2-apply.py apply-studio-workspaces   # Studio の作業の共有（studio_workspaces）を適用して検証
+  python3 scripts/airreach-api/phase2-apply.py apply-schedules           # AI計測の定期実行（measurement_schedules / measurement_jobs）を適用して検証。既定は無効
 
 Supabase のアクセストークン（Account → Access Tokens で発行・期限つき推奨）は、
 ~/.config/airreach/supabase_token（chmod 600）に置く。画面にもログにも出さない。
@@ -244,6 +245,33 @@ def cmd_apply_studio_workspaces():
         die(f'検証で {bad} 件が想定と違います。supabase/rollback/ の SQL で戻すか判断してください')
 
 
+def cmd_apply_schedules():
+    """AI計測の定期実行の表と RPC を入れる（設定は既定で無効。自動実行はさらに Vercel の AIRREACH_SCHEDULE_ENABLED=true が要る）"""
+    confirm_project()
+    if 'measurement_runs' not in tables():
+        die('Phase 2 の measurement_runs がありません。先に apply-db を実行してください')
+    path = ROOT / 'supabase/migrations/20261005120000_airreach_measurement_schedules.sql'
+    call('POST', f'/projects/{REF}/database/migrations', {'name': 'airreach_measurement_schedules', 'query': path.read_text()})
+    print('migration を適用しました: airreach_measurement_schedules')
+    checks = [
+        ('measurement_schedules・measurement_jobs があり RLS が有効', "select bool_and(relrowsecurity) as ok from pg_class where oid in ('public.measurement_schedules'::regclass, 'public.measurement_jobs'::regclass)"),
+        ('anon は2つの表に権限なし', "select not exists(select 1 from information_schema.role_table_grants where table_name in ('measurement_schedules', 'measurement_jobs') and grantee = 'anon') as ok"),
+        ('authenticated は実行の記録を読むだけ', "select not exists(select 1 from information_schema.role_table_grants where table_name = 'measurement_jobs' and grantee = 'authenticated' and privilege_type <> 'SELECT') as ok"),
+        ('service_role は表に権限なし（RPC だけ）', "select not exists(select 1 from information_schema.role_table_grants where table_name in ('measurement_schedules', 'measurement_jobs') and grantee = 'service_role') as ok"),
+        ('RPC はすべて search_path 固定・SECURITY DEFINER', "select bool_and(prosecdef and proconfig is not null) as ok from pg_proc where proname like 'airreach_schedule%'"),
+        ('authenticated は取り出し・記録の RPC を実行できない', "select not has_function_privilege('authenticated', 'public.airreach_schedule_claim(timestamptz,jsonb,integer)', 'EXECUTE') and not has_function_privilege('authenticated', 'public.airreach_schedule_finish(uuid,text,jsonb,integer,integer,integer,numeric,text,timestamptz)', 'EXECUTE') as ok"),
+        ('定期実行の設定はまだ0件（既定で何も動かない）', "select count(*) = 0 as ok from public.measurement_schedules where enabled"),
+    ]
+    bad = 0
+    for label, q in checks:
+        r = sql(q, True)
+        ok = bool(r and r[0].get('ok'))
+        bad += 0 if ok else 1
+        print(('OK  ' if ok else 'NG  ') + label)
+    if bad:
+        die(f'検証で {bad} 件が想定と違います。supabase/rollback/ の SQL で戻すか判断してください')
+
+
 def cmd_set_approver(email, flag):
     email = email.strip().lower()
     if flag not in ('on', 'off') or '@' not in email or "'" in email:
@@ -340,7 +368,7 @@ def cmd_anon_key_to_vercel():
 def main():
     a = sys.argv[1:]
     cmds = {'check': cmd_check, 'apply-db': cmd_apply_db, 'auth-config': cmd_auth_config, 'auth-hook': cmd_auth_hook,
-            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'verify': lambda: (confirm_project(), verify())}
+            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'verify': lambda: (confirm_project(), verify())}
     if a and a[0] in cmds and len(a) == 1:
         cmds[a[0]]()
     elif a and a[0] == 'add-staff' and len(a) == 3:

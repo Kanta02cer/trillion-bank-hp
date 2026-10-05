@@ -531,7 +531,7 @@
       var cp = window.AirReachStudio.customerPrompt || function (x) { return x; };
       var add = qs.map(function (x) { return cp(x, brand); }).filter(function (x) { return texts.indexOf(x.replace(/\s/g, '')) < 0; }).map(function (x) { return { id: 'c' + Math.random().toString(36).slice(2, 9), text: x, on: true, src: 'customer' }; });
       st.prompts = add.concat(st.prompts);
-      var n = 0; st.prompts.forEach(function (p) { if (p.on !== false) { n += 1; if (n > 8) p.on = false; } });
+      var n = 0; st.prompts.forEach(function (p) { if (p.on !== false) { n += 1; if (n > 10) p.on = false; } });
     }
     window.AirReachStudio.save();
     try { localStorage.removeItem(key); } catch (e) {}

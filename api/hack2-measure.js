@@ -6,7 +6,8 @@
  */
 const TYPESAFE_URL = 'https://api.typesafe.ai/v1/systemone';
 const MAX_CHARS = 10000;
-const MAX_PROMPTS = 8;
+// 1回の要求で受ける質問の数。Studio は10問を5問ずつに分けて送る（関数の制限時間と AI の回数の上限に収めるため）
+const MAX_PROMPTS = 10;
 
 const ALLOWED_HOSTS = new Set([
   'trillion-bank.jp',
@@ -95,40 +96,9 @@ export default async function handler(req, res) {
   const rows = [];
   const engineStatus = {};
 
-  await Promise.all(engines.map(async (engine) => {
-    try {
-      if (engine === 'jev') {
-        const apiKey = process.env.TYPESAFE_API_KEY;
-        if (!apiKey) {
-          engineStatus.jev = { ok: false, error: 'TYPESAFE_API_KEY is not configured' };
-          return;
-        }
-        const judged = await measureWithJev({
-          apiKey,
-          brand,
-          pageText: truncate(pageText || '', MAX_CHARS),
-          pageUrl,
-          pageTitle,
-          prompts
-        });
-        judged.forEach((r) => {
-          rows.push(Object.assign({ measurement_date: date, engine: 'Jev', url: pageUrl || '' }, r));
-        });
-        engineStatus.jev = { ok: true, count: judged.length, evidenceClass: 'Estimated' };
-      } else {
-        const live = await measureWithProvider(engine, brand, prompts, pageUrl, competitors);
-        live.rows.forEach((r) => {
-          rows.push(Object.assign({ measurement_date: date, url: pageUrl || '' }, r));
-        });
-        engineStatus[engine] = live.status;
-      }
-    } catch (err) {
-      engineStatus[engine] = {
-        ok: false,
-        error: err && err.message ? err.message : 'measurement failed'
-      };
-    }
-  }));
+  const measured = await measureEngines({ brand, prompts, engines, competitors, pageText, pageUrl, pageTitle, date });
+  measured.rows.forEach((r) => rows.push(r));
+  Object.assign(engineStatus, measured.engineStatus);
 
   const judgments = [];
   engines.forEach((engine) => {
@@ -172,6 +142,52 @@ export default async function handler(req, res) {
     fetchNote: fetchNote
   });
 }
+
+/**
+ * 計測の本体（Studio の計測 API と定期計測の両方から使う）。AI ごとに並べて聞き、行と AI ごとの状態を返す
+ *   prompts: [{ keyword, prompt }] / engines: normalizeEngines 済み / competitors: [{ name, url }]
+ */
+export async function measureEngines({ brand, prompts, engines, competitors, pageText = '', pageUrl = null, pageTitle = null, date = new Date().toISOString().slice(0, 10) }) {
+  const rows = [];
+  const engineStatus = {};
+  await Promise.all(engines.map(async (engine) => {
+    try {
+      if (engine === 'jev') {
+        const apiKey = process.env.TYPESAFE_API_KEY;
+        if (!apiKey) {
+          engineStatus.jev = { ok: false, error: 'TYPESAFE_API_KEY is not configured' };
+          return;
+        }
+        const judged = await measureWithJev({
+          apiKey,
+          brand,
+          pageText: truncate(pageText || '', MAX_CHARS),
+          pageUrl,
+          pageTitle,
+          prompts
+        });
+        judged.forEach((r) => {
+          rows.push(Object.assign({ measurement_date: date, engine: 'Jev', url: pageUrl || '' }, r));
+        });
+        engineStatus.jev = { ok: true, count: judged.length, evidenceClass: 'Estimated' };
+      } else {
+        const live = await measureWithProvider(engine, brand, prompts, pageUrl, competitors);
+        live.rows.forEach((r) => {
+          rows.push(Object.assign({ measurement_date: date, url: pageUrl || '' }, r));
+        });
+        engineStatus[engine] = live.status;
+      }
+    } catch (err) {
+      engineStatus[engine] = {
+        ok: false,
+        error: err && err.message ? err.message : 'measurement failed'
+      };
+    }
+  }));
+
+  return { rows, engineStatus };
+}
+export { normalizeEngines, normalizePrompts };
 
 // ログインのトークンが AirReach の社内メンバーのものかを、その人のトークンで airreach_me を呼んで確かめる。
 // トークンの署名と期限は Supabase（PostgREST）が検証する。同じトークンの結果は5分だけ覚える
