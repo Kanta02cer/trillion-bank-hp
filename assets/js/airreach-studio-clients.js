@@ -303,6 +303,43 @@
     return sb().then(function (s) { return s.from('studio_workspaces').select('data,version,updated_by,updated_at').eq('client_id', client.id).maybeSingle(); })
       .then(function (r) { if (r.error) throw r.error; return r.data || null; });
   }
+  // 顧客の Google データを DB で消したあと（契約終了・削除依頼。clients.google_purged_at）に、このブラウザに残っている作業を消す。
+  // 消さないと、残っていた作業（Search Console の検索語句を含む）が自動の共有で DB に戻ってしまう。
+  // ほかの顧客の作業（この端末の控え）も、消された顧客・無くなった顧客の分は消す。戻り値: 読み込み直すなら true
+  function purgeIfNeeded() {
+    var G = window.AirReachGoogleGuard;
+    if (!client || !G) return Promise.resolve(false);
+    return sb().then(function (s) {
+      return Promise.all([s.from('clients').select('id,google_purged_at').eq('id', client.id).maybeSingle(), sweepOthers(s, G)]);
+    }).then(function (rs) {
+      var row = rs[0] && !rs[0].error && rs[0].data;
+      if (!row || !G.needsPurge(client.id, row.google_purged_at)) return false;
+      G.purgeLocal({ clientId: client.id, ack: row.google_purged_at });
+      WORK_KEYS.forEach(function (k) { set(k, null); });
+      try { sessionStorage.setItem('airreach_studio_purged_v1', client.id); } catch (e) {}
+      location.reload();
+      return true;
+    }).catch(function () { return false; });
+  }
+  function sweepOthers(s, G) {
+    var ids = {};
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var m = /^airreach_studio_(?:ws|sync|backup)_v1:([0-9a-f-]{36})$/.exec(localStorage.key(i) || '');
+        if (m && m[1] !== client.id) ids[m[1]] = 1;
+      }
+    } catch (e) { return Promise.resolve(); }
+    var list = Object.keys(ids);
+    if (!list.length) return Promise.resolve();
+    return Promise.all([s.rpc('airreach_me'), s.from('clients').select('id,google_purged_at').in('id', list)]).then(function (rs) {
+      var me = rs[0] && rs[0].data, rows = rs[1] && !rs[1].error ? rs[1].data : null;
+      if (!rows) return;
+      var seen = {};
+      rows.forEach(function (r) { seen[r.id] = 1; if (G.needsPurge(r.id, r.google_purged_at)) G.purgeLocal({ clientId: r.id, ack: r.google_purged_at }); });
+      // 社内の人はすべての顧客を読める。読めなかった顧客は消されている（DB の作業も一緒に消えている）
+      if (me && me.is_staff) list.forEach(function (id) { if (!seen[id]) G.purgeLocal({ clientId: id }); });
+    }).catch(function () {});
+  }
   function startSync() {
     if (!client) return;
     sb().then(function (s) { return s.auth.getSession(); }).then(function (r) {
@@ -314,7 +351,7 @@
         return;
       }
       sync.email = (session.user && session.user.email) || '';
-      return fetchServer().then(function (server) {
+      return purgeIfNeeded().then(function (reloading) { if (reloading) return; return fetchServer().then(function (server) {
         var meta = readMeta(), strs = localStrings(), sig = sigOf(strs);
         sync.version = meta.version || 0; sync.sig = meta.sig || '';
         var changedHere = sig !== sync.sig && hasWork(strs);
@@ -326,6 +363,7 @@
         }
         if (!server && !hasWork(strs)) { sync.version = 0; sync.sig = sig; }
         var note = '';
+        try { if (sessionStorage.getItem('airreach_studio_purged_v1') === client.id) { sessionStorage.removeItem('airreach_studio_purged_v1'); note = 'この顧客の Google のデータが消されたため（契約終了または削除依頼）、このパソコンに残っていた作業を消しました'; } } catch (e) {}
         try { var a = sessionStorage.getItem('airreach_studio_adopted_v1') || ''; if (a.indexOf(client.id) === 0) { note = /:b$/.test(a) ? '共有されている最新の作業を読み込みました（このパソコンで共有していなかった変更は控えに残しています）' : '共有されている最新の作業を読み込みました'; sessionStorage.removeItem('airreach_studio_adopted_v1'); } } catch (e) {}
         sync.on = true;
         syncStatus(note || (server ? '共有しています（' + hhmm(server.updated_at) + ' に ' + (server.updated_by ? server.updated_by.split('@')[0] + ' さんが' : '') + '保存・社内の全員が見られます）' : '共有の準備ができました。作業すると自動で保存します'), 'ok');
@@ -360,7 +398,7 @@
         setInterval(function () { if (!document.hidden) checkNewer(false); }, 30000);
         document.addEventListener('visibilitychange', function () { if (!document.hidden) checkNewer(true); });
         window.addEventListener('focus', function () { checkNewer(true); });
-      });
+      }); });
     }).catch(function () { syncStatus('共有の状態を確かめられませんでした（このパソコンには保存されています）', 'warn'); });
   }
 
@@ -486,7 +524,8 @@
       var fresh = last.property === prop && last.at && (now - Date.parse(last.at) < 7 * 86400000) && String(last.at).slice(0, 7) === new Date(now).toISOString().slice(0, 7);
       if (fresh && !force) { gscNote('Search Console の実際の検索語（' + last.start.slice(5).replace('-', '/') + '〜' + last.end.slice(5).replace('-', '/') + '・' + last.count + '語）を反映しています。7日ごとに自動で新しくします。', 'good'); return null; }
       gscNote('Search Console から実際の検索語を読み込んでいます…');
-      return fetch('/api/google/gsc/', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clientId: client.id, siteUrl: prop, startDate: start, endDate: end }) })
+      // Google 連携は社内の人か契約中のお客様だけ（ログインのトークンを付ける。api/google/_lib/access.js）
+      return window.AirReachStaffAuth.headers().then(function (h) { return fetch('/api/google/gsc/', { method: 'POST', credentials: 'same-origin', headers: h, body: JSON.stringify({ clientId: client.id, siteUrl: prop, startDate: start, endDate: end }) }); })
         .then(function (res) { return res.json().catch(function () { return {}; }).then(function (d) { if (!res.ok) throw new Error(res.status === 401 ? 'Google とのつながりが切れています。ダッシュボードでつなぎ直してください' : res.status === 403 ? 'この Search Console のサイトを見る権限がありません' : (d.error && d.error.message) || ('HTTP ' + res.status)); return d; }); })
         .then(function (d) {
           var rows = d.rows || [];
@@ -529,7 +568,7 @@
       var texts = st.prompts.map(function (p) { return String(p.text || '').replace(/\s/g, ''); });
       var brand = (st.profile && st.profile.brand) || client.name || '';
       var cp = window.AirReachStudio.customerPrompt || function (x) { return x; };
-      var add = qs.map(function (x) { return cp(x, brand); }).filter(function (x) { return texts.indexOf(x.replace(/\s/g, '')) < 0; }).map(function (x) { return { id: 'c' + Math.random().toString(36).slice(2, 9), text: x, on: true, src: 'customer' }; });
+      var add = qs.map(function (x) { return cp(x, brand); }).filter(function (x) { return texts.indexOf(x.replace(/\s/g, '')) < 0; }).map(function (x) { return { id: 'c' + Math.random().toString(36).slice(2, 9), text: x, on: true, src: 'customer', confirmed: false }; });
       st.prompts = add.concat(st.prompts);
       var n = 0; st.prompts.forEach(function (p) { if (p.on !== false) { n += 1; if (n > 10) p.on = false; } });
     }

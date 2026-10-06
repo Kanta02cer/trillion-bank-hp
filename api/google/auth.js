@@ -1,5 +1,7 @@
+import { randomBytes } from 'node:crypto';
 import { OAUTH_SCOPES, EMAIL_SCOPES } from './_lib/scopes.js';
 import { cookieNames } from './_lib/token.js';
+import { googleAccess, denyAccess } from './_lib/access.js';
 
 function setCors(req, res) {
   const origin = req.headers.origin || '';
@@ -19,7 +21,7 @@ function setCors(req, res) {
   } catch (e) {}
   res.setHeader('Access-Control-Allow-Origin', allow);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Vary', 'Origin');
 }
@@ -39,15 +41,24 @@ export default async function handler(req, res) {
     res.statusCode = 200; res.end(JSON.stringify({ ok: true, revoked: !!tok }));
     return;
   }
+  // 接続の開始は POST だけ（ログインのトークンを付けて呼ぶ）。URL を開いただけでは Google の同意画面へ進まない
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Google への接続は、AirReach の画面の「接続」から始めてください。', code: 'post_required' });
+  const body = (req.body && typeof req.body === 'object') ? req.body : {};
+  // 担当者が分析・改善提案・月次レポート作成・サポートに必要な範囲で Google のデータを見ることへの同意（画面のチェック）
+  if (body.consent !== true) return res.status(400).json({ error: '接続する前に、Google のデータの閲覧についての同意にチェックしてください。', code: 'consent_required' });
+  // 戻り先：ダッシュボードの「検索と訪問の数字を入れる」から始めたときは、そこへ戻す（back: 'app', client: <uuid>）。
+  // 値は決まった形だけ受け付け、Cookie に入れて callback で使う（任意の URL へは戻さない）
+  const backClient = body.back === 'app' && /^[0-9a-f-]{36}$/i.test(String(body.client || '')) ? String(body.client).toLowerCase() : '';
+  // 社内スタッフか、契約中の顧客のメンバーだけが始められる（顧客の画面からなら、その顧客について確かめる）
+  const access = await googleAccess(req, backClient || null);
+  if (!access.ok) return denyAccess(res, access);
+
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${getOrigin(req)}/api/google/callback`;
   if (!clientId) return res.status(500).json({ error: 'GOOGLE_CLIENT_ID is not configured' });
 
   const state = randomState();
-  // 戻り先：ダッシュボードの「検索と訪問の数字を入れる」から始めたときは、そこへ戻す（?back=app&client=<uuid>）。
-  // 値は決まった形だけ受け付け、Cookie に入れて callback で使う（任意の URL へは戻さない）
-  const q = req.query || {};
-  const back = q.back === 'app' && /^[0-9a-f-]{36}$/i.test(String(q.client || '')) ? `app:${String(q.client).toLowerCase()}` : '';
+  const back = backClient ? `app:${backClient}` : '';
   const cookies = [`airreach_google_state=${state}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
     `airreach_google_back=${back}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${back ? 600 : 0}`];
   res.setHeader('Set-Cookie', cookies);
@@ -59,11 +70,12 @@ export default async function handler(req, res) {
     prompt: 'consent',
     include_granted_scopes: 'true',
     state,
-    // いまは Search Console（webmasters.readonly）だけ。GA4 は準備中（_lib/scopes.js）
+    // Search Console・GA4 の読み取りと、接続したアカウントのメールアドレス（_lib/scopes.js）
     scope: OAUTH_SCOPES.concat(EMAIL_SCOPES).join(' ')
   });
-  res.writeHead(302, { Location: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}` });
-  res.end();
+  // 画面はこの URL へ移動する（Cookie の state は callback で確かめる）
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, url: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}` });
 }
 
 function getOrigin(req) {
@@ -72,7 +84,7 @@ function getOrigin(req) {
   return `${proto}://${host}`;
 }
 function randomState() {
-  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
+  return randomBytes(24).toString('base64url');
 }
 
 function parseCookies(raw) {

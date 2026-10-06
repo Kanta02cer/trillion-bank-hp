@@ -270,6 +270,7 @@ robots: "noindex, follow"
         <form method="dialog" id="orch-pr-form" class="orch-dialog-inner">
           <h3>GitHubに下書きPR</h3>
           <p class="orch-dialog-lead">マージと本番公開は人間が行います。トークンはsessionStorageのみに保持し、サーバーへ送りません。</p>
+          <p class="orch-dialog-lead">GitHub には Google のデータ（Search Console の検索語句・表示回数・クリック・掲載順位など）を含めません。Search Console 由来のキーワードを除いた内容で作り直して送ります。</p>
           <div class="ars-field"><label for="orch-gh-repo">リポジトリ <span class="ars-muted">(owner/repo)</span></label><input id="orch-gh-repo" class="ars-input" required placeholder="acme/website" autocomplete="off"></div>
           <div class="ars-field"><label for="orch-gh-base">ベースブランチ</label><input id="orch-gh-base" class="ars-input" value="main" required></div>
           <div class="ars-field"><label for="orch-gh-branch">作成ブランチ</label><input id="orch-gh-branch" class="ars-input" required></div>
@@ -340,7 +341,7 @@ robots: "noindex, follow"
       <div class="ars-panel" data-panel-view="google">
         <div class="ars-title-row"><div><h2>Google 連携・データの取り込み</h2><p class="ars-sub">Search Console と GA4 の数字（読み取りのみ）と、CSV・JSON の取り込み。</p></div><button id="google-connect" class="ars-btn ars-btn-primary" type="button">接続</button></div>
             <div class="ars-grid ars-google">
-              <div class="ars-card ars-c12"><h3>① 接続の状態</h3><div id="google-status" class="ars-note">未接続（Search Console・GA4 の読み取り）</div><div id="google-ga4-note" class="ars-note warn" style="margin-top:8px" hidden>GA4 を使うには「接続」で Google アナリティクス（読み取り）の権限を許可してください。以前に Search Console だけで接続した場合も、もう一度「接続」が必要です。</div></div>
+              <div class="ars-card ars-c12"><h3>① 接続の状態</h3><div id="google-status" class="ars-note">未接続（Search Console・GA4 の読み取り）</div><label class="ars-consent-row" style="margin-top:10px"><input id="google-consent" type="checkbox"> <span>AirReach の担当者が、分析・改善提案・月次レポート作成・サポートのために必要な範囲で、この接続で取得する Google のデータ（Search Console・Google アナリティクス）を閲覧することに同意します。</span></label><p class="ars-gnote">「接続」は、AirReach の社内の人か契約中のお客様としてログインしているときだけ使えます。担当者がお客様の代わりにつなぐときは、お客様からこの同意をもらってからつないでください。取得したデータは、Search Console の分析・画面の表示・改善の分析・月次レポートだけに使い、外部の AI には送りません。</p><div class="ars-row" style="margin-top:8px"><button id="google-disconnect" class="ars-btn ars-btn-secondary" type="button">切断（Google の許可を取り消す）</button><button id="google-purge-local" class="ars-btn ars-btn-secondary" type="button">このブラウザの Google データを消す</button></div><div id="google-ga4-note" class="ars-note warn" style="margin-top:8px" hidden>GA4 を使うには「接続」で Google アナリティクス（読み取り）の権限を許可してください。以前に Search Console だけで接続した場合も、もう一度「接続」が必要です。</div></div>
               <div class="ars-card ars-c12"><h3>② 取得するサイト</h3>
                 <div class="ars-google-fields">
                   <div class="ars-field"><label for="gsc-site">Search Console のサイト（GSC）</label><input id="gsc-site" class="ars-input" autocomplete="off" placeholder="sc-domain:example.jp" aria-describedby="gsc-site-help"><p id="gsc-site-help" class="ars-gnote">Search Console に登録されている形のまま入力します（ドメイン: sc-domain:example.jp ／ URL: https://example.jp/）。</p></div>
@@ -397,6 +398,7 @@ robots: "noindex, follow"
 <script src="/assets/js/airreach-diagnose.js" defer></script>
 <script src="/assets/js/airreach-keyword-list.js" defer></script>
 <script src="/assets/js/airreach-staff-auth.js" defer></script>
+<script src="/assets/js/airreach-google-guard.js" defer></script>
 <script src="/assets/js/airreach-ai-breakdown.js" defer></script>
 <script src="/assets/js/airreach-studio.js" defer></script>
 <script src="/assets/js/airreach-package-schema.js" defer></script>
