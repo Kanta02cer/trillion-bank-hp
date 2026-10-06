@@ -3,7 +3,9 @@
 このファイルは tools/ の下にあり、配信されない（Jekyll の exclude・配信用ブランチには api/ だけを入れる）。
 
 POST /api/airreach/gemma-faq   Authorization: Bearer <AirReach のログインのトークン>
-  {"text": "サイトの本文（6000文字まで）"}  → {"ok": true, "faqs": [...], "removed_instructions": [...], "timing": {...}}
+  {"text": "サイトの本文（6000文字まで）", "url": "本文を取ったページの URL（任意）"}
+  → {"ok": true, "faqs": [{question, answer, answer_from_source, evidence, source_url, status, reasons, ...}], "removed_instructions": [...], "timing": {...}}
+  status=site だけが「本文と照合できた下書き」。needs_check は担当者が本文を見て書く。どちらも下書きで、公開は既存の確認・承認の流れで行う
 
 - 既定で無効：環境変数 AIRREACH_GEMMA_ENABLED=true のときだけ動く（それ以外は 404）
 - 社内だけ：トークンで airreach_me を呼び is_staff を確かめる（api/hack2-measure.js の staffTokenOk と同じ）
@@ -73,7 +75,11 @@ class handler(BaseHTTPRequestHandler):  # Vercel の Python ランタイムの�
         if n <= 0 or n > 64 * 1024:
             return self._send(413, {'ok': False, 'error': '本文が大きすぎます'})
         try:
-            text = str(json.loads(self.rfile.read(n)).get('text') or '')
+            body = json.loads(self.rfile.read(n))
+            text = str(body.get('text') or '')
+            url = str(body.get('url') or '')[:500] or None
+            if url and not url.startswith(('https://', 'http://')):
+                url = None
         except Exception:  # noqa: BLE001
             return self._send(400, {'ok': False, 'error': 'JSON を読めません'})
         if len(text.strip()) < 50:
@@ -83,7 +89,7 @@ class handler(BaseHTTPRequestHandler):  # Vercel の Python ランタイムの�
         try:
             if _runner is None:
                 _runner = G.GemmaRunner(MODEL, threads=int(os.environ.get('AIRREACH_GEMMA_THREADS', '2')), max_tokens=4096, cache_dir='/tmp/litert-lm-cache')
-            out = _runner.faq(text)
+            out = _runner.faq(text, source_url=url)
             out.pop('raw', None)
             out['model'] = 'gemma-4-E2B-it (LiteRT-LM, CPU)'
             out['draft'] = True

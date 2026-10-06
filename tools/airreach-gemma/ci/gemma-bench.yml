@@ -22,7 +22,7 @@ concurrency:
 jobs:
   bench:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 150
     env:
       MODEL_URL: https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm
       LITERT_LM_API: litert-lm-api==0.17.1
@@ -36,7 +36,8 @@ jobs:
         run: |
           mkdir -p /tmp/model
           curl -sSL --retry 3 -o /tmp/model/gemma-4-E2B-it.litertlm "$MODEL_URL"
-          ls -l /tmp/model; sha256sum /tmp/model/gemma-4-E2B-it.litertlm
+          ls -l /tmp/model
+          echo "MODEL_SHA256=$(sha256sum /tmp/model/gemma-4-E2B-it.litertlm | cut -d' ' -f1)" >> "$GITHUB_ENV"
       - name: Build image (Python 3.12 + litert-lm-api)
         run: |
           printf 'FROM python:3.12-slim\nRUN pip install --no-cache-dir %s\nWORKDIR /work\n' "$LITERT_LM_API" > /tmp/Dockerfile

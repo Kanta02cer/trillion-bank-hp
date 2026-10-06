@@ -26,15 +26,17 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import gemma_faq as G  # noqa: E402
 
-# 架空の計測値（既存の集計で出した数字を渡す想定。Gemma は数字を作らない）
+# 架空の集計データ（既存の月次集計で出した数字を渡す想定）。要約の数字は summary_from_metrics の定型文で作る（Gemma は数字を作らない）
 SUMMARY_DATA = {
-    '対象': 'サンプル美容室 Hana（架空）',
-    '月': '2026年9月',
-    'AIの回答に名前が出た割合': {'今月': '31.3%（16回答中5回答）', '前月': '18.8%（16回答中3回答）'},
-    'AIの回答で出典になった割合': {'今月': '25.0%（判定できた12回答中3回答）', '前月': '8.3%（判定できた12回答中1回答）'},
-    '競合のサロンAの名前が出た割合': '43.8%（16回答中7回答）',
-    '今月やったこと': ['よくある質問のページを作った', 'トップページに会社情報の構造化データを追加した'],
+    'target': 'サンプル美容室 Hana（架空）', 'period': '2026年9月', 'prev_period': '2026年8月',
+    'metrics': [
+        {'id': 'mention_rate', 'label': 'AIの回答に名前が出た割合', 'ai': 'すべての AI', 'current': {'num': 5, 'den': 16}, 'previous': {'num': 3, 'den': 16}},
+        {'id': 'cite_rate', 'label': 'AIの回答で出典になった割合', 'ai': 'Perplexity', 'current': {'num': 3, 'den': 12}, 'previous': {'num': 1, 'den': 12}},
+        {'id': 'cite_rate', 'label': 'AIの回答で出典になった割合', 'ai': 'ChatGPT（検索なし）', 'current': None, 'previous': None},
+    ],
 }
+SAMPLES = {'faq_short': ('short_salon.txt', None), 'faq_long': ('long_restaurant.txt', None), 'faq_clinic': ('long_clinic.txt', None),
+           'faq_public': ('public_airreach_page.txt', 'https://trillion-bank.jp/airreach/')}
 
 
 def peak_rss_mb() -> float:
@@ -57,31 +59,37 @@ def main():
     ap.add_argument('--threads', type=int, default=None)
     ap.add_argument('--max-tokens', type=int, default=4096)
     ap.add_argument('--repeat', type=int, default=2)
-    ap.add_argument('--tasks', default='faq_short,faq_long,faq_public,summary')
+    ap.add_argument('--tasks', default='faq_short,faq_long,faq_clinic,faq_public,summary')
     ap.add_argument('--bench', action='store_true')
     ap.add_argument('--out', default='')
     a = ap.parse_args()
 
-    res = {'platform': platform.platform(), 'machine': platform.machine(), 'cpu_count': os.cpu_count(), 'threads': a.threads,
-           'model': os.path.basename(a.model), 'model_mb': round(os.path.getsize(a.model) / 1e6, 1), 'max_tokens': a.max_tokens}
+    from importlib import metadata
+    res = {'platform': platform.platform(), 'machine': platform.machine(), 'python': platform.python_version(), 'cpu_count': os.cpu_count(), 'threads': a.threads,
+           'litert_lm_api': metadata.version('litert-lm-api'), 'model': os.path.basename(a.model), 'model_bytes': os.path.getsize(a.model),
+           'model_sha256': os.environ.get('MODEL_SHA256') or None, 'max_tokens': a.max_tokens,
+           'sampler': {'temperature': 0.2, 'top_k': 20, 'top_p': 0.9, 'seed': 1}, 'thinking': False, 'max_output_tokens_faq': 2000,
+           'measure': 'load_s=Engine の作成まで・ttft_s=最初の文字まで・total_s=全部出るまで（time.perf_counter）・peak_rss_mb=ru_maxrss・cgroup_peak_mb=memory.peak'}
     t0 = time.perf_counter()
     r = G.GemmaRunner(a.model, threads=a.threads, max_tokens=a.max_tokens, cache_dir=os.environ.get('GEMMA_CACHE_DIR') or None)
     res['load_s'] = round(time.perf_counter() - t0, 2)
     res['rss_after_load_mb'] = peak_rss_mb()
-    samples = {'faq_short': 'short_salon.txt', 'faq_long': 'long_restaurant.txt', 'faq_public': 'public_airreach_page.txt'}
     res['runs'] = []
     for task in [x for x in a.tasks.split(',') if x]:
         for i in range(a.repeat):
             if task == 'summary':
                 out = r.summary(SUMMARY_DATA)
             else:
-                out = r.faq((HERE / 'samples' / samples[task]).read_text())
+                fname, url = SAMPLES[task]
+                out = r.faq((HERE / 'samples' / fname).read_text(), source_url=url)
             row = {'task': task, 'n': i + 1, **{k: (round(v, 2) if isinstance(v, float) else v) for k, v in out['timing'].items()}, 'peak_rss_mb': peak_rss_mb()}
             if task != 'summary':
                 row.update({'source_chars': out.get('source_chars'), 'site': out.get('site'), 'needs_check': out.get('needs_check'), 'ok': out.get('ok'), 'error': out.get('error'),
                             'faqs': out.get('faqs'), 'raw_chars': len(out.get('raw') or ''), 'raw': out.get('raw'), 'removed_instructions': out.get('removed_instructions')})
             else:
-                row.update({'ok': out['ok'], 'text': out['text'], 'model_text': out['model_text'], 'bad_numbers': out['bad_numbers']})
+                row.update({'ok': out['ok'], 'text': out['text'], 'model_used': out.get('model_used')})
+            if task != 'summary':
+                row['reasons'] = sorted({r.split(':')[0] for f in (out.get('faqs') or []) for r in f.get('reasons', [])})
             res['runs'].append(row)
             print(json.dumps({k: v for k, v in row.items() if k not in ('faqs', 'raw')}, ensure_ascii=False)[:400], flush=True)
     r.close()
