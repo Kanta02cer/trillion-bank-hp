@@ -247,7 +247,11 @@
     document.title = (c.client ? c.client.name + ' ' : '') + ym(r.period_month) + ' 月次レポート - AirReach';
   }
 
+  // 代理店向けデモ（/airreach/demo/）は、同じ描画をデモ専用の架空データで使う。ログイン・DB には一切つながない。
+  //   デモかどうかは、ページの HTML に書いた印（#arr-root の data-demo）だけで決める（URL のパラメータでは切り替えない）
+  window.AirReachReportView = { render: render };
   function boot() {
+    if (root.getAttribute('data-demo') === '1') return;
     var id = new URLSearchParams(location.search).get('id') || '';
     if (!/^[0-9a-f-]{36}$/.test(id)) { root.innerHTML = '<p>レポートの指定が正しくありません。</p>'; return; }
     fetch('/api/airreach/app-config', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (cfg) {
