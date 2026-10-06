@@ -79,11 +79,11 @@ def main():
             row = {'task': task, 'n': i + 1, **{k: (round(v, 2) if isinstance(v, float) else v) for k, v in out['timing'].items()}, 'peak_rss_mb': peak_rss_mb()}
             if task != 'summary':
                 row.update({'source_chars': out.get('source_chars'), 'site': out.get('site'), 'needs_check': out.get('needs_check'), 'ok': out.get('ok'), 'error': out.get('error'),
-                            'faqs': out.get('faqs'), 'raw_chars': len(out.get('raw') or '')})
+                            'faqs': out.get('faqs'), 'raw_chars': len(out.get('raw') or ''), 'raw': out.get('raw'), 'removed_instructions': out.get('removed_instructions')})
             else:
                 row.update({'ok': out['ok'], 'text': out['text'], 'model_text': out['model_text'], 'bad_numbers': out['bad_numbers']})
             res['runs'].append(row)
-            print(json.dumps({k: v for k, v in row.items() if k not in ('faqs',)}, ensure_ascii=False)[:400], flush=True)
+            print(json.dumps({k: v for k, v in row.items() if k not in ('faqs', 'raw')}, ensure_ascii=False)[:400], flush=True)
     r.close()
     if a.bench:
         import litert_lm as L
