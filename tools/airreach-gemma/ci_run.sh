@@ -26,14 +26,16 @@ CID=$(docker run -d --name "gb-$NAME" "${LIMITS[@]}" "${CACHEOPT[@]}" -e MODEL_S
 # コンテナの cgroup（systemd の cgroup v2 なら system.slice/docker-<ID>.scope）
 CG=""
 for c in "/sys/fs/cgroup/system.slice/docker-$CID.scope" "/sys/fs/cgroup/docker/$CID"; do [ -d "$c" ] && CG=$c && break; done
-echo "elapsed_s,memory_current_bytes,memory_peak_bytes,oom_kill" > "$OUT/mem.csv"
+echo "elapsed_s,memory_current_bytes,memory_peak_bytes,oom_kill,anon_bytes,file_bytes" > "$OUT/mem.csv"
 TIMED_OUT=false
 while [ "$(docker inspect -f '{{.State.Running}}' "$CID" 2>/dev/null)" = "true" ]; do
   EL=$(python3 -c "import time;print(round(time.time()-$START,1))")
   if [ -n "$CG" ]; then
     CUR=$(cat "$CG/memory.current" 2>/dev/null || echo); PEAK=$(cat "$CG/memory.peak" 2>/dev/null || echo)
     OOMK=$(awk '/^oom_kill /{print $2}' "$CG/memory.events" 2>/dev/null || echo)
-    echo "$EL,$CUR,$PEAK,$OOMK" >> "$OUT/mem.csv"
+    # memory.current の内訳：anon＝プロセス自身のメモリ（減らせない）／file＝モデルなどのファイルの読み込み（足りなければ捨てて読み直せる）
+    ANON=$(awk '/^anon /{print $2}' "$CG/memory.stat" 2>/dev/null || echo); FILE=$(awk '/^file /{print $2}' "$CG/memory.stat" 2>/dev/null || echo)
+    echo "$EL,$CUR,$PEAK,$OOMK,$ANON,$FILE" >> "$OUT/mem.csv"
   fi
   if python3 -c "import sys;sys.exit(0 if $EL >= $LIMIT_S else 1)"; then
     TIMED_OUT=true; docker kill "$CID" >/dev/null 2>&1; break
@@ -64,7 +66,7 @@ except Exception:
 cache_bytes = sum(int(l.split()[4]) for l in (Path(out) / 'cache_files.txt').read_text().splitlines() if 'xnnpack' in l) if (Path(out) / 'cache_files.txt').exists() else 0
 meta = {'name': name, 'memory': mem, 'cpus': cpus, 'xnnpack_cache': cache, 'xnnpack_cache_bytes': cache_bytes, 'exit_code': int(code), 'oom_killed': oom, 'oom_kill_events': max(oomk) if oomk else None,
         'timed_out': to == 'true', 'limit_s': int(lim), 'wall_s': round(float(e) - float(s), 1),
-        'mem_samples': len(rows), 'mem_current_max_mb': mx('memory_current_bytes'), 'mem_peak_mb': mx('memory_peak_bytes'), 'cgroup_path_found': bool(cg),
+        'mem_samples': len(rows), 'mem_current_max_mb': mx('memory_current_bytes'), 'mem_peak_mb': mx('memory_peak_bytes'), 'anon_max_mb': mx('anon_bytes'), 'file_max_mb': mx('file_bytes'), 'cgroup_path_found': bool(cg),
         'bench_status': res.get('status'), 'bench_last_task': res.get('current'), 'bench_runs_done': len(res.get('runs') or []), 'load_s': res.get('load_s')}
 (Path(out) / 'meta.json').write_text(json.dumps(meta, ensure_ascii=False))
 print(json.dumps(meta, ensure_ascii=False))
