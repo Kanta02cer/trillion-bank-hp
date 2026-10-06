@@ -70,40 +70,59 @@ def main():
            'model_sha256': os.environ.get('MODEL_SHA256') or None, 'max_tokens': a.max_tokens,
            'sampler': {'temperature': 0.2, 'top_k': 20, 'top_p': 0.9, 'seed': 1}, 'thinking': False, 'max_output_tokens_faq': 2000,
            'measure': 'load_s=Engine の作成まで・ttft_s=最初の文字まで・total_s=全部出るまで（time.perf_counter）・peak_rss_mb=ru_maxrss・cgroup_peak_mb=memory.peak'}
-    t0 = time.perf_counter()
-    r = G.GemmaRunner(a.model, threads=a.threads, max_tokens=a.max_tokens, cache_dir=os.environ.get('GEMMA_CACHE_DIR') or None)
-    res['load_s'] = round(time.perf_counter() - t0, 2)
-    res['rss_after_load_mb'] = peak_rss_mb()
-    res['runs'] = []
-    for task in [x for x in a.tasks.split(',') if x]:
-        for i in range(a.repeat):
-            if task == 'summary':
-                out = r.summary(SUMMARY_DATA)
-            else:
-                fname, url = SAMPLES[task]
-                out = r.faq((HERE / 'samples' / fname).read_text(), source_url=url)
-            row = {'task': task, 'n': i + 1, **{k: (round(v, 2) if isinstance(v, float) else v) for k, v in out['timing'].items()}, 'peak_rss_mb': peak_rss_mb()}
-            if task != 'summary':
-                row.update({'source_chars': out.get('source_chars'), 'site': out.get('site'), 'needs_check': out.get('needs_check'), 'ok': out.get('ok'), 'error': out.get('error'),
-                            'faqs': out.get('faqs'), 'raw_chars': len(out.get('raw') or ''), 'raw': out.get('raw'), 'removed_instructions': out.get('removed_instructions')})
-            else:
-                row.update({'ok': out['ok'], 'text': out['text'], 'model_used': out.get('model_used')})
-            if task != 'summary':
-                row['reasons'] = sorted({r.split(':')[0] for f in (out.get('faqs') or []) for r in f.get('reasons', [])})
-            res['runs'].append(row)
-            print(json.dumps({k: v for k, v in row.items() if k not in ('faqs', 'raw')}, ensure_ascii=False)[:400], flush=True)
-    r.close()
-    if a.bench:
-        import litert_lm as L
-        b = L.Benchmark(a.model, L.Backend.CPU(thread_count=a.threads), prefill_tokens=1024, decode_tokens=256, max_num_tokens=2048)
-        info = b.run() if hasattr(b, 'run') else None
-        res['bench'] = {k: getattr(info, k) for k in dir(info) if not k.startswith('_') and not callable(getattr(info, k))} if info is not None else None
-    res['peak_rss_mb'] = peak_rss_mb()
-    res['cgroup_peak_mb'] = cgroup_peak_mb()
-    print(json.dumps({k: v for k, v in res.items() if k != 'runs'}, ensure_ascii=False, default=str), flush=True)
-    if a.out:
-        Path(a.out).write_text(json.dumps(res, ensure_ascii=False, indent=1, default=str))
+    res.update({'status': 'loading', 'started_at': time.strftime('%Y-%m-%dT%H:%M:%S%z'), 'runs': []})
 
+    def save(status=None):
+        """途中経過を毎回書く（OOM・時間切れで止まっても、読み込み時間と済んだ処理の結果が残る）。書き換えは別名に書いてから置き換える"""
+        if status:
+            res['status'] = status
+        res['peak_rss_mb'] = peak_rss_mb()
+        res['cgroup_peak_mb'] = cgroup_peak_mb()
+        if a.out:
+            tmp = a.out + '.tmp'
+            Path(tmp).write_text(json.dumps(res, ensure_ascii=False, indent=1, default=str))
+            os.replace(tmp, a.out)
+
+    save()
+    try:
+        t0 = time.perf_counter()
+        r = G.GemmaRunner(a.model, threads=a.threads, max_tokens=a.max_tokens, cache_dir=os.environ.get('GEMMA_CACHE_DIR') or None)
+        res['load_s'] = round(time.perf_counter() - t0, 2)
+        res['rss_after_load_mb'] = peak_rss_mb()
+        save('loaded')
+        for task in [x for x in a.tasks.split(',') if x]:
+            for i in range(a.repeat):
+                res['current'] = {'task': task, 'n': i + 1, 'started_s': round(time.perf_counter() - t0, 1)}
+                save('running')
+                if task == 'summary':
+                    out = r.summary(SUMMARY_DATA)
+                else:
+                    fname, url = SAMPLES[task]
+                    out = r.faq((HERE / 'samples' / fname).read_text(), source_url=url)
+                row = {'task': task, 'n': i + 1, **{k: (round(v, 2) if isinstance(v, float) else v) for k, v in out['timing'].items()}, 'peak_rss_mb': peak_rss_mb()}
+                if task != 'summary':
+                    row.update({'source_chars': out.get('source_chars'), 'site': out.get('site'), 'needs_check': out.get('needs_check'), 'ok': out.get('ok'), 'error': out.get('error'),
+                                'faqs': out.get('faqs'), 'raw_chars': len(out.get('raw') or ''), 'raw': out.get('raw'), 'removed_instructions': out.get('removed_instructions'),
+                                'reasons': sorted({x.split(':')[0] for f in (out.get('faqs') or []) for x in f.get('reasons', [])})})
+                else:
+                    row.update({'ok': out['ok'], 'text': out['text'], 'model_used': out.get('model_used')})
+                res['runs'].append(row)
+                res.pop('current', None)
+                save('running')
+                print(json.dumps({k: v for k, v in row.items() if k not in ('faqs', 'raw')}, ensure_ascii=False)[:400], flush=True)
+        r.close()
+        if a.bench:
+            import litert_lm as L
+            b = L.Benchmark(a.model, L.Backend.CPU(thread_count=a.threads), prefill_tokens=1024, decode_tokens=256, max_num_tokens=2048)
+            info = b.run() if hasattr(b, 'run') else None
+            res['bench'] = {k: getattr(info, k) for k in dir(info) if not k.startswith('_') and not callable(getattr(info, k))} if info is not None else None
+        save('complete')
+    except Exception as e:  # noqa: BLE001  Python の例外で止まったとき（OOM の強制終了は例外にならない＝その直前の途中経過が残る）
+        res['error'] = f'{type(e).__name__}: {str(e)[:300]}'
+        save('error')
+        raise
+    finally:
+        print(json.dumps({k: v for k, v in res.items() if k != 'runs'}, ensure_ascii=False, default=str), flush=True)
 
 if __name__ == '__main__':
     main()

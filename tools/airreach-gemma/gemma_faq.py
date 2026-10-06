@@ -134,6 +134,7 @@ _NO_INFO = re.compile(r'(記載(が|は)?(ありません|ない|されていま
 
 # 本文に書かれた「条件・注意」を表す語。根拠の直後にこの語を含む文が続くときは、答えの一部として扱う（省略を見つけるため）
 _CAVEAT = re.compile(r'(ただし|但し|のみ|だけ|限り|限ります|除き|除く|不可|できません|いただけません|ご遠慮|ため|場合|まで|前日|事前|必ず|注意|お知らせください|ありません|ございません|売り切れ)')
+_CONNECTIVE = re.compile(r'^\s*(ただし|但し|なお|尚|※|＊|\*|注意|ご注意)')
 # 範囲を限る語（「ディナーのみ」「30分前まで」）。直前の語を条件の中身として扱う
 _LIMIT = re.compile(r'([^、。,\s]{1,8})(のみ|だけ|限り|に限ります|以外|を除き|まで)')
 # 否定（ない・できない）。肯定と否定の取り違えを見つける
@@ -149,7 +150,7 @@ _TOPIC = [  # （質問の語, 根拠にあるべき語, 省略を見るとき�
     (re.compile(r'支払'), re.compile(r'(支払|現金|カード|決済|電子マネー|pay)', re.I), re.compile(r'(支払|現金|カード|決済|電子マネー|pay)', re.I)),
     (re.compile(r'電話'), re.compile(r'(電話|tel|\d{2,4}-\d{2,4}-\d{3,4})', re.I), re.compile(r'(電話番号|tel|\d{2,4}-\d{2,4}-\d{3,4})', re.I)),
 ]
-_STOP_TOKENS = {'教えて', 'ください', 'について', 'ですか', 'ますか', 'どこ', 'いつ', 'なに', '何', 'どう', 'ありますか', 'できますか', '必要', 'お客様', 'お店'}
+_STOP_TOKENS = {'教えて', 'ください', 'について', 'ですか', 'ますか', 'どこ', 'いつ', 'なに', '何', 'どう', 'ありますか', 'できますか', '必要', 'お客様', 'お店', '何時', 'いくら'}
 
 
 def _content_tokens(s: str) -> list[str]:
@@ -165,8 +166,8 @@ def _bigrams(s: str) -> set:
 
 
 def split_sentences(source: str) -> list[dict]:
-    """本文を文に分ける。見出し（【…】の行）と段落（空行・見出しで区切る）を覚えておく"""
-    out, para, heading = [], 0, ''
+    """本文を文に分ける。見出し（【…】の行）・節（見出しで区切る）・段落（空行でも区切る）を覚えておく"""
+    out, para, section, heading = [], 0, 0, ''
     for line in str(source or '').split('\n'):
         st = line.strip()
         if not st:
@@ -175,13 +176,14 @@ def split_sentences(source: str) -> list[dict]:
         m = re.match(r'^[【\[]([^】\]]{1,30})[】\]]\s*(.*)$', st)
         if m:
             para += 1
+            section += 1
             heading = m.group(1)
             st = m.group(2).strip()
             if not st:
                 continue
         for sent in re.split(r'(?<=[。！？!?])', st):
             if sent.strip():
-                out.append({'text': sent.strip(), 'n': norm(sent), 'para': para, 'heading': heading})
+                out.append({'text': sent.strip(), 'n': norm(sent), 'para': para, 'section': section, 'heading': heading})
     return out
 
 
@@ -226,37 +228,57 @@ def _numbers_in_order(answer: str, evidence: str) -> list[str]:
     return bad
 
 
-def _binding_errors(answer: str, evidence: str) -> list[str]:
-    """数字と項目の対応：答えで「項目 … 数字」（例 カットは7,700円・土日祝は10:00）となっている組が、根拠でも同じ組になっているか。
-    根拠の中で、その項目の直後（数字をはさまず15文字以内）に同じ数字が出てくれば合っている。項目が根拠に無いときは見ない"""
+_ASKS_VALUE = re.compile(r'(何時|いくら|何円|何分|何台|何歳|何名|何人|何曜|料金|価格|値段|営業時間|時間|電話番号)')
+_GENERIC_ITEMS = {'無料', '有料', '料金', '営業時間', '時間', '価格', '金額', '値段', '費用', '電話番号', '番号', '合計', '税込', '税抜', '何時', '何円', '最終受付', '受付'}
+
+
+def _range_at(text: str, pos: int):
+    """text の pos から始まる数字（と、続く「〜数字」）を返す。(開始, 終了 or None)"""
+    m = _NUM.match(text, pos)
+    if not m:
+        return None, None
+    r = re.match(r'\s*(?:〜|~|-|から)\s*(\d[\d:,.]*)', text[m.end():])
+    return m.group(0).replace(',', ''), (r.group(1).replace(',', '') if r else None)
+
+
+def _binding_errors(answer: str, evidence: str, question: str = '') -> list[str]:
+    """数字と対象の対応：答えの「対象 … 数字（または幅 A〜B）」が、根拠でも同じ対象の直後の数字（幅なら開始と終了の両方）になっているか。
+    - 対象は、答えの節で数字の直前にある具体的な語（カラー・土日祝 など）。「料金」「営業時間」のような一般的な語は対象にしない
+      （一般的な語だけが合っても、具体的な対象の食い違いを救わない）
+    - 答えの節に具体的な語が無いときは、質問の具体的な語（例「土日祝の営業時間は？」の 土日祝）を対象にする
+    - 対象の語が根拠に1つも無いときは、ここでは判定しない（ほかの確かめ・言い換えの照合に任せる）
+    - 根拠の中で、対象の語のあと（数字をはさまず15文字以内）に同じ数字・同じ幅が無ければ食い違い"""
     bad = []
-    a = unicodedata.normalize('NFKC', answer)
-    e = unicodedata.normalize('NFKC', evidence)
-    e_n = re.sub(r'\s+', '', e).replace(',', '')
+    a = unicodedata.normalize('NFKC', answer).replace('～', '〜')
+    e_n = re.sub(r'\s+', '', unicodedata.normalize('NFKC', evidence)).replace(',', '').replace('～', '〜')
+    def specific(text):
+        toks = re.findall(r'[\u4e00-\u9fff々]{2,}|[\u30a0-\u30ffー]{2,}', text)
+        return [x for x in toks if x not in _GENERIC_ITEMS and x not in _STOP_TOKENS]
+    # 質問が値（時刻・金額・番号など）を聞いているときだけ、質問の具体的な語を代わりの対象にする（「無料ですか？」のような問には使わない）
+    q_items = [x for x in specific(unicodedata.normalize('NFKC', question)) if x in e_n] if _ASKS_VALUE.search(question or '') else []
     for clause in re.split(r'[、。!?！？]|,(?!\d)', a):
         for m in _NUM.finditer(clause):
             if re.search(r'(〜|~|-|から)\s*$', clause[:m.start()]):
-                continue  # 幅（A〜B）の後ろの数字は、前の数字と組で _numbers_in_order が見る
-            before = clause[max(0, m.start() - 14):m.start()]
-            toks = re.findall(r'[\u4e00-\u9fff々]{2,}|[\u30a0-\u30ffー]{2,}', before)
-            # 直前の2語のうち根拠にある語を項目とみなす（「カラーの料金は」なら カラー・料金）。どれかが根拠で同じ数字と組になっていれば合っている
-            items = [x for x in toks[-2:] if x in e_n]
+                continue  # 幅の終わりは、開始の数字と組で見る
+            start, end = _range_at(clause, m.start())
+            prev = [x.end() for x in _NUM.finditer(clause[:m.start()])]
+            window = clause[max(prev[-1] if prev else 0, m.start() - 14):m.start()]   # 前の数字をまたがない
+            items = [x for x in specific(window)[-2:] if x in e_n] or q_items
             if not items:
                 continue
-            num = m.group(0).replace(',', '')
-            ok = False
-            for item in items:
+            for item in items:  # 具体的な語は全部が、同じ数字（幅）と組になっていること
+                ok = False
                 for im in re.finditer(re.escape(item), e_n):
                     n1 = _NUM.search(e_n, im.end())
-                    if n1 and n1.start() - im.end() <= 15 and n1.group(0).replace(',', '') == num:
+                    if not n1 or n1.start() - im.end() > 15:
+                        continue
+                    es, ee = _range_at(e_n, n1.start())
+                    if es == start and (end is None or ee == end):
                         ok = True
                         break
-                if ok:
-                    break
-            if not ok:
-                item = items[-1]
-                bad.append(f'{item}→{m.group(0)}')
-    return bad
+                if not ok:
+                    bad.append(f"{item}→{start}{'〜' + end if end else ''}")
+    return list(dict.fromkeys(bad))
 
 
 def _polarity(s: str) -> dict:
@@ -294,12 +316,22 @@ def validate_faq_item(item: dict, source: str, source_url: str | None = None) ->
             # 当たった文の直後に、同じ段落で条件・注意の文が続くなら答えに含める（例：アレルギーの「完全に取り除くことはできません」）
             idx = list(hit)
             for k in hit:
-                j = k + 1
-                while (j < len(sents) and sents[j]['para'] == sents[k]['para'] and j not in idx and _CAVEAT.search(sents[j]['text'])
-                       and (sents[k]['heading'] or set(_content_tokens(sents[j]['text'])) & set(_content_tokens(sents[k]['text'])))):
+                j, added = k + 1, 0
+                # 直後に続く条件・注意の文を足す。同じ段落なら見出しの下か同じ語を含む文、空行をはさむときは同じ見出しの節の中で
+                # 「ただし・なお・※」で始まる文か同じ語を含む文だけ（別の対象の条件を混ぜない）。最大3文
+                while j < len(sents) and j not in idx and added < 3 and _CAVEAT.search(sents[j]['text']):
+                    sj, sk = sents[j], sents[k]
+                    shares = bool(set(_content_tokens(sj['text'])) & set(_content_tokens(sk['text'])))
+                    if sj['para'] == sk['para']:
+                        ok_add = bool(sk['heading']) or shares
+                    else:
+                        ok_add = bool(sk['heading']) and sj['section'] == sk['section'] and (bool(_CONNECTIVE.match(sj['text'])) or shares)
+                    if not ok_add:
+                        break
                     idx.append(j)
-                    caveats.append(sents[j]['text'])
+                    caveats.append(sj['text'])
                     j += 1
+                    added += 1
             idx = sorted(set(idx))
             used = [sents[k] for k in idx]
             quote = ''.join(s['text'] for s in used)
@@ -324,7 +356,7 @@ def validate_faq_item(item: dict, source: str, source_url: str | None = None) ->
             bad_order = _numbers_in_order(a, quote)
             if bad_order:
                 reasons.append('数字の並びが根拠と違う: ' + ', '.join(bad_order[:3]))
-            bad_bind = _binding_errors(a, quote)
+            bad_bind = _binding_errors(a, quote, q)
             if bad_bind:
                 reasons.append('項目と数字の組が根拠と違う: ' + ', '.join(bad_bind[:3]))
             # (3) 言い切りの語は根拠に（本文の別の場所ではなく）あること
