@@ -1,6 +1,3 @@
-# 【置き場所】GitHub の workflow scope が無いトークンでは .github/workflows/ に push できないため、ここに置いている。
-# 使うときは .github/workflows/gemma-bench.yml へ移す（exp/gemma-* ブランチへの push だけで動く・本番には影響しない）。
-
 # Gemma（LiteRT-LM・CPU）の試作を Linux x86_64 で測る。Vercel Functions の大きさ（2GB/1vCPU・4GB/2vCPU）に合わせたコンテナで動かす。
 # 本番・Vercel・Supabase には触らない。材料は架空の本文と公開ページだけ。公開リポジトリの標準ランナー＝費用なし。
 # 動くのは exp/gemma-* ブランチへの push と手動実行だけ（main への push・PR では動かない）。

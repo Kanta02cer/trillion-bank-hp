@@ -74,14 +74,14 @@
 - `gemma_faq.py`：前処理・プロンプト・LiteRT-LM の実行・確かめ・要約の定型文
 - `test_gemma_faq.py`：回帰テスト（モデル不要・76件）。反例（1回目のレビューの4件・2回目のレビューの3件と対照3件・対象の取り違え・否定・有料/無料・営業時間の順序・項目と数字の組・条件の省略・埋め込みの指示）と、正例（正しい答えを落とさないこと）。`fixtures/` に保存した実際のモデル出力（架空の本文と自社の公開ページ）でも判定を固定
 - `bench.py`：読み込み・最初の文字まで・全体の時間・ピークメモリ・版・入力条件を記録。**読み込みの後と処理ごとに result.json を書き直す**（OOM・時間切れで止まっても、読み込み時間・済んだ処理・止まった処理が残る。Mac で強制終了して確認済み）
-- `ci/gemma-bench.yml`・`ci_run.sh`・`ci_summary.py`：Linux x86_64 で Vercel の大きさ（2GB/1vCPU・4GB/2vCPU）に合わせて測る GitHub Actions（下の 5）
+- `.github/workflows/gemma-bench.yml`・`ci_run.sh`・`ci_summary.py`：Linux x86_64 で Vercel の大きさ（2GB/1vCPU・4GB/2vCPU）に合わせて測る GitHub Actions（下の 5）
 - `vercel-draft/`：Vercel の Python Function の下書き（**配置していない**。既定で無効・社内だけ・同時に1件・入力 6000 文字・出力 2000 トークン・外部 AI に切り替えない）
 
 ## 5. 実測
 
 ### Linux x86_64（Vercel の大きさに合わせた制限つきコンテナ）— **未実施**
 
-- 準備したもの：`tools/airreach-gemma/ci/gemma-bench.yml`・`ci_run.sh`。コンテナを裏で動かし、**ホスト側の cgroup から2秒ごとにメモリ（memory.current・memory.peak・oom_kill の回数）を `mem.csv` に記録**するので、OOM や時間切れで止まってもメモリの推移が残る。GitHub Actions の標準ランナー（公開リポジトリは無料）で、モデルを Hugging Face から取得して sha256 を記録し、docker の `--memory`/`--memory-swap`/`--cpus` で **2GB/1CPU・4GB/2CPU・上限なし** の3条件を順に、ファイルのキャッシュを捨てた状態から測る。各条件の時間の上限 2,400 秒、OOM（`OOMKilled`）・時間切れ・コンテナのピークメモリ（`memory.peak`）を記録する。測る処理：読み込み → 短い本文・食堂（1,708文字）・歯科（2,120文字）・公開ページの FAQ を各2回（初回と連続）→ 要約の定型文
+- 準備したもの：`.github/workflows/gemma-bench.yml`・`tools/airreach-gemma/ci_run.sh`。コンテナを裏で動かし、**ホスト側の cgroup から2秒ごとにメモリ（memory.current・memory.peak・oom_kill の回数）を `mem.csv` に記録**するので、OOM や時間切れで止まってもメモリの推移が残る。GitHub Actions の標準ランナー（公開リポジトリは無料）で、モデルを Hugging Face から取得して sha256 を記録し、docker の `--memory`/`--memory-swap`/`--cpus` で **2GB/1CPU・4GB/2CPU・上限なし** の3条件を順に、ファイルのキャッシュを捨てた状態から測る。各条件の時間の上限 2,400 秒、OOM（`OOMKilled`）・時間切れ・コンテナのピークメモリ（`memory.peak`）を記録する。測る処理：読み込み → 短い本文・食堂（1,708文字）・歯科（2,120文字）・公開ページの FAQ を各2回（初回と連続）→ 要約の定型文
 - 実施できなかった理由：GitHub のトークンに `workflow` の権限が無く、`.github/workflows/` へのファイルの追加を push できない（`refusing to allow an OAuth App to create or update workflow ... without workflow scope`）。権限は広げていない
 - **これは Vercel での実動確認ではない**。実施後も、Vercel での確認（冷起動・Large functions・関数の実際のメモリ）は別に要る
 

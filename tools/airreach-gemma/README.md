@@ -21,4 +21,4 @@ python3 tools/airreach-gemma/test_gemma_faq.py   # 確かめの部分のテス�
 - `fixtures/`：保存した実際のモデル出力（回帰テスト用）
 - `test_gemma_faq.py`：回帰テスト（モデル不要）
 - `vercel-draft/`：Vercel の Python Function にするときの下書き（配置していない・既定で無効・社内だけ・同時に1件）
-- `ci/`・`ci_run.sh`・`ci_summary.py`：Linux x86_64 で Vercel の大きさ（2GB/1vCPU・4GB/2vCPU）に合わせて測る GitHub Actions（`.github/workflows/` に移すと動く。Vercel での実動確認ではない）
+- `ci_run.sh`・`ci_summary.py`（と `.github/workflows/gemma-bench.yml`）：Linux x86_64 で Vercel の大きさ（2GB/1vCPU・4GB/2vCPU）に合わせて測る GitHub Actions（exp/gemma-* への push で動く。Vercel での実動確認ではない）
