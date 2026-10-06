@@ -40,15 +40,17 @@ jobs:
           printf 'FROM python:3.12-slim\nRUN pip install --no-cache-dir %s\nWORKDIR /work\n' "$LITERT_LM_API" > /tmp/Dockerfile
           docker build -q -t gemma-bench -f /tmp/Dockerfile /tmp
           docker run --rm gemma-bench sh -c 'pip show litert-lm-api | head -3; du -sh /usr/local/lib/python3.12/site-packages/litert_lm* ; ldd --version | head -1'
-      - name: Vercel standard size (2GB / 1 vCPU)
+      # 1回目（run 37466297568）は XNNPack の重みのキャッシュを作れない条件で、2GB は読み込み中に OOM・4GB は長い本文の FAQ で OOM・上限なしはピーク 6.2GB だった。
+      # 2回目は、キャッシュを先に作り（上限なし）、それを読み取り専用で渡して 2GB/1CPU・4GB/2CPU を測る（Vercel の関数にモデルとキャッシュを同梱する想定）
+      - name: Build XNNPack weight cache (no limit, writable)
         continue-on-error: true
-        run: bash tools/airreach-gemma/ci_run.sh std-2g-1cpu 2g 1
-      - name: Vercel performance size (4GB / 2 vCPU)
+        run: bash tools/airreach-gemma/ci_run.sh cache-build 0 0 1200 rw faq_short 1
+      - name: Vercel standard size (2GB / 1 vCPU) with read-only cache
         continue-on-error: true
-        run: bash tools/airreach-gemma/ci_run.sh perf-4g-2cpu 4g 2
-      - name: No limit (runner, reference)
+        run: bash tools/airreach-gemma/ci_run.sh std-2g-1cpu-cache 2g 1 2400 ro
+      - name: Vercel performance size (4GB / 2 vCPU) with read-only cache
         continue-on-error: true
-        run: bash tools/airreach-gemma/ci_run.sh nolimit 0 0
+        run: bash tools/airreach-gemma/ci_run.sh perf-4g-2cpu-cache 4g 2 2400 ro
       - name: Summary
         if: always()
         run: python3 tools/airreach-gemma/ci_summary.py /tmp/out >> "$GITHUB_STEP_SUMMARY"; cat "$GITHUB_STEP_SUMMARY"
