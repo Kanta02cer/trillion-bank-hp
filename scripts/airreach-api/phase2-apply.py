@@ -14,6 +14,7 @@ Change ID（DEV-YYYY-NNN）の承認後にだけ使う。各手順は単独で�
   python3 scripts/airreach-api/phase2-apply.py set-approver <email> on|off  # 月次レポートの承認者を設定（apply-report-2026-10 の後）
   python3 scripts/airreach-api/phase2-apply.py apply-studio-workspaces   # Studio の作業の共有（studio_workspaces）を適用して検証
   python3 scripts/airreach-api/phase2-apply.py apply-schedules           # AI計測の定期実行（measurement_schedules / measurement_jobs）を適用して検証。既定は無効
+  python3 scripts/airreach-api/phase2-apply.py apply-client-requests     # お客様からの依頼（競合・キーワード・質問の追加と削除・担当者の承認）を適用して検証
 
 Supabase のアクセストークン（Account → Access Tokens で発行・期限つき推奨）は、
 ~/.config/airreach/supabase_token（chmod 600）に置く。画面にもログにも出さない。
@@ -275,6 +276,33 @@ def cmd_apply_schedules():
         die(f'検証で {bad} 件が想定と違います。supabase/rollback/ の SQL で戻すか判断してください')
 
 
+def cmd_apply_client_requests():
+    """お客様からの依頼（競合・キーワード・質問の追加と削除。担当者が承認すると Studio の作業に反映）の表と RPC を入れる"""
+    confirm_project()
+    if 'studio_workspaces' not in tables():
+        die('studio_workspaces がありません。先に apply-studio-workspaces を実行してください')
+    path = ROOT / 'supabase/migrations/20261007120000_airreach_client_requests.sql'
+    call('POST', f'/projects/{REF}/database/migrations', {'name': 'airreach_client_requests', 'query': path.read_text()})
+    print('migration を適用しました: airreach_client_requests')
+    checks = [
+        ('client_requests があり RLS が有効', "select relrowsecurity as ok from pg_class where oid = 'public.client_requests'::regclass"),
+        ('anon・service_role は表に権限なし', "select not exists(select 1 from information_schema.role_table_grants where table_name = 'client_requests' and grantee in ('anon', 'service_role')) as ok"),
+        ('authenticated は表を読むだけ（書くのは RPC）', "select not exists(select 1 from information_schema.role_table_grants where table_name = 'client_requests' and grantee = 'authenticated' and privilege_type <> 'SELECT') as ok"),
+        ('RPC はすべて search_path 固定・SECURITY DEFINER', "select bool_and(prosecdef and proconfig is not null) as ok from pg_proc where proname in ('airreach_client_settings', 'airreach_request_create', 'airreach_request_cancel', 'airreach_request_decide')"),
+        ('anon は RPC を実行できない', "select not has_function_privilege('anon', 'public.airreach_request_create(uuid,text,text,jsonb)', 'EXECUTE') and not has_function_privilege('anon', 'public.airreach_request_decide(uuid,boolean,text)', 'EXECUTE') as ok"),
+        ('中身の整形の関数は直接呼べない', "select not has_function_privilege('authenticated', 'public.airreach_request_payload(text,jsonb)', 'EXECUTE') as ok"),
+        ('依頼はまだ0件', "select count(*) = 0 as ok from public.client_requests"),
+    ]
+    bad = 0
+    for label, q in checks:
+        r = sql(q, True)
+        ok = bool(r and r[0].get('ok'))
+        bad += 0 if ok else 1
+        print(('OK  ' if ok else 'NG  ') + label)
+    if bad:
+        die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261007120000_airreach_client_requests_rollback.sql で戻すか判断してください')
+
+
 def cmd_set_approver(email, flag):
     email = email.strip().lower()
     if flag not in ('on', 'off') or '@' not in email or "'" in email:
@@ -371,7 +399,7 @@ def cmd_anon_key_to_vercel():
 def main():
     a = sys.argv[1:]
     cmds = {'check': cmd_check, 'apply-db': cmd_apply_db, 'auth-config': cmd_auth_config, 'auth-hook': cmd_auth_hook,
-            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'verify': lambda: (confirm_project(), verify())}
+            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'apply-client-requests': cmd_apply_client_requests, 'verify': lambda: (confirm_project(), verify())}
     if a and a[0] in cmds and len(a) == 1:
         cmds[a[0]]()
     elif a and a[0] == 'add-staff' and len(a) == 3:
