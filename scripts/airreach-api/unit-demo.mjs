@@ -32,6 +32,13 @@ for (const r of D.reports) {
   expect(r.id + '：未計測の月は null（0 にしない）', c.history.filter((h) => h.month < '2026-06-01').every((h) => Object.keys(h.cite).length === 0 || Object.values(h.cite).every((v) => v == null)));
 }
 
+// 競合との比較：自社の行は AI ごとの数の合計と一致する
+for (const r of D.reports) {
+  const c = r.compiled, k = c.ai.competitors, self = k.rows.find((x) => x.self);
+  const sum = (f) => c.ai.providers.reduce((t, p) => t + p[f], 0);
+  expect(r.id + '：競合との比較の自社（名前・出典）が AI ごとの合計と一致・架空の競合2社', self.mention === sum('mentionCount') && self.answers === sum('answers') && self.cite === sum('citeCount') && self.citeJudged === sum('judged') && k.names.length === 2 && k.names.every((n) => n.includes('架空')), JSON.stringify(self));
+}
+
 // 架空であること：URL・メールは予約済みのドメインだけ・回答に架空の印・成果を断定しない
 const all = JSON.stringify(D);
 const urls = all.match(/https?:\/\/[^"\s)）]+/g) || [];

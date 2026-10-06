@@ -66,6 +66,26 @@ expect('出典を判定できた回答が0 → 引用率は null（0% にしな�
   expect('新しい計測が無い月は、古い計測をそのまま使う（何も出ないよりよい）', cB.ai.excludedOld === 0 && cB.ai.providers[0].judged === 5);
 }
 
+// 競合との比較：回答の記録の競合の結果から、自社と競合を同じ数え方で合計する
+{
+  const comp = (lum, sora, order, selfRank) => ({ competitors: [{ name: 'ルミエール', mentioned: lum, cited: lum ? 1 : 0 }, { name: 'ソラ', mentioned: sora, cited: null }], order, self_rank: selfRank });
+  const ans2 = [
+    ans('渋谷 美容室', 'perplexity', Object.assign({ mentioned: 1, cited: 1 }, comp(1, 0, ['ルミエール', 'Hana'], 2))),
+    ans('渋谷 カット', 'perplexity', Object.assign({ mentioned: 0, cited: 0 }, comp(1, 1, ['ルミエール', 'ソラ'], null))),
+    ans('Hana の料金', 'google_ai_mode', Object.assign({ mentioned: 1, cited: null, cite_source: 'none' }, comp(0, 0, ['Hana'], 1))),
+    ans('渋谷 駐車場', 'google_aio', Object.assign({ status: 'not_shown', mentioned: null, cited: null }, comp(null, null, [], null)))];
+  const run = { measured_on: '2026-10-07', summary: sm('v1', [prov('perplexity', 2, 2, 1, 1), prov('google_ai_mode', 1, 0, 0, 1), prov('google_aio', 0, 0, 0, 0, 1)], null, ans2) };
+  const cc = R.compileReport({ client: { name: 'Hana' }, periodMonth: '2026-10-01', now: new Date('2026-10-31T00:00:00Z'), scans: [], traffic: [], actions: [], runs: [run] }).ai.competitors;
+  const row = (n) => cc.rows.find((r) => r.name === n);
+  expect('競合：表示なしの回答は数えない（回答3）・自社が先頭', cc.answers === 3 && cc.rows[0].self === true && cc.rows[0].name === 'Hana', JSON.stringify(cc));
+  expect('競合：名前が出た割合（自社 2/3・ルミエール 2/3・ソラ 1/3）', row('Hana').mention === 2 && row('ルミエール').mention === 2 && row('ソラ').mention === 1 && row('ソラ').mentionRate === 33.3, JSON.stringify(cc.rows));
+  expect('競合：最初に名前が出た回答（自社1・ルミエール2）', row('Hana').first === 1 && row('ルミエール').first === 2 && row('ソラ').first === 0);
+  expect('競合：出典は判定できた回答だけ（自社 1÷2・ルミエール 2÷3・URL 未登録のソラは null）', row('Hana').cite === 1 && row('Hana').citeJudged === 2 && row('ルミエール').cite === 2 && row('ルミエール').citeJudged === 3 && row('ソラ').citeRate === null, JSON.stringify(cc.rows));
+  expect('競合：SOV ＝ 自社の名前 ÷ 名前が出た回数の合計（2 ÷ 5 ＝ 40%）', cc.sov === 40 && cc.mentionsTotal === 5);
+  const none = R.compileReport({ client: { name: 'Hana' }, periodMonth: '2026-10-01', now: new Date('2026-10-31T00:00:00Z'), scans: [], traffic: [], actions: [], runs: runs.slice(1) }).ai.competitors;
+  expect('競合の記録が無い計測（以前の計測）では出さない（null）', none === null);
+}
+
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);

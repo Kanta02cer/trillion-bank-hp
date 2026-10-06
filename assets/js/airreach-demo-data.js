@@ -61,6 +61,8 @@
   var PROMPTS = ['サンプル美容室 Hana はどんなお店ですか？', 'サンプル美容室 Hana の料金を教えて', '渋谷でおすすめの美容室は？', '渋谷 美容室 カット 上手い', '渋谷で予約しやすい美容室は？',
     '渋谷 美容室 髪質改善', '渋谷 美容室 メンズ', '渋谷 美容室 子連れ', '渋谷 美容室 駐車場', '渋谷 美容室 夜遅くまで'];
   var BRANDED = 2;
+  // 架空の競合（1社はサイトの URL を登録・もう1社は未登録＝出典は判定しない）
+  var COMPETITORS = [{ name: 'サロン・ルミエール（架空）', url: 'https://salon-lumiere.example/' }, { name: 'ヘアサロン ソラ（架空）', url: '' }];
   var ENGINES = [['Perplexity', 'perplexity', 'perplexity/sonar'], ['Google AI Overviews', 'google_aio', 'serpapi/google_ai_overview'], ['Google AI Mode', 'google_ai_mode', 'serpapi/google_ai_mode']];
   // 月ごと・AI ごとの見本：一般質問8問のうち、社名が出た数・自社が出典になった数・判定できない数・表示なしの数
   var PLAN = {
@@ -79,7 +81,7 @@
       PROMPTS.forEach(function (q, i) {
         var branded = i < BRANDED, k = i - BRANDED; // k: 一般質問の番号（0〜7）
         var a = { prompt: q, engine: e[1], status: 'ok', branded: branded, measured_at: at, model: e[2], conditions: { engine: e[1], model: e[2], via: e[1] === 'perplexity' ? 'ai-gateway' : 'direct', search: true, location: 'JP' } };
-        if (!branded && k >= 8 - notShown) { a.status = 'not_shown'; a.mentioned = null; a.cited = null; a.cite_source = 'not_shown'; a.citations = []; a.urls_in_answer = []; a.answer = ''; answers.push(a); return; }
+        if (!branded && k >= 8 - notShown) { a.status = 'not_shown'; a.mentioned = null; a.cited = null; a.cite_source = 'not_shown'; a.citations = []; a.urls_in_answer = []; a.answer = ''; a.competitors = COMPETITORS.map(function (c) { return { name: c.name, mentioned: null, cited: null }; }); a.order = []; a.self_rank = null; answers.push(a); return; }
         var men = branded ? 1 : (k < mention ? 1 : 0);
         var src = e[1] === 'perplexity' ? 'answer_text' : 'ai_sources';
         var cited;
@@ -92,6 +94,16 @@
         a.urls_in_answer = src === 'answer_text' ? (cited ? [SITE] : [other]) : [];
         a.cited_by_sources = src === 'ai_sources' ? cited : null;
         a.self_url_in_text = src === 'answer_text' ? cited : null;
+        // 競合：指名質問では出ない。一般質問ではルミエールが多めに、ソラが少し出る（月を追っても大きくは変えない）
+        var lum = !branded && k < 5 ? 1 : 0, sora = !branded && (k === 2 || k === 3) ? 1 : 0;
+        var lumCited = src === 'ai_sources' ? (lum && k < 3 ? 1 : 0) : (src === 'answer_text' ? (lum && k < 2 ? 1 : 0) : null);
+        a.competitors = [{ name: COMPETITORS[0].name, mentioned: lum, cited: lumCited }, { name: COMPETITORS[1].name, mentioned: sora, cited: null }];
+        var order = [];
+        if (lum && !(men && k % 2 === 1)) order.push(COMPETITORS[0].name);
+        if (men) order.push(CLIENT.name);
+        if (lum && men && k % 2 === 1) order.push(COMPETITORS[0].name);
+        if (sora) order.push(COMPETITORS[1].name);
+        a.order = order; a.self_rank = men ? order.indexOf(CLIENT.name) + 1 : null;
         a.answer = '【デモ用の架空の回答】' + (men ? CLIENT.name + ' は、' : '') + '「' + q + '」への回答の見本です。実際の AI の回答ではありません。';
         answers.push(a);
       });

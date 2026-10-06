@@ -105,7 +105,9 @@ export function buildRunSummary(rows, { brand = '', siteUrl = '', competitors = 
       error: r.error ? String(r.error).slice(0, 200) : undefined, mentioned: r.mentioned, cited: r.cited, cite_source: r.cite_source || 'none',
       cited_by_sources: r.cited_by_sources == null ? null : r.cited_by_sources, self_url_in_text: r.self_url_in_text == null ? null : r.self_url_in_text,
       citations: (r.citations || []).slice(0, 10), urls_in_answer: (r.urls_in_answer || []).slice(0, 10), answer: String(r.answer_text || r.answer_excerpt || '').slice(0, 1500),
-      measured_at: r.measured_at || '', model: r.model || '', conditions: r.conditions || null, repeat: r.repeat || 1, branded: isBranded(r.prompt || r.keyword, brand)
+      measured_at: r.measured_at || '', model: r.model || '', conditions: r.conditions || null, repeat: r.repeat || 1, branded: isBranded(r.prompt || r.keyword, brand),
+      competitors: (r.competitors || []).map((c) => ({ name: c.name, mentioned: c.mentioned == null ? null : c.mentioned, cited: c.cited == null ? null : c.cited })),
+      order: Array.isArray(r.order) ? r.order.slice(0, 12) : undefined, self_rank: r.self_rank == null ? null : r.self_rank
     }))
   };
 }
