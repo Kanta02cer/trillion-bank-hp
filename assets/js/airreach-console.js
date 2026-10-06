@@ -239,7 +239,15 @@
         '<textarea class="arc-input arc-client-qs" id="arc-client-qs" rows="3" placeholder="お客様によく聞かれる質問（任意・1行に1つ）&#10;例：個室はありますか？&#10;例：子ども連れでも大丈夫ですか？"></textarea>' +
         '<select class="arc-input" id="arc-client-ind">' + Object.keys(INDUSTRY).map(function (k) { return '<option value="' + k + '">' + INDUSTRY[k] + '</option>'; }).join('') + '</select>' +
         '<button class="arc-btn" type="submit">顧客を追加</button></form>' : '';
-      shell(me.is_staff ? '顧客一覧' : 'レポート', '<section class="arc-card">' + list + add + '</section>', '', { sec: 'list' });
+      // 社内だけ：代理店・見込み顧客に見せるデモ（架空データ・ログイン不要）の入口
+      var demo = me.is_staff ? '<section class="arc-card arc-demo"><div class="arv-home-head"><h2 class="arc-h2">代理店・見込み顧客に見せるデモ</h2><span class="arc-sub">ログイン不要・架空のお店のデータ</span></div>' +
+        '<p class="arc-note" style="margin:0 0 10px">お客様向けの画面（ホーム・推移・直すこと・月次レポート・競合との比較・PDF）を、架空の美容室「サンプル美容室 Hana」で操作できます。本番のお客様のデータには一切つながりません。</p>' +
+        '<div class="arc-row"><a class="arc-btn" href="/airreach/demo/" target="_blank" rel="noopener">デモを開く</a><button type="button" class="arc-btn-sm" id="arc-demo-copy">URL をコピー</button><code class="arc-demo-url">https://trillion-bank.jp/airreach/demo/</code></div></section>' : '';
+      shell(me.is_staff ? '顧客一覧' : 'レポート', demo + '<section class="arc-card">' + list + add + '</section>', '', { sec: 'list' });
+      if (me.is_staff && $('#arc-demo-copy')) $('#arc-demo-copy').addEventListener('click', function () {
+        var b = $('#arc-demo-copy'), u = 'https://trillion-bank.jp/airreach/demo/';
+        (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { b.textContent = 'コピーしました'; setTimeout(function () { b.textContent = 'URL をコピー'; }, 1500); }, function () { b.textContent = 'コピーできませんでした（URL を選んでコピーしてください）'; });
+      });
       if (me.is_staff) $('#arc-add-client').addEventListener('submit', function (e) {
         e.preventDefault();
         var name = $('#arc-client-name').value.trim(), ind = $('#arc-client-ind').value, rawUrl = $('#arc-client-url').value.trim();
