@@ -41,6 +41,25 @@
         return '<tr><td>' + esc(x.label) + ' <small class="arr-na">' + esc(x.key) + '</small></td><td>' + (x.level === 'required' ? '必要' : 'あるとよい') + '</td><td>' + ST[x.status] + (x.schemaValue ? '<br><small class="arr-na">' + esc(x.schemaValue) + '</small>' : '') + '</td><td>' + (x.status === 'ok' ? '—' : esc(x.fix)) + '</td></tr>';
       }).join('') + '</tbody></table><p class="arr-note">' + esc(r.basis) + '「足りない情報」（点数の項目）は構造化データの種類があるか、この表は見つかった構造化データの中に業種で必要な項目がそろっているかを見ています。</p>';
   }
+  // 競合との比較（今月の合計・すべての AI）。自社と、登録した競合を同じ数え方で並べる
+  function competitorsHtml(ai) {
+    var k = ai && ai.competitors;
+    if (!k || !k.rows || k.rows.length < 2) return '';
+    var max = Math.max.apply(null, k.rows.map(function (r) { return r.mentionRate || 0; }).concat([1]));
+    var rows = k.rows.slice().sort(function (a, b) { return (b.mentionRate || 0) - (a.mentionRate || 0) || (a.self ? -1 : 1); });
+    var bar = function (v, self) { return '<span class="arr-cbar"><span style="width:' + (v == null ? 0 : Math.max(2, Math.round(v / max * 100))) + '%"' + (self ? ' class="is-self"' : '') + '></span></span>'; };
+    var nd = function (n, d) { return d ? '<small class="arr-na">（' + esc(n) + ' ÷ ' + esc(d) + '）</small>' : ''; };
+    return '<h3 class="arr-h3">競合との比較（今月の合計・すべての AI）' + tag('reference') + '</h3>' +
+      '<p class="arr-sub">AI の同じ回答 ' + esc(k.answers) + '件で、自社と競合の名前が出たかを数えました。' + (k.sov != null ? '名前が出た回数の合計のうち、自社の割合は <b>' + esc(k.sov) + '%</b>' + (k.prevSov != null ? '（前月 ' + esc(k.prevSov) + '%）' : '') + 'です。' : '') + '</p>' +
+      '<table class="arr-table arr-comp"><thead><tr><th>お店・会社</th><th>名前が出た割合</th><th>最初に出た</th><th>出典になった割合</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        return '<tr' + (r.self ? ' class="is-self"' : '') + '><td>' + esc(r.name) + (r.self ? ' <span class="arr-self">自社</span>' : '') + '</td>' +
+          '<td>' + bar(r.mentionRate, r.self) + ' ' + (r.mentionRate == null ? '—' : esc(r.mentionRate) + '%') + nd(r.mention, r.answers) + '</td>' +
+          '<td>' + esc(r.first) + '回答</td>' +
+          '<td>' + (r.citeRate == null ? '<span class="arr-na">—</span>' + (r.self ? '' : '<small class="arr-na">（サイトの URL が未登録）</small>') : esc(r.citeRate) + '%' + nd(r.cite, r.citeJudged)) + '</td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<p class="arr-note">「名前が出た割合」は AI の回答に名前が出た回答の割合、「最初に出た」は回答の中でいちばん先に名前が出た回答の数、「出典になった割合」は公式サイトが出典になった回答の割合です。競合は、登録した会社だけを数えています。名前は回答の文章の中から探しており、AI が別の呼び方をしたときは数えられないことがあります。出典は、AI が返した出典か回答の本文の URL で判定できた回答だけで数えます。</p>';
+  }
   // 一般質問（店名を含まない）と指名質問（店名を含む）の月の合計
   function typesHtml(ai) {
     var t = ai && ai.types;
@@ -229,6 +248,7 @@
         }).join('') +
         '</tbody></table>' +
         typesHtml(ai) +
+        competitorsHtml(ai) +
         latestHtml(ai) +
         '<p class="arr-note">「判定できない」は、AI が出典の一覧を返さず、回答の本文にも URL が無かった回答です（0% として数えません）。「AI の回答が表示されなかった」は、Google の検索結果に AI による概要が出なかった質問です。計測は API で行っており、一般の人が使う最新の ChatGPT・Gemini とは結果が異なることがあります。</p>' +
         citedHtml(ai) + answerRecordsHtml(ai)
