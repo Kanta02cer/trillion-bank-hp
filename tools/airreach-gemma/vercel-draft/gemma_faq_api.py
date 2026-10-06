@@ -12,6 +12,8 @@ POST /api/airreach/gemma-faq   Authorization: Bearer <AirReach のログイン�
 - 入力は 6000 文字・出力は 2000 トークンまで。1つの実行環境で同時に1件だけ（処理中は 429）
 - 失敗しても外部の生成 AI に切り替えない。モデルの答えは gemma_faq.validate_faq で確かめ、通らない答えは「確認が必要」
 - 計測値・月次集計には触らない（DB へ書かない）
+- Function CPU は Performance（4GB/2vCPU）が前提（Linux の実測で 2GB は OOM）。XNNPack の重みのキャッシュ（788MB）はビルドで作って models/ に同梱し、
+  読み取り専用のまま使う（関数の場所には書けない。作れないとメモリが 3GB を超える）
 """
 import json
 import os
@@ -88,7 +90,8 @@ class handler(BaseHTTPRequestHandler):  # Vercel の Python ランタイムの�
             return self._send(429, {'ok': False, 'error': 'ほかの下書きを作成中です。少し待ってからやり直してください'})
         try:
             if _runner is None:
-                _runner = G.GemmaRunner(MODEL, threads=int(os.environ.get('AIRREACH_GEMMA_THREADS', '2')), max_tokens=4096, cache_dir='/tmp/litert-lm-cache')
+                _runner = G.GemmaRunner(MODEL, threads=int(os.environ.get('AIRREACH_GEMMA_THREADS', '2')), max_tokens=4096,
+                                       cache_dir=os.environ.get('AIRREACH_GEMMA_CACHE_DIR', os.path.dirname(MODEL)))
             out = _runner.faq(text, source_url=url)
             out.pop('raw', None)
             out['model'] = 'gemma-4-E2B-it (LiteRT-LM, CPU)'
