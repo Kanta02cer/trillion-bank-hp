@@ -104,7 +104,7 @@
     measured: ['実測値', 'Google Search Console・Google アナリティクス・診断で取得した事実（取得日時・HTTP の結果・見つかった記述）'],
     judged: ['システム判定', 'AirReach が決まった基準で判定した結果（○×・点数）'],
     manual: ['手動入力', '担当者が書いた・入力したもの（結論・施策・ご判断いただきたいこと・手入力の数値）'],
-    reference: ['参考値', '条件つきの値（AI の計測は無料枠のモデルで、一般の人が使う ChatGPT・Gemini とは結果が異なることがあります）'],
+    reference: ['参考値', '条件つきの値（AI の計測は API で行っており、一般の人が使う最新の ChatGPT・Gemini とは結果が異なることがあります）'],
     unknown: ['未確認', '取得できなかった・計測していないもの（0 ではありません）']
   };
   function tag(k) { var x = KIND[k]; return x ? '<span class="arr-kind is-' + k + '" title="' + esc(x[1]) + '">' + esc(x[0]) + '</span>' : ''; }

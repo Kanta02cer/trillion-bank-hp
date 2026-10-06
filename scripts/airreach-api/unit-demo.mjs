@@ -47,6 +47,7 @@ const demoJs = fs.readFileSync(path.join(ROOT, 'assets/js/airreach-demo.js'), 'u
 expect('デモの JS は通信・保存をしない（fetch・XHR・localStorage・sessionStorage なし）', !/fetch\(|XMLHttpRequest|localStorage|sessionStorage|navigator\.sendBeacon/.test(demoJs));
 const view = fs.readFileSync(path.join(ROOT, 'assets/js/airreach-report-view.js'), 'utf8');
 expect('本番のレポート画面：デモの印はページの HTML（data-demo）だけで決まり、URL のパラメータでは切り替わらない', /root\.getAttribute\('data-demo'\) === '1'/.test(view) && !/searchParams\.get\('demo'\)|[?&]demo=/.test(view));
+expect('レポートに古い「無料枠のモデルで計測」の言い方が残っていない', !/無料枠/.test(view));
 const app = fs.readFileSync(path.join(ROOT, 'airreach/app/report/index.html'), 'utf8');
 expect('本番のレポートのページには data-demo が無い（ログインと閲覧の制限はそのまま）', !/data-demo/.test(app));
 const robots = fs.readFileSync(path.join(ROOT, 'robots.txt'), 'utf8');
