@@ -1,6 +1,6 @@
 ---
 title: プライバシーポリシー | 株式会社Trillion Bank
-tbdesc: 株式会社Trillion Bankのプライバシーポリシーです。
+tbdesc: 株式会社Trillion Bankのプライバシーポリシーです。AirReachにおけるGoogleユーザーデータ（Google Search Console・Google アナリティクス）の取扱いを含みます。
 permalink: /trillionbank/privacy/
 ---
 <!DOCTYPE html>
@@ -9,13 +9,136 @@ permalink: /trillionbank/privacy/
 <main id="main">
 <section class="phero"><div class="wrap"><div class="crumb"><a href="/">HOME</a> ／ プライバシーポリシー</div><span class="ey">PRIVACY</span><h1>プライバシーポリシー</h1></div></section>
 <section class="sec"><div class="wrap"><div class="article">
-<p>株式会社Trillion Bank（以下「当社」）は、お問い合わせ等を通じて取得する個人情報を、以下の方針に基づき適切に取り扱います。</p>
-<h2>1. 取得する情報</h2><p>お問い合わせフォーム等でご提供いただく会社名、氏名、メールアドレス、電話番号、ご相談内容、およびサイト利用に伴う技術情報。</p>
+<p>株式会社Trillion Bank（以下「当社」）は、お問い合わせやサービスの提供を通じて取得する個人情報・利用者情報を、以下の方針に基づき適切に取り扱います。</p>
+<p><a href="#google-user-data">AirReachにおけるGoogleユーザーデータの取扱い</a> ／ <a href="#english" hreflang="en">English: Google User Data in AirReach</a></p>
+
+<h2>1. 取得する情報</h2>
+<p>お問い合わせフォーム等でご提供いただく会社名、氏名、メールアドレス、電話番号、ご相談内容、およびサイト利用に伴う技術情報。</p>
+<p>当社のサービスでは、ログインの状態や画面の設定・作業内容を保つため、Cookieおよびブラウザのローカルストレージを利用します。AirReachでGoogleアカウントと連携した場合に取得する情報は、<a href="#google-user-data">6.</a>に定めます。</p>
+
 <h2>2. 利用目的</h2><p>お問い合わせへの対応、サービスのご案内・提供、商談の日程調整、品質改善、および不正利用の防止に必要な範囲で利用します。</p>
 <h2>3. 第三者提供</h2><p>法令に基づく場合を除き、ご本人の同意なく第三者へ提供しません。</p>
 <h2>4. 委託</h2><p>利用目的の達成に必要な範囲で、適切な監督のもと業務を委託する場合があります。</p>
 <h2>5. 開示・訂正・削除</h2><p>ご本人からの求めに応じ、法令に従い適切に対応します。</p>
-<h2>6. お問い合わせ窓口</h2><p><a href="{{ '/trillionbank/contact/' | relative_url }}#form">お問い合わせフォーム</a>からご連絡ください。</p>
-<p style="margin-top:2em;font-size:.8rem;color:var(--muted)">本ポリシーは事業状況や法令の変更に応じて改定する場合があります。重要な変更は本ページで公表します。</p>
+
+<h2 id="google-user-data">6. AirReachにおけるGoogleユーザーデータの取扱い</h2>
+<p>当社が提供するAI検索・Web集客改善サービス「AirReach」（AirReach Tools Studio、AirReach Consultingのダッシュボードを含みます。以下「本サービス」）では、当社の社内担当者、または本サービスをご契約中のお客様としてログインした利用者が、Googleアカウントでの連携を許可した場合に限り、Google APIを通じて以下の情報を取得します。いずれも読み取り専用の権限であり、Google Search ConsoleおよびGoogleアナリティクスのデータや設定を変更することはありません。</p>
+
+<h3>(1) 取得する情報</h3>
+<ul>
+<li>Google Search Console（<code style="overflow-wrap:anywhere">https://www.googleapis.com/auth/webmasters.readonly</code>）：アクセス権のあるプロパティの一覧と権限レベル、検索パフォーマンスデータ（日付、検索語句、ページURL、クリック数、表示回数、クリック率、平均掲載順位）、URL検査の結果</li>
+<li>Google アナリティクス 4（<code style="overflow-wrap:anywhere">https://www.googleapis.com/auth/analytics.readonly</code>）：アクセス権のあるアカウント名、プロパティ名、プロパティID、ウェブストリームのURL、対象サイトのレポートデータ（日付、ランディングページ、ホスト名、参照元、セッション数、キーイベント数）</li>
+<li>Googleアカウント情報（<code>openid</code>、<code>email</code>）：連携したGoogleアカウントのメールアドレス</li>
+</ul>
+
+<h3>(2) 利用目的</h3>
+<p>取得した情報は、本サービスの以下の機能を提供するためだけに利用します。</p>
+<ul>
+<li>Search Consoleのデータの分析</li>
+<li>対象サイトの検索実績・アクセス実績の画面表示</li>
+<li>サイトの改善点の分析と改善提案の作成</li>
+<li>月次レポートの作成と、ご契約企業への提供</li>
+<li>どのGoogleアカウントで連携したかの表示と記録</li>
+</ul>
+
+<h3>(3) 外部AIサービスへの送信をしないこと</h3>
+<p>Google APIから取得した情報（検索語句、表示回数、クリック数などを含みます）を、OpenAI、Anthropic、Perplexity、Google（Gemini等）その他の外部AIサービスへ送信しません。本サービスがAIの回答を計測する際の質問の作成・選択・並び順・優先順位付けにも利用しません。AIの回答の計測に使う質問は、ご契約企業または当社担当者が明示的に設定・確定したものに限ります。Googleユーザーデータを、汎用的な人工知能・機械学習モデルの開発、改善、学習に利用したり、そのために第三者へ移転したりすることはありません。</p>
+
+<h3>(4) 広告利用・販売の禁止</h3>
+<p>Googleユーザーデータを販売しません。広告の配信、ターゲティング、リターゲティング、パーソナライズ広告、データブローカーや情報再販事業者への提供には利用しません。信用力の判定や融資を目的として利用することもありません。</p>
+
+<h3>(5) 保存場所と保存期間</h3>
+<ul>
+<li>Googleのアクセストークンとリフレッシュトークンは、利用者のブラウザにHttpOnly属性とSecure属性を付けたCookieとして保存し、当社のサーバーやデータベースには保存しません。リフレッシュトークンを保存するCookieの有効期間は最長30日です。</li>
+<li>連携の状態（利用できる機能の種類）と連携したGoogleアカウントのメールアドレスは、画面に表示するため、ブラウザのCookieに最長30日保存します。</li>
+<li>検索実績・アクセス実績の集計値、分析の作業データ、連携したGoogleアカウントのメールアドレスは、当社の委託先が提供するクラウドデータベース（日本国内・東京リージョン）に保存し、当社担当者と当該ご契約企業の権限を持つ利用者だけが閲覧できるよう制限しています。</li>
+<li>本サービスの作業データの一部は、利用するブラウザのローカルストレージにも保存されます。</li>
+<li>ご契約企業に関するGoogleユーザーデータは、契約期間中は本サービスの提供のために保持し、契約終了後90日以内に削除します。当社担当者のブラウザに残っているデータも、本サービスを次に開いた時点で削除します。</li>
+</ul>
+
+<h3>(6) 連携の解除とデータの削除</h3>
+<ul>
+<li>利用者は、本サービスの切断機能（「切断する」「切断（Google の許可を取り消す）」）、またはGoogleアカウントの「サードパーティ製のアプリとサービス」（<a href="https://myaccount.google.com/connections" rel="noopener">https://myaccount.google.com/connections</a>）から、いつでも連携を解除できます。本サービスの切断機能は、Googleに対してアクセス許可の取り消しを要求し、ブラウザ上のトークンを削除します。</li>
+<li>ブラウザ内のデータは、本サービスの「このブラウザの Google データを消す」機能、またはブラウザのサイトデータの削除により消去できます。</li>
+<li>当社のデータベースに保存されたGoogleユーザーデータの削除をご希望の場合は、<a href="{{ '/trillionbank/contact/' | relative_url }}#form">お問い合わせフォーム</a>からご依頼ください。原則として10営業日以内に削除し、完了をご連絡します。削除の記録（日時・件数等。Googleユーザーデータ本体は含みません）は、監査のために保管します。</li>
+</ul>
+
+<h3>(7) 当社担当者による閲覧</h3>
+<p>当社担当者がGoogleユーザーデータを閲覧するのは、次の場合に限ります。閲覧できるのは、権限を付与された当社担当者に限られます。</p>
+<ul>
+<li>連携時に得た同意に基づき、分析、改善提案、月次レポートの作成、サポートに必要な範囲で閲覧する場合</li>
+<li>セキュリティの確保や不正利用の調査のために必要な場合</li>
+<li>法令に基づく場合</li>
+</ul>
+
+<h3>(8) 第三者提供と委託</h3>
+<p>Googleユーザーデータは、利用者の同意がある場合、法令に基づく場合、または本サービスの提供に必要な範囲で委託先に取り扱わせる場合を除き、第三者へ提供しません。当社担当者が本サービスからGitHubへ出力する改善案のファイルにも、Googleユーザーデータは含めません。当社は、次の事業者に業務を委託しています。</p>
+<ul>
+<li>Vercel Inc.（アプリケーションのホスティング）</li>
+<li>Supabase Inc.（データベース）</li>
+</ul>
+<p>ご契約企業に属する権限を持つ利用者は、自社のデータと月次レポートを閲覧できます。</p>
+
+<h3>(9) セキュリティ</h3>
+<p>通信はHTTPSで暗号化しています。トークンはHttpOnly属性とSecure属性を付けたCookieで管理しています。Google連携は、ログインした当社担当者と契約中のお客様に限定しています。データベースは、利用者の権限に応じたアクセス制御を行っています。</p>
+
+<h3>(10) Google API サービスのユーザーデータに関するポリシーへの準拠</h3>
+<p>本サービスがGoogle APIから受け取った情報の使用、および他のアプリへの移転は、Limited Use（使用制限）の要件を含む<a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API サービスのユーザーデータに関するポリシー</a>に準拠します。</p>
+
+<h2>7. お問い合わせ窓口</h2><p>個人情報の取扱いや、Googleユーザーデータの削除のご依頼は、<a href="{{ '/trillionbank/contact/' | relative_url }}#form">お問い合わせフォーム</a>からご連絡ください。</p>
+
+<section id="english" lang="en">
+<h2>Google User Data in AirReach (English)</h2>
+<p>This section describes how AirReach, a service provided by Trillion Bank (株式会社Trillion Bank, "we"), including AirReach Tools Studio and the AirReach Consulting dashboard, accesses, uses, stores and shares Google user data. AirReach accesses Google user data only after an AirReach staff member, or a logged-in user of a customer under contract, grants permission via Google OAuth. All Google scopes are read-only; we never change Search Console or Google Analytics data or settings.</p>
+
+<h3>Data accessed</h3>
+<ul>
+<li>Google Search Console (<code style="overflow-wrap:anywhere">https://www.googleapis.com/auth/webmasters.readonly</code>): the list of accessible properties and permission levels; search performance data (date, query, page URL, clicks, impressions, CTR, average position); URL inspection results.</li>
+<li>Google Analytics 4 (<code style="overflow-wrap:anywhere">https://www.googleapis.com/auth/analytics.readonly</code>): accessible account names, property names, property IDs and web stream URLs; report data for the target site (date, landing page, hostname, session source, sessions, key events).</li>
+<li>Google account (<code>openid</code>, <code>email</code>): the email address of the connected Google account.</li>
+</ul>
+
+<h3>How we use it</h3>
+<p>Only to provide AirReach's features: Search Console analysis, displaying search and traffic performance, improvement analysis and recommendations, monthly reports for the contracted customer, and showing and recording which Google account is connected.</p>
+
+<h3>No transfer to AI services</h3>
+<p>We do not send data obtained from Google APIs (including queries, impressions and clicks) to OpenAI, Anthropic, Perplexity, Google (such as Gemini) or any other external AI service. We do not use it to generate, select, order or prioritize the questions used for AI answer measurement. Only questions explicitly set and confirmed by the customer or AirReach staff are sent to AI services. We do not use or transfer Google user data to develop, improve or train generalized AI or machine-learning models.</p>
+
+<h3>No advertising and no sale</h3>
+<p>We do not sell Google user data. We do not use or transfer it for advertising, targeting, retargeting or personalized ads, to data brokers or information resellers, or to determine creditworthiness or for lending purposes.</p>
+
+<h3>Storage and retention</h3>
+<ul>
+<li>Google OAuth tokens are stored only in the user's browser as HttpOnly, Secure cookies (the refresh-token cookie lasts up to 30 days). They are never stored on our servers or in our database.</li>
+<li>The connection status (available features) and the connected email address are kept in browser cookies for up to 30 days so that they can be shown on screen.</li>
+<li>Aggregated search and traffic metrics, analysis work data and the connected email address are stored in a cloud database operated by our processor (Tokyo region, Japan). Access is limited to AirReach staff and authorized users of the customer concerned.</li>
+<li>Part of the work data is also kept in the browser's local storage.</li>
+<li>Google user data for a contracted customer is retained during the contract and deleted within 90 days after the contract ends. Data left in AirReach staff browsers is also deleted the next time AirReach is opened.</li>
+</ul>
+
+<h3>Disconnecting and deleting data</h3>
+<ul>
+<li>Users can disconnect at any time with the disconnect function in AirReach (labeled 「切断する」 or 「切断（Google の許可を取り消す）」) or at <a href="https://myaccount.google.com/connections" rel="noopener">https://myaccount.google.com/connections</a>. AirReach's disconnect function asks Google to revoke the grant and deletes the tokens in the browser.</li>
+<li>Data in the browser can be removed with AirReach's 「このブラウザの Google データを消す」 (delete Google data in this browser) function or by clearing the site data in the browser.</li>
+<li>To request deletion of Google user data stored in our database, please use our <a href="{{ '/trillionbank/contact/' | relative_url }}#form">contact form</a>. We will delete it within 10 business days in principle and notify you when it is done. A deletion log (time and counts only, no Google user data) is kept for audit purposes.</li>
+</ul>
+
+<h3>Human access</h3>
+<p>Authorized AirReach staff view Google user data only (a) based on the consent obtained when connecting, to the extent necessary for analysis, improvement recommendations, monthly reports and support; (b) when necessary for security or to investigate abuse; or (c) to comply with applicable law.</p>
+
+<h3>Sharing and processors</h3>
+<p>We do not share Google user data with third parties except with the user's consent, as required by law, or with processors to the extent necessary to provide AirReach. Files that AirReach staff export from AirReach to GitHub do not contain Google user data. Our processors are Vercel Inc. (application hosting) and Supabase Inc. (database). Authorized users of a contracted customer can view their own data and monthly reports.</p>
+
+<h3>Security</h3>
+<p>All communication is encrypted with HTTPS. Tokens are kept in HttpOnly, Secure cookies. Google integration is limited to logged-in AirReach staff and customers under contract, and the database enforces access control according to each user's permissions.</p>
+
+<h3>Limited Use</h3>
+<p>AirReach's use and transfer to any other app of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+
+<h3>Contact</h3>
+<p>For questions about this policy or deletion requests, please use our <a href="{{ '/trillionbank/contact/' | relative_url }}#form">contact form</a>.</p>
+</section>
+
+<p style="margin-top:2em;font-size:.8rem;color:var(--muted)">改定日：2026年10月6日（AirReachにおけるGoogleユーザーデータの取扱いを追加）。本ポリシーは事業状況や法令の変更に応じて改定する場合があります。重要な変更は本ページで公表します。</p>
 </div></div></section>
 </main>{% include tb-footer.html %}</body></html>
