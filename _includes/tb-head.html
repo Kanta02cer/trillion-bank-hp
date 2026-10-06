@@ -1,11 +1,11 @@
-<!-- Google tag (gtag.js) -->
+{% unless page.no_analytics %}<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-0XHQPCC4CF');
-</script>
+</script>{% endunless %}
 
 {% assign facts = site.data.public_facts %}
 {% assign tb_page_title = page.title | default: site.title %}
@@ -60,7 +60,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20260905">
+<link rel="stylesheet" href="/trillionbank/assets/css/tb.css?v=20261007">
 {% if page.url contains '/lp/hack2/founding-monitor' %}
 <link rel="stylesheet" href="{{ '/assets/css/hack2-founding-monitor-portrait.css?v=20260821-1' | relative_url }}">
 {% endif %}

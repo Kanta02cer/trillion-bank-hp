@@ -1,7 +1,7 @@
 /**
  * Google 連携を使ってよい人か（AirReach の社内スタッフか、契約中の顧客のメンバー）。
  *   ブラウザは AirReach のログイン（Supabase Auth）のトークンを Authorization: Bearer で付ける。
- *   判定は DB の RPC airreach_google_access(p_client_id)（supabase/migrations/20261007120000_airreach_google_data_governance.sql）。
+ *   判定は DB の RPC airreach_google_access(p_client_id)（supabase/migrations/20261007150000_airreach_google_data_governance.sql）。
  *   ログインしていない・契約していない人は、OAuth を始められず、Search Console / GA4 も読めない。
  * トークンは記録・応答に出さない。結果は 5 分だけ覚える（同じ画面で何度も呼ぶため）。
  */

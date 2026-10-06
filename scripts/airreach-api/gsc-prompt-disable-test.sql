@@ -1,6 +1,6 @@
--- 既存の Search Console 由来の質問を無効にする処理（20261007140000_airreach_disable_gsc_prompts）のテスト
+-- 既存の Search Console 由来の質問を無効にする処理（20261007160000_airreach_disable_gsc_prompts）のテスト
 --   ローカル Postgres で実行する。本番 DB では実行しない。
---   前提: supabase/migrations の 20261007140000 までを適用済み。
+--   前提: supabase/migrations の 20261007160000 までを適用済み。
 --   判定の例は scripts/airreach-api/unit-google-guard.mjs（画面の判定）と同じにしている。
 --   実行: psql -d <db> -v ON_ERROR_STOP=1 -f scripts/airreach-api/gsc-prompt-disable-test.sql
 \set QUIET on

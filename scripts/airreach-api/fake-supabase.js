@@ -86,7 +86,7 @@
           var hosts = db.client_sites.filter(function (s) { return s.client_id === args.p_client_id; }).map(function (s) { return s.host; });
           return Promise.resolve({ data: (db.scans || []).filter(function (s) { return hosts.indexOf(String(s.host).replace(/^www\./, '')) >= 0; }), error: null });
         }
-        // 削除依頼（supabase/migrations/20261007120000 の airreach_delete_google_data を簡易に真似る）
+        // 削除依頼（supabase/migrations/20261007150000 の airreach_delete_google_data を簡易に真似る）
         if (name === 'airreach_delete_google_data') {
           if (STAFF[email()] !== 'admin') return Promise.resolve({ data: null, error: { message: 'forbidden' } });
           var c = db.clients.filter(function (x) { return x.id === args.p_client_id; })[0];
@@ -100,6 +100,52 @@
           (db.google_data_deletions = db.google_data_deletions || []).push({ client_id: c.id, client_name: c.name, reason: 'user_request', request_note: args.p_note || null, executed_by: email(), executed_at: c.google_purged_at, counts: counts });
           save(db);
           return Promise.resolve({ data: { ok: true, counts: counts }, error: null });
+        }
+        // 競合・キーワード・質問の依頼（migration 20261007120000 を簡易に真似る。本物の検証は client-requests-test.sql）
+        if (/^airreach_(client_settings|request_create|request_cancel|request_decide)$/.test(name)) {
+          var reqs = db.client_requests = db.client_requests || [], wss = db.studio_workspaces = db.studio_workspaces || [];
+          var ok = function (d) { save(db); return Promise.resolve({ data: d, error: null }); }, ng = function (m) { return Promise.resolve({ data: null, error: { message: m } }); };
+          var wsOf = function (cid) { return wss.filter(function (w) { return w.client_id === cid; })[0]; };
+          var keyR = function (p) { return String(p.name || p.text || '').trim().toLowerCase(); };
+          if (name === 'airreach_client_settings') {
+            if (!(isStaff() || isMember(args.p_client_id))) return ng('forbidden');
+            var st0 = ((wsOf(args.p_client_id) || {}).data || {}).studio || {};
+            return ok({ competitors: (st0.competitors || []).map(function (c) { return { name: c.name || c.url, url: c.url || null }; }),
+              keywords: (st0.keywords || []).slice(0, 50).map(function (k) { return { text: k.text, priority: k.priority || null, customer: k.src === 'customer' }; }),
+              prompts: (st0.prompts || []).map(function (p) { return { text: p.text, on: p.on !== false }; }) });
+          }
+          if (name === 'airreach_request_create') {
+            if (!(isStaff() || isMember(args.p_client_id))) return ng('forbidden');
+            var pl = args.p_kind === 'competitor' ? { name: String(args.p_payload.name || '').trim(), url: String(args.p_payload.url || '').trim() || null } : { text: String(args.p_payload.text || '').trim() };
+            if (!keyR(pl)) return ng('名前・言葉を入れてください');
+            if (pl.url && !/^https?:\/\/[^\s/]+\.[^\s]+$/i.test(pl.url)) return ng('サイトの URL は https:// から入れてください');
+            var pend = reqs.filter(function (r) { return r.client_id === args.p_client_id && r.status === 'pending'; });
+            if (pend.length >= 30) return ok({ ok: false, reason: '確認待ちの依頼が30件あります。担当者の確認をお待ちください' });
+            if (pend.some(function (r) { return r.kind === args.p_kind && r.action === args.p_action && keyR(r.payload) === keyR(pl); })) return ok({ ok: false, reason: '同じ内容の依頼が確認待ちです' });
+            var nr = { id: uuid(), client_id: args.p_client_id, kind: args.p_kind, action: args.p_action, payload: pl, status: 'pending', requested_by: email(), requested_at: new Date().toISOString() };
+            reqs.push(nr); return ok({ ok: true, id: nr.id });
+          }
+          var rq = reqs.filter(function (r) { return r.id === args.p_id; })[0];
+          if (!rq) return ng('not found');
+          if (name === 'airreach_request_cancel') {
+            if (!(isStaff() || (isMember(rq.client_id) && rq.requested_by === email()))) return ng('forbidden');
+            if (rq.status !== 'pending') return ok({ ok: false, reason: 'もう確認が済んでいます' });
+            rq.status = 'cancelled'; rq.decided_by = email(); rq.decided_at = new Date().toISOString(); return ok({ ok: true });
+          }
+          if (!isStaff()) return ng('forbidden');
+          if (rq.status !== 'pending') return ok({ ok: false, reason: 'もう確認が済んでいます' });
+          rq.decided_by = email(); rq.decided_at = new Date().toISOString();
+          if (!args.p_approve) { rq.status = 'rejected'; rq.decision_note = args.p_note || null; return ok({ ok: true, status: 'rejected' }); }
+          var w = wsOf(rq.client_id); if (!w) { w = { client_id: rq.client_id, data: { studio: {} }, version: 0 }; wss.push(w); }
+          var stt = w.data.studio = w.data.studio || {}, k0 = rq.kind === 'competitor' ? 'competitors' : rq.kind + 's', arr = stt[k0] = stt[k0] || [], key = keyR(rq.payload), applied;
+          var has = arr.some(function (x) { return keyR(x) === key; });
+          if (rq.action === 'remove') { stt[k0] = arr.filter(function (x) { return keyR(x) !== key; }); applied = { competitor: '競合から外しました', keyword: 'キーワードから外しました', prompt: '質問から外しました' }[rq.kind]; }
+          else if (has) applied = 'すでに登録されていました';
+          else if (rq.kind === 'competitor') { arr.push({ name: rq.payload.name, url: rq.payload.url || undefined, src: STAFF[rq.requested_by] ? 'staff' : 'customer' }); applied = '競合に追加しました'; }
+          else if (rq.kind === 'keyword') { arr.push({ id: 'cust' + uuid().slice(0, 8), text: rq.payload.text, priority: 'P1', cluster: 'Customer', status: '未対策', src: STAFF[rq.requested_by] ? 'staff' : 'customer' }); applied = 'キーワードに追加しました'; }
+          else { var on = arr.filter(function (p) { return p.on !== false; }).length < 10; arr.push({ id: 'cust' + uuid().slice(0, 8), text: rq.payload.text, on: on, src: STAFF[rq.requested_by] ? 'staff' : 'customer' }); applied = on ? '毎月測る質問に追加しました' : '毎月測る質問が10問あるため、候補に追加しました'; }
+          w.version += 1; rq.status = 'approved'; rq.decision_note = applied;
+          return ok({ ok: true, status: 'approved', applied: applied });
         }
         return Promise.resolve({ data: null, error: { message: 'unknown rpc' } });
       }

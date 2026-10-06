@@ -1,4 +1,4 @@
--- 20261007120000_airreach_google_data_governance の取り消し（本番で問題が出たときだけ使う）。
+-- 20261007150000_airreach_google_data_governance の取り消し（本番で問題が出たときだけ使う）。
 -- ⚠️ 削除の記録（google_data_deletions）も消える。監査のため、実行前に書き出しておくこと。
 -- ⚠️ 消した Google 由来のデータは、取り消しても戻らない。
 -- pg_cron を登録していたら、先に外す: select cron.unschedule('airreach-google-retention');

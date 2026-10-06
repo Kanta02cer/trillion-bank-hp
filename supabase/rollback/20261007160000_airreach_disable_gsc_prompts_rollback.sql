@@ -1,4 +1,4 @@
--- 20261007140000_airreach_disable_gsc_prompts の取り消し（本番で問題が出たときだけ使う）。
+-- 20261007160000_airreach_disable_gsc_prompts の取り消し（本番で問題が出たときだけ使う）。
 -- 無効化した質問を、gscDisabled に残した元の状態（毎月測る・確定・google の印）に戻し、関数を消す。
 -- ⚠️ 戻しても、画面（airreach-google-guard.js）は Search Console 由来の質問を引き続き「送れない」と判定する。
 --    外部の AI に送るのは確定した質問だけ（サーバーの promptPolicyError も同じ）なので、戻しただけでは送られない。

@@ -31,7 +31,7 @@
 Google のトークンは DB に無い（ブラウザの HttpOnly Cookie。リフレッシュトークンの Cookie は最長 30 日）。
 削除依頼のとき、ダッシュボードはそのブラウザの接続を切る（Google の許可も取り消す）。ほかのブラウザの接続は、そのブラウザで「切断」するか、Google アカウントの「サードパーティ製のアプリとサービス」から外す。
 
-## 既存の Search Console 由来の質問を無効にする（`20261007140000_airreach_disable_gsc_prompts.sql`）
+## 既存の Search Console 由来の質問を無効にする（`20261007160000_airreach_disable_gsc_prompts.sql`）
 
 以前に作られた Studio の質問には、出どころ・確定の印が無い。画面と同じ条件（`airreach-google-guard.js` の `isGoogleDerivedPrompt`）で
 Search Console 由来の質問を調べ、`google: true`・`confirmed: false`・`on: false`（毎月測らない）にする。
@@ -40,18 +40,20 @@ Search Console 由来の質問を調べ、`google: true`・`confirmed: false`・
 - 変えた作業は `version` を 1 つ上げる。各パソコンの Studio は、開いたときにこの内容を読み込み直す
 - AI計測の記録（`measurement_runs`）・Search Console の行・キーワードには触らない。質問は消さない
 - 何度実行しても同じ結果。出力は件数だけ（質問文・検索語句は出さない）
-- 取り消し: `supabase/rollback/20261007140000_airreach_disable_gsc_prompts_rollback.sql`（戻しても、画面とサーバーは確定していない・GSC 由来の質問を送らない）
+- 取り消し: `supabase/rollback/20261007160000_airreach_disable_gsc_prompts_rollback.sql`（戻しても、画面とサーバーは確定していない・GSC 由来の質問を送らない）
 
 ## 本番への適用の順番（判断のあと）
 
-1. `supabase/migrations/20261007120000_airreach_google_data_governance.sql` を適用する（`measurement_schedules` が未適用でも適用できる）
-2. `supabase/migrations/20261007140000_airreach_disable_gsc_prompts.sql` を適用する（適用したときに 1 回実行され、件数が NOTICE に出る）
+> 本番の状態（2026-10-06）: `20261007150000`（governance）と `20261007160000`（質問の無効化）は SQL Editor で適用済み（当時の番号は 20261007120000 / 20261007140000。main の `20261007120000_airreach_client_requests` と番号が重なるため、中身はそのままで番号だけ振り直した）。SQL Editor で実行したため `supabase_migrations.schema_migrations` には記録が無い。pg_cron（`20261007170000`）は未適用。
+
+1. `supabase/migrations/20261007150000_airreach_google_data_governance.sql` を適用する（`measurement_schedules` が未適用でも適用できる）
+2. `supabase/migrations/20261007160000_airreach_disable_gsc_prompts.sql` を適用する（適用したときに 1 回実行され、件数が NOTICE に出る）
 3. コードをデプロイする。**1 より先にデプロイしない**（`airreach_google_access` が無いと、Google 連携が 503 で止まる）
 4. 動作を確かめる（下の「確認」）
-5. `supabase/migrations/20261007130000_airreach_google_retention_pg_cron.sql` を適用する（pg_cron を有効にして毎日の削除を登録する）
+5. `supabase/migrations/20261007170000_airreach_google_retention_pg_cron.sql` を適用する（pg_cron を有効にして毎日の削除を登録する）
 6. 既存の Studio の質問は、出どころ・確定の印が無いため、すべて「未確定」になる。担当者が質問を確かめて「確定」するまで、手動・自動の計測は外部の AI に送らない（GSC 由来と判定した質問は確定できない）
 
-取り消し: `supabase/rollback/20261007140000_airreach_disable_gsc_prompts_rollback.sql` → `supabase/rollback/20261007120000_airreach_google_data_governance_rollback.sql`（消したデータは戻らない）。pg_cron は `select cron.unschedule('airreach-google-retention');`。
+取り消し: `supabase/rollback/20261007160000_airreach_disable_gsc_prompts_rollback.sql` → `supabase/rollback/20261007150000_airreach_google_data_governance_rollback.sql`（消したデータは戻らない）。pg_cron は `select cron.unschedule('airreach-google-retention');`。
 
 ## 確認（本番に入れたあと。件数だけを見る）
 

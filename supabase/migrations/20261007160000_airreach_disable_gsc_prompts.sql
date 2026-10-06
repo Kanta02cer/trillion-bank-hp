@@ -12,7 +12,7 @@
 --   AI計測の記録（measurement_runs）・Search Console の行・キーワードには触らない。質問は消さない。
 --
 -- 何度実行しても同じ結果になる（gscDisabled がある質問はそのまま）。出力は件数だけ（質問文・検索語句は出さない）。
--- 取り消し: supabase/rollback/20261007140000_airreach_disable_gsc_prompts_rollback.sql
+-- 取り消し: supabase/rollback/20261007160000_airreach_disable_gsc_prompts_rollback.sql
 -- ============================================================================
 
 -- 比べるための形（空白・鉤括弧を除く）。airreach-google-guard.js の norm と同じ

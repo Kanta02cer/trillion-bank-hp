@@ -396,7 +396,40 @@
    *   言及率 ＝ 社名が出た回答の数 ÷ 回答の数。AI の回答が表示されなかった質問・エラーは分母に入れず、件数で返す
    *   判定できない回答（出典が取れず本文にも URL が無い）＝ 回答の数 − 判定できた数
    */
-  function monthlyAi(runs, month) {
+  /**
+   * 競合との比較（その月のすべての計測・すべての AI の合計）。回答の記録に競合の結果がある回答（表示なし・エラーを除く）だけで数える。
+   *   名前が出た割合 ＝ 名前が出た回答 ÷ 回答／1番目に名前が出た回答 ＝ 回答の中で最初に名前が出た数／
+   *   出典になった割合 ＝ 出典になった回答 ÷ 出典の有無を判定できた回答（競合はサイトの URL を登録した会社だけ判定できる）
+   *   名前が出た割合の合計に占める自社の割合（SOV）も返す
+   */
+  function competitorStats(evidence, client) {
+    var rows = (evidence || []).filter(function (e) { return e.status === 'ok' && Array.isArray(e.competitors) && e.competitors.length; });
+    if (!rows.length) return null;
+    var names = [];
+    rows.forEach(function (e) { e.competitors.forEach(function (c) { if (c.name && names.indexOf(c.name) < 0) names.push(c.name); }); });
+    var self = { name: (client && client.name) || '自社', self: true, answers: rows.length, mention: 0, first: 0, cite: 0, citeJudged: 0 };
+    var comp = names.map(function (n) { return { name: n, self: false, answers: rows.length, mention: 0, first: 0, cite: 0, citeJudged: 0 }; });
+    rows.forEach(function (e) {
+      if (e.mentioned) self.mention += 1;
+      if (e.selfRank === 1) self.first += 1;
+      if (e.cited === 0 || e.cited === 1) { self.citeJudged += 1; self.cite += e.cited; }
+      var firstName = e.order && e.order.length ? e.order[0] : '';
+      comp.forEach(function (c) {
+        var x = e.competitors.filter(function (y) { return y.name === c.name; })[0];
+        if (!x) return;
+        if (x.mentioned) c.mention += 1;
+        if (firstName === c.name) c.first += 1;
+        if (x.cited === 0 || x.cited === 1) { c.citeJudged += 1; c.cite += x.cited; }
+      });
+    });
+    var all = [self].concat(comp).map(function (r) {
+      return Object.assign(r, { mentionRate: r.answers ? round1(r.mention / r.answers * 100) : null, firstRate: r.answers ? round1(r.first / r.answers * 100) : null, citeRate: r.citeJudged ? round1(r.cite / r.citeJudged * 100) : null });
+    });
+    var mentions = all.reduce(function (s, r) { return s + r.mention; }, 0);
+    return { answers: rows.length, names: names, rows: all, sov: mentions ? round1(self.mention / mentions * 100) : null, mentionsTotal: mentions };
+  }
+
+  function monthlyAi(runs, month, client) {
     var list0 = (runs || []).filter(function (r) { return r && r.summary && inMonth(r.measured_on, month); });
     // 判定方法を変える前（2026-10-05 より前）の Studio の計測は、AI による概要が出なかった質問を「引用なし」として数えていた。
     //   同じ月に新しい判定の計測があれば、古い Studio の計測は合計に入れない（計測スクリプトの summary はそのまま使う）
@@ -446,10 +479,13 @@
         if (!x || typeof x !== 'object') return;
         evidence.push({ measuredOn: run.measured_on, measuredAt: String(x.measured_at || ''), prompt: String(x.prompt || ''), engine: String(x.engine || ''), status: String(x.status || 'ok'), error: x.error ? String(x.error).slice(0, 160) : '',
           mentioned: x.mentioned == null ? null : num(x.mentioned), cited: x.cited == null ? null : num(x.cited), citeSource: String(x.cite_source || ''), citations: (x.citations || []).slice(0, 8).map(String), urlsInAnswer: (x.urls_in_answer || []).slice(0, 5).map(String),
-          answer: String(x.answer || '').slice(0, 400), model: String(x.model || ''), search: !!(x.conditions && x.conditions.search), branded: !!x.branded, repeat: x.repeat || 1 });
+          answer: String(x.answer || '').slice(0, 400), model: String(x.model || ''), search: !!(x.conditions && x.conditions.search), branded: !!x.branded, repeat: x.repeat || 1,
+          competitors: Array.isArray(x.competitors) ? x.competitors.map(function (c) { return { name: String(c.name || ''), mentioned: c.mentioned == null ? null : num(c.mentioned), cited: c.cited == null ? null : num(c.cited) }; }) : null,
+          order: Array.isArray(x.order) ? x.order.map(String) : null, selfRank: x.self_rank == null ? null : num(x.self_rank) });
       });
     });
     if (!used) return null;
+    var competitors = competitorStats(evidence, client);
     var t2 = function (t) { return Object.assign({}, t, { mentionRate: t.answers ? round1(t.mention / t.answers * 100) : null, citeRate: t.citeJudged ? round1(t.cite / t.citeJudged * 100) : null, undetermined: Math.max(0, t.answers - t.citeJudged) }); };
     return {
       runs: used, firstOn: first, lastOn: last, versions: Object.keys(versions), excludedOld: excludedOld,
@@ -460,6 +496,7 @@
       }),
       types: hasTypes ? { general: t2(types.general), branded: t2(types.branded) } : null,
       citedDomains: Object.keys(doms).map(function (h) { return doms[h]; }).sort(function (a, b) { return b.total - a.total; }).slice(0, 10),
+      competitors: competitors,
       evidence: evidence
     };
   }
@@ -510,7 +547,7 @@
     var runNow = latest(p.runs, 'measured_on', function (r) { return inMonth(r.measured_on, m); });
     var aiNow = aiKpis(runNow);
     var aiPrev = aiKpis(latest(p.runs, 'measured_on', function (r) { return inMonth(r.measured_on, pm); }));
-    var monNow = monthlyAi(p.runs, m), monPrev = monthlyAi(p.runs, pm);
+    var monNow = monthlyAi(p.runs, m, p.client), monPrev = monthlyAi(p.runs, pm, p.client);
     var ai = null;
     if (monNow && aiNow) {
       // 前月と比べられるのは、両方の月が同じ質問の版だけで測られているとき
@@ -522,6 +559,7 @@
         citedDomains: monNow.citedDomains.length ? monNow.citedDomains : aiNow.citedDomains, targetCitations: aiNow.targetCitations,
         comparable: comparableMonth,
         types: monNow.types,
+        competitors: monNow.competitors ? Object.assign({}, monNow.competitors, { prevSov: monPrev && monPrev.competitors ? monPrev.competitors.sov : null }) : null,
         evidence: monNow.evidence.slice(-200),
         evidenceTotal: monNow.evidence.length,
         latest: { measuredOn: aiNow.measuredOn, querySetVersion: aiNow.querySetVersion, providers: aiNow.providers },

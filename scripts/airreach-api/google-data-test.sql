@@ -1,6 +1,6 @@
--- Google のユーザーデータの扱い（20261007120000_airreach_google_data_governance）のテスト
+-- Google のユーザーデータの扱い（20261007150000_airreach_google_data_governance）のテスト
 --   ローカル Postgres で実行する。本番 DB では実行しない。
---   前提: supabase/migrations の 20261007120000 までを適用済み（pg_cron の 20261007130000 は不要）。
+--   前提: supabase/migrations の 20261007150000 までを適用済み（pg_cron の 20261007170000 は不要）。
 --   実行: psql -d <db> -v ON_ERROR_STOP=1 -f scripts/airreach-api/google-data-test.sql
 \set QUIET on
 begin;

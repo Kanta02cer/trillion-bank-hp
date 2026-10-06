@@ -10,7 +10,7 @@
 --   2. 契約が終わった顧客（clients.status = 'ended'）の Google 由来のデータは、終了から 90 日以内に消す。
 --      終了日は clients.ended_at（status を ended にした時点でトリガーが入れる）。
 --      消すのは airreach_purge_expired_google_data()（終了から 80 日たった顧客。90 日以内に収めるための余裕 10 日）。
---      毎日の実行は別の migration（20261007130000_airreach_google_retention_pg_cron.sql）で pg_cron に登録する
+--      毎日の実行は別の migration（20261007170000_airreach_google_retention_pg_cron.sql）で pg_cron に登録する
 --   3. 削除依頼は、管理者（staff_members.role = 'admin'）が顧客ごとに airreach_delete_google_data() で一括で消す
 --   4. 消した記録は google_data_deletions に残す（Google のデータ本体は入れない。件数・理由・日時・実行した人だけ）。
 --      顧客を消しても記録は残す（外部キーにしない）
@@ -23,7 +23,7 @@
 --   - reports.compiled        … 月次レポートの材料のうち、検索・訪問の数字（traffic・推移のクリック/問い合わせ・クリックの事実）を除く。
 --                               レポート自体と担当者が書いた結論・次の打ち手は残す（自由記述に数字を書いた場合は担当者が直す）
 --   Google のトークンは DB に無い（ブラウザの Cookie）。ブラウザに残ったデータは clients.google_purged_at を見て画面が消す
--- 取り消し: supabase/rollback/20261007120000_airreach_google_data_governance_rollback.sql
+-- 取り消し: supabase/rollback/20261007150000_airreach_google_data_governance_rollback.sql
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------

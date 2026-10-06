@@ -364,4 +364,26 @@ body.arc-app .arc-msg{top:64px}
 .arr-evi{margin-top:12px}.arr-evi summary{cursor:pointer;font-weight:700}.arr-evi-q h4{margin:12px 0 4px;font-size:.9rem}.arr-evi-src{margin:0;padding-left:1.3em;font-size:.78rem;word-break:break-all}.arr-evi-a{margin-top:4px;font-size:.78rem;color:#475569;white-space:pre-wrap}
 @media print{.arr-evi{display:block}.arr-evi>summary{list-style:none}}
 span.arr-ok{color:#15803d;font-weight:700}b.arr-ng{color:#b42318}
+.arr-cbar{display:inline-block;width:110px;height:8px;background:#e2e8f0;border-radius:4px;vertical-align:middle;margin-right:6px;overflow:hidden}.arr-cbar span{display:block;height:100%;background:#94a3b8}.arr-cbar span.is-self{background:#1d4ed8}
+.arr-comp tr.is-self td{background:#eff6ff;font-weight:700}.arr-self{display:inline-block;font-size:11px;padding:1px 6px;border-radius:999px;background:#1d4ed8;color:#fff;vertical-align:1px}
+@media print{.arr-cbar span,.arr-comp tr.is-self td,.arr-self{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+@media (max-width:640px){.arr-cbar{width:60px}}
+.arc-demo .arc-row{align-items:center;flex-wrap:wrap;gap:10px}.arc-demo-url{font-size:12px;color:#475569;background:#f1f5f9;padding:4px 8px;border-radius:6px;user-select:all;word-break:break-all}
+/* 競合・キーワード・質問の依頼（airreach-requests.js） */
+.arq-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:10px}
+@media (max-width:1000px){.arq-grid{grid-template-columns:1fr}}
+.arq-block{min-width:0;display:flex;flex-direction:column;gap:6px}.arq-block .arc-h3{margin:0}.arq-block>.arc-note{margin:0}
+.arq-list,.arq-rlist,.arq-chips{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.arq-list li,.arq-chips li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px}
+.arq-list li.arc-empty{border-style:dashed;color:#64748b}
+.arq-wait{background:#fffbeb}
+.arq-t{min-width:0;overflow-wrap:anywhere}.arq-t small{color:#64748b;font-size:.72rem;margin-left:4px}
+.arq-cands{margin-top:4px;padding:8px;background:#f8fafc;border-radius:8px}.arq-cands .arc-note{margin:0 0 6px}.arq-chips li{background:#fff}
+.arq-form{flex-wrap:wrap;gap:6px;margin-top:4px}.arq-form .arc-input{flex:1 1 140px;min-width:0}
+.arq-reqs{margin:12px 0}.arq-reqs .arc-h3{display:flex;align-items:center;gap:8px}
+.arq-rlist li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #eef2f7;font-size:13px}
+.arq-rlist .arq-t{flex:1 1 260px}
+.arq-acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.arq-note{width:220px;max-width:100%}
+.arq-ok{background:#047857;color:#fff;border-color:#047857}
+.arq .arc-btn-sm,.arq .arc-chip{white-space:nowrap;flex:0 0 auto}
 </style>
