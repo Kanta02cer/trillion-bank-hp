@@ -104,7 +104,7 @@
     measured: ['実測値', 'Google Search Console・Google アナリティクス・診断で取得した事実（取得日時・HTTP の結果・見つかった記述）'],
     judged: ['システム判定', 'AirReach が決まった基準で判定した結果（○×・点数）'],
     manual: ['手動入力', '担当者が書いた・入力したもの（結論・施策・ご判断いただきたいこと・手入力の数値）'],
-    reference: ['参考値', '条件つきの値（AI の計測は無料枠のモデルで、一般の人が使う ChatGPT・Gemini とは結果が異なることがあります）'],
+    reference: ['参考値', '条件つきの値（AI の計測は API で行っており、一般の人が使う最新の ChatGPT・Gemini とは結果が異なることがあります）'],
     unknown: ['未確認', '取得できなかった・計測していないもの（0 ではありません）']
   };
   function tag(k) { var x = KIND[k]; return x ? '<span class="arr-kind is-' + k + '" title="' + esc(x[1]) + '">' + esc(x[0]) + '</span>' : ''; }
@@ -247,7 +247,11 @@
     document.title = (c.client ? c.client.name + ' ' : '') + ym(r.period_month) + ' 月次レポート - AirReach';
   }
 
+  // 代理店向けデモ（/airreach/demo/）は、同じ描画をデモ専用の架空データで使う。ログイン・DB には一切つながない。
+  //   デモかどうかは、ページの HTML に書いた印（#arr-root の data-demo）だけで決める（URL のパラメータでは切り替えない）
+  window.AirReachReportView = { render: render };
   function boot() {
+    if (root.getAttribute('data-demo') === '1') return;
     var id = new URLSearchParams(location.search).get('id') || '';
     if (!/^[0-9a-f-]{36}$/.test(id)) { root.innerHTML = '<p>レポートの指定が正しくありません。</p>'; return; }
     fetch('/api/airreach/app-config', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (cfg) {

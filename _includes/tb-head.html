@@ -1,11 +1,11 @@
-<!-- Google tag (gtag.js) -->
+{% unless page.no_analytics %}<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-0XHQPCC4CF');
-</script>
+</script>{% endunless %}
 
 {% assign facts = site.data.public_facts %}
 {% assign tb_page_title = page.title | default: site.title %}

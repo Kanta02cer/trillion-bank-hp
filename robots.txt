@@ -14,6 +14,7 @@ Disallow: /docs/
 Disallow: /airreach/result/
 Disallow: /airreach/sales/
 Disallow: /airreach/app/
+Disallow: /airreach/demo/
 Disallow: /airreach/studio/
 Disallow: /airreach/platform/
 
