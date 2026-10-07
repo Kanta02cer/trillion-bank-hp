@@ -46,7 +46,13 @@
       var tb = b.status === 'measured' ? b.t : null, ta = a.status === 'measured' ? a.t : null;
       var ok = !reasons.length && tb.denominator > 0 && ta.denominator > 0;
       if (!reasons.length && !ok) reasons.push('分母が0の計測があります（取得失敗だけ・回答なし）');
-      out.engines.push({ key: def.key, label: def.label, main: def.key === 'aio', comparable: ok, reasons: reasons,
+      // 質問ごとの根拠：前後それぞれの結果（名前あり・なし・概要なし・失敗・要確認）
+      var perQ = {};
+      [['b', b], ['a', a]].forEach(function (x) {
+        if (x[1].status !== 'measured') return;
+        x[1].rows.forEach(function (r) { var k = String(r.prompt || ''); perQ[k] = perQ[k] || { prompt: k, b: '', a: '' }; perQ[k][x[0]] = A.outcome(r, opts.brand || ''); });
+      });
+      out.engines.push({ key: def.key, label: def.label, main: def.key === 'aio', comparable: ok, reasons: reasons, questions: Object.keys(perQ).map(function (k) { return perQ[k]; }),
         before: tb ? pick(tb) : null, after: ta ? pick(ta) : null,
         diff: ok ? Math.round((ta.rate - tb.rate) * 10) / 10 : null,
         small: !!(tb && ta && (tb.small || ta.small)), cond: a.status === 'measured' ? a.cond : (b.status === 'measured' ? b.cond : null) });
@@ -66,6 +72,7 @@
     });
   }
 
+  var OUT = { mentioned: '名前あり', no_mention: '名前なし', not_shown: '概要なし', error: '取得失敗', review: '要確認', '': '—' };
   function xn(t) { return t ? (t.denominator ? t.mentioned + ' / ' + t.denominator + '回' : 'N/A') : '未計測'; }
   function rate(t) { return t && t.rate != null ? t.rate + '%' : '—'; }
   function diffText(e) { return e.comparable ? (e.diff > 0 ? '+' : e.diff < 0 ? '−' : '±') + Math.abs(e.diff) + 'ポイント' : '比べられません'; }
@@ -85,7 +92,13 @@
         (e.key === 'aio' && e.before && e.after ? '<p class="acm-sub">分母は正常に取れた検索の数（AI の概要が出なかった検索も含む）。取得失敗は分母に入れていません（前 ' + esc(e.before.errors) + '回・後 ' + esc(e.after.errors) + '回）。</p>' : '') + '</div>';
     }
     var c = main.cond || {};
-    return '<div class="acm-body">' + block(main, true) + rest.map(function (e) { return block(e, false); }).join('') +
+    // 質問ごとの根拠（主の AIO）と、優先して直すこと3点（サイトの診断から。AI の計測とは別の材料）
+    var qs = (main.questions || []);
+    var evid = qs.length ? '<div class="acm-ev"><h3>質問ごとの結果（' + esc(main.label) + '）</h3><table><thead><tr><th>質問</th><th>前</th><th>後</th></tr></thead><tbody>' +
+      qs.map(function (x) { return '<tr><td>' + esc(x.prompt) + '</td><td>' + esc(OUT[x.b] || x.b) + '</td><td>' + esc(OUT[x.a] || x.a) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '';
+    var imp = (info.improvements || []).slice(0, 3);
+    var impH = imp.length ? '<div class="acm-imp"><h3>優先して直すこと（' + imp.length + '点）</h3><ol>' + imp.map(function (x) { return '<li><b>' + esc(x.title) + '</b>' + (x.how ? '<span>' + esc(x.how) + '</span>' : '') + '</li>'; }).join('') + '</ol><p class="acm-note">' + esc(info.improvementsSource || 'サイトの診断から') + '（AI の計測の結果とは別の材料です）</p></div>' : '';
+    return '<div class="acm-body">' + block(main, true) + rest.map(function (e) { return block(e, false); }).join('') + evid + impH +
       '<p class="acm-cond">条件：' + esc(c.location === 'JP' || !c.location ? '日本（市区町村の指定なし）' : c.location) + ' · 質問の版 ' + esc(cmp.after.version || '—') +
       ' · 計測 ' + esc(cmp.before.measured_on) + '（' + esc(cmp.before.answers) + '件）→ ' + esc(cmp.after.measured_on) + '（' + esc(cmp.after.answers) + '件）</p>' +
       '<p class="acm-note">同じ条件・同じ質問の計測どうしだけを比べています。3つの AI は合算しません。AI の答えは日や時間で変わり、一般の人が使う画面とは結果が違うことがあります。掲載や順位を保証するものではありません。' +
@@ -97,7 +110,7 @@
     if (!box) return Promise.resolve(null);
     var cmp = compare(before, after, opts);
     return fingerprint(before, after).then(function (fp) {
-      box.innerHTML = '<section class="acm" aria-label="前後の比較"><div class="acm-h"><h2>前後の比較</h2><button type="button" class="arc-btn" data-acm-print>営業用 PDF を作る</button></div>' + bodyHtml(cmp, { fp: fp }) + '</section>';
+      box.innerHTML = '<section class="acm" aria-label="前後の比較"><div class="acm-h"><h2>前後の比較</h2><button type="button" class="arc-btn" data-acm-print>営業用 PDF を作る</button></div>' + bodyHtml(cmp, Object.assign({}, opts || {}, { fp: fp })) + '</section>';
       var b = box.querySelector('[data-acm-print]');
       if (b) b.addEventListener('click', function () { openPrint(cmp, Object.assign({ fp: fp }, opts || {})); });
       return { cmp: cmp, fp: fp };
@@ -107,7 +120,7 @@
   var PRINT_CSS = 'body{font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;color:#0f172a;margin:0;padding:32px 40px;background:#fff}h1{font-size:22px;margin:0 0 4px}.sub{color:#64748b;font-size:12px;margin:0 0 20px}' +
     '.acm-e{border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin:0 0 12px;break-inside:avoid}.acm-e.is-main{border:2px solid #2563eb}.acm-e h3{margin:0 0 8px;font-size:15px}.acm-e h3 span{margin-left:8px;font-size:11px;color:#2563eb;font-weight:600}' +
     '.acm-row{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end}.acm-row small{display:block;color:#64748b;font-size:11px}.acm-row b{font-size:20px;font-variant-numeric:tabular-nums}.acm-row em{display:block;font-style:normal;color:#334155;font-variant-numeric:tabular-nums}.acm-arrow{color:#94a3b8;font-size:20px}' +
-    '.acm-diff b{font-size:16px}.acm-why,.acm-sub{margin:8px 0 0;font-size:12px;color:#334155}.acm-cond,.acm-note{font-size:11px;color:#64748b;margin:10px 0 0}.bar{margin:0 0 16px}.bar button{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid #2563eb;background:#2563eb;color:#fff;cursor:pointer}' +
+    '.acm-diff b{font-size:16px}.acm-ev h3,.acm-imp h3{font-size:14px;margin:16px 0 6px}.acm-ev table{width:100%;border-collapse:collapse;font-size:12px}.acm-ev th,.acm-ev td{border-bottom:1px solid #e2e8f0;padding:5px 6px;text-align:left}.acm-imp ol{margin:0;padding-left:20px;font-size:13px}.acm-imp li{margin:0 0 6px}.acm-imp span{display:block;color:#334155;font-size:12px}.acm-why,.acm-sub{margin:8px 0 0;font-size:12px;color:#334155}.acm-cond,.acm-note{font-size:11px;color:#64748b;margin:10px 0 0}.bar{margin:0 0 16px}.bar button{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid #2563eb;background:#2563eb;color:#fff;cursor:pointer}' +
     '@media print{.bar{display:none}body{padding:0}}';
   /** 営業用の PDF：新しいタブに同じ本文を出し、印刷（PDF 保存）する */
   function printHtml(cmp, info) {

@@ -62,5 +62,15 @@ t('PDF は画面と同じ本文を含む（同じ保存データから）', pdf.
 t('PDF：AIO を主に・差・指紋・保存した計測の日付・注意書き', /主に見る指標/.test(pdf) && /\+35ポイント/.test(pdf) && pdf.includes(f1.slice(0, 16)) && /保存した計測 2026-09-01 と 2026-10-01 から作成/.test(pdf) && /合算しません/.test(pdf) && /保証するものではありません/.test(pdf));
 { const h = C.printHtml(c, { clientName: '<script>x</script>' }); t('PDF：顧客名などはエスケープ', h.includes('&lt;script&gt;x') && !h.includes('<script>x')); }
 t('比べられない AI は「比べられません」と理由を本文に出す', /比べられない理由：地域が違います/.test(C.bodyHtml(C.compare(before, afterLoc, {}), {})));
+// R10：質問ごとの根拠と、優先して直すこと3点
+c = C.compare(before, after, { brand: 'サンプルそば' });
+const qa = c.engines[0].questions;
+t('質問ごとの根拠：AIO の5問それぞれに前後の結果', qa.length === 5 && qa[0].b === 'mentioned' && qa[0].a === 'mentioned' && qa[2].b === 'not_shown' && qa[4].b === 'error' && qa[1].a === 'mentioned', qa);
+const imps = [{ title: 'よくある質問のページを作る', how: '料金・予約を質問と答えで' }, { title: '会社の情報を構造化データに', how: '' }, { title: '店名を統一', how: '' }, { title: '4つ目', how: '' }];
+const info = { fp: f1, improvements: imps, improvementsSource: 'サイトの診断（最新）から' };
+const b2 = C.bodyHtml(c, info), p2 = C.printHtml(c, Object.assign({ clientName: 'サンプルそば' }, info));
+t('PDF：質問ごとの結果の表（概要なし・取得失敗も）', /質問ごとの結果（Google AI Overviews）/.test(p2) && /概要なし/.test(p2) && /取得失敗/.test(p2) && (p2.match(/<tr><td>/g) || []).length === 5);
+t('PDF：優先して直すこと3点だけ・材料が別だと明記', /優先して直すこと（3点）/.test(p2) && p2.includes('よくある質問のページを作る') && !p2.includes('4つ目') && /AI の計測の結果とは別の材料/.test(p2));
+t('画面と PDF は同じ本文（根拠と3点を含めても）', p2.includes(b2));
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

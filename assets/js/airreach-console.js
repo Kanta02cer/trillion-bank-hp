@@ -1230,7 +1230,9 @@
         p.sort(function (a, b) { return key(a) < key(b) ? -1 : 1; });
         var box = root.querySelector('#arc-cmp');
         try {
-          window.AirReachCompare.render(box, p[0], p[1], { brand: c.name, clientName: c.name, site: (sites[0] && sites[0].url) || '' })
+          // 優先して直すこと3点：今月の材料（サイトの診断）の直すことの上位3つ
+          var imps = []; try { imps = R.todoList(live).slice(0, 3).map(function (x) { return { title: x.plainText || x.text, how: x.plainHow || x.how || '' }; }); } catch (e3) { imps = []; }
+          window.AirReachCompare.render(box, p[0], p[1], { brand: c.name, clientName: c.name, site: (sites[0] && sites[0].url) || '', improvements: imps, improvementsSource: 'サイトの診断（最新）から' })
             .catch(function (e) { box.innerHTML = '<p class="arc-note">比べられませんでした：' + esc(e.message || e) + '</p>'; });
         } catch (e) { box.innerHTML = '<p class="arc-note">比べられませんでした：' + esc(e.message || e) + '</p>'; }
       });
