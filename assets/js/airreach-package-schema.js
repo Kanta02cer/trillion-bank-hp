@@ -27,7 +27,45 @@
   // 最小の ZIP：設置に必要なものだけ（README・MANIFEST・設置の手順・FAQ・構造化データ・llms.txt）。README と MANIFEST と手順は必ず入れる
   var PACKAGE_FORMAT = 'airreach-package/2';
   var ALWAYS_FILES = ['README.md', 'MANIFEST.json', 'INSTALL_WORDPRESS.md'];
-  var MINIMAL_FILES = ALWAYS_FILES.concat(['content/faq.md', 'schema/organization.jsonld', 'schema/service.jsonld', 'schema/faq.jsonld', 'public/llms.txt']);
+  var MINIMAL_FILES = ALWAYS_FILES.concat(['content/faq.md', 'schema/organization.jsonld', 'schema/service.jsonld', 'schema/faq.jsonld', 'public/llms.txt', 'validation/VALIDATION.md']);
+  var GENERATOR_VERSION = 'airreach-studio/2026.10.08';
+
+  // 入れてはいけないもの（依頼書 R08）：鍵・認証情報、不要なファイル、危険なパス、実行できるファイル
+  var SECRET_PATTERNS = [
+    [/sk-(?:proj-|ant-)?[A-Za-z0-9_-]{20,}/, 'API キーらしい文字列（sk-…）'],
+    [/AIza[0-9A-Za-z_-]{30,}/, 'Google の API キーらしい文字列'],
+    [/eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/, 'ログインのトークン（JWT）らしい文字列'],
+    [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, '秘密鍵'],
+    [/service_role|SUPABASE_SERVICE|AI_GATEWAY_API_KEY|SERPAPI_API_KEY|GEMINI_API_KEY|OPENAI_API_KEY|ANTHROPIC_API_KEY/i, '環境変数の名前（鍵の置き場所）'],
+    [/(?:password|passwd|パスワード)\s*[:=：]\s*\S{4,}/i, 'パスワードらしい記述']
+  ];
+  var JUNK_NAME = /(^|\/)(\.DS_Store|Thumbs\.db|desktop\.ini|__MACOSX)(\/|$)|(^|\/)\._/;
+  var EXEC_EXT = /\.(exe|bat|cmd|com|ps1|sh|bash|zsh|php|py|rb|pl|jar|dll|so|dylib|app|scr|vbs|msi)$/i;
+  /**
+   * ZIP に入れるファイルの安全性の検査 → { errors, warnings }。
+   *   errors：鍵・認証情報・不要なファイル・危険なパス・実行できるファイル（ZIP を作らない）
+   *   warnings：対象のサイト以外のドメインのメールアドレス（お店が Gmail 等を使うこともあるので止めずに確認を促す）
+   */
+  function safetyCheck(files, opts) {
+    var errs = [], warns = [], map = files || {};
+    var host = hostOf((opts && opts.targetUrl) || '');
+    Object.keys(map).forEach(function (k) {
+      if (!k || /^\//.test(k) || /(^|\/)\.\.(\/|$)/.test(k) || /\\/.test(k) || /^[A-Za-z]:/.test(k)) errs.push('危険なパス: ' + k);
+      if (JUNK_NAME.test(k)) errs.push('不要なファイル: ' + k);
+      if (EXEC_EXT.test(k)) errs.push('実行できる種類のファイル: ' + k);
+      var v = typeof map[k] === 'string' ? map[k] : '';
+      SECRET_PATTERNS.forEach(function (p) { if (p[0].test(v)) errs.push(k + ' に' + p[1] + 'があります'); });
+      if (host) {
+        var mails = v.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [];
+        mails.forEach(function (m) {
+          var d = m.split('@')[1].toLowerCase().replace(/^www\./, '');
+          if (d !== host && d.slice(-host.length - 1) !== '.' + host && !/(^|\.)example\.(com|jp|org)$|\.example$/.test(d)) warns.push(k + ' に対象のサイト以外のメールアドレスがあります（' + m.replace(/^[^@]{0,2}[^@]*/, '***') + '）');
+        });
+      }
+    });
+    return { errors: errs, warnings: warns };
+  }
+  function safetyErrors(files, opts) { return safetyCheck(files, opts).errors; }
 
   var KEYWORD_CSV_COLUMNS = [
     'priority', 'keyword', 'volume', 'volume_source',
@@ -244,6 +282,8 @@
       var hit = /(^|[^A-Za-z_])(undefined|NaN)(?![A-Za-z_])/.exec(v.replace(/typeof [A-Za-z_.]+ !== 'undefined'/g, ''));
       if (hit) errors.push(k + ' contains "' + hit[2] + '"');
     });
+    var safety = safetyCheck(map, { targetUrl: (opts && opts.targetUrl) || mf.target_url || mf.url || '' });
+    safety.errors.forEach(function (e) { errors.push(e); });
     var kwHead = String(map['strategy/keywords.csv'] || '').split(/\r?\n/)[0] || '';
     if (!(partial && !('strategy/keywords.csv' in map))) KEYWORD_CSV_COLUMNS.forEach(function (col) {
       if (kwHead.indexOf(col) === -1) errors.push('keywords.csv missing column: ' + col);
@@ -260,7 +300,7 @@
       missing: missing,
       extra: extra,
       errors: errors,
-      warnings: (lock.warnings || []).concat(gate),
+      warnings: (lock.warnings || []).concat(gate).concat(safety.warnings),
       entityLock: lock,
       publishable: structureOk && !!lock.publishable && !gate.length,
       draftOk: structureOk && !!lock.draftOk
@@ -271,6 +311,9 @@
     PACKAGE_ROOT: PACKAGE_ROOT,
     ZIP_FILENAME: ZIP_FILENAME,
     PACKAGE_FORMAT: PACKAGE_FORMAT,
+    GENERATOR_VERSION: GENERATOR_VERSION,
+    safetyErrors: safetyErrors,
+    safetyCheck: safetyCheck,
     ALWAYS_FILES: ALWAYS_FILES,
     MINIMAL_FILES: MINIMAL_FILES,
     sha256Hex: sha256Hex,

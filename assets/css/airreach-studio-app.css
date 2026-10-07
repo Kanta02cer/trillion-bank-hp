@@ -394,3 +394,6 @@ body:not(.has-job) [data-needs-job]{display:none}
 .orch-zip-set legend { padding: 0 4px; font-size: 12px; color: var(--ars-muted); }
 .orch-zip-set label { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: baseline; color: var(--ars-ink); }
 .orch-zip-set small { grid-column: 2; color: var(--ars-muted); font-size: 12px; }
+.ocf-cli { margin: 0; font-size: 13px; color: var(--ars-ink-2); overflow-wrap: anywhere; }
+.ocf-cli.is-none { color: var(--ars-muted); }
+.ocf-cli.is-bad { padding: 6px 10px; border-left: 3px solid var(--ars-line-strong); background: var(--ars-canvas); color: var(--ars-ink); }
