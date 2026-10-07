@@ -872,8 +872,18 @@
     var siteN = faqItems.filter(function (f) { return f.status === 'site'; }).length;
     var schemaN = faqItems.filter(function (f) { return f.inSchema; }).length;
     var pendingN = cf ? faqItems.filter(function (f) { return f.status === 'site' && !f.approval; }).length : 0;
+    // いま Studio で開いている顧客（分析したサイトと同じときだけ記録する。違う顧客の ID を付けない）
+    var cli = null;
+    try { var c0 = JSON.parse(sessionStorage.getItem('airreach_studio_client_v1') || 'null'); if (c0 && c0.id && (!c0.url || hostOf(c0.url) === hostOf(job.url))) cli = c0; } catch (e) {}
+    var qsv = '';
+    try { var hs = (JSON.parse(localStorage.getItem('airreach_studio_v1') || '{}').hack2) || []; qsv = hs.length ? (hs[hs.length - 1].query_set_version || '') : ''; } catch (e) {}
     var manifest = {
       generated_at: new Date().toISOString(),
+      package_version: '1.' + (cf ? (cf.rev || 0) : 0) + '.0',
+      generator_version: (window.AirReachPackageSchema && window.AirReachPackageSchema.GENERATOR_VERSION) || '',
+      client_id: cli ? cli.id : null,
+      query_set_version: qsv || null,
+      target_url: job.url,
       url: job.url,
       goal: job.goal,
       industry: job.industry || '',
@@ -1061,7 +1071,8 @@
       'schema/service.jsonld': svc ? JSON.stringify(svc, null, 2) : '',
       'schema/faq.jsonld': schemaN ? JSON.stringify(faqLd, null, 2) : '',
       'public/llms.txt': llms,
-      'public/llms-full.txt': llms + '\n## FAQ\n' + faq.map(function (q) { return '- ' + q; }).join('\n') + '\n',
+      // llms-full の FAQ も、設置用データと同じ質問だけ（Studio の分析は承認したもの）。0問なら FAQ の節を出さない
+      'public/llms-full.txt': llms + (schemaN || !cf ? '\n## FAQ\n' + (cf ? faqItems.filter(function (f) { return f.inSchema; }).map(function (f) { return f.q; }) : faq).map(function (q) { return '- ' + q; }).join('\n') + '\n' : '\n'),
       'content/faq.md': faqMd,
       'content/site-info.md': siteInfoMd(job, brand),
       'content/schema-check.md': schemaCheckMd(job),
@@ -1175,6 +1186,14 @@
         out['MANIFEST.json'] = JSON.stringify(mf, null, 2);
         return out;
       });
+  }
+  /** ZIP の名前：airreach-対象のドメイン-作成日-v版.zip（依頼書 R06 の案。確定・承認が済んでいなければ保存時に -DRAFT が付く） */
+  function packageFilename(job) {
+    var mf = {};
+    try { mf = JSON.parse((job.files || {})['MANIFEST.json'] || '{}'); } catch (e) {}
+    var host = (hostOf(job.url) || 'site').replace(/[^a-z0-9.-]/gi, '');
+    var d = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10).replace(/-/g, '');
+    return 'airreach-' + host + '-' + d + '-v' + (mf.package_version || '1.0.0') + '.zip';
   }
   function downloadZip(filename, files, paths) {
     return finalizePackage(files, paths).then(function (clean) { saveZip(filename, clean); });
@@ -2056,7 +2075,7 @@
         var set = (document.querySelector('input[name="orch-zip-set"]:checked') || {}).value || 'minimal';
         try { localStorage.setItem('airreach_zip_set', set); } catch (e) {}
         var paths = set === 'all' ? null : (window.AirReachPackageSchema && window.AirReachPackageSchema.MINIMAL_FILES) || null;
-        downloadZip((window.AirReachPackageSchema && window.AirReachPackageSchema.ZIP_FILENAME) || 'airreach-implementation.zip', job.files, paths)
+        downloadZip(packageFilename(job), job.files, paths)
           .catch(function (e) { alert('ZIP を作れませんでした：' + (e && e.message ? e.message : e)); });
       });
     }
@@ -2090,6 +2109,7 @@
     buildPackageFiles: buildPackageFiles,
     googleFreeJob: googleFreeJob,
     downloadZip: downloadZip,
+    packageFilename: packageFilename,
     finalizePackage: finalizePackage,
     _buildZip: buildZip,
     importGscRows: importGscRows,

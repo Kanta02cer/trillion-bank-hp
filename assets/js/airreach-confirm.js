@@ -28,8 +28,13 @@
     var mf = manifestOf(job), fc = mf.faq_counts || {}, items = (mf.faq_items || []).filter(function (f) { return f.status === 'site'; });
     var faqMd = String((job.files || {})['content/faq.md'] || '');
     function answerOf(qtext) { var i = faqMd.indexOf('. ' + qtext + '\n'); if (i < 0) return ''; var rest = faqMd.slice(i + qtext.length + 3); var end = rest.indexOf('\n## Q'); return (end < 0 ? rest : rest.slice(0, end)).trim(); }
+    // いま Studio で開いている顧客（依頼書 R01：対象 URL・会社・サービスと顧客 ID をひとまとまりで確かめる）
+    var cli = null; try { cli = JSON.parse(sessionStorage.getItem('airreach_studio_client_v1') || 'null'); } catch (e) {}
+    var cliHtml = !cli || !cli.id ? '<p class="ocf-cli is-none">顧客：選んでいません（顧客を選ぶと、ZIP の記録に顧客 ID が入ります）</p>'
+      : (cli.url && hostOf(cli.url) !== hostOf(job.url)) ? '<p class="ocf-cli is-bad">顧客：' + esc(cli.name || '') + '（' + esc(String(cli.id).slice(0, 8)) + '）の登録サイトは ' + esc(hostOf(cli.url)) + ' です。分析したサイト ' + esc(hostOf(job.url)) + ' と違うため、ZIP に顧客 ID を入れません。顧客かサイトを確かめてください。</p>'
+      : '<p class="ocf-cli">顧客：<b>' + esc(cli.name || '') + '</b>（ID ' + esc(String(cli.id).slice(0, 8)) + '…）· 対象のサイト ' + esc(hostOf(job.url)) + '</p>';
     var html = '<section class="ocf" aria-label="確定と承認">' +
-      '<p class="ocf-ver">版 <b>' + esc(mf.version != null ? mf.version : cf.rev || 0) + '</b> · よくある質問 提案 ' + esc(fc.proposed || 0) + '問・サイトの記載から ' + esc(fc.from_site || 0) + '問・承認 ' + esc(fc.approved || 0) + '問・<b>設置用に入れる ' + esc(fc.in_schema || 0) + '問</b>' + (fc.pending_approval ? '・承認待ち ' + esc(fc.pending_approval) + '問' : '') + '</p>';
+      cliHtml + '<p class="ocf-ver">版 <b>' + esc(mf.version != null ? mf.version : cf.rev || 0) + '</b> · よくある質問 提案 ' + esc(fc.proposed || 0) + '問・サイトの記載から ' + esc(fc.from_site || 0) + '問・承認 ' + esc(fc.approved || 0) + '問・<b>設置用に入れる ' + esc(fc.in_schema || 0) + '問</b>' + (fc.pending_approval ? '・承認待ち ' + esc(fc.pending_approval) + '問' : '') + '</p>';
     // ① 会社・ブランド・サービス
     if (ent) {
       html += '<div class="ocf-ent is-done"><div><b>① 会社・サービス：確定済み</b><span>' + esc(day(ent.at)) + '</span></div>' +

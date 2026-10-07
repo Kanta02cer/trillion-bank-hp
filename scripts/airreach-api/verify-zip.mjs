@@ -2,6 +2,14 @@
 //   node scripts/airreach-api/verify-zip.mjs path/to/airreach-implementation.zip
 import fs from 'node:fs';
 import crypto from 'node:crypto';
+import vm from 'node:vm';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+// 安全性の検査は Studio と同じもの（assets/js/airreach-package-schema.js）を使う
+const SCHEMA_CTX = { console, URL, TextEncoder };
+SCHEMA_CTX.window = SCHEMA_CTX;
+vm.createContext(SCHEMA_CTX);
+vm.runInContext(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '../../assets/js/airreach-package-schema.js'), 'utf8'), SCHEMA_CTX);
 
 /** 無圧縮の ZIP を { パス: 文字列 } にする（AirReach の buildZip の形だけを読む） */
 export function readStoredZip(buf) {
@@ -38,13 +46,15 @@ export function verifyFiles(files) {
     if (/\.(jsonld|json)$/.test(k)) { try { JSON.parse(files[k]); } catch (e) { errors.push('JSON として読めない: ' + k); } }
     if (/(^|[^A-Za-z_])(undefined|NaN)(?![A-Za-z_])/.test(files[k])) errors.push('undefined・NaN が残っている: ' + k);
   });
+  const safe = SCHEMA_CTX.AirReachPackageSchema.safetyCheck(files, { targetUrl: mf ? (mf.target_url || mf.url || '') : '' });
+  safe.errors.forEach((e) => errors.push(e));
   if (files['schema/faq.jsonld']) {
     const ld = JSON.parse(files['schema/faq.jsonld']);
     const n = (ld.mainEntity || []).length;
     if (!n) errors.push('空の FAQ の構造化データ');
     if (mf && mf.faq_counts && mf.faq_counts.in_schema !== n) errors.push('faq.jsonld の質問の数が MANIFEST と違う');
   }
-  return { ok: !errors.length, errors, files: Object.keys(files).length, version: mf ? mf.version : null, selection: mf ? mf.selection : null };
+  return { ok: !errors.length, errors, warnings: safe.warnings, files: Object.keys(files).length, version: mf ? mf.version : null, selection: mf ? mf.selection : null };
 }
 if (process.argv[1] && import.meta.url === 'file://' + process.argv[1]) {
   const p = process.argv[2];
