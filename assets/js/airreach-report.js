@@ -673,7 +673,7 @@
     function z(n) { return (n < 10 ? '0' : '') + n; }
     return d.getUTCFullYear() + '-' + z(d.getUTCMonth() + 1) + '-' + z(d.getUTCDate()) + ' ' + z(d.getUTCHours()) + ':' + z(d.getUTCMinutes());
   }
-  var PROV_JA = { openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity' };
+  var PROV_JA = { openai: 'ChatGPT', chatgpt_search: 'ChatGPT（検索あり）', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity', google_aio: 'Google の AI による概要', google_ai_mode: 'Google の AI モード' };
   var SRC_JA = { gsc_api: 'Google Search Console（連携で取得）', gsc_csv: 'Google Search Console（CSV を取り込み）', ga4_api: 'Google アナリティクス（連携で取得）', ga4_manual: 'Google アナリティクス（担当者が入力）' };
   function evidenceList(c) {
     var out = [];
@@ -682,7 +682,7 @@
       detail: cur ? (jstTime(cur.detail && cur.detail.scope && cur.detail.scope.diagnosedAt || cur.createdAt) + ' に ' + (cur.url || '') + ' のトップページと案内ファイル（llms.txt・robots.txt）を診断' + (cur.detail && cur.detail.scope && cur.detail.scope.pagesRead != null ? '・答えの確認に読んだページ ' + cur.detail.scope.pagesRead + 'ページ' : '') + (cur.ruleVersion ? '・判定基準 ' + cur.ruleVersion : '') + (cur.inMonth ? '' : '（当月の診断が無いため、この日の結果）')) : '' });
     var ai = c && c.ai;
     out.push({ kinds: ai ? ['reference'] : ['unknown'], label: 'AI回答の計測（出典になった割合・名前が出た割合・競合と比べた割合）', source: ai ? (ai.source === 'manual' ? 'AirReach Studio での計測' : '社内の計測（同じ質問を AI に複数回聞いて集計）') : '計測の記録なし',
-      detail: ai ? ((ai.basis === 'monthly' ? '今月の計測 ' + ai.runs + '回（' + ai.firstOn + (ai.runs > 1 ? '〜' + ai.lastOn : '') + '）の合計・最新の計測 ' + ai.measuredOn : '計測日 ' + ai.measuredOn) + '・質問の版 ' + ((ai.versions && ai.versions.length ? ai.versions : [ai.querySetVersion || '—']).join('、')) + '・' + ai.providers.map(function (p) { return (PROV_JA[p.provider] || p.provider) + (p.model ? '（' + p.model + '）' : '') + (p.answers != null ? ' ' + p.answers + '回答' : ''); }).join('、')) : '' });
+      detail: ai ? ((ai.basis === 'monthly' ? '今月の計測 ' + ai.runs + '回（' + ai.firstOn + (ai.runs > 1 ? '〜' + ai.lastOn : '') + '）の合計・最新の計測 ' + ai.measuredOn : '計測日 ' + ai.measuredOn) + '・質問の版 ' + ((ai.versions && ai.versions.length ? ai.versions : [ai.querySetVersion || '—']).join('、')) + '・' + ai.providers.map(function (p) { return (PROV_JA[p.provider] || p.provider) + (p.model && !/^serpapi\//i.test(p.model) ? '（' + p.model + '）' : '') + (p.answers != null ? ' ' + p.answers + '回答' : ''); }).join('、')) : '' });
     var tr = (c && c.traffic) || {};
     var g = tr.gsc, a = tr.ga4;
     out.push({ kinds: [g ? (g.source === 'ga4_manual' ? 'manual' : 'measured') : 'unknown'], label: '検索からのクリック・表示回数・平均の順位', source: g ? (SRC_JA[g.source] || g.source) : '未取得',

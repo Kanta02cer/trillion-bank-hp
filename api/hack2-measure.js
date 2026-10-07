@@ -491,7 +491,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
   const preferDirect = !!directKey && (engine === 'perplexity' || engine === 'claude' || engine === 'chatgpt_search');
   const useGateway = !!gatewayKey && !preferDirect && ['chatgpt', 'chatgpt_search', 'claude', 'perplexity'].indexOf(engine) >= 0;
   if ((engine === 'google_aio' || engine === 'google_ai_mode') && !directKey) {
-    return { rows: [], status: { ok: false, error: 'SerpApi の API キー（SERPAPI_API_KEY）がまだ設定されていません', engine } };
+    return { rows: [], status: { ok: false, error: 'Google の AI の計測に使う API キーがまだ設定されていません（社内の設定が必要です）', engine } };
   }
   if (engine === 'gemini' && !directKey) {
     return { rows: [], status: { ok: false, error: 'Gemini の API キー（GEMINI_API_KEY）がまだ設定されていません', engine } };
@@ -692,7 +692,7 @@ export function parseResponsesOutput(data) {
 function gatewayError(status, data, model) {
   const msg = (data && data.error && (data.error.message || data.error)) || '';
   if (status === 403 && /free tier/i.test(String(msg))) {
-    return model + ' は Vercel AI Gateway の無料枠では使えません（有料クレジットが必要）';
+    return model + ' は今の設定では使えません（社内の設定が必要です）';
   }
   if (/not found/i.test(String(msg))) return model + ' が見つかりません（モデル名を確認）';
   if (status === 429 || /rate limit/i.test(String(msg))) {
@@ -819,8 +819,8 @@ async function serpGet(params, key) {
   const res = await fetch(SERP_BASE + '?' + q.toString(), { signal: AbortSignal.timeout(90000) });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.error) {
-    const msg = String(data.error || ('SerpApi failed (' + res.status + ')'));
-    if (res.status === 429 || /rate|limit|run out|searches/i.test(msg)) throw new Error('SerpApi の回数の上限に当たりました（' + msg.slice(0, 80) + '） [rate limit; retry after 30s]');
+    const msg = String(data.error || ('Google の AI の計測に失敗しました（' + res.status + '）'));
+    if (res.status === 429 || /rate|limit|run out|searches/i.test(msg)) throw new Error('Google の AI の計測で回数の上限に当たりました（' + msg.slice(0, 80) + '） [rate limit; retry after 30s]');
     throw new Error(msg.slice(0, 200));
   }
   return data;
