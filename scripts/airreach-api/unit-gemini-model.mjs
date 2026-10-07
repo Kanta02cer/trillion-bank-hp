@@ -46,6 +46,8 @@ const mm = M.geminiQuotaError(Q([{ quotaId: 'GenerateRequestsPerMinutePerProject
 t('429：1分あたりは待ち時間つきで聞き直す・どの上限かを書く', /12秒/.test(mm) && /PerMinute/.test(mm) && M.rateLimitWait(new Error(mm)) === 13000, mm);
 const raw = M.geminiQuotaError({ error: { code: 429, status: 'RESOURCE_EXHAUSTED', message: 'Resource has been exhausted (e.g. check quota).' } });
 t('429：詳細が無いときは Google の状態と本文を添え、待って聞き直す', /RESOURCE_EXHAUSTED/.test(raw) && /Resource has been exhausted/.test(raw) && M.rateLimitWait(new Error(raw)) === 31000, raw);
+const bill = M.geminiQuotaError({ error: { code: 429, status: 'RESOURCE_EXHAUSTED', message: 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.' } });
+t('429：plan and billing は支払いの設定が必要と伝え、聞き直さない（本番の実測の文言）', /支払い/.test(bill) && /\[quota_billing\]/.test(bill) && M.rateLimitWait(new Error(bill)) === null, bill);
 globalThis.fetch = real;
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

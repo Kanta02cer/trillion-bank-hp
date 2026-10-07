@@ -830,6 +830,8 @@ export function geminiQuotaError(data) {
   const zero = v.some((x) => String(x.quotaValue) === '0') || /limit:\s*0\b/i.test(msg);
   const perDay = ids.some((x) => /PerDay/i.test(x)) || /per day|daily/i.test(msg);
   if (zero) return 'Gemini の今の契約では、この使い方（Google 検索つき）を使える回数が0回です' + idText + '。Google AI Studio で支払いを設定する必要があります [quota_zero]';
+  // 「plan and billing details」は請求（支払い）の問題。待っても通らないので聞き直さない（2026-10-07 本番で実測）
+  if (/plan and billing|billing details/i.test(msg)) return 'Gemini の API キーの Google のプロジェクトで、支払い（請求）の設定が必要です。Google AI Studio の「課金」で請求先アカウントを確かめてください（待っても計測できません） [quota_billing]';
   if (perDay) return 'Gemini の1日の回数の上限に当たりました' + idText + '。明日になれば計測できます [quota_daily]';
   const d = details.map((x) => x && x.retryDelay).filter(Boolean)[0];
   const sec = d ? parseInt(String(d), 10) : 30;
