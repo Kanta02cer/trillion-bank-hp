@@ -87,5 +87,20 @@ let calls = 0;
 await M.withRateRetry(async () => { calls++; throw new Error('rate limit; retry after 1s'); }, Date.now() + 60000, async () => {}).catch(() => {});
 t('回数の上限での聞き直しは有限（4回で止める）', calls === 4, calls);
 
+// 指名の質問と一般の質問を分ける（R04）
+const brand = 'サンプル商店';
+const mix = [ok('google_aio', 1, { prompt: 'サンプル商店の営業時間は？' }), ok('google_aio', 1, { prompt: 'サンプル商店 口コミ' }), ok('google_aio', 0, { prompt: '駅前で人気のお店は？' }), R('google_aio', 'not_shown', { prompt: '駅前 雑貨屋 おすすめ' })];
+t('一般の質問だけ：名前なし1・概要なし1 → 0/2', (() => { const x = A.summarize(mix, { brand, segment: 'general' }).aio.t; return x.mentioned === 0 && x.denominator === 2; })());
+t('指名の質問だけ：2/2', (() => { const x = A.summarize(mix, { brand, segment: 'branded' }).aio.t; return x.mentioned === 2 && x.denominator === 2; })());
+t('すべて：2/4', (() => { const x = A.summarize(mix, { brand, segment: 'all' }).aio.t; return x.mentioned === 2 && x.denominator === 4; })());
+t('保存した branded を優先', A.isBranded({ prompt: '駅前のお店', branded: true }, brand) && !A.isBranded({ prompt: 'サンプル商店', branded: false }, brand));
+t('株式会社・店を外した名前でも指名と判定', A.isBranded({ prompt: 'ライフスタジオの料金' }, '株式会社ライフスタジオ'));
+const box4 = { innerHTML: '', querySelectorAll: () => [] };
+A.render(box4, mix, { brand });
+t('描画：既定は一般の質問（0 / 2回）・切り替えに件数', /一般の質問<small>2回/.test(box4.innerHTML) && /指名の質問<small>2回/.test(box4.innerHTML) && /0<small> \/ 2回/.test(box4.innerHTML) && /一般の質問（名前を入れていない質問）だけ/.test(box4.innerHTML), box4.innerHTML.slice(0, 400));
+const box5 = { innerHTML: '', querySelectorAll: () => [] };
+A.render(box5, [ok('google_aio', 1, { prompt: 'サンプル商店の場所' })], { brand });
+t('描画：一般の質問が0なら「すべて」で出す', /1<small> \/ 1回/.test(box5.innerHTML) && /一般と指名の質問をすべて/.test(box5.innerHTML));
+t('API：試行番号と判定ルールの版', M.JUDGE_VERSION && /^judge\//.test(M.JUDGE_VERSION));
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
