@@ -24,6 +24,18 @@ globalThis.fetch = async (url) => { calls.push(String(url)); return new Response
 let err = '';
 await M.callGemini('k', 'q', 'gemini-2.5-flash').catch((e) => { err = e.message; });
 t('案内されたモデルも使えなければ、聞き直しは1回で止めて失敗にする', calls.length === 2 && /no longer available/.test(err), { n: calls.length, err });
+// 時間切れ：Gemini が答えないときは持ち時間内に日本語の失敗で返す（他の AI を待たせない）
+t('Gemini の持ち時間は他の AI より短い', M.ENGINE_BUDGET_MS.gemini > 0 && M.ENGINE_BUDGET_MS.gemini <= 90000 && M.GEMINI_TIMEOUT_MS <= 45000, { b: M.ENGINE_BUDGET_MS, t: M.GEMINI_TIMEOUT_MS });
+globalThis.fetch = async (url, init) => new Promise((res, rej) => { init.signal.addEventListener('abort', () => rej(init.signal.reason)); });
+const origTimeout = AbortSignal.timeout;
+AbortSignal.timeout = () => origTimeout.call(AbortSignal, 50);
+err = '';
+const t1 = Date.now();
+const keep = setTimeout(() => {}, 5000); // AbortSignal.timeout のタイマーはプロセスを生かさないので、待つ間だけ生かす
+await M.callGemini('k', 'q', 'gemini-x').catch((e) => { err = e.message; });
+AbortSignal.timeout = origTimeout;
+clearTimeout(keep);
+t('答えないときは時間切れの失敗（日本語・[timeout]）で早く返す', /時間切れ/.test(err) && /\[timeout\]/.test(err), { err, ms: Date.now() - t1 });
 globalThis.fetch = real;
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
