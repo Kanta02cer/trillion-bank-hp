@@ -377,7 +377,7 @@
       var C = window.AirReachCharts, top = reps[0], body = '';
       if (top && C) {
         // 最新の公開レポート：結論 → 数字（小さく・内訳は開く）→ ご判断いただきたいこと → 次にやること → 依頼の入口
-        body += clientLatest(top) + clientNumbers(top) + decisionCard(top) + nextCard(top, true) + reqEntry();
+        body += clientLatest(top) + clientNumbers(top) + window.AirReachClientHome.competitor(top.compiled, { href: '/airreach/app/report/?id=' + top.id, linkText: 'レポートで詳しく見る', note: ymJa(top.period_month) + 'のレポートの数字です。' }) + decisionCard(top) + nextCard(top, true) + reqEntry();
       } else body += reqEntry();
       body += '<section class="arc-card"><h2 class="arc-h2">これまでのレポート</h2><ul class="arc-list arc-replist">' +
         (reps.length ? reps.map(function (r) { return '<li><a href="/airreach/app/report/?id=' + r.id + '">' + esc(ymJa(r.period_month)) + ' のレポート</a>' + (r.published_at ? '<span class="arc-sub">公開 ' + esc(day(r.published_at)) + '</span>' : '') + '</li>'; }).join('') : '<li class="arc-empty">公開済みのレポートはまだありません。</li>') +
@@ -1022,6 +1022,8 @@
         overview += '<section class="arc-card arc-numcard"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(month)) + 'の数字</h2><span class="arc-sub">登録された材料からその場で集計</span></div>' +
           compactNumbers(live, month) +
           '<details class="arc-more" data-fold="nums"' + (openFolds.nums ? ' open' : '') + '><summary>数字の内訳を開く（AI 別の割合・分子と分母・対象期間）</summary>' + C.tiles(live) + '</details></section>' +
+          (window.AirReachClientHome ? window.AirReachClientHome.competitor(live, { staff: true, href: studioH + '#hack2', linkText: 'Studio で回答を見る', registerHref: '#arq',
+            note: '今月の AI 計測からその場で集計しています（月次レポートの数字は、下書きを作った時点のもの）。質問ごと・AI ごとの詳しい比較は月次レポートに出ます。' }) : '') +
           '<div class="arc-dash-2">' + monthSteps(plan) + dashTodos(R.todoList(live), live, studioH) + '</div>' +
           '<div id="arc-rq"></div>' +
           '<details class="arc-card arc-more-card" data-fold="aidetail"' + (openFolds.aidetail ? ' open' : '') + '><summary class="arc-h2">AI での見え方と参照したサイト（詳しく）</summary><div class="arc-dash-2">' + dashAi(runs[0], live, studioH) + dashSources(runs[0], studioH) + '</div></details>' +

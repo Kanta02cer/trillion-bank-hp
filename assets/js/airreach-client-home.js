@@ -45,7 +45,28 @@
     return dec.length ? '<section class="arc-card arc-decide"><h2 class="arc-h2">ご判断いただきたいこと</h2><ul class="arr-ul">' + dec.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
       '<p class="arc-note">お返事は、担当者へのご連絡でお願いします。</p></section>' : '';
   }
-  var api = { latest: clientLatest, numbers: clientNumbers, decision: decisionCard };
+  /**
+   * 競合との比較（小さく）：ひと言の結論と、名前が出た回数の取り合いの帯。詳しくは月次レポート
+   *   compiled: compileReport の結果（担当者は今月の材料からその場で集計、お客様は公開済みのレポート）
+   *   opt: { href, linkText, note, staff, registerHref }。競合が未登録なら、担当者には登録の案内、お客様には何も出さない
+   */
+  function competitorCard(compiled, opt) {
+    opt = opt || {};
+    var C = root.AirReachCharts, k = compiled && compiled.ai && compiled.ai.competitors;
+    var sum = C && C.compSummary ? C.compSummary(k) : null;
+    if (!sum) {
+      if (!opt.staff) return '';
+      return '<section class="arc-card arc-compcard is-empty"><h2 class="arc-h2">競合との比較</h2><p class="arc-note">' +
+        (compiled && compiled.ai ? 'まだ競合と比べた計測がありません。' : '今月の AI 計測がまだありません。') +
+        '競合を登録して AI で測ると、AI の回答に自社と競合のどちらの名前が出たかを比べられます。</p>' +
+        (opt.registerHref ? '<a class="arc-btn-sm" href="' + esc(opt.registerHref) + '">競合を登録する</a>' : '') + '</section>';
+    }
+    return '<section class="arc-card arc-compcard"><div class="arv-home-head"><h2 class="arc-h2">競合との比較（AI の回答）</h2>' +
+      (opt.href ? '<a class="arc-btn-sm" href="' + esc(opt.href) + '">' + esc(opt.linkText || '詳しく見る') + ' →</a>' : '') + '</div>' +
+      '<p class="arr-comp-lead">' + sum.lead + '</p>' + sum.share +
+      (opt.note ? '<p class="arc-note">' + esc(opt.note) + '</p>' : '') + '</section>';
+  }
+  var api = { latest: clientLatest, numbers: clientNumbers, decision: decisionCard, competitor: competitorCard };
   root.AirReachClientHome = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

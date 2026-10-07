@@ -292,5 +292,35 @@
     }).join('') + '</ol>' + (opts.limit && items.length > opts.limit ? '<p class="arv-todo-more">ほか ' + (items.length - opts.limit) + '件' + esc(opts.moreText || '') + '</p>' : '');
   }
 
-  window.AirReachCharts = { tiles: tiles, trends: trends, factors: factors, aiCompare: aiCompare, sparkline: sparkline, readiness: readiness, todos: todos, band: band, series: series };
+
+  // ---- 競合との比較：ひと言の結論と、名前が出た回数の取り合いの帯（月次レポート・お客様のホーム・担当者のホームで共通）----
+  var COMP_COLORS = ['#475569', '#94a3b8', '#cbd5e1', '#64748b', '#e2e8f0'];
+  function compSummary(k) {
+    if (!k || !k.rows || k.rows.length < 2) return null;
+    var rows = k.rows.slice().sort(function (a, b) { return (b.mention || 0) - (a.mention || 0) || (b.first || 0) - (a.first || 0) || (a.self ? -1 : 1); });
+    var self = rows.filter(function (r) { return r.self; })[0];
+    var others = rows.filter(function (r) { return !r.self; });
+    var above = others.filter(function (r) { return (r.mention || 0) > (self.mention || 0); }).length;
+    var tie = others.some(function (r) { return (r.mention || 0) === (self.mention || 0); });
+    var rank = above + 1;
+    var topOther = others[0];
+    var nd = function (n, d) { return d ? '<small class="arr-na">（' + esc(n) + ' ÷ ' + esc(d) + '）</small>' : ''; };
+    // ① ひと言の結論（数えた事実だけ。理由は断定しない）
+    var lead = '<b>' + esc(rows.length) + '社のうち ' + esc(rank) + '位' + (tie ? '（同じ回数のお店あり）' : '') + '</b>。';
+    if (rank === 1 && !tie) lead += 'AI の回答で、いちばん多く名前が出ました。';
+    else if (topOther && (topOther.mention || 0) > (self.mention || 0)) lead += 'いちばん多く名前が出たのは ' + esc(topOther.name) + '（' + esc(topOther.mention) + '回答）で、自社は ' + esc(self.mention) + '回答でした。';
+    else lead += '名前が出た回答の数は、' + others.filter(function (r) { return (r.mention || 0) === (self.mention || 0); }).map(function (r) { return esc(r.name); }).join('・') + ' と同じでした。';
+    var firstTop = rows.slice().sort(function (a, b) { return (b.first || 0) - (a.first || 0); })[0];
+    if (firstTop && (firstTop.first || 0) > 0) lead += '回答の中で<b>最初に</b>名前が出たのは ' + (firstTop.self ? '自社' : esc(firstTop.name)) + ' がいちばん多く（' + esc(firstTop.first) + '回答）' + (firstTop.self ? 'でした。' : '、自社は ' + esc(self.first) + '回答でした。');
+    // ② 取り合いの帯：名前が出た回数の合計のうち、それぞれの割合
+    var total = k.mentionsTotal || rows.reduce(function (s, r) { return s + (r.mention || 0); }, 0);
+    var ci = 0;
+    var seg = rows.map(function (r) { var c = r.self ? '#1d4ed8' : COMP_COLORS[ci++ % COMP_COLORS.length]; return { r: r, c: c, pct: total ? Math.round((r.mention || 0) / total * 1000) / 10 : 0 }; });
+    var share = total ? '<div class="arr-share" role="img" aria-label="名前が出た回数の内訳：' + esc(seg.map(function (x) { return (x.r.self ? '自社' : x.r.name) + ' ' + x.pct + '%'; }).join('、')) + '">' +
+      seg.filter(function (x) { return x.pct > 0; }).map(function (x) { return '<span style="width:' + x.pct + '%;background:' + x.c + '"' + (x.r.self ? ' class="is-self"' : '') + '>' + (x.pct >= 12 ? esc(x.pct) + '%' : '') + '</span>'; }).join('') + '</div>' +
+      '<ul class="arr-share-key">' + seg.map(function (x) { return '<li><i style="background:' + x.c + '"></i>' + esc(x.r.self ? x.r.name + '（自社）' : x.r.name) + ' <b>' + esc(x.pct) + '%</b></li>'; }).join('') + '</ul>' +
+      '<p class="arr-sub">AI の回答 ' + esc(k.answers) + '件で、名前が出た回数の合計 ' + esc(total) + '回の内訳です。' + (k.sov != null ? '自社の割合は <b>' + esc(k.sov) + '%</b>' + (k.prevSov != null ? '（前月 ' + esc(k.prevSov) + '%）' : '') + '。' : '') + '</p>' : '';
+    return { rows: rows, self: self, others: others, rank: rank, tie: tie, lead: lead, share: share };
+  }
+  window.AirReachCharts = { compSummary: compSummary, tiles: tiles, trends: trends, factors: factors, aiCompare: aiCompare, sparkline: sparkline, readiness: readiness, todos: todos, band: band, series: series };
 })();
