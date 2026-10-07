@@ -12,6 +12,16 @@
   function manifestOf(job) { try { return JSON.parse((job.files || {})['MANIFEST.json'] || '{}'); } catch (e) { return {}; } }
   function day(iso) { var t = Date.parse(iso); if (isNaN(t)) return ''; var d = new Date(t + 9 * 3600000); return d.getUTCFullYear() + '/' + (d.getUTCMonth() + 1) + '/' + d.getUTCDate() + ' ' + ('0' + d.getUTCHours()).slice(-2) + ':' + ('0' + d.getUTCMinutes()).slice(-2); }
 
+  // サービス名がキャッチコピーらしいか（依頼書 R01：キャッチコピーをサービス名として確定しない）。判断できないときは人に確かめてもらう
+  function looksLikeCatchphrase(t) {
+    t = String(t || '').trim();
+    if (!t) return false;
+    if (t.length > 24) return true;
+    if (/[。！!？?♪★☆…]/.test(t)) return true;
+    if (/(です|ます|ません|ませんか|しよう|しませんか|ください|叶える|届けます|変える|つくる|あなた|私たち)$/.test(t)) return true;
+    if (/[、,]/.test(t) && t.length > 12) return true;
+    return false;
+  }
   function commit(job) {
     job.confirm.rev = (job.confirm.rev || 0) + 1;
     var O = window.AirReachOrchestrator;
@@ -47,6 +57,8 @@
         '<label>ブランド・店名<input class="ars-input" id="ocf-brand" value="' + esc(p.brand || '') + '" autocomplete="off"></label>' +
         '<label>サービス<input class="ars-input" id="ocf-service" value="' + esc(p.service || '') + '" autocomplete="off"></label>' +
         '<label>対象のサイト<input class="ars-input" id="ocf-url" value="' + esc(job.url || '') + '" readonly></label></div>' +
+        (looksLikeCatchphrase(p.service) ? '<p class="ocf-err" id="ocf-catch-pre">サービスの欄がキャッチコピー（宣伝の文）のようです。「ホームページ制作」「縮毛矯正」のような、サービスの名前に直してください。</p>' : '') +
+        '<label class="ocf-ack" id="ocf-ack-wrap" hidden><input type="checkbox" id="ocf-ack"> これはサービスの名前です（キャッチコピーではありません）</label>' +
         '<p class="ocf-err" id="ocf-err" hidden></p>' +
         '<button type="button" class="ars-btn ars-btn-primary" data-ocf="confirm">この内容で確定する</button></div>';
     }
@@ -75,6 +87,13 @@
       if (brand.length < 2) bad.push('ブランド・店名');
       if (service.length < 2) bad.push('サービス');
       if (bad.length) { err.hidden = false; err.textContent = bad.join('・') + ' を2文字以上で入れてください。'; return; }
+      // キャッチコピーらしいサービス名は、人が「サービスの名前です」と確かめるまで確定しない
+      var ack = q('ocf-ack'), ackWrap = q('ocf-ack-wrap');
+      if (looksLikeCatchphrase(service) && !(ack && ack.checked)) {
+        err.hidden = false; err.textContent = '「' + service + '」はキャッチコピーのようです。サービスの名前に直すか、サービスの名前で合っていれば下のチェックを入れてから確定してください。';
+        if (ackWrap) ackWrap.hidden = false;
+        return;
+      }
       cf.entity = { company: company, brand: brand, service: service, url: job.url, at: new Date().toISOString() };
       job.profile = Object.assign({}, job.profile || {}, { brand: brand, service: service, company: company });
       commit(job);
@@ -90,5 +109,5 @@
     });
   }
 
-  window.AirReachConfirm = { render: render, _hostOf: hostOf };
+  window.AirReachConfirm = { render: render, looksLikeCatchphrase: looksLikeCatchphrase, _hostOf: hostOf };
 })();

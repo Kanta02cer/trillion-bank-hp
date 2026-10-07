@@ -59,6 +59,19 @@ const v = S.validatePackageFiles(bad, { targetUrl: 'https://sample-co.example/',
 expect('検査：空の FAQ の JSON-LD を誤りにする', v.errors.some((e) => /no questions/.test(e)), JSON.stringify(v.errors));
 expect('検査：README の undefined を誤りにする', v.errors.some((e) => /README\.md contains "undefined"/.test(e)), JSON.stringify(v.errors));
 
+// R02：メニューやナビの切れ端を答えの根拠にしない
+const F = (text) => K.facts({ text, url: 'https://sample-co.example/' });
+const navText = 'ホーム | 料金 | アクセス | お問い合わせ | 会社概要 営業時間 10:00〜19:00 | ブログ | サイトマップ';
+expect('ナビの切れ端の中の営業時間は使わない', !F(navText).hours, F(navText).hours);
+expect('ナビの切れ端の中の料金は使わない', !F('トップ ｜ 料金プラン 月額 30,000円 ｜ アクセス ｜ お問い合わせ ｜ 採用情報').price, F('トップ ｜ 料金プラン 月額 30,000円 ｜ アクセス ｜ お問い合わせ').price);
+expect('本文の営業時間は使う（ナビの言葉が近くに1つだけなら）', !!F('当店の営業時間は 10:00〜19:00 です。定休日は水曜です。ご予約はお問い合わせから。').hours);
+expect('フッターの電話番号は使う（電話・住所はナビの近くでも事実）', !!F('会社概要 | プライバシー | サイトマップ | TEL 03-1234-5678').phone);
+// R01：キャッチコピーをサービス名として確定しない
+const cctx = { window: {}, document: { getElementById() { return null; } }, sessionStorage: { getItem() { return null; } }, console };
+vm.createContext(cctx); vm.runInContext(fs.readFileSync(path.join(ROOT, 'assets/js/airreach-confirm.js'), 'utf8'), cctx);
+const LC = cctx.window.AirReachConfirm.looksLikeCatchphrase;
+expect('キャッチコピーらしい：句読点・感嘆符・長い文・宣伝の言い回し', ['あなたの毎日に、ときめく眉を。', '理想の眉を叶える', '美しさを、もっと自由に！', '経営の課題を解決し、未来をつくるパートナーです'].every(LC));
+expect('サービス名はキャッチコピーとしない', ['ホームページ制作', '眉毛サロン', '縮毛矯正', 'Web制作', 'そば・うどん'].every((x) => !LC(x)), ['ホームページ制作', '眉毛サロン', '縮毛矯正', 'Web制作', 'そば・うどん'].filter(LC));
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);
