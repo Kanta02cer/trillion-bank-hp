@@ -323,6 +323,7 @@ robots: "noindex, follow"
       <div class="ars-panel" data-panel-view="hack2">
         <div class="ars-title-row"><div><h2>AI計測</h2><p class="ars-sub">登録した質問を実際のAIに聞き、自社と競合の名前・サイトが回答に出るかを測ります。</p></div><button id="run-hack2-measure" class="ars-btn ars-btn-primary" type="button">計測実行</button></div>
             <div class="ars-field ars-hack2-brand"><label for="hack2-brand">計測するお店・会社の名前（必須）</label><input class="ars-input" id="hack2-brand" placeholder="例：更科堀井" autocomplete="off"><small class="ars-hack2-help">AI の回答にこの名前が出るかを数えます。「サイトを調べる」の「お店・会社の名前」と同じです。</small></div>
+            <div class="ars-field ars-hack2-loc"><label for="hack2-location">地域（任意）</label><input class="ars-input" id="hack2-location" list="hack2-location-list" placeholder="空欄＝日本全体" autocomplete="off" inputmode="latin"><datalist id="hack2-location-list"><option value="Tokyo,Japan">東京都</option><option value="Shibuya,Tokyo,Japan">渋谷区</option><option value="Shinjuku,Tokyo,Japan">新宿区</option><option value="Minato,Tokyo,Japan">港区</option><option value="Yokohama,Kanagawa,Japan">横浜市</option><option value="Saitama,Saitama,Japan">さいたま市</option><option value="Osaka,Osaka,Japan">大阪市</option><option value="Nagoya,Aichi,Japan">名古屋市</option><option value="Fukuoka,Fukuoka,Japan">福岡市</option><option value="Sapporo,Hokkaido,Japan">札幌市</option></datalist><small class="ars-hack2-help">Google の AI と ChatGPT（検索あり）に、この地域から検索した形で聞きます。英字で「市区町村,都道府県,Japan」。結果には実際に使われた地域を残します。</small></div>
             <div class="ars-card ars-prompts-card" id="hack2-prompts"><!-- 計測する質問（airreach-studio.js の renderPrompts） --></div>
             <div id="hack2-status" class="ars-note">まだ計測していません。AIを選んで「計測実行」を押します。</div>
             <div class="ars-row" style="margin:12px 0;flex-wrap:wrap;gap:10px">
@@ -336,6 +337,7 @@ robots: "noindex, follow"
               <label><input type="checkbox" data-hack2-engine value="google_ai_mode" checked> Google AI モード</label>
             </div>
             <div class="ars-model-grid" id="hack2-models"></div>
+            <div id="ai3-summary"><!-- 3つの AI の主表示（airreach-ai3.js） --></div>
             <div id="ai-breakdown"><!-- 質問ごと・言及の順位・引用元の分類（airreach-ai-breakdown.js） --></div>
             <section class="ars-card" id="hack2-history" style="margin-top:16px" hidden><!-- これまでの記録（airreach-studio-clients.js の renderRunHistory） --></section>
             <details class="ars-dev" style="margin-top:16px"><summary>社内向け：計測のルールと、計測結果（JSON）の取り込み</summary><div class="ars-grid" style="margin-top:12px"><div class="ars-card ars-c6"><h3>JSON取込</h3><textarea id="hack2-json" class="ars-code" style="min-height:200px"></textarea><button id="import-hack2" class="ars-btn ars-btn-primary" type="button" style="margin-top:10px">取込</button></div><div class="ars-card ars-c6"><h3>ルール</h3><ul class="ars-list"><li><strong>準備度 ≠ 引用率</strong></li><li><strong>0% ≠ 失敗</strong></li><li><strong>同一条件で再計測</strong></li><li><strong>Jevは推定</strong>：ページ本文から「引用されそうか」を推定した値で、実際のAIの回答ではない。引用率には含めない</li><li>ChatGPTは検索なし（gpt-4o-mini）で、店名・サービス名が回答に出た割合（言及率）だけを測る。引用は測らない</li><li>回答ごとに「社名への言及」「AI が返した出典に自社サイトがあるか」「回答の本文の URL に自社サイトがあるか」を分けて記録する。引用は出典の一覧があればそれで、無ければ本文の URL で判定し、どちらも無ければ判定できない（0%にしない）</li><li>Claude・ChatGPT（検索あり）は検索して回答させ、返ってきた出典で判定。Perplexity は直接の API キー（PERPLEXITY_API_KEY）があれば出典の一覧で、AI Gateway 経由では本文で判定</li><li>Google の AI による概要が検索結果に出なかった質問と、エラーになった質問は、割合の分母に入れず件数だけ出す</li><li>GitHub Pages上でも計測APIはVercelへ接続します</li></ul></div></div></details>
@@ -407,6 +409,7 @@ robots: "noindex, follow"
 <script src="/assets/js/airreach-staff-auth.js" defer></script>
 <script src="/assets/js/airreach-google-guard.js" defer></script>
 <script src="/assets/js/airreach-ai-breakdown.js" defer></script>
+<script src="/assets/js/airreach-ai3.js" defer></script>
 <script src="/assets/js/airreach-studio.js" defer></script>
 <script src="/assets/js/airreach-package-schema.js" defer></script>
 <script src="/assets/js/airreach-schema-gaps.js" defer></script>
