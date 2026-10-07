@@ -523,7 +523,8 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
 
   // Gateway の無料枠は1分あたりの回数に上限がある（Perplexity は5回/分）。同時に2問までにし、
   // 上限に当たったら返ってきた待ち時間だけ待って聞き直す（関数の制限時間に収まる範囲で）
-  const deadline = Date.now() + 240000;
+  // Gemini は遅いと他の AI の結果まで待たせる（Studio は全部の AI を1回の要求で聞く）。Gemini だけ持ち時間を短くし、超えたら失敗として先に返す
+  const deadline = Date.now() + (ENGINE_BUDGET_MS[engine] || 240000);
   const rows = await mapLimit(prompts, 2, async (p) => {
     const base = { engine: engineLabel(engine), keyword: p.keyword || p.prompt, prompt: p.prompt, evidenceClass: 'Observed',
       model: conditions.model, source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API', measured_at: measuredAt, conditions };
@@ -790,6 +791,10 @@ export function gatewayCitations(data) {
  */
 // 2026-10-07 実測：gemini-2.5-flash は「新しい利用者には使えない」と断られた（Google の案内は gemini-3.8-flash）。
 // 変えるときは Vercel の環境変数 AIRREACH_GEMINI_MODEL で上書きできる
+/** AI ごとの持ち時間（聞き直しの待ちを含む）。書いていない AI は240秒 */
+export const ENGINE_BUDGET_MS = { gemini: 70000 };
+/** Gemini 1回あたりの待ち時間 */
+export const GEMINI_TIMEOUT_MS = 40000;
 export const GEMINI_DEFAULT_MODEL = 'gemini-3.8-flash';
 /** 「このモデルは使えない・〇〇を使って」という Google の案内から、案内されたモデル名を読む（無ければ null） */
 export function geminiSuggestedModel(msg) {
@@ -797,16 +802,22 @@ export function geminiSuggestedModel(msg) {
   return m ? m[1].replace(/[.\-]+$/, '') : null;
 }
 export async function callGemini(key, prompt, model = process.env.AIRREACH_GEMINI_MODEL || GEMINI_DEFAULT_MODEL, retried = false) {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      tools: [{ google_search: {} }],
-      generationConfig: { temperature: 0.2 }
-    }),
-    signal: AbortSignal.timeout(90000)
-  });
+  let res;
+  try {
+    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        tools: [{ google_search: {} }],
+        generationConfig: { temperature: 0.2 }
+      }),
+      signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS)
+    });
+  } catch (err) {
+    if (err && (err.name === 'TimeoutError' || err.name === 'AbortError')) throw new Error('Gemini が' + Math.round(GEMINI_TIMEOUT_MS / 1000) + '秒以内に答えませんでした（時間切れ）。少しあけて、もう一度計測してください [timeout]');
+    throw err;
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg = (data.error && data.error.message) || ('Gemini API failed (' + res.status + ')');
