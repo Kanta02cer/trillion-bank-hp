@@ -377,14 +377,14 @@
         '<div id="arc-rq"></div>';
       // 見られる顧客が1社だけなら「戻る」は出さない（一覧に戻っても、この画面に戻されるため）
       shell(c.name, body, (me.client_ids || []).length > 1 ? '#/' : '', { client: { id: c.id, name: c.name } });
-      mountRequests(c.id, sites, false);
+      mountRequests(c.id, sites, false, c.name);
     });
   }
   // 競合・キーワード・質問の依頼（assets/js/airreach-requests.js）。DB が未適用なら顧客には何も出さない
-  function mountRequests(clientId, sites, staff) {
+  function mountRequests(clientId, sites, staff, clientName) {
     var box = $('#arc-rq');
     if (!box || !window.AirReachRequests) return;
-    window.AirReachRequests.mount(box, { sb: sb, clientId: clientId, staff: staff, email: me && me.email, selfHosts: (sites || []).map(function (s) { return s.url; }), onMsg: msg });
+    window.AirReachRequests.mount(box, { sb: sb, clientId: clientId, staff: staff, brand: clientName || '', email: me && me.email, selfHosts: (sites || []).map(function (s) { return s.url; }), onMsg: msg });
   }
   /**
    * 今月の進め方：毎月の7工程を左のメニューと同じ名前で並べ、どこまで済んだかと「次にやること」（理由つき）を出す（社内向けホーム）。
@@ -1162,7 +1162,7 @@
       loadSchedule(c, sites);
       bindGoogleData(c);
       bindOwnerDue(c);
-      if (curSec === 'home') mountRequests(c.id, sites, true);
+      if (curSec === 'home') mountRequests(c.id, sites, true, c.name);
       $('#arc-add-run').addEventListener('submit', function (e) {
         e.preventDefault();
         readFile($('#arc-run-file')).then(function (text) {
