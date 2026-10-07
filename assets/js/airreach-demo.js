@@ -6,9 +6,9 @@
  */
 (function () {
   'use strict';
-  var D = window.AirReachDemoData, C = window.AirReachCharts, R = window.AirReachReport, V = window.AirReachReportView;
+  var D = window.AirReachDemoData, C = window.AirReachCharts, R = window.AirReachReport, V = window.AirReachReportView, H = window.AirReachClientHome;
   var home = document.getElementById('ard-home'), rep = document.getElementById('arr-root'), nav = document.getElementById('ard-report-nav');
-  if (!D || !C || !R || !V || !home || !rep) { if (home) home.innerHTML = '<p>デモを読み込めませんでした。ページを開き直してください。</p>'; return; }
+  if (!D || !C || !R || !V || !H || !home || !rep) { if (home) home.innerHTML = '<p>デモを読み込めませんでした。ページを開き直してください。</p>'; return; }
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function ym(d) { var m = /^(\d{4})-(\d{2})/.exec(String(d || '')); return m ? m[1] + '年' + Number(m[2]) + '月' : ''; }
@@ -22,17 +22,14 @@
     var done = D.actions.filter(function (a) { return a.status === 'done'; }), planned = D.actions.filter(function (a) { return a.status !== 'done'; });
     home.innerHTML =
       '<details class="ard-guide ard-noprint" open><summary>このデモの使い方（1分）</summary><ol>' +
-      '<li>「今月の数字」で、ホームページの整い具合・AI の回答での見え方・検索からのクリック・問い合わせを見ます。</li>' +
-      '<li>「推移」で直近6か月の変化を、「直すこと」で次に直すとよいところと直し方を見ます。</li>' +
+      '<li>最初に「今月の結論」と、レポートを開くボタンがあります。その下の「今月の数字」で、ホームページの整い具合・AI の回答での見え方・検索からのクリック・問い合わせを見ます。</li>' +
+      '<li>黄色の「ご判断いただきたいこと」は、お客様に決めていただきたいことです。「推移」で直近6か月の変化を、「直すこと」で次に直すとよいところと直し方を見ます。</li>' +
       '<li>「レポートを開く・PDF」で月次レポートを開き、過去の月に切り替えたり、PDF で保存（印刷）したりできます。</li>' +
       '</ol><p class="arc-note" style="margin:8px 0 0">表示はすべてデモ用の架空データです。入力・保存・ログインはありません。</p></details>' +
       '<div class="arc-top"><div><div class="arc-kicker">お客様向け画面（デモ）</div><h1 class="arc-h1">' + esc(D.client.name) + '</h1></div></div>' +
-      '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ym(top.period_month)) + 'の数字</h2>' +
-      '<a class="arc-btn" href="#/report/' + key(top) + '">レポートを開く・PDF</a></div>' + C.tiles(c) +
-      ((top.conclusions || []).length ? '<h3 class="arc-h3">今月の結論</h3><ol class="arr-ol arr-concl">' + top.conclusions.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ol>' : '') + '</section>' +
-      '<section class="arc-card"><h2 class="arc-h2">次にやること</h2>' +
-      (next.length ? '<table class="arc-table"><thead><tr><th>施策</th><th style="width:22%">担当</th><th style="width:18%">期限</th></tr></thead><tbody>' + next.map(function (a) { return '<tr><td>' + esc(a.title) + '</td><td>' + esc(a.owner || '') + '</td><td>' + esc(a.due || '') + '</td></tr>'; }).join('') + '</tbody></table>' : '') +
-      (dec.length ? '<h3 class="arc-h3">ご判断いただきたいこと</h3><ul class="arr-ul">' + dec.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '') + '</section>' +
+      // 本番のお客様のホームと同じ並び：結論 → 数字 → ご判断いただきたいこと → 次にやること（部品は airreach-client-home.js）
+      H.latest(top, '#/report/' + key(top)) + H.numbers(top) + H.decision(top) +
+      (next.length ? '<section class="arc-card"><h2 class="arc-h2">次にやること</h2><table class="arc-table"><thead><tr><th>施策</th><th style="width:22%">担当</th><th style="width:18%">期限</th></tr></thead><tbody>' + next.map(function (a) { return '<tr><td>' + esc(a.title) + '</td><td>' + esc(a.owner || '') + '</td><td>' + esc(a.due || '') + '</td></tr>'; }).join('') + '</tbody></table></section>' : '') +
       '<section class="arc-card"><h2 class="arc-h2">推移（直近6か月）</h2>' + C.trends(c) + '</section>' +
       '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">直すこと' + (items.length ? '（' + items.length + '件）' : '') + '</h2><span class="arc-sub">' + esc(R.jstDay(cur.createdAt)) + ' の診断で見つかった不足・優先度の高い順</span></div>' +
       (items.length > 5 ? C.todos(items.slice(0, 5), { audience: 'client' }) + '<details class="arc-more"><summary>残り ' + (items.length - 5) + '件をすべて表示</summary>' + C.todos(items.slice(5), { audience: 'client', start: 5 }) + '</details>' : C.todos(items, { audience: 'client' })) + '</section>' +
