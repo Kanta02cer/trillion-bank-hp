@@ -1033,7 +1033,7 @@
       var runRows = runs.map(function (r) {
         var k = '';
         try { k = R.parseMeasurementSummary(r.summary).rows.filter(function (x) { return x.group === 'main'; }).map(function (x) { return esc(PROVIDER_LABEL[x.provider] || x.provider) + ' 引用' + (x.citeRate == null ? '—' : esc(x.citeRate) + '%') + ' / 言及' + esc(x.mentionRate) + '%' + (x.sov != null ? ' / SOV' + esc(x.sov) + '%' : ''); }).join('、'); } catch (e) { k = '（集計を読めません）'; }
-        return '<tr><td>' + esc(r.measured_on) + '</td><td>' + esc(r.query_set_version || '') + '</td><td>' + k + '</td><td><button class="arc-btn-sm" data-del-run="' + r.id + '">削除</button></td></tr>';
+        return '<tr><td><input type="checkbox" class="arc-cmp-pick" data-cmp-run="' + esc(r.id) + '" aria-label="' + esc(r.measured_on) + ' の計測を比べる"></td><td>' + esc(r.measured_on) + '</td><td>' + esc(r.query_set_version || '') + '</td><td>' + k + '</td><td><button class="arc-btn-sm" data-del-run="' + r.id + '">削除</button></td></tr>';
       }).join('');
       var trRows = traffic.map(function (t) {
         var m = t.metrics || {};
@@ -1076,7 +1076,9 @@
         '<div id="arc-schedule" class="arc-schedule"><p class="arc-note">定期計測の設定を読み込んでいます…</p></div>' +
         '<details class="arc-dev"><summary>社内向け：計測スクリプトの結果（summary.json）を取り込む</summary>' + '<form id="arc-add-run" class="arc-row"><input class="arc-input" type="date" id="arc-run-date" required><input class="arc-input" type="file" id="arc-run-file" accept=".json,application/json" required><button class="arc-btn" type="submit">summary.json を取り込む</button></form>' +
         '<p class="arc-note">社内の計測スクリプトが出力する summary.json（runs/&lt;実行名&gt;/summary.json）を選びます。</p></details>' +
-        '<table class="arc-table"><thead><tr><th>計測日</th><th>質問の版</th><th>主な質問の引用率・言及率</th><th></th></tr></thead><tbody>' + (runRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
+        '<div class="arc-row arc-cmp-bar"><button type="button" class="arc-btn" id="arc-cmp-go" disabled>選んだ2回を比べる</button><span class="arc-note" id="arc-cmp-hint">比べたい計測を2回選んでください（同じ条件・同じ質問のときだけ差を出します）。</span></div>' +
+        '<div id="arc-cmp"></div>' +
+        '<table class="arc-table"><thead><tr><th><span class="arc-sr">比べる</span></th><th>計測日</th><th>質問の版</th><th>主な質問の引用率・言及率</th><th></th></tr></thead><tbody>' + (runRows || '<tr><td colspan="5" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
         fold('traffic', SEC_LABEL.traffic, traffic.length + '件', flowStrip(plan, 3)) +
         googleSyncForm(id, sites, traffic) +
@@ -1213,6 +1215,25 @@
         guardedDelete({ client: c, what: '閲覧メンバー', detail: row.email, date: '招待 ' + day(row.created_at), table: 'client_members', match: [['client_id', id], ['email', row.email]], row: row, sec: 'members',
           note: '削除すると、この人はこの顧客のレポートを見られなくなります。60秒以内なら取り消せます（招待のメールは送り直しません）。' });
       }); });
+      // 前後の比較：2回を選ぶ → 古い方を「前」、新しい方を「後」にして比べる（airreach-compare.js）
+      var cmpGo = root.querySelector('#arc-cmp-go');
+      var cmpPicked = function () { return Array.prototype.filter.call(root.querySelectorAll('.arc-cmp-pick'), function (x) { return x.checked; }).map(function (x) { return byId(runs, 'id', x.getAttribute('data-cmp-run')); }).filter(Boolean); };
+      root.querySelectorAll('.arc-cmp-pick').forEach(function (x) { x.addEventListener('change', function () {
+        var p = cmpPicked();
+        if (p.length > 2) { x.checked = false; p = cmpPicked(); }
+        if (cmpGo) cmpGo.disabled = p.length !== 2;
+        var hint = root.querySelector('#arc-cmp-hint'); if (hint) hint.textContent = p.length === 2 ? '2回を選びました。' : '比べたい計測を2回選んでください（同じ条件・同じ質問のときだけ差を出します）。';
+      }); });
+      if (cmpGo) cmpGo.addEventListener('click', function () {
+        var p = cmpPicked(); if (p.length !== 2 || !window.AirReachCompare) return;
+        var key = function (r) { return (r.measured_on || '') + (r.created_at || ''); };
+        p.sort(function (a, b) { return key(a) < key(b) ? -1 : 1; });
+        var box = root.querySelector('#arc-cmp');
+        try {
+          window.AirReachCompare.render(box, p[0], p[1], { brand: c.name, clientName: c.name, site: (sites[0] && sites[0].url) || '' })
+            .catch(function (e) { box.innerHTML = '<p class="arc-note">比べられませんでした：' + esc(e.message || e) + '</p>'; });
+        } catch (e) { box.innerHTML = '<p class="arc-note">比べられませんでした：' + esc(e.message || e) + '</p>'; }
+      });
       root.querySelectorAll('[data-del-run]').forEach(function (b) { b.addEventListener('click', function () {
         var row = byId(runs, 'id', b.getAttribute('data-del-run'));
         guardedDelete({ client: c, what: 'AI 計測', detail: '質問の版 ' + (row.query_set_version || '—') + '・' + (row.run_label || ''), date: '計測 ' + row.measured_on, table: 'measurement_runs', match: [['id', row.id]], row: row, sec: 'runs',
