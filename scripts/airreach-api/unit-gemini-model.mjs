@@ -44,6 +44,8 @@ const dd = M.geminiQuotaError(Q([{ quotaId: 'GenerateRequestsPerDayPerProjectPer
 t('429：1日の上限は明日と伝え、聞き直さない', /1日/.test(dd) && M.rateLimitWait(new Error(dd)) === null, dd);
 const mm = M.geminiQuotaError(Q([{ quotaId: 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', quotaValue: '10' }], 'x', '12s'));
 t('429：1分あたりは待ち時間つきで聞き直す・どの上限かを書く', /12秒/.test(mm) && /PerMinute/.test(mm) && M.rateLimitWait(new Error(mm)) === 13000, mm);
+const raw = M.geminiQuotaError({ error: { code: 429, status: 'RESOURCE_EXHAUSTED', message: 'Resource has been exhausted (e.g. check quota).' } });
+t('429：詳細が無いときは Google の状態と本文を添え、待って聞き直す', /RESOURCE_EXHAUSTED/.test(raw) && /Resource has been exhausted/.test(raw) && M.rateLimitWait(new Error(raw)) === 31000, raw);
 globalThis.fetch = real;
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
