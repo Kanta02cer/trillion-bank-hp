@@ -19,6 +19,16 @@
   function hostOf(u) { try { return new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) { return ''; } }
   function under(h, base) { return !!base && (h === base || h.slice(-base.length - 1) === '.' + base); }
   function keyOf(kind, p) { return kind + ':' + String((p && (p.name || p.text)) || '').trim().toLowerCase(); }
+  // 指名質問＝質問の文にお店の名前が入っている（計測の集計 airreach-ai-breakdown.js の isBranded と同じ判定）
+  function isBranded(text, brand) {
+    if (typeof window !== 'undefined' && window.AirReachAIBreakdown && window.AirReachAIBreakdown.isBranded) return window.AirReachAIBreakdown.isBranded(text, brand);
+    var n = function (t) { return String(t || '').toLowerCase().replace(/[\s\u3000・･]+/g, ''); };
+    var b = n(brand); if (!b) return false;
+    var p = n(text); if (p.indexOf(b) >= 0) return true;
+    var core = b.replace(/^(株式会社|有限会社|合同会社)|(株式会社|有限会社|合同会社)$/g, '').replace(/(本店|店)$/, '');
+    return core.length >= 2 && p.indexOf(core) >= 0;
+  }
+  function typeChip(text, brand) { return isBranded(text, brand) ? '<span class="arq-ty is-b">指名</span>' : '<span class="arq-ty is-g">一般</span>'; }
   function md(iso) { var t = Date.parse(iso); if (isNaN(t)) return ''; var d = new Date(t + 9 * 3600 * 1000); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); }
 
   /**
@@ -99,18 +109,18 @@
       var pendingAdd = function (kind) { return reqs.filter(function (r) { return r.status === 'pending' && r.action === 'add' && r.kind === kind; }); };
 
       // 一覧は最初の LIMIT 件だけ出し、残りは「すべて表示」で開く（50件あってもホームが伸び続けない）。絞り込みもできる
-      function itemRow(kind, label, sub, payload, i) {
+      function itemRow(kind, label, sub, payload, i, tag) {
         var rm = pix['remove:' + keyOf(kind, payload)];
         var btn = rm ? '<span class="arc-chip is-warn">外す依頼が確認待ち</span>' :
           '<button type="button" class="arc-btn-sm" data-rq-remove="' + kind + '" data-rq-payload="' + esc(JSON.stringify(payload)) + '">' + (staff ? '外す' : '外す依頼') + '</button>';
-        return '<li class="arq-item' + (i >= LIMIT ? ' arq-over' : '') + '" data-text="' + esc(String(label || '').toLowerCase()) + '"><span class="arq-t">' + esc(label) + (sub ? ' <small>' + sub + '</small>' : '') + '</span>' + btn + '</li>';
+        return '<li class="arq-item' + (i >= LIMIT ? ' arq-over' : '') + '" data-text="' + esc(String(label || '').toLowerCase()) + '"><span class="arq-t">' + esc(label) + (sub ? ' <small>' + sub + '</small>' : '') + '</span>' + (tag || '') + btn + '</li>';
       }
       function tools(key, n) {
         return n > LIMIT ? '<div class="arq-tools"><input class="arc-input arq-search" type="search" data-rq-search="' + key + '" placeholder="一覧を絞り込む" aria-label="一覧を絞り込む">' +
           '<button type="button" class="arc-btn-sm" data-rq-all="' + key + '" aria-expanded="false">すべて表示（' + n + '件）</button></div>' : '';
       }
       function waitRows(kind) {
-        return pendingAdd(kind).map(function (r) { return '<li class="arq-wait"><span class="arq-t">' + esc(reqText(r)) + '</span><span class="arc-chip is-warn">追加の依頼が確認待ち</span></li>'; }).join('');
+        return pendingAdd(kind).map(function (r) { return '<li class="arq-wait"><span class="arq-t">' + esc(reqText(r)) + '</span>' + (kind === 'prompt' && o.brand ? typeChip(reqText(r), o.brand) : '') + '<span class="arc-chip is-warn">追加の依頼が確認待ち</span></li>'; }).join('');
       }
       function list(key, items, n, empty) {
         return tools(key, n) + '<ul class="arq-list" data-rq-list="' + key + '">' + (items || '<li class="arc-empty">' + empty + '</li>') + '</ul>';
@@ -139,9 +149,15 @@
 
       // 毎月測る質問と、今は測っていない候補を分ける
       var onP = prompts.filter(function (p) { return p.on; }), offP = prompts.filter(function (p) { return !p.on; });
-      var pOn = onP.map(function (p, i) { return itemRow('prompt', p.text, '', { text: p.text }, i); }).join('');
-      var pOff = offP.map(function (p, i) { return itemRow('prompt', p.text, '', { text: p.text }, i); }).join('');
-      var pForm = '<form class="arc-row arq-form" data-rq-form="prompt"><input class="arc-input arq-wide" name="text" maxlength="200" placeholder="例: 渋谷で縮毛矯正が上手い美容室は？" required aria-label="質問">' + noteIn + '<button class="arc-btn" type="submit">' + verb + '</button></form>';
+      var brand = o.brand || '';
+      var pOn = onP.map(function (p, i) { return itemRow('prompt', p.text, '', { text: p.text }, i, typeChip(p.text, brand)); }).join('');
+      var pOff = offP.map(function (p, i) { return itemRow('prompt', p.text, '', { text: p.text }, i, typeChip(p.text, brand)); }).join('');
+      var nB = onP.filter(function (p) { return isBranded(p.text, brand); }).length;
+      // 毎月測る質問の内訳（一般・指名）。お店の名前が分からないときは出さない
+      var pMix = brand ? '<div class="arq-mix"><div class="arq-mix-i is-g"><b>一般質問 ' + (onP.length - nB) + '問</b><small>お店の名前を入れずに聞く。新しいお客様に見つけてもらえるか</small></div>' +
+        '<div class="arq-mix-i is-b"><b>指名質問 ' + nB + '問</b><small>お店の名前を入れて聞く。お店のことが正しく伝わっているか</small></div></div>' : '';
+      var pForm = '<form class="arc-row arq-form" data-rq-form="prompt"><input class="arc-input arq-wide" name="text" maxlength="200" placeholder="例: 渋谷で縮毛矯正が上手い美容室は？" required aria-label="質問"' + (brand ? ' aria-describedby="arq-ptype"' : '') + '>' + noteIn + '<button class="arc-btn" type="submit">' + verb + '</button>' +
+        (brand ? '<p class="arq-ptype" id="arq-ptype" role="status" data-rq-ptype hidden></p><p class="arq-eg">例　一般：「渋谷で子連れで行ける美容室は？」／指名：「' + esc(brand) + ' の駐車場は？」</p>' : '') + '</form>';
 
       var pend = reqs.filter(function (r) { return r.status === 'pending'; });
       var done = reqs.filter(function (r) { return r.status !== 'pending'; }).slice(0, 8);
@@ -175,8 +191,8 @@
         '<div class="arq-grid">' +
         block('competitor', '競合（AI の回答で比べる相手）', 'AI がどのお店をすすめたかを数えるときに、比べる相手です。', list('competitor', compItems, comps.length, 'まだ登録されていません。'), candHtml + compForm) +
         block('keyword', '調べるキーワード（' + kws.length + '件）', 'お客様が検索しそうな言葉です。対策と質問づくりの元にします。', list('keyword', kwItems, kws.length, 'まだ登録されていません。'), kwForm) +
-        block('prompt', '毎月測る質問（' + onN + '/10問）', 'この質問を ChatGPT などの AI に毎月たずね、回答に出るかを測ります。',
-          list('prompt-on', pOn, onP.length, 'まだ登録されていません。') +
+        block('prompt', '毎月測る質問（' + onN + '/10問）', 'この質問を ChatGPT などの AI に毎月たずね、回答に出るかを測ります。' + (brand ? '一般と指名は、質問の文にお店の名前が入っているかで自動で分けます。' : ''),
+          pMix + list('prompt-on', pOn, onP.length, 'まだ登録されていません。') +
           (offP.length ? '<h4 class="arq-sub">候補（今は測っていない・' + offP.length + '件）</h4>' + list('prompt-off', pOff, offP.length, '') : ''), pForm) +
         '</div></details>' + (staff ? '' : reqHtml) + '</section>';
       bind();
@@ -217,6 +233,16 @@
           Array.prototype.forEach.call(ul.querySelectorAll('.arq-item'), function (li) { li.hidden = !!v && li.getAttribute('data-text').indexOf(v) < 0; });
         });
       });
+      var pt = box.querySelector('[data-rq-ptype]'), pf = box.querySelector('form[data-rq-form="prompt"]');
+      if (pt && pf) pf.text.addEventListener('input', function () {
+        var v = pf.text.value.trim();
+        pt.hidden = !v;
+        if (!v) return;
+        var b = isBranded(v, o.brand);
+        pt.className = 'arq-ptype ' + (b ? 'is-b' : 'is-g');
+        pt.innerHTML = b ? '<span class="arq-ty is-b">指名</span>お店の名前が入っているので、指名質問として数えます。名前を入れずに聞くと一般質問になります。'
+          : '<span class="arq-ty is-g">一般</span>お店の名前が入っていないので、一般質問として数えます。';
+      });
       Array.prototype.forEach.call(box.querySelectorAll('form[data-rq-form]'), function (f) {
         f.addEventListener('submit', function (e) {
           e.preventDefault();
@@ -253,7 +279,7 @@
     }
   }
 
-  var api = { mount: mount, candidates: candidates, pendingIndex: pendingIndex, KIND: KIND };
+  var api = { mount: mount, candidates: candidates, pendingIndex: pendingIndex, isBranded: isBranded, KIND: KIND };
   if (typeof window !== 'undefined') window.AirReachRequests = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();
