@@ -815,6 +815,26 @@ export function geminiSuggestedModel(msg) {
   const m = /no longer available[\s\S]*?use models\/([a-z0-9.\-]+)/i.exec(String(msg || ''));
   return m ? m[1].replace(/[.\-]+$/, '') : null;
 }
+/**
+ * Gemini の 429 を、どの上限に当たったか分かる日本語にする。
+ *   無料枠で回数が0（limit: 0）・1日の上限は、待っても通らないので聞き直さない（[rate limit] を付けない）。
+ *   1分あたりの上限だけ、待ち時間つきの [rate limit; retry after Ns] にする（withRateRetry が待って聞き直す）
+ */
+export function geminiQuotaError(data) {
+  const err = (data && data.error) || {};
+  const details = err.details || [];
+  const msg = String(err.message || '');
+  const v = details.flatMap((x) => (x && x.violations) || []);
+  const ids = v.map((x) => String(x.quotaId || x.quotaMetric || '')).filter(Boolean);
+  const idText = ids.length ? '（' + ids.slice(0, 2).join(' / ').slice(0, 120) + '）' : '';
+  const zero = v.some((x) => String(x.quotaValue) === '0') || /limit:\s*0\b/i.test(msg);
+  const perDay = ids.some((x) => /PerDay/i.test(x)) || /per day|daily/i.test(msg);
+  if (zero) return 'Gemini の今の契約では、この使い方（Google 検索つき）を使える回数が0回です' + idText + '。Google AI Studio で支払いを設定する必要があります [quota_zero]';
+  if (perDay) return 'Gemini の1日の回数の上限に当たりました' + idText + '。明日になれば計測できます [quota_daily]';
+  const d = details.map((x) => x && x.retryDelay).filter(Boolean)[0];
+  const sec = d ? parseInt(String(d), 10) : 30;
+  return 'gemini の回数の上限に当たりました' + idText + '。' + sec + '秒ほどあけて、もう一度計測してください [rate limit; retry after ' + sec + 's]';
+}
 export async function callGemini(key, prompt, model = process.env.AIRREACH_GEMINI_MODEL || GEMINI_DEFAULT_MODEL, retried = false) {
   let res;
   try {
@@ -835,11 +855,7 @@ export async function callGemini(key, prompt, model = process.env.AIRREACH_GEMIN
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg = (data.error && data.error.message) || ('Gemini API failed (' + res.status + ')');
-    if (res.status === 429) {
-      const d = ((data.error && data.error.details) || []).map((x) => x && x.retryDelay).filter(Boolean)[0];
-      const sec = d ? parseInt(String(d), 10) : 30;
-      throw new Error('gemini の回数の上限に当たりました。' + sec + '秒ほどあけて、もう一度計測してください [rate limit; retry after ' + sec + 's]');
-    }
+    if (res.status === 429) throw new Error(geminiQuotaError(data));
     // モデルが使えなくなったときは、Google が案内したモデルで1回だけ聞き直す（使ったモデルは行に残す）
     const next = !retried && geminiSuggestedModel(msg);
     if (next && next !== model) return callGemini(key, prompt, next, true);

@@ -36,6 +36,14 @@ await M.callGemini('k', 'q', 'gemini-x').catch((e) => { err = e.message; });
 AbortSignal.timeout = origTimeout;
 clearTimeout(keep);
 t('答えないときは時間切れの失敗（日本語・[timeout]）で早く返す', /時間切れ/.test(err) && /\[timeout\]/.test(err), { err, ms: Date.now() - t1 });
+// 429 の中身：無料枠0・1日の上限は聞き直さない（[rate limit] を付けない）。1分あたりだけ待って聞き直す
+const Q = (v, msg, delay) => ({ error: { code: 429, message: msg || 'Quota exceeded', details: [{ '@type': 'type.googleapis.com/google.rpc.QuotaFailure', violations: v }].concat(delay ? [{ '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: delay }] : []) } });
+const z = M.geminiQuotaError(Q([{ quotaId: 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', quotaValue: '0' }], 'You exceeded your current quota... limit: 0'));
+t('429：無料枠の回数0は支払いの設定が必要と伝え、聞き直さない', /0回/.test(z) && /\[quota_zero\]/.test(z) && !/rate limit/.test(z) && M.rateLimitWait(new Error(z)) === null, z);
+const dd = M.geminiQuotaError(Q([{ quotaId: 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', quotaValue: '20' }]));
+t('429：1日の上限は明日と伝え、聞き直さない', /1日/.test(dd) && M.rateLimitWait(new Error(dd)) === null, dd);
+const mm = M.geminiQuotaError(Q([{ quotaId: 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', quotaValue: '10' }], 'x', '12s'));
+t('429：1分あたりは待ち時間つきで聞き直す・どの上限かを書く', /12秒/.test(mm) && /PerMinute/.test(mm) && M.rateLimitWait(new Error(mm)) === 13000, mm);
 globalThis.fetch = real;
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
