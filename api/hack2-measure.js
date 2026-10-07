@@ -833,7 +833,9 @@ export function geminiQuotaError(data) {
   if (perDay) return 'Gemini の1日の回数の上限に当たりました' + idText + '。明日になれば計測できます [quota_daily]';
   const d = details.map((x) => x && x.retryDelay).filter(Boolean)[0];
   const sec = d ? parseInt(String(d), 10) : 30;
-  return 'gemini の回数の上限に当たりました' + idText + '。' + sec + '秒ほどあけて、もう一度計測してください [rate limit; retry after ' + sec + 's]';
+  // 詳細が無い 429 は、Google の説明（状態と本文の先頭）をそのまま添える（原因を切り分けるため。キーや個人情報は含まれない）
+  const raw = !ids.length ? ' 〔Google: ' + [err.status, msg.replace(/\s+/g, ' ').slice(0, 140)].filter(Boolean).join(' / ') + '〕' : '';
+  return 'gemini の回数の上限に当たりました' + idText + '。' + sec + '秒ほどあけて、もう一度計測してください' + raw + ' [rate limit; retry after ' + sec + 's]';
 }
 export async function callGemini(key, prompt, model = process.env.AIRREACH_GEMINI_MODEL || GEMINI_DEFAULT_MODEL, retried = false) {
   let res;
