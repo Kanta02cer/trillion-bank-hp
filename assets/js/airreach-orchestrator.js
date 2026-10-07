@@ -772,10 +772,23 @@
   function buildPackageFiles(job, opts) {
     var noGoogle = !!(opts && opts.noGoogle);
     var p = job.profile || {};
-    var brand = p.brand || hostOf(job.url);
-    var service = p.service || 'サービス';
+    // 人が確定した会社・ブランド・サービス（job.confirm.entity）。確定するまでは推定の値で下書きだけを作る
+    var cf = job.confirm || null;
+    var ent = cf && cf.entity && cf.entity.at ? cf.entity : null;
+    var brand = (ent && ent.brand) || p.brand || hostOf(job.url);
+    var service = (ent && ent.service) || p.service || 'サービス';
+    var company = (ent && ent.company) || brand;
     var isFood = job.industry === 'restaurant';
     var faqItems = faqDraft(job, brand, service);
+    // FAQ の承認：Studio の分析（job.confirm がある）では、人が承認した答えだけを設置用の JSON-LD に入れる。
+    // 無料診断の下書き（job.confirm が無い）は今までどおり、サイトの記載から作った答えを入れる（下書きの ZIP のみ）
+    var appr = (cf && cf.faq) || {};
+    faqItems.forEach(function (f) {
+      var a = appr[f.q] || null;
+      f.approval = a ? a.state : '';
+      f.approvedAt = a && a.at ? a.at : '';
+      f.inSchema = f.status === 'site' && (cf ? f.approval === 'approved' : true);
+    });
     var faq = faqItems.map(function (f) { return f.q; });
     var kwa = (job.diagnose && job.diagnose.page && job.diagnose.page.keywordAuto) || {};
     var area = kwa.area || {};
@@ -790,7 +803,8 @@
         if (area.city) org.address.addressLocality = area.city + (area.town || '');
       }
     } else {
-      org = { '@context': 'https://schema.org', '@type': 'Organization', name: brand, url: job.url };
+      org = { '@context': 'https://schema.org', '@type': 'Organization', name: company, url: job.url };
+      if (company !== brand) org.alternateName = brand;
     }
     // サイトの本文に書かれていた電話番号と郵便番号だけを足す（推測で埋めない）
     var F0 = kwa.facts || {};
@@ -801,13 +815,13 @@
       '@context': 'https://schema.org',
       '@type': 'Service',
       name: service,
-      provider: { '@type': 'Organization', name: brand, url: job.url }
+      provider: { '@type': 'Organization', name: company, url: job.url }
     };
     // 検索や AI が読む形には、サイトの記載から答えを作った質問だけを入れる（確認が必要な下書きは入れない）
     var faqLd = {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: faqItems.filter(function (f) { return f.status === 'site'; }).map(function (f) {
+      mainEntity: faqItems.filter(function (f) { return f.inSchema; }).map(function (f) {
         return {
           '@type': 'Question',
           name: f.q,
@@ -856,6 +870,8 @@
     var gscKeys = noGoogle ? 0 : Object.keys(gscMapFromStudio()).length;
     // FAQ の件数は先に数える（README・FAQ 本文・JSON-LD・MANIFEST を同じ数から作る）
     var siteN = faqItems.filter(function (f) { return f.status === 'site'; }).length;
+    var schemaN = faqItems.filter(function (f) { return f.inSchema; }).length;
+    var pendingN = cf ? faqItems.filter(function (f) { return f.status === 'site' && !f.approval; }).length : 0;
     var manifest = {
       generated_at: new Date().toISOString(),
       url: job.url,
@@ -874,7 +890,13 @@
       },
       conclusion: job.conclusion || '',
       // FAQ の件数：提案した質問・サイトの記載から答えを作った質問・設置用 JSON-LD に入れた質問（0件なら faq.jsonld は出さない）
-      faq_counts: { proposed: faqItems.length, from_site: siteN, needs_check: faqItems.length - siteN, in_schema: siteN },
+      faq_counts: { proposed: faqItems.length, from_site: siteN, needs_check: faqItems.length - siteN, approved: cf ? faqItems.filter(function (f) { return f.approval === 'approved'; }).length : null, pending_approval: pendingN, in_schema: schemaN },
+      // 会社・ブランド・サービス・対象 URL を人が確定したか（確定するまでは公開用にしない）
+      entity_confirmed: !!ent,
+      entity: ent ? { company: company, brand: brand, service: service, url: ent.url || job.url, confirmed_at: ent.at } : null,
+      // 版：確定・承認を変えるたびに増える。画面・CSV・ZIP の版が同じかをこの数で確かめる
+      version: cf ? (cf.rev || 0) : null,
+      faq_items: faqItems.map(function (f) { return { q: f.q, status: f.status, approval: f.approval || (f.status === 'site' && cf ? 'pending' : ''), in_schema: !!f.inSchema, source_url: (f.source && f.source.url) || '', fetched_at: job.completed_at || job.finished_at || '' }; }),
       compression: c
     };
 
@@ -911,7 +933,11 @@
     var readme = [
       '# サイトに足す文章とデータ（下書き）',
       '',
-      '作成日：' + manifest.generated_at.slice(0, 10) + '　対象：' + brand + '（' + job.url + '）',
+      '作成日：' + manifest.generated_at.slice(0, 10) + '　対象：' + brand + '（' + job.url + '）' + (cf ? '　版：' + (cf.rev || 0) : ''),
+      '',
+      ent ? '会社・ブランド・サービスは担当者が確定済みです（' + ent.at.slice(0, 10) + '）：' + company + (company !== brand ? '／' + brand : '') + '・' + service
+        : '**会社・ブランド・サービスはまだ確定していません。** 名前やサービスはサイトから推定した値です。確定するまでは公開に使わないでください。',
+      cf && pendingN ? 'サイトの記載から作った答えのうち ' + pendingN + ' 問は、まだ承認されていません（設置用のデータには入れていません）。' : null,
       '',
       'AirReach が作った**下書き**です。このファイルを開いただけでは、どこにも公開されません。',
       'お店・会社の方が内容を確かめ、ホームページを作った人（制作会社など）にサイトへ入れてもらいます。',
@@ -923,8 +949,8 @@
       '3. **よくある質問をサイトに載せる**：直した faq.md の質問と答えを、サイトの「よくある質問」のページに載せます（制作会社に依頼）。',
       '4. **検索や AI が読む形のデータを入れる**：schema フォルダのファイルを、制作会社に渡します。',
       '   - organization.jsonld：トップページに入れる、お店・会社の情報（電話・郵便番号はサイトに書かれていた値だけを入れています）',
-      siteN ? '   - faq.jsonld：よくある質問のページに入れる。**サイトの記載から作った答えだけ**を入れています（' + siteN + '問）。手順2で書き足した質問は、載せたあとに追加してください'
-        : '   - faq.jsonld：**入れていません**（サイトの記載から作れた答えが0問のため。空のデータは置かないでください）。手順2で答えを確かめて載せたあとに作ります',
+      schemaN ? '   - faq.jsonld：よくある質問のページに入れる。' + (cf ? '**担当者が承認した答えだけ**' : '**サイトの記載から作った答えだけ**') + 'を入れています（' + schemaN + '問）。手順2で書き足した質問は、載せたあとに追加してください'
+        : '   - faq.jsonld：**入れていません**（' + (cf && siteN ? '承認した答えが0問のため' : 'サイトの記載から作れた答えが0問のため') + '。空のデータは置かないでください）。手順2で答えを確かめて載せたあとに作ります',
       '   - service.jsonld：サービスの説明（飲食店はありません）',
       '5. **AI 向けの案内ファイルを置く**：public/llms.txt を、サイトの一番上の階層に llms.txt という名前で置きます（制作会社に依頼）。',
       '6. **公開前の確認**：validation/VALIDATION.md の項目を確かめます。',
@@ -945,7 +971,7 @@
       '- 検索の多さ：' + manifest.evidence.market_demand,
       '- 集客の点数：' + manifest.evidence.acquisition_score,
       '- Search Console：' + manifest.evidence.gsc
-    ].join('\n');
+    ].filter(function (l) { return l !== null; }).join('\n');
 
     var validationItems = (window.AirReachPackageSchema && window.AirReachPackageSchema.VALIDATION_ITEMS) || [
       '料金・事例・顧客名・数値の捏造がない',
@@ -978,8 +1004,10 @@
       'サイトに書かれていたことから答えを作った質問が ' + siteN + ' 問、確認が必要な質問が ' + (faqItems.length - siteN) + ' 問あります。\n' +
       '「' + CHECK + '」の答えは、実際の内容を確かめて書き直してください。サイトの記載から作った答えも、最新の内容か確かめてから載せてください。\n\n' +
       faqItems.map(function (f, i) {
+        var st = f.status !== 'site' ? '' : !cf ? '' : f.approval === 'approved' ? '承認済み' + (f.approvedAt ? '（' + f.approvedAt.slice(0, 10) + '）' : '') : f.approval === 'rejected' ? '使わない（却下）' : '承認待ち';
         return '## Q' + (i + 1) + '. ' + f.q + '\n\n' + f.a + '\n' +
-          (f.status === 'site' && f.source ? '\n> 元にしたサイトの記載：「' + f.source.quote + '」' + (f.source.url ? '（' + f.source.url + '）' : '') + '\n' : '');
+          (f.status === 'site' && f.source ? '\n> 元にしたサイトの記載：「' + f.source.quote + '」' + (f.source.url ? '（' + f.source.url + '）' : '') + '\n' : '') +
+          (st ? '\n状態：' + st + '\n' : '');
       }).join('\n');
 
     var files = {
@@ -991,7 +1019,7 @@
       'strategy/actions.csv': toCsv(actionRows, (window.AirReachPackageSchema && window.AirReachPackageSchema.ACTION_CSV_COLUMNS) || ['type', 'count', 'note']),
       'schema/organization.jsonld': JSON.stringify(org, null, 2),
       'schema/service.jsonld': svc ? JSON.stringify(svc, null, 2) : '',
-      'schema/faq.jsonld': siteN ? JSON.stringify(faqLd, null, 2) : '',
+      'schema/faq.jsonld': schemaN ? JSON.stringify(faqLd, null, 2) : '',
       'public/llms.txt': llms,
       'public/llms-full.txt': llms + '\n## FAQ\n' + faq.map(function (q) { return '- ' + q; }).join('\n') + '\n',
       'content/faq.md': faqMd,
@@ -1003,9 +1031,9 @@
       delete files['schema/service.jsonld'];
     }
     // 確定した FAQ が0件なら、空の FAQ の JSON-LD は出さない（設置用に空のデータを置かせない）
-    if (!siteN) delete files['schema/faq.jsonld'];
+    if (!schemaN) delete files['schema/faq.jsonld'];
     if (window.AirReachPackageSchema && window.AirReachPackageSchema.validatePackageFiles) {
-      var check = window.AirReachPackageSchema.validatePackageFiles(files, { targetUrl: job.url, industry: job.industry || '', faqCount: siteN });
+      var check = window.AirReachPackageSchema.validatePackageFiles(files, { targetUrl: job.url, industry: job.industry || '', faqCount: schemaN });
       if (!check.ok) {
         console.warn('[AirReachPackage] blueprint validation failed', check);
       }
@@ -1293,6 +1321,7 @@
       score: (job.diagnose && job.diagnose.overall) || 0,
       implSites: job.compression.implSites
     };
+    if (!job.confirm) job.confirm = { rev: 0, entity: null, faq: {} };
     job.files = buildPackageFiles(job);
     persistJob(job);
     return job;
@@ -1405,6 +1434,7 @@
     await sleep(180);
 
     setStep(6, 'running', 50);
+    if (!job.confirm) job.confirm = { rev: 0, entity: null, faq: {} };
     job.files = buildPackageFiles(job);
     job.status = 'completed';
     job.completed_at = new Date().toISOString();
@@ -1492,6 +1522,7 @@
     var wrap = q('orch-result');
     if (!wrap || !job || job.status !== 'completed') return;
     wrap.hidden = false;
+    try { if (window.AirReachConfirm) window.AirReachConfirm.render(job); } catch (e) {}
     renderDashboardButton(job);
     var h = job.headline4 || {};
     if (q('orch-n-kw')) q('orch-n-kw').textContent = String(h.keywords || 0);
@@ -1951,6 +1982,13 @@
         var job = window.__orchLastJob;
         if (!job || !job.files) {
           alert('先に分析を完了してください');
+          return;
+        }
+        // 別の顧客・別のサイトの分析を取り違えて渡さない
+        var cur = '';
+        try { cur = hostOf((JSON.parse(localStorage.getItem('airreach_studio_v1') || '{}').profile || {}).url || ''); } catch (e) {}
+        if (cur && hostOf(job.url) && cur !== hostOf(job.url)) {
+          alert('いま開いているサイト（' + cur + '）と、分析したサイト（' + hostOf(job.url) + '）が違います。いまのサイトをもう一度分析してから作ってください。');
           return;
         }
         downloadZip((window.AirReachPackageSchema && window.AirReachPackageSchema.ZIP_FILENAME) || 'airreach-implementation.zip', job.files);
