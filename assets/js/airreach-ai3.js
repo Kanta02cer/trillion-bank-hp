@@ -49,6 +49,23 @@
     var i = flat.indexOf(b);
     return i < 0 ? '' : flat.slice(Math.max(0, i - 10), i + b.length + 40);
   }
+  // 指名質問＝質問の文に自社の名前が入っている質問（airreach-ai-breakdown.js と同じ決め方）。保存した branded があればそれを使う
+  function normName(t) { return String(t || '').toLowerCase().replace(/[\s\u3000・･]+/g, ''); }
+  function isBranded(r, brand) {
+    if (r.branded === true || r.branded === false) return r.branded;
+    var b = normName(brand);
+    if (!b) return false;
+    var p = normName(r.prompt || r.keyword);
+    if (p.indexOf(b) >= 0) return true;
+    var core = b.replace(/^(株式会社|有限会社|合同会社)|(株式会社|有限会社|合同会社)$/g, '').replace(/(本店|店)$/, '');
+    return core.length >= 2 && p.indexOf(core) >= 0;
+  }
+  /** 質問の種類で絞る：general（一般の質問）・branded（指名の質問）・all */
+  function bySegment(rows, seg, brand) {
+    if (!seg || seg === 'all') return rows || [];
+    return (rows || []).filter(function (r) { return seg === 'branded' ? isBranded(r, brand) : !isBranded(r, brand); });
+  }
+
   /** 1回の試行の結果 */
   function outcome(r, brand) {
     if (r.status === 'error') return 'error';
@@ -102,6 +119,7 @@
    */
   function summarize(rows, opts) {
     opts = opts || {};
+    rows = bySegment(rows, opts.segment, opts.brand);
     var out = {};
     MAIN.forEach(function (def) {
       var mine = (rows || []).filter(function (r) { return engineOf(r) === def.key; });
@@ -130,7 +148,14 @@
   function render(box, rows, opts) {
     if (!box) return;
     opts = opts || {};
+    // 質問の種類：既定は一般の質問（指名の質問は名前が出て当たり前なので、主の数字に混ぜない）。一般が0問ならすべて
+    var nGen = bySegment(rows, 'general', opts.brand).length, nBr = bySegment(rows, 'branded', opts.brand).length;
+    var seg = opts.segment || (nGen ? 'general' : 'all');
+    opts = Object.assign({}, opts, { segment: seg });
     var S = summarize(rows, opts), cur = opts.current || 'aio';
+    var segs = '<div class="ai3-seg" role="group" aria-label="質問の種類">' + [['general', '一般の質問', nGen], ['branded', '指名の質問', nBr], ['all', 'すべて', nGen + nBr]].map(function (x) {
+      return '<button type="button" class="ai3-segb' + (x[0] === seg ? ' is-on' : '') + '" aria-pressed="' + (x[0] === seg) + '" data-ai3-seg="' + x[0] + '"' + (x[2] ? '' : ' disabled') + '>' + esc(x[1]) + '<small>' + esc(x[2]) + '回</small></button>';
+    }).join('') + '</div>';
     var tabs = '<div class="ai3-tabs" role="tablist" aria-label="3つの AI">' + MAIN.map(function (d) {
       var s = S[d.key], v = s.status === 'measured' ? (s.t.denominator ? s.t.mentioned + '/' + s.t.denominator : 'N/A') : '未計測';
       return '<button type="button" role="tab" class="ai3-tab' + (d.key === cur ? ' is-on' : '') + '" aria-selected="' + (d.key === cur) + '" data-ai3="' + d.key + '"><b>' + esc(d.short) + '</b><small>' + esc(v) + '</small></button>';
@@ -149,7 +174,7 @@
         '<dl class="ai3-cite"><div><dt>公式サイトが正式な出典</dt><dd>' + (t.officialJudged ? esc(t.official) + ' / ' + esc(t.officialJudged) + '回' : 'N/A') + '</dd></div>' +
         (opts.articleUrls && opts.articleUrls.length ? '<div><dt>対象の記事が正式な出典</dt><dd>' + esc(t.article) + '回</dd></div>' : '') +
         '<div><dt>回答の本文に公式サイトの URL</dt><dd>' + esc(t.bodyUrl) + '回</dd></div></dl>' +
-        '<p class="ai3-cond">条件：' + esc(s.cond.location === 'JP' ? '日本（市区町村の指定なし）' : s.cond.location) + (s.cond.locationUsed ? '（実際の地域：' + esc(s.cond.locationUsed) + '）' : '') +
+        '<p class="ai3-cond">' + esc(seg === 'general' ? '一般の質問（名前を入れていない質問）だけ' : seg === 'branded' ? '指名の質問（名前を入れた質問）だけ' : '一般と指名の質問をすべて') + ' · 条件：' + esc(s.cond.location === 'JP' ? '日本（市区町村の指定なし）' : s.cond.location) + (s.cond.locationUsed ? '（実際の地域：' + esc(s.cond.locationUsed) + '）' : '') +
           (modelLabel(s.cond.model) ? ' · ' + esc(modelLabel(s.cond.model)) : '') + ' · ' + (s.cond.search ? '検索あり' : '検索なし') + (s.cond.version ? ' · 質問の版 ' + esc(s.cond.version) : '') + ' · ' + esc(day(s.cond.from)) + (s.cond.to && s.cond.to !== s.cond.from ? '〜' + esc(day(s.cond.to)) : '') + '</p>' +
         (s.others ? '<p class="ai3-warn">条件の違う計測が ' + esc(s.others) + ' 組あります。混ぜずに、いちばん新しい条件の結果だけを出しています。</p>' : '') + '</div>' +
         '<details class="ai3-ev"><summary>質問ごとの根拠（' + esc(t.attempts) + '回）</summary><div class="ai3-evw"><table><thead><tr><th>質問</th><th>日時</th><th>結果</th><th>出典</th><th>回答</th></tr></thead><tbody>' +
@@ -161,11 +186,12 @@
             (txt ? '<details><summary>原文を見る</summary><p>' + esc(txt.slice(0, 1500)) + '</p></details>' : '<span class="ai3-mut">—</span>') + '</td></tr>';
         }).join('') + '</tbody></table></div></details>';
     }
-    box.innerHTML = '<section class="ai3" aria-label="3つの AI での名前の出方">' + tabs + body + '<p class="ai3-note">3つの AI は合算しません。一般の人が使う画面とは結果が違うことがあります。掲載や順位を保証するものではありません。</p></section>';
+    box.innerHTML = '<section class="ai3" aria-label="3つの AI での名前の出方">' + segs + tabs + body + '<p class="ai3-note">3つの AI は合算しません。一般の人が使う画面とは結果が違うことがあります。掲載や順位を保証するものではありません。</p></section>';
     Array.prototype.forEach.call(box.querySelectorAll('[data-ai3]'), function (b) { b.addEventListener('click', function () { render(box, rows, Object.assign({}, opts, { current: b.getAttribute('data-ai3') })); }); });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-ai3-seg]'), function (b) { b.addEventListener('click', function () { render(box, rows, Object.assign({}, opts, { segment: b.getAttribute('data-ai3-seg') })); }); });
   }
 
-  var api = { MAIN: MAIN, engineOf: engineOf, conditionKey: conditionKey, outcome: outcome, tally: tally, summarize: summarize, render: render };
+  var api = { MAIN: MAIN, isBranded: isBranded, bySegment: bySegment, engineOf: engineOf, conditionKey: conditionKey, outcome: outcome, tally: tally, summarize: summarize, render: render };
   root.AirReachAI3 = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

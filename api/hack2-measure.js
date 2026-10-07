@@ -532,7 +532,8 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors,
   // Gemini は遅いと他の AI の結果まで待たせる（Studio は全部の AI を1回の要求で聞く）。Gemini だけ持ち時間を短くし、超えたら失敗として先に返す
   const deadline = Date.now() + (ENGINE_BUDGET_MS[engine] || 240000);
   const rows = await mapLimit(prompts, 2, async (p) => {
-    const base = { engine: engineLabel(engine), keyword: p.keyword || p.prompt, prompt: p.prompt, evidenceClass: 'Observed',
+    // trial：同じ計測の中で同じ質問を何回目に聞いたか（いまは1回ずつ）。judge_version：言及・引用を判定したルールの版
+    const base = { engine: engineLabel(engine), keyword: p.keyword || p.prompt, prompt: p.prompt, evidenceClass: 'Observed', trial: 1, judge_version: JUDGE_VERSION,
       model: conditions.model, source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API', measured_at: measuredAt, conditions };
     let out;
     try {
@@ -809,6 +810,8 @@ export function gatewayCitations(data) {
 export const ENGINE_BUDGET_MS = { gemini: 70000 };
 /** Gemini 1回あたりの待ち時間 */
 export const GEMINI_TIMEOUT_MS = 40000;
+/** 言及・引用・概要なし・失敗の判定ルールの版。判定のしかたを変えたら上げる（古い結果と混ぜないため） */
+export const JUDGE_VERSION = 'judge/2026.10.08';
 export const GEMINI_DEFAULT_MODEL = 'gemini-3.8-flash';
 /** 「このモデルは使えない・〇〇を使って」という Google の案内から、案内されたモデル名を読む（無ければ null） */
 export function geminiSuggestedModel(msg) {
