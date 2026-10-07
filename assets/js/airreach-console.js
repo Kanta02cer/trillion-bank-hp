@@ -189,6 +189,8 @@
       '<p id="arc-msg" class="arc-msg" hidden aria-live="polite"></p><div id="arc-undo" class="arc-undo" hidden role="status"></div>' + bodyHtml + '</div></div>';
     $('#arc-logout').addEventListener('click', function () { sb.auth.signOut().then(function () { location.hash = ''; route(); }); });
     if (staff) bindPicker();
+    // 7工程の帯は、狭い画面でも「いまここ」が見える位置まで寄せる
+    Array.prototype.forEach.call(root.querySelectorAll('.arc-flow'), function (n) { var a = n.querySelector('[aria-current="step"]'); if (a && n.scrollWidth > n.clientWidth) n.scrollLeft = Math.max(0, a.offsetLeft - 16); });
     var mb = root.querySelector('.arc-side-m-b');
     if (mb) mb.addEventListener('click', function () {
       var open = mb.getAttribute('aria-expanded') !== 'true';
@@ -409,7 +411,7 @@
         why: '今月の AI 計測がありません', ok: !!live.ai, note: live.ai ? md(live.ai.measuredOn) + ' 計測' : '', btn: '計測する', href: studio + '#hack2' },
       { title: '検索と訪問の数字を入れる', what: 'Google と連携していれば月を選ぶだけ', time: '約3分',
         why: !tr.gsc && !tr.ga4 ? '今月の Search Console・GA4 の数字がありません' : !tr.gsc ? '今月の Search Console の数字がありません' : '今月の GA4 の数字がありません',
-        ok: !!(tr.gsc && tr.ga4), note: tr.gsc || tr.ga4 ? (tr.gsc ? 'Search Console ✓' : 'Search Console まだ') + '・' + (tr.ga4 ? 'GA4 ✓' : 'GA4 まだ') : '', btn: '取り込む', href: base + 'traffic' },
+        ok: !!(tr.gsc && tr.ga4), partial: !!(tr.gsc || tr.ga4) && !(tr.gsc && tr.ga4), note: tr.gsc || tr.ga4 ? (tr.gsc ? 'Search Console ✓' : 'Search Console まだ') + '・' + (tr.ga4 ? 'GA4 ✓' : 'GA4 まだ') : '', btn: '取り込む', href: base + 'traffic' },
       { title: 'やったことを記録する', what: '直したことを「実施済み」にして、公開したページの URL を入れる', time: '約3分',
         why: '今月「実施済み」にした施策がありません', ok: live.actions.length > 0, note: live.actions.length ? live.actions.length + '件' : '', btn: '記録する', href: base + 'actions' },
       { title: '月次レポートを作る', what: '結論と次の施策を書いて、確認を依頼する', time: '約15分',
@@ -423,6 +425,19 @@
     var doneN = steps.filter(function (s) { return s.ok; }).length;
     var nextI = -1; steps.some(function (s, i) { if (!s.ok) { nextI = i; return true; } return false; });
     return { steps: steps, doneN: doneN, nextI: nextI, next: nextI >= 0 ? steps[nextI] : null, returned: returned, mon: mon };
+  }
+  /**
+   * 作業画面の上に出す「今月の7工程」の帯：済み（✓）・次・途中・いまここ を並べ、どの工程にも1回で移れる
+   * cur: いま開いている工程の番号（0 始まり）
+   */
+  function flowStrip(plan, cur) {
+    if (!plan) return '';
+    return '<nav class="arc-flow" aria-label="今月の7工程"><ol>' + plan.steps.map(function (s, i) {
+      var here = i === cur;
+      var st = here ? 'いまここ' : s.ok ? '✓' : i === plan.nextI ? '次' : s.partial ? '途中' : '';
+      var cls = here ? ' is-here' : s.ok ? ' is-ok' : i === plan.nextI ? ' is-next' : s.partial ? ' is-part' : '';
+      return '<li><a class="arc-flow-i' + cls + '" href="' + esc(s.href) + '"' + (here ? ' aria-current="step"' : '') + '><span class="arc-flow-k">' + (i + 1) + (st ? (here ? ' · ' : ' ') + st : '') + '</span><span class="arc-flow-l">' + esc(s.title) + '</span></a></li>';
+    }).join('') + '</ol><span class="arc-flow-p">' + plan.doneN + ' / ' + plan.steps.length + ' 済み</span></nav>';
   }
   function monthSteps(plan) {
     var steps = plan.steps, nextI = plan.nextI;
@@ -689,8 +704,8 @@
   var openFolds = {};
   var curSec = 'home';
   // 顧客の画面の各節。いまの節だけを見せる（ほかも DOM に置き、フォームの結び付けはそのまま使う）
-  function fold(key, title, count) {
-    return '<section class="arc-card arc-sec" data-sec="' + key + '"' + (curSec === key ? '' : ' hidden') + '><div class="arv-home-head">' + (secLead(key) ? '<p class="arc-lead">' + esc(secLead(key)) + '</p>' : '<h2 class="arc-h2">' + esc(title) + '</h2>') + '<span class="arc-sub">' + esc(count) + '</span></div><div class="arc-fold-b">';
+  function fold(key, title, count, pre) {
+    return '<section class="arc-card arc-sec" data-sec="' + key + '"' + (curSec === key ? '' : ' hidden') + '>' + (pre || '') + '<div class="arv-home-head">' + (secLead(key) ? '<p class="arc-lead">' + esc(secLead(key)) + '</p>' : '<h2 class="arc-h2">' + esc(title) + '</h2>') + '<span class="arc-sub">' + esc(count) + '</span></div><div class="arc-fold-b">';
   }
 
   function ymJa(d) { var s = String(d || ''); return s.slice(0, 4) + '年' + Number(s.slice(5, 7)) + '月'; }
@@ -1011,11 +1026,11 @@
       var month = thisMonth() + '-01', live = null;
       try { live = R.compileReport({ client: c, periodMonth: month, scans: scans, runs: runs, traffic: traffic, actions: actions }); } catch (e) { live = null; }
       var repNow = reports.filter(function (x) { return x.period_month === month; })[0];
-      var overview = '';
+      var overview = '', plan = null;
       if (live && C) {
         // ホーム：今日の作業（次にやること・期限・依頼・レポート）→ 数字（小さく）→ 7工程・直すこと → 依頼 → AI の詳しい結果 → 推移
         var studioH = studioHref(c, sites);
-        var plan = monthPlan(c, sites, live, repNow, actions, lastEvent);
+        plan = monthPlan(c, sites, live, repNow, actions, lastEvent);
         overview += todayCard(c, plan, repNow, pendingReq, me.email);
         // サイトが登録されていないと、分析しても診断がこの顧客に紐づかない（ホームに何も出ない）
         if (!sites.length) overview += '<section class="arc-card arc-nosite"><b>この顧客にはサイトが登録されていません</b><p class="arc-note" style="margin:4px 0 8px">診断はサイトごとに保存されるため、サイトを登録するまでここには出ません。Studio で「サイトを調べる」を行うと、調べたサイトを自動で登録します。</p>' +
@@ -1059,7 +1074,7 @@
       var hid = function (k) { return curSec === k ? '' : ' hidden'; };
       var repBadge = repNow ? (REPORT_STATUS[repNow.status] || [repNow.status])[0] : '';
       shell(curSec === 'home' ? c.name : SEC_LABEL[curSec], '<div data-sec="home"' + hid('home') + '>' + (fromMeasure ? studioMeasureCard(fromMeasure) : '') + (fromStudio ? studioActionsCard(fromStudio) : '') + overview + (overview ? '' : '<div id="arc-rq"></div>') + '</div>' +
-        '<section class="arc-card arc-sec" data-sec="reports"' + hid('reports') + '><div class="arv-home-head"><p class="arc-lead">' + esc(secLead('reports')) + '</p></div>' +
+        '<section class="arc-card arc-sec" data-sec="reports"' + hid('reports') + '>' + flowStrip(plan, 5) + '<div class="arv-home-head"><p class="arc-lead">' + esc(secLead('reports')) + '</p></div>' +
         '<form id="arc-make-report" class="arc-row"><input class="arc-input" type="month" id="arc-report-month" value="' + thisMonth() + '" required>' +
         '<button class="arc-btn" type="submit">この月の下書きを作る</button></form>' +
         '<p class="arc-note">結論・次の3施策・判断事項は、下書きを作ったあとに編集画面で書きます。</p>' +
@@ -1077,7 +1092,7 @@
         '<p class="arc-note">社内の計測スクリプトが出力する summary.json（runs/&lt;実行名&gt;/summary.json）を選びます。</p></details>' +
         '<table class="arc-table"><thead><tr><th>計測日</th><th>質問の版</th><th>主な質問の引用率・言及率</th><th></th></tr></thead><tbody>' + (runRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
-        fold('traffic', SEC_LABEL.traffic, traffic.length + '件') +
+        fold('traffic', SEC_LABEL.traffic, traffic.length + '件', flowStrip(plan, 3)) +
         googleSyncForm(id, sites, traffic) +
         '<details class="arc-dev"><summary>Google とつながない場合：CSV で取り込む・手で入力する</summary>' +
         '<form id="arc-add-gsc" class="arc-row"><input class="arc-input" type="month" id="arc-gsc-month" value="' + thisMonth() + '" required><input class="arc-input" type="file" id="arc-gsc-file" accept=".csv,text/csv" required><button class="arc-btn" type="submit">Search Console の CSV を取り込む</button></form>' +
@@ -1091,7 +1106,7 @@
         '</details>' +
         '<table class="arc-table"><thead><tr><th>月</th><th>取得元</th><th>数値</th><th></th></tr></thead><tbody>' + (trRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
-        fold('actions', SEC_LABEL.actions, actions.length + '件') +
+        fold('actions', SEC_LABEL.actions, actions.length + '件', flowStrip(plan, 4)) +
         '<form id="arc-add-action" class="arc-row"><input class="arc-input" type="date" id="arc-act-date"><input class="arc-input" id="arc-act-title" placeholder="やったこと（例: よくある質問を5問追加）" required>' +
         '<input class="arc-input" id="arc-act-url" placeholder="証拠のURL（公開ページ）"><select class="arc-input" id="arc-act-status"><option value="done">実施済み</option><option value="planned">予定</option></select>' +
         '<button class="arc-btn" type="submit">追加</button></form>' +
