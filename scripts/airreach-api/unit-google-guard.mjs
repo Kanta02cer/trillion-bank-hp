@@ -102,7 +102,7 @@ G.purgeLocal({ clientId: C2, ack: '2026-10-07T00:00:00Z' }, ls);
 expect('顧客を指定：その顧客の作業・控え・共有の版・Google の設定を消す',
   ls.getItem('airreach_studio_ws_v1:' + C2) === null && ls.getItem('airreach_studio_sync_v1:' + C2) === null && ls.getItem('airreach_studio_backup_v1:' + C2) === null && !JSON.parse(ls.getItem('airreach_google_props_v1'))[C2]);
 expect('顧客を指定：ほかの顧客（いま開いている C1）の作業は残す', ls.getItem('airreach_studio_v1') === work && !!JSON.parse(ls.getItem('airreach_google_props_v1'))[C1]);
-expect('消した日時を覚え、同じ削除で二度消さない', !G.needsPurge(C2, '2026-10-06T00:00:00Z', ls) && G.needsPurge(C2, '2026-10-08T00:00:00Z', ls) && G.needsPurge(C1, '2026-10-01T00:00:00Z', ls));
+expect('消した日時を覚え、同じ削除で二度消さない', !G.needsPurge(C2, '2026-10-06T00:00:00Z', ls) && G.needsPurge(C2, '2026-10-07T00:00:00Z', ls) && G.needsPurge(C1, '2026-10-01T00:00:00Z', ls));
 G.purgeLocal({ clientId: C1 }, ls);
 expect('いま開いている顧客を指定：開いている作業と端末の基準値も消す', ls.getItem('airreach_studio_v1') === null && ls.getItem('airreach_studio_orch_v1') === null && ls.getItem('airreach_official_baseline_v1') === null);
 

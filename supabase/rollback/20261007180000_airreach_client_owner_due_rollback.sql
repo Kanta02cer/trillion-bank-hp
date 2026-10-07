@@ -1,4 +1,4 @@
--- 取り消し: 顧客ごとの担当と報告期限（20261008120000_airreach_client_owner_due.sql）。設定した担当・期限は消える
+-- 取り消し: 顧客ごとの担当と報告期限（20261007180000_airreach_client_owner_due.sql）。設定した担当・期限は消える
 drop index if exists public.clients_owner_email_idx;
 alter table public.clients drop constraint if exists clients_report_due_day_check;
 alter table public.clients drop constraint if exists clients_owner_email_fkey;

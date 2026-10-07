@@ -600,7 +600,7 @@
   // ---- 担当と報告の期限（顧客一覧の「自分の担当」「期限が近い」に使う）--------------------------
   function ownerDueBlock(c, staffList) {
     var hasCols = Object.prototype.hasOwnProperty.call(c, 'report_due_day');
-    if (!hasCols) return '<section class="arc-card" id="arc-owner" style="margin-top:16px"><h2 class="arc-h2">担当と報告の期限</h2><p class="arc-note">担当と毎月の報告期限を保存するには、DB の更新（migration 20261008120000）が必要です。それまでは顧客一覧で「未設定」と表示します。</p></section>';
+    if (!hasCols) return '<section class="arc-card" id="arc-owner" style="margin-top:16px"><h2 class="arc-h2">担当と報告の期限</h2><p class="arc-note">担当と毎月の報告期限を保存するには、DB の更新（migration 20261007180000）が必要です。それまでは顧客一覧で「未設定」と表示します。</p></section>';
     var opts = '<option value="">未設定</option>' + staffList.map(function (x) { return '<option value="' + esc(x.email) + '"' + (c.owner_email === x.email ? ' selected' : '') + '>' + esc(x.name || x.email) + '</option>'; }).join('');
     return '<section class="arc-card" id="arc-owner" style="margin-top:16px"><h2 class="arc-h2">担当と報告の期限</h2>' +
       '<form id="arc-owner-form" class="arc-row arc-labeled"><label class="arc-field"><span>担当（社内）</span><select class="arc-input" id="arc-owner-sel">' + opts + '</select></label>' +

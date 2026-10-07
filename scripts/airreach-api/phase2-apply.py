@@ -309,7 +309,7 @@ def cmd_apply_client_owner_due():
     confirm_project()
     if 'clients' not in tables():
         die('clients がありません。先に apply-db を実行してください')
-    path = ROOT / 'supabase/migrations/20261008120000_airreach_client_owner_due.sql'
+    path = ROOT / 'supabase/migrations/20261007180000_airreach_client_owner_due.sql'
     call('POST', f'/projects/{REF}/database/migrations', {'name': 'airreach_client_owner_due', 'query': path.read_text()})
     print('migration を適用しました: airreach_client_owner_due')
     checks = [
@@ -326,7 +326,7 @@ def cmd_apply_client_owner_due():
         bad += 0 if ok else 1
         print(('OK  ' if ok else 'NG  ') + label)
     if bad:
-        die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261008120000_airreach_client_owner_due_rollback.sql で戻すか判断してください')
+        die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261007180000_airreach_client_owner_due_rollback.sql で戻すか判断してください')
 
 
 def cmd_set_approver(email, flag):

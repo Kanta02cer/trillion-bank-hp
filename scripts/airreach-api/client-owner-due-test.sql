@@ -1,4 +1,4 @@
--- 顧客の担当と報告期限（20261008120000）のテスト。ローカル Postgres で実行する。本番 DB では実行しない
+-- 顧客の担当と報告期限（20261007180000）のテスト。ローカル Postgres で実行する。本番 DB では実行しない
 \set QUIET on
 begin;
 insert into public.staff_members (email, role) values ('s@tb.test', 'staff'), ('t@tb.test', 'staff');

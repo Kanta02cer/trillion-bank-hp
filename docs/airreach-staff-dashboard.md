@@ -1,4 +1,4 @@
-# AirReach 担当者ダッシュボードの改善（#152・2026-10-08）
+# AirReach 担当者ダッシュボードの改善（#152・2026-10-07）
 
 担当者が「今日、どの顧客の何を終わらせるか」をすぐ判断でき、顧客の取り違え・古い数字での報告・入力の消失・誤削除を防ぐための改善。
 2026-10-06 の調査（社内資料）の12項目に対応した。検証はすべて架空データ（サンプル美容室 Hana など・`.example` のドメイン）で行い、本番の DB・データには触れていない。
@@ -22,8 +22,8 @@
 
 ## DB の変更（本番は未適用）
 
-- `supabase/migrations/20261008120000_airreach_client_owner_due.sql`：`clients.owner_email`（`staff_members.email` への参照。社内メンバーが消えたら未設定）と `clients.report_due_day`（1〜31）。既存の顧客は未設定のまま。書き込みは既存の clients の書き込みポリシー（社内だけ）のまま。お客様は自社の行を読めるので担当のメールアドレスも見える（社内の業務用アドレス）
-- 戻し方：`supabase/rollback/20261008120000_airreach_client_owner_due_rollback.sql`
+- `supabase/migrations/20261007180000_airreach_client_owner_due.sql`：`clients.owner_email`（`staff_members.email` への参照。社内メンバーが消えたら未設定）と `clients.report_due_day`（1〜31）。既存の顧客は未設定のまま。書き込みは既存の clients の書き込みポリシー（社内だけ）のまま。お客様は自社の行を読めるので担当のメールアドレスも見える（社内の業務用アドレス）
+- 戻し方：`supabase/rollback/20261007180000_airreach_client_owner_due_rollback.sql`
 - テスト：`scripts/airreach-api/client-owner-due-test.sql`（ローカル Postgres）
 - 適用：`python3 scripts/airreach-api/phase2-apply.py apply-client-owner-due`（検証5項目）
 - 未適用のあいだも画面は動く：担当・期限は「未設定（DB の更新待ち）」と出し、一覧の「自分の担当」「期限」は0件になる。ほかの改善は DB の変更なしで動く
