@@ -1,13 +1,13 @@
 # AirReach 開発記録（最新）
 
-最終更新: 2026-10-07（#171 まで。共同会社の DB 適用済み・Studio の作業データの混入を修正）。古い記録（airreach-capability-now.md など）と食い違うときは、この記録と実装を優先する。
+最終更新: 2026-10-08（#191 まで。AI パッチの残作業＝ZIP の誤情報・確定と承認・最小の ZIP・3つの AI の表示・前後比較と営業用 PDF・Gemini の修正）。古い記録（airreach-capability-now.md など）と食い違うときは、この記録と実装を優先する。
 本番の DB・環境変数・cron を変える手順は `docs/airreach-measurement-runbook.md`。このリポジトリは公開なので、人名・メールアドレス・キーの値は書かない。
 
-## いまの状態（2026-10-07）
+## いまの状態（2026-10-08）
 
 | 項目 | 状態 |
 |---|---|
-| コード（main） | 621a79c（#171）まで本番に反映済み |
+| コード（main） | c90ea7d（#191）まで本番に反映済み（#172〜#191 は DB を変えていない） |
 | AI 計測の判定・10問・月次集計・FAQ 下書き・構造化データの不足判定 | 本番で動いている |
 | 定期計測 | **コードは本番にあるが、DB は未適用・cron なし・環境変数なし＝動かない** |
 | 本番の AI 実測（新しい判定） | **済み（2026-10-05）**。「テスト」で固定10問 × 4つの AI ＝ 40回答（下の「本番実測の結果」）。本番の計測は17回（新しい判定2回・判定方法を変える前15回） |
@@ -23,9 +23,16 @@
 | Studio の作業データの混入（#170） | **2026-10-07 に本番で発生・修正済み**（下の「Studio の作業データの混入」）。2社の作業データが別の顧客の内容になっていたため空にした（控えあり）。2社は Studio で分析し直す必要がある |
 | 競合との比較（#165・#169・#171） | 月次レポートに結論・帯・順位・AI ごと・質問ごとの回答。担当者とお客様のホームにも小さく出す。本番で競合を登録している顧客は1社 |
 | 画面の見直し（#157〜#167） | 本番に反映済み（下の「画面の見直し」）。デザインのキャンバス（担当者ホーム・7工程・お客様の画面）に合わせた |
+| ZIP の誤情報（#176） | 本番に反映済み。資本金・売上などを料金にしない／README の「undefined問」／確定した FAQ が0件なら faq.jsonld を出さない |
+| 会社・サービスの確定と FAQ の承認（#184・#190） | 本番に反映済み。Studio の「直す材料」で、会社（正式名）・ブランド・サービスを人が確定し、FAQ を1問ずつ承認する。承認した答えだけを構造化データに入れ、確定と承認が済むまで ZIP は -DRAFT。キャッチコピーらしいサービス名は人が確かめるまで確定しない |
+| 最小の ZIP（#185・#187） | 本番に反映済み。「設置に必要なものだけ（既定）／すべて」を選ぶ。MANIFEST に形式・版・顧客 ID・ファイルごとの SHA-256、WordPress の導入手順、安全性の検査、照合スクリプト `scripts/airreach-api/verify-zip.mjs` |
+| 3つの AI の主表示（#178・#189） | 本番に反映済み。Studio の AI計測で、Google AI Overviews（主）・AI モード・ChatGPT（検索あり）を X/N と出現率で。既定は一般の質問だけ |
+| 前後比較と営業用 PDF（#186・#188） | 本番に反映済み。ダッシュボードの「AI 計測の記録」で2回を選んで比べる。同じ条件・同じ質問のときだけ差を出す |
+| Gemini（#179〜#183） | コードは本番に反映済み。**計測はできない**：Google から請求のエラー（plan and billing）。キーの Google のプロジェクトで支払いの設定が要る（決済者の判断待ち） |
+| ChatGPT（検索あり） | 本番で1問の計測が正常（2026-10-07・自社を題材に。AI Gateway の残高あり） |
 | 社内メンバー | 社内：管理者3名・担当2名。レポートの承認者は1名（管理者であることと承認権限は別）。ほかに共同会社の人1名 |
 
-## マージ済みの PR（2026-10-05〜07）
+## マージ済みの PR（2026-10-05〜08）
 
 | PR | 内容 |
 |---|---|
@@ -63,6 +70,21 @@
 | #169 | 競合との比較の詳細：AI ごとの結果の表、質問ごとに開いて AI の回答の抜粋・名前が出た順・出典 |
 | #170 | Studio を複数のタブで別々の顧客で開くと、別の顧客の作業を共有してしまう不具合を修正（下記） |
 | #171 | 担当者の顧客ホーム（今月の計測からその場で集計）とお客様のホーム・デモに「競合との比較」の枠。結論と帯は airreach-report-charts.js の compSummary に共通化 |
+| #172 | 開発記録を最新に（#168〜#171） |
+| #173 | 競合の候補を AI の回答のお店の名前からも出し、最初の計測のあとに提案する |
+| #174 | Studio：サービス名に別のサイトの値や1文字が自動で入る不具合と、住所の読み違いを直す |
+| #176 | ZIP：資本金・売上を料金にしない・README の undefined 問・FAQ 0件で空の faq.jsonld を出さない（境界テスト unit-zip-facts） |
+| #177 | 共同会社：開通前の分離テスト（ID の直書き・割り当ての解除・人の解除）と、状態確認・解除のコマンド（`partner-status`・`remove-partner-staff`） |
+| #178 | AI計測：3つの AI を X/N・出現率で（下の「3つの AI の主表示」）。地域を実際の取得に渡す・ChatGPT の検索の実行を確かめる・失敗の種類・同じ質問の重複を除く |
+| #179〜#183 | Gemini：使えなくなったモデル（gemini-2.5-flash）の差し替え・持ち時間（1回40秒・合計70秒）・429 の種類の表示・請求のエラーでは聞き直さない |
+| #184 | Studio：会社・サービスの確定と FAQ の承認（下の「確定と承認」） |
+| #185 | 最小の ZIP・MANIFEST に SHA-256・WordPress の導入手順・照合スクリプト（#184 の上に重ねた PR） |
+| #186 | ダッシュボード：計測の前後比較と営業用 PDF（下の「前後比較」） |
+| #187 | ZIP：安全性の検査・版つきの名前・MANIFEST の版と顧客 ID・最小の ZIP に検証表・llms-full は承認した質問だけ・確定欄に顧客 |
+| #188 | 前後比較の PDF に質問ごとの結果の表と、優先して直すこと（上位3点まで） |
+| #189 | AI計測：一般の質問と指名の質問を分けて集計（既定は一般）・試行番号と判定ルールの版 |
+| #190 | ナビやメニューの切れ端を事実の根拠にしない・キャッチコピーをサービス名として確定しない |
+| #191 | Studio の CSV に ZIP と同じ版・対象サイト・手動/自動の区別 |
 | #147 | サイトのヘッダーに「ログイン」ボタン（`/airreach/app/`・`tb.css?v=20261007`）。社内の顧客一覧に「代理店・見込み顧客に見せるデモ」（デモを開く・URL をコピー。社内だけ） |
 
 ### #141 で直した定期計測の5件（新しい migration `20261006120000_airreach_schedule_guards.sql`・本番は未適用）
@@ -151,6 +173,40 @@
 - 画面とレポートに、計測の裏で使っているサービス名や費用の事情（SerpApi・有料クレジット）を書かない
 - 競合との比較（#165・#169・#171）：ひと言の結論（何社中何位）・取り合いの帯・お店ごとの順位・AI ごとの結果・質問ごとの回答。ホームの小さな枠は、担当者は今月の計測からその場で、お客様は公開済みのレポートから
 
+## 確定と承認（#184・#187・#190・#191）
+
+- Studio の「直す材料」の下書き一式の上に、①会社・サービスの確定 ②よくある質問の承認。データは分析の `job.confirm`（版 rev・entity・FAQ ごとの状態）に持ち、Studio の作業として保存される
+- 確定・承認を変えるたびに版が1つ増え、ZIP の中身（MANIFEST・README・faq.md・faq.jsonld・llms-full.txt）を作り直す。画面の版と件数は作り直した MANIFEST から読む（画面と ZIP がずれない）。CSV の data_version も同じ版（分析したサイトと違えば「未確定」）
+- 承認した答えだけを faq.jsonld と llms-full.txt に入れる。0問なら faq.jsonld は出さない。無料診断の下書き（confirm なし）は今までどおり
+- 開いているサイトと分析したサイトが違えば ZIP を作らない。顧客の登録サイトが違えば ZIP に顧客 ID を入れない
+- 事実の読み取り（airreach-keyword.js）：料金は「料金らしい言葉」か「品名つきの少額」だけ（資本金・売上・実績は使わない）。前後にナビの言葉や区切り記号が多い場所の値は使わない（電話・住所は除く）
+
+## 最小の ZIP（#185・#187）
+
+- 「設置に必要なものだけ（既定）」：README・INSTALL_WORDPRESS.md・MANIFEST・content/faq.md・schema（organization・service・faq）・public/llms.txt・validation/VALIDATION.md。「すべて」は CSV・AGENT_PROMPT なども
+- MANIFEST：package_format（airreach-package/2）・package_version（1.確定の版.0）・generator_version・target_url・client_id・query_set_version・entity・faq_counts・faq_items（出典 URL・取得日・状態）・files（パス・大きさ・SHA-256）
+- 名前：`airreach-ドメイン-日付-v版.zip`（確定・承認前は -DRAFT）
+- 検査（airreach-package-schema.js・verify-zip.mjs で共通）：鍵・認証情報らしい文字列・不要なファイル・危険なパス・実行できるファイルは誤り。対象サイト以外のメールアドレスは伏せ字の警告
+- CMS は WordPress の手順だけ。実際の CMS での導入・復旧の確認はまだ
+
+## 3つの AI の主表示（#178・#189）
+
+- Studio の AI計測の上に、Google AI Overviews（主）・AI モード・ChatGPT（検索あり）をタブで（合算しない）。`assets/js/airreach-ai3.js`
+- 1回の試行の結果：取得失敗／概要なし／名前あり／名前なし／要確認（「確認できません」のような否定の言及。言及に数えない）
+- 出現率：AIO は 名前あり ÷ 正常に取れた検索（**概要なしも分母**）。AI モード・ChatGPT は 名前あり ÷ 回答が取れた数。取得失敗は分母に入れない。分母0は N/A
+- 出典は、公式サイトが正式な出典・対象の記事が正式な出典・本文の URL を別々に数える
+- AI・検索の有無・地域・モデル・質問の版が違う結果は混ぜず、いちばん新しい条件だけを出す
+- 既定は一般の質問だけ（指名の質問は切り替えで見る）。保存（summary.ai3）は一般・指名・すべてを別々に
+- 計測 API：地域（SerpApi の location・OpenAI の user_location）・実際に使われた地域・試行番号（trial）・判定ルールの版（judge_version）・失敗の種類（error_type）。ChatGPT（検索あり）で検索が走らなかった回答は失敗に数える
+- 注：月次レポートと既存の「AI ごとの結果」（airreach-ai-breakdown.js）は、これまでどおり概要なしを分母に入れない。数え方が違うので、主表示と月次レポートの数字を並べて比べない
+
+## 前後比較（#186・#188）
+
+- ダッシュボードの顧客 →「AI 計測の記録」で2回を選ぶ（古い方が前）。`assets/js/airreach-compare.js`
+- AI ごとに、条件（地域・モデル・検索の有無）・質問の版・聞いた質問が同じで、分母が0でないときだけ差を出す。違えば理由
+- 比べるのは一般の質問だけ。画面と営業用 PDF は同じ本文で、保存した2回の計測データの指紋（SHA-256）を両方に出す
+- PDF：AIO の質問ごとの前後の結果、優先して直すこと（今月のサイトの診断の上位3つまで。AI の計測とは別の材料と明記）
+
 ## 判定と数え方（決めたこと）
 
 - 回答ごとに分けて記録する: `mentioned`（社名への言及）／`cited_by_sources`（AI が返した出典に自社サイト）／`self_url_in_text`（回答の本文の URL に自社サイト）
@@ -167,7 +223,7 @@
 - 2026-10-06 時点：顧客3社・計測17回（うち新しい判定2回）・レポート2件（下書き・公開済み0）・社内メンバー 管理者3名・担当2名・定期計測の表なし
 
 
-- Vercel の本番の環境変数（名前だけ）: `AI_GATEWAY_API_KEY`・`SERPAPI_API_KEY`・Supabase・Google OAuth・`TYPESAFE_API_KEY`・`AIRREACH_STUDIO_KEY`。**`PERPLEXITY_API_KEY`・`ANTHROPIC_API_KEY`・`OPENAI_API_KEY`・`GEMINI_API_KEY`・`CRON_SECRET`・`AIRREACH_SCHEDULE_ENABLED` は無い**。キーは Sensitive のためローカルに取り出せない
+- Vercel の本番の環境変数（名前だけ）: `AI_GATEWAY_API_KEY`・`SERPAPI_API_KEY`・Supabase・Google OAuth・`TYPESAFE_API_KEY`・`AIRREACH_STUDIO_KEY`。**`PERPLEXITY_API_KEY`・`ANTHROPIC_API_KEY`・`OPENAI_API_KEY`・`CRON_SECRET`・`AIRREACH_SCHEDULE_ENABLED` は無い**。`GEMINI_API_KEY` は 2026-10-07 に追加（本番のみ。請求の設定が済むまで計測できない）。キーは Sensitive のためローカルに取り出せない
 - バックアップ: 毎日（2026-09-28〜10-05 の8件）。PITR は無効
 - お客様の権限（お客様のログインを rollback するトランザクションで再現・書き込みなし）: 見えるのは自社1件・レポート0件・他社の計測0・スタッフ一覧0・is_staff=false
 - 配信: main の変更は `deploy-vercel-static.yml` が作る配信用ブランチ（vercel-deploy）から本番へ。cron を使うときは、この配信用の vercel.json に `crons` を足す
@@ -196,8 +252,11 @@ ChatGPT 検索なし 0.0003／ChatGPT 検索あり 0.015（9/30 実測）／Clau
 8. 担当者へのお知らせ：送る手段（メール送信サービス・Slack・LINE など）・送り先（担当者だけか全員か）・頻度（すぐか毎朝まとめてか）
 9. 共同会社：正式な会社名（今はドメインを仮の名前にしている）と承認者（確認を依頼した本人は承認できないため、共同会社の中で公開するには2人目か承認者が要る）
 10. Gemma（FAQ 下書き）の有料テスト：Pro チームの専用プロジェクト（4GB）で試すか（Draft PR #150）
+11. Gemini：キーの Google のプロジェクトで支払いの設定（決済者）。済んだら1問で確かめる
+12. 実証の対象：対象の店舗・企業（正式名・別名・公式ドメイン）、固定の質問、地域、計測の予算、導入先の CMS と権限。同名の別企業の照合と、計測前の確定画面はこれが決まってから作る
+13. 指定された3つの媒体（人物取材・企業調査・ニュース）への対応：改善したい対象（掲載企業か媒体自身か）と初回の企業・記事
 
 ## テスト
 
-- JS: `scripts/airreach-api/unit-*.mjs`（measure-citation・schedule・monthly-ai・report・faq-draft・schema-gaps・js-names・demo・requests ほか）。`unit-pin.mjs` は main でも失敗する（DNS の確認で私的アドレス扱い。AirReach の変更とは無関係）
+- JS: `scripts/airreach-api/unit-*.mjs`（measure-citation・schedule・monthly-ai・report・faq-draft・schema-gaps・js-names・demo・requests・zip-facts・zip-select・confirm・ai3・compare・gemini-model ほか）。`unit-google-guard.mjs` の1件も main で失敗している（既存）。`unit-pin.mjs` は main でも失敗する（DNS の確認で私的アドレス扱い。AirReach の変更とは無関係）
 - ローカル Postgres（本番 DB では実行しない）: `schedule-test.sql`・`schedule-guards-test.sql`・`phase2-rls-test.sql`・`approval-test.sql`・`studio-workspace-test.sql`・`client-requests-test.sql`・`client-owner-due-test.sql`・`partner-orgs-test.sql`（共同会社の分離 50項目）、複数セッションは `schedule-concurrency-test.sh`（PGHOST は 127.0.0.1 のみ）
