@@ -17,6 +17,10 @@ Change ID（DEV-YYYY-NNN）の承認後にだけ使う。各手順は単独で�
   python3 scripts/airreach-api/phase2-apply.py apply-client-requests     # お客様からの依頼（競合・キーワード・質問の追加と削除・担当者の承認）を適用して検証
   python3 scripts/airreach-api/phase2-apply.py apply-client-owner-due    # 顧客ごとの担当と報告期限の列（担当者ダッシュボードの絞り込み）を適用して検証
   python3 scripts/airreach-api/phase2-apply.py apply-request-note        # お客様の依頼に付ける「補足」の列と関数を適用して検証
+  python3 scripts/airreach-api/phase2-apply.py apply-partner-orgs        # 共同会社（自社の顧客だけ見える人）の仕組みを適用して検証
+  python3 scripts/airreach-api/phase2-apply.py add-partner-org <会社名>                       # 共同会社を作る
+  python3 scripts/airreach-api/phase2-apply.py add-partner-staff <email> <会社名> [approver]   # 共同会社の人を追加（approver で承認者にする）
+  python3 scripts/airreach-api/phase2-apply.py assign-client <顧客ID> <会社名|TB>              # 顧客の担当会社を決める（TB＝Trillion Bank に戻す）
 
 Supabase のアクセストークン（Account → Access Tokens で発行・期限つき推奨）は、
 ~/.config/airreach/supabase_token（chmod 600）に置く。画面にもログにも出さない。
@@ -24,6 +28,7 @@ Supabase のアクセストークン（Account → Access Tokens で発行・期
 """
 import json
 import os
+import re
 import stat
 import subprocess
 import sys
@@ -367,6 +372,104 @@ def cmd_set_approver(email, flag):
     print('承認者:', sql('select email, role, can_approve from public.staff_members where can_approve order by email', True))
 
 
+PARTNER_FUNCS = [  # 本番の関数が、この migration が置き換える前提の形かを確かめる（違えば適用しない）
+    ('airreach_client_scans', 'public.airreach_is_staff() or public.airreach_is_member(p_client_id)'),
+    ('airreach_studio_save', 'if not public.airreach_is_staff() then'),
+    ('airreach_client_settings', 'public.airreach_is_staff() or public.airreach_is_member(p_client_id)'),
+    ('airreach_request_create', 'public.airreach_is_staff() or public.airreach_is_member(p_client_id)'),
+    ('airreach_request_cancel', 'public.airreach_is_staff() or (public.airreach_is_member(r.client_id)'),
+    ('airreach_request_decide', 'if not public.airreach_is_staff() then'),
+    ('airreach_google_access', 'if public.airreach_is_staff() then'),
+]
+
+
+def cmd_apply_partner_orgs():
+    """共同会社の人は自社の顧客だけ見える。airreach_is_staff は社内だけの意味に変わる"""
+    confirm_project()
+    need = {'clients', 'staff_members', 'client_requests', 'studio_workspaces', 'report_events', 'google_data_deletions'}
+    missing = need - set(tables())
+    if missing:
+        die('先に必要な表がありません: ' + ', '.join(sorted(missing)))
+    for name, needle in PARTNER_FUNCS:
+        rows = sql(f"select count(*) filter (where prosrc like '%{needle}%') as hit, count(*) as n from pg_proc where proname = '{name}' and pronamespace = 'public'::regnamespace", True)
+        if not rows or rows[0]['n'] == 0 or rows[0]['hit'] != rows[0]['n']:
+            die(f'本番の {name} が想定と違います（{needle} が見つからない）。適用を中止しました')
+    print('適用前の確認: 置き換える関数7つが想定どおり')
+    path = ROOT / 'supabase/migrations/20261008120000_airreach_partner_orgs.sql'
+    call('POST', f'/projects/{REF}/database/migrations', {'name': 'airreach_partner_orgs', 'query': path.read_text()})
+    print('migration を適用しました: airreach_partner_orgs')
+    checks = [
+        ('partner_orgs があり RLS が有効', "select relrowsecurity as ok from pg_class where oid = 'public.partner_orgs'::regclass"),
+        ('staff_members・clients に org_id がある', "select count(*) = 2 as ok from information_schema.columns where table_schema = 'public' and column_name = 'org_id' and table_name in ('staff_members', 'clients')"),
+        ('airreach_is_staff は社内だけ（org_id is null）', "select prosrc like '%org_id is null%' as ok from pg_proc where proname = 'airreach_is_staff' and pronamespace = 'public'::regnamespace"),
+        ('置き換えた関数に、全顧客を許す古い判定が残っていない', "select count(*) = 0 as ok from pg_proc where pronamespace = 'public'::regnamespace and proname in ('airreach_client_scans','airreach_studio_save','airreach_client_settings','airreach_request_create','airreach_request_cancel','airreach_google_access') and prosrc like '%airreach_is_staff() or%'"),
+        ('顧客ごとの判定がログインした人だけに実行できる', "select has_function_privilege('authenticated', 'public.airreach_can_staff(uuid)', 'execute') and not has_function_privilege('anon', 'public.airreach_can_staff(uuid)', 'execute') as ok"),
+        ('顧客の表のポリシーが新しいもの（insert・update・delete に分かれた）', "select count(*) = 3 as ok from pg_policies where schemaname = 'public' and tablename = 'clients' and policyname in ('clients_insert','clients_update','clients_delete')"),
+        ('古い clients_write が残っていない', "select count(*) = 0 as ok from pg_policies where schemaname = 'public' and tablename = 'clients' and policyname = 'clients_write'"),
+        ('いまの社内の人・顧客はすべて Trillion Bank のまま（共同会社に入れていない）', "select (select count(*) from public.staff_members where org_id is not null) = 0 and (select count(*) from public.clients where org_id is not null) = 0 as ok"),
+        ('顧客の所属を守るトリガがある', "select exists(select 1 from pg_trigger where tgname = 'clients_org_guard') as ok"),
+    ]
+    bad = 0
+    for label, q in checks:
+        r = sql(q, True)
+        ok = bool(r and r[0].get('ok'))
+        bad += 0 if ok else 1
+        print(('OK  ' if ok else 'NG  ') + label)
+    if bad:
+        die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261008120000_airreach_partner_orgs_rollback.sql で戻すか判断してください')
+
+
+def _plain(name, what):
+    name = name.strip()
+    if not name or any(ch in name for ch in "'\\;"):
+        die(f'{what}に使えない文字があります')
+    return name
+
+
+def cmd_add_partner_org(name):
+    name = _plain(name, '会社名')
+    confirm_project()
+    if sql(f"select 1 from public.partner_orgs where name = '{name}'", True):
+        die(f'「{name}」はもうあります')
+    sql(f"insert into public.partner_orgs (name) values ('{name}')")
+    print('共同会社:', sql('select name, created_at from public.partner_orgs order by created_at', True))
+
+
+def cmd_add_partner_staff(email, org, approver):
+    email = email.strip().lower()
+    if '@' not in email or "'" in email:
+        die('使い方: add-partner-staff <email> <会社名> [approver]')
+    org = _plain(org, '会社名')
+    confirm_project()
+    o = sql(f"select id from public.partner_orgs where name = '{org}'", True)
+    if not o:
+        die(f'共同会社「{org}」がありません。先に add-partner-org で作ってください')
+    cur = sql(f"select org_id from public.staff_members where email = '{email}'", True)
+    if cur and cur[0].get('org_id') is None:
+        die(f'{email} は Trillion Bank の社内の人として登録済みです。共同会社の人にはしません（間違いを防ぐため）')
+    sql(f"insert into public.staff_members (email, role, org_id, can_approve) values ('{email}', 'staff', '{o[0]['id']}', {'true' if approver else 'false'}) "
+        f"on conflict (email) do update set org_id = excluded.org_id, can_approve = excluded.can_approve, role = 'staff'")
+    print(f'「{org}」の人:', sql(f"select email, can_approve from public.staff_members where org_id = '{o[0]['id']}' order by email", True))
+
+
+def cmd_assign_client(client_id, org):
+    if not re.fullmatch(r'[0-9a-f-]{36}', client_id or ''):
+        die('使い方: assign-client <顧客ID> <会社名|TB>')
+    confirm_project()
+    if org == 'TB':
+        oid = 'null'
+    else:
+        org = _plain(org, '会社名')
+        o = sql(f"select id from public.partner_orgs where name = '{org}'", True)
+        if not o:
+            die(f'共同会社「{org}」がありません')
+        oid = f"'{o[0]['id']}'"
+    r = sql(f"update public.clients set org_id = {oid}, owner_email = case when {oid} is null then owner_email else null end where id = '{client_id}' returning name", True)
+    if not r:
+        die('その顧客はありません')
+    print(f"{r[0]['name']} の担当会社を {org} にしました（共同会社に移すときは、担当者は未設定に戻します）")
+
+
 MAIL_BODY = '''<h2>AirReach ログイン</h2>
 <p>下のリンクを押すと AirReach にログインします。このメールに心当たりがない場合は、何もせずに削除してください。</p>
 <p><a href="{{ .ConfirmationURL }}">ログインする</a></p>
@@ -452,13 +555,19 @@ def cmd_anon_key_to_vercel():
 def main():
     a = sys.argv[1:]
     cmds = {'check': cmd_check, 'apply-db': cmd_apply_db, 'auth-config': cmd_auth_config, 'auth-hook': cmd_auth_hook,
-            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'apply-client-requests': cmd_apply_client_requests, 'apply-client-owner-due': cmd_apply_client_owner_due, 'apply-request-note': cmd_apply_request_note, 'verify': lambda: (confirm_project(), verify())}
+            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'apply-client-requests': cmd_apply_client_requests, 'apply-client-owner-due': cmd_apply_client_owner_due, 'apply-request-note': cmd_apply_request_note, 'apply-partner-orgs': cmd_apply_partner_orgs, 'verify': lambda: (confirm_project(), verify())}
     if a and a[0] in cmds and len(a) == 1:
         cmds[a[0]]()
     elif a and a[0] == 'add-staff' and len(a) == 3:
         cmd_add_staff(a[1], a[2])
     elif a and a[0] == 'set-approver' and len(a) == 3:
         cmd_set_approver(a[1], a[2])
+    elif a and a[0] == 'add-partner-org' and len(a) == 2:
+        cmd_add_partner_org(a[1])
+    elif a and a[0] == 'add-partner-staff' and len(a) in (3, 4) and (len(a) == 3 or a[3] == 'approver'):
+        cmd_add_partner_staff(a[1], a[2], len(a) == 4)
+    elif a and a[0] == 'assign-client' and len(a) == 3:
+        cmd_assign_client(a[1], a[2])
     else:
         print(__doc__)
         sys.exit(0 if not a else 2)

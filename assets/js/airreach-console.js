@@ -37,6 +37,8 @@
   }
   // レポートの状態。承認フロー（DB の migration 20261002130000）が入っているかは airreach_me の can_approve の有無で見る
   var REPORT_STATUS = { draft: ['下書き', ''], in_review: ['確認待ち', 'is-warn'], approved: ['承認済み・未公開', 'is-warn'], published: ['公開', 'is-ok'] };
+  // 共同会社の人（自社の顧客だけを見られる）なら、その会社 { id, name }。社内・お客様・共同会社の migration の前は null
+  function partnerOrg() { return me && me.is_staff && me.is_internal === false ? (me.org || { name: '共同会社' }) : null; }
   function approvalOn() { return !!me && Object.prototype.hasOwnProperty.call(me, 'can_approve'); }
   function statusChip(st, prefix) { var x = REPORT_STATUS[st] || [st, '']; return '<span class="arc-chip ' + x[1] + '">' + esc((prefix || '') + x[0]) + '</span>'; }
   function jst(iso) { if (!iso) return ''; var t = Date.parse(iso); if (isNaN(t)) return ''; var d = new Date(t + 9 * 3600 * 1000); function z(n) { return (n < 10 ? '0' : '') + n; } return d.getUTCFullYear() + '-' + z(d.getUTCMonth() + 1) + '-' + z(d.getUTCDate()) + ' ' + z(d.getUTCHours()) + ':' + z(d.getUTCMinutes()); }
@@ -181,7 +183,7 @@
       '<span class="arc-bar-sp"></span>' +
       // 社内の人には、ほかの社内ツールへの入口を常に出す（お客様には出さない）
       (staff ? '<nav class="arc-tools" aria-label="社内ツール"><a href="/airreach/sales/">営業キット</a><a href="/airreach/" target="_blank" rel="noopener">無料診断</a></nav>' : '') +
-      '<span class="arc-who">' + esc(me.email) + (staff ? ' · 社内' : '') + ' <button type="button" class="arc-btn-sm" id="arc-logout">ログアウト</button></span></header>' +
+      '<span class="arc-who">' + esc(me.email) + (staff ? (partnerOrg() ? ' · <b class="arc-org">' + esc(partnerOrg().name) + '</b>' : ' · 社内') : '') + ' <button type="button" class="arc-btn-sm" id="arc-logout">ログアウト</button></span></header>' +
       '<div class="arc-shell' + (side ? '' : ' is-full') + '">' + side +
       '<div class="arc-main"><div class="arc-top"><div>' + (back ? '<a class="arc-back" href="' + back + '">← 戻る</a>' : '') +
       (ctx.kicker ? '<div class="arc-kicker">' + esc(ctx.kicker) + '</div>' : '') +
@@ -297,6 +299,7 @@
       }
       var add = me.is_staff ?
         '<h2 class="arc-h2">顧客を追加する</h2><p class="arc-note" style="margin:0 0 6px">サイトの URL も入れると、追加したあとそのまま Studio でサイトを調べ、足りない情報の判定と AI での見え方の計測（Perplexity・ChatGPT）まで自動で行います。お客様によく聞かれる質問を入れておくと、AI に聞く質問の先頭に入ります。</p>' +
+        (partnerOrg() ? '<p class="arc-note arc-org-note">追加した顧客は「' + esc(partnerOrg().name) + '」の顧客になります。Trillion Bank のほかの顧客や、ほかの共同会社からは見えません。</p>' : '') +
         '<form id="arc-add-client" class="arc-row"><input class="arc-input" id="arc-client-name" placeholder="顧客名（会社・店舗）" required>' +
         '<input class="arc-input" id="arc-client-url" type="text" inputmode="url" autocomplete="url" placeholder="サイトの URL（例: https://example.jp/）">' +
         '<textarea class="arc-input arc-client-qs" id="arc-client-qs" rows="3" placeholder="お客様によく聞かれる質問（任意・1行に1つ）&#10;例：個室はありますか？&#10;例：子ども連れでも大丈夫ですか？"></textarea>' +
@@ -964,6 +967,8 @@
   function schedPrompts(text) { return String(text || '').split(/\n+/).map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 10).map(function (t) { return { prompt: t, keyword: t }; }); }
   function loadSchedule(c, sites) {
     var box = $('#arc-schedule'); if (!box) return;
+    // 定期計測は費用がかかるため、設定は Trillion Bank の社内だけ（DB も社内だけに許している）
+    if (partnerOrg()) { box.innerHTML = '<p class="arc-note">定期計測の設定は、Trillion Bank の社内だけが行えます。計測は Studio の「AI での見え方を測る」から1回ずつ行えます。</p>'; return; }
     Promise.all([
       sb.from('measurement_schedules').select('*').eq('client_id', c.id).maybeSingle(),
       sb.from('measurement_jobs').select('id,slot,trigger,status,attempts,answers_planned,answers_done,errors,not_shown,est_cost_usd,skip_reason,last_error,run_id,finished_at').eq('client_id', c.id).order('slot', { ascending: false }).limit(20)
