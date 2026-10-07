@@ -329,3 +329,36 @@ body:not(.has-job) [data-needs-job]{display:none}
 /* 別のタブで別の顧客を開いたとき（このタブは保存しない） */
 .ars-stale{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px}
 .ars-stale-b{max-width:520px;background:#fff;border-radius:14px;padding:22px 24px;box-shadow:0 20px 50px rgba(0,0,0,.25)}.ars-stale-b b{font-size:17px;color:#991b1b}.ars-stale-b p{margin:8px 0 16px;line-height:1.8;color:#334155}
+
+/* 3つの AI の主表示（airreach-ai3.js）：AI Overviews を主に、AI モード・ChatGPT はタブで切り替える。合算しない */
+.ai3 { margin: 16px 0; padding: 16px; border: 1px solid var(--ars-line); border-radius: var(--ars-r-md); background: var(--ars-surface); }
+.ai3-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; max-width: 480px; margin-bottom: 14px; }
+.ai3-tab { display: grid; gap: 2px; min-width: 0; padding: 8px 10px; border: 1px solid var(--ars-line); border-radius: var(--ars-r-sm); background: var(--ars-canvas); color: var(--ars-ink-2); text-align: left; cursor: pointer; font: inherit; }
+.ai3-tab small { color: var(--ars-muted); font-variant-numeric: tabular-nums; }
+.ai3-tab.is-on { border-color: var(--ars-blue); background: var(--ars-soft); color: var(--ars-ink); }
+.ai3-tab:focus-visible { outline: 2px solid var(--ars-blue); outline-offset: 2px; }
+.ai3-main { display: grid; gap: 10px; }
+.ai3-big { display: grid; gap: 2px; }
+.ai3-big span { color: var(--ars-muted); font-size: 12px; }
+.ai3-big b { font-size: 28px; font-weight: 650; color: var(--ars-ink); font-variant-numeric: tabular-nums; }
+.ai3-big b small { font-size: 13px; font-weight: 500; color: var(--ars-muted); }
+.ai3-big em { font-style: normal; color: var(--ars-ink-2); font-variant-numeric: tabular-nums; }
+.ai3-status, .ai3-cite { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; }
+.ai3-status div, .ai3-cite div { display: flex; gap: 6px; align-items: baseline; }
+.ai3-status dt, .ai3-cite dt { color: var(--ars-muted); font-size: 12px; }
+.ai3-status dd, .ai3-cite dd { margin: 0; font-variant-numeric: tabular-nums; color: var(--ars-ink); }
+.ai3-cond, .ai3-note, .ai3-na { margin: 0; color: var(--ars-muted); font-size: 12px; }
+.ai3-note { margin-top: 10px; }
+.ai3-warn { margin: 0; padding: 6px 10px; border-left: 3px solid var(--ars-line-strong); background: var(--ars-canvas); color: var(--ars-ink-2); font-size: 12px; }
+.ai3-ev { margin-top: 12px; }
+.ai3-ev > summary { cursor: pointer; color: var(--ars-blue-deep); }
+.ai3-evw { overflow-x: auto; margin-top: 8px; }
+.ai3-evw table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 12px; }
+.ai3-evw th, .ai3-evw td { padding: 6px 8px; border-bottom: 1px solid var(--ars-line); text-align: left; vertical-align: top; }
+.ai3-evw td p { margin: 6px 0 0; white-space: pre-wrap; max-width: 60ch; }
+.ai3-o { display: inline-block; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--ars-line); color: var(--ars-ink-2); white-space: nowrap; }
+.ai3-o.is-ok { border-color: var(--ars-blue); color: var(--ars-blue-deep); }
+.ai3-o.is-ng { border-style: dashed; }
+.ai3-o.is-warn { border-color: var(--ars-line-strong); font-weight: 600; }
+.ai3-o.is-muted, .ai3-mut { color: var(--ars-faint); }
+.ai3-o + small { display: block; color: var(--ars-muted); }

@@ -73,6 +73,9 @@ export default async function handler(req, res) {
   }
 
   const engines = normalizeEngines(body.engines);
+  // 地域（任意）。SerpApi の地域名（例: Shibuya,Tokyo,Japan）。形が違えば計測しない（黙って日本全体に変えない）
+  const location = normalizeLocation(body.location);
+  if (location === false) return json(res, 400, { error: 'location must look like "City,Prefecture,Japan" (letters, spaces, commas; max 80)' });
   // 競合（名前は必須・最大5件）。回答に競合の名前が出たか・競合のサイトが出典になったかも数える（SOV 用）
   const competitors = (Array.isArray(body.competitors) ? body.competitors : [])
     .map((c) => ({ name: String((c && c.name) || '').trim().slice(0, 80), url: String((c && c.url) || '').trim() }))
@@ -100,7 +103,7 @@ export default async function handler(req, res) {
   const rows = [];
   const engineStatus = {};
 
-  const measured = await measureEngines({ brand, prompts, engines, competitors, pageText, pageUrl, pageTitle, date });
+  const measured = await measureEngines({ brand, prompts, engines, competitors, pageText, pageUrl, pageTitle, date, location });
   measured.rows.forEach((r) => rows.push(r));
   Object.assign(engineStatus, measured.engineStatus);
 
@@ -151,7 +154,7 @@ export default async function handler(req, res) {
  * 計測の本体（Studio の計測 API と定期計測の両方から使う）。AI ごとに並べて聞き、行と AI ごとの状態を返す
  *   prompts: [{ keyword, prompt }] / engines: normalizeEngines 済み / competitors: [{ name, url }]
  */
-export async function measureEngines({ brand, prompts, engines, competitors, pageText = '', pageUrl = null, pageTitle = null, date = new Date().toISOString().slice(0, 10) }) {
+export async function measureEngines({ brand, prompts, engines, competitors, pageText = '', pageUrl = null, pageTitle = null, date = new Date().toISOString().slice(0, 10), location = null }) {
   const rows = [];
   const engineStatus = {};
   await Promise.all(engines.map(async (engine) => {
@@ -175,7 +178,7 @@ export async function measureEngines({ brand, prompts, engines, competitors, pag
         });
         engineStatus.jev = { ok: true, count: judged.length, evidenceClass: 'Estimated' };
       } else {
-        const live = await measureWithProvider(engine, brand, prompts, pageUrl, competitors);
+        const live = await measureWithProvider(engine, brand, prompts, pageUrl, competitors, { location });
         live.rows.forEach((r) => {
           rows.push(Object.assign({ measurement_date: date, url: pageUrl || '' }, r));
         });
@@ -291,6 +294,8 @@ function normalizePrompts(raw) {
       };
     })
     .filter((p) => p.prompt)
+    // 同じ質問（空白・大文字小文字の違いだけ）は1回だけ聞く（費用と集計の二重計上を防ぐ）
+    .filter((p, i, a) => a.findIndex((q) => q.prompt.replace(/\s+/g, '').toLowerCase() === p.prompt.replace(/\s+/g, '').toLowerCase()) === i)
     .slice(0, MAX_PROMPTS);
 }
 
@@ -471,7 +476,8 @@ export function judgeAnswer({ answer, citations, shown, brand, host, competitors
   };
 }
 
-async function measureWithProvider(engine, brand, prompts, pageUrl, competitors) {
+async function measureWithProvider(engine, brand, prompts, pageUrl, competitors, opts = {}) {
+  const location = opts.location || null;
   const gatewayKey = process.env.AI_GATEWAY_API_KEY || '';
   const keyMap = {
     chatgpt: process.env.OPENAI_API_KEY,
@@ -519,7 +525,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
   const withSearch = useGateway && (engine === 'claude' || engine === 'chatgpt_search');
   const mentionOnly = engine === 'chatgpt';
   const measuredAt = new Date().toISOString();
-  const conditions = { engine, model: useGateway ? gatewayModel(engine) : directModel(engine), via: useGateway ? 'ai-gateway' : 'direct', search: mentionOnly ? false : true, location: 'JP' };
+  const conditions = { engine, model: useGateway ? gatewayModel(engine) : directModel(engine), via: useGateway ? 'ai-gateway' : 'direct', search: mentionOnly ? false : true, location: location || 'JP' };
 
   // Gateway の無料枠は1分あたりの回数に上限がある（Perplexity は5回/分）。同時に2問までにし、
   // 上限に当たったら返ってきた待ち時間だけ待って聞き直す（関数の制限時間に収まる範囲で）
@@ -530,7 +536,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
       model: conditions.model, source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API', measured_at: measuredAt, conditions };
     let out;
     try {
-      if (withSearch) out = await withRateRetry(() => callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt), deadline);
+      if (withSearch) out = await withRateRetry(() => callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt, location), deadline);
       else {
         let got = null;
         if (useGateway && engine === 'perplexity') {
@@ -538,14 +544,14 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
           catch (e) { if (/rate limit|回数の上限|429/i.test(String((e && e.message) || e))) throw e; got = null; }
           if (got && !got.answer) got = null;
         }
-        if (!got) got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt)), deadline);
+        if (!got) got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt, location)), deadline);
         out = got && typeof got === 'object'
-          ? { answer: got.answer, citations: got.citations, searched: got.searched != null ? got.searched : engine === 'perplexity', fields: got.fields, shown: got.shown, model_used: got.model_used || null }
+          ? { answer: got.answer, citations: got.citations, searched: got.searched != null ? got.searched : engine === 'perplexity', fields: got.fields, shown: got.shown, location_used: got.location_used || null, model_used: got.model_used || null }
           : { answer: got, citations: null, searched: engine === 'perplexity' };
       }
     } catch (err) {
       // この質問だけ失敗（回数の上限・タイムアウトなど）。言及も引用も判定できないので null。集計では「エラー」として別に数える
-      return Object.assign(base, { status: 'error', error: String((err && err.message) || err || 'failed').slice(0, 300), mentioned: null, cited: null, cite_source: 'error', citeMethod: 'none',
+      return Object.assign(base, { status: 'error', error: String((err && err.message) || err || 'failed').slice(0, 300), error_type: errorType(err), mentioned: null, cited: null, cite_source: 'error', citeMethod: 'none',
         cited_by_sources: null, self_url_in_text: null, sources_available: false, searched: false, citations: [], urls_in_answer: [],
         competitors: (competitors || []).map((c) => ({ name: c.name, mentioned: null, cited: null })), order: [], self_rank: null, answer_excerpt: '' });
     }
@@ -568,10 +574,18 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
         answer_text: String(out.answer || '').slice(0, 4000)
       });
     }
+    // 検索ありの ChatGPT で、検索が実際に走らなかった回答は「検索あり」の結果に入れない（失敗として別に数える）
+    if (engine === 'chatgpt_search' && !out.searched) {
+      return Object.assign(base, { status: 'error', error: 'ChatGPT が Web 検索をしないで答えました（検索ありの結果に入れません）', error_type: 'search_not_run', search_ran: false, mentioned: null, cited: null, cite_source: 'error', citeMethod: 'none',
+        cited_by_sources: null, self_url_in_text: null, sources_available: false, searched: false, citations: [], urls_in_answer: [],
+        competitors: (competitors || []).map((c) => ({ name: c.name, mentioned: null, cited: null })), order: [], self_rank: null, answer_excerpt: String(out.answer || '').slice(0, 400), answer_text: String(out.answer || '').slice(0, 4000) });
+    }
     const j = judgeAnswer({ answer: out.answer, citations: out.citations, shown: out.shown, brand, host, competitors, searched: out.searched });
     // 案内に従って別のモデルで答えたときは、その行のモデルと条件を実際のものにする（条件の違う結果を混ぜないため）
     if (out.model_used && out.model_used !== base.model) Object.assign(base, { model: out.model_used, conditions: Object.assign({}, conditions, { model: out.model_used }) });
     return Object.assign(base, j, {
+      search_ran: !!out.searched,
+      location_used: out.location_used || null,
       answer_excerpt: String(out.answer || '').slice(0, 400),
       // 根拠の確認用に、回答の本文を残す（長すぎる分は切る）
       answer_text: String(out.answer || '').slice(0, 4000),
@@ -612,14 +626,14 @@ function hostMatches(url, host) {
 }
 
 /** Responses API（Web検索つき）。引用は output_text の url_citation から取る */
-async function callResponsesWithSearch(model, key, prompt) {
+async function callResponsesWithSearch(model, key, prompt, location) {
   const res = await fetch('https://ai-gateway.vercel.sh/v1/responses', {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model,
       input: prompt,
-      tools: [{ type: 'web_search', user_location: { type: 'approximate', country: 'JP' } }],
+      tools: [{ type: 'web_search', user_location: userLocation(location) }],
       // 費用を抑える: 検索は1回まで・推論は少なめ（2026-09-30 実測 gpt-5-mini: 制限なし 0.04〜0.085ドル/回答・3〜7回検索 → 制限あり 約0.015ドル/回答、引用URLは8〜12件返る）
       max_tool_calls: 1,
       reasoning: /^openai\//.test(model) ? { effort: 'low' } : undefined,
@@ -840,6 +854,7 @@ export async function callGemini(key, prompt, model = process.env.AIRREACH_GEMIN
 const SERP_BASE = 'https://serpapi.com/search.json';
 async function serpGet(params, key) {
   const q = new URLSearchParams(Object.assign({ hl: 'ja', gl: 'jp', api_key: key }, params));
+  if (!q.get('location')) q.delete('location');
   const res = await fetch(SERP_BASE + '?' + q.toString(), { signal: AbortSignal.timeout(90000) });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.error) {
@@ -867,22 +882,53 @@ export function serpAnswer(part) {
   const refs = (p.references || []).map((r) => r && r.link).filter((u) => /^https?:\/\//i.test(String(u || '')));
   return { answer: serpBlocksText(p.text_blocks), citations: refs.filter((u, i, a) => a.indexOf(u) === i).slice(0, 20) };
 }
-export async function callSerpAio(key, prompt) {
-  const data = await serpGet({ engine: 'google', q: prompt, google_domain: 'google.co.jp' }, key);
+export async function callSerpAio(key, prompt, location) {
+  const data = await serpGet({ engine: 'google', q: prompt, google_domain: 'google.co.jp', location: location || '' }, key);
+  const used = serpLocationUsed(data);
   let aio = data.ai_overview || null;
   // 後から読み込まれる形のときは、page_token でもう1回取る
   if (aio && aio.page_token && !(aio.text_blocks && aio.text_blocks.length)) {
     const d2 = await serpGet({ engine: 'google_ai_overview', page_token: aio.page_token }, key);
     aio = d2.ai_overview || aio;
   }
-  if (!aio || !(aio.text_blocks && aio.text_blocks.length)) return { answer: '', citations: [], searched: true, shown: false, fields: ['serpapi', 'aio_not_shown'] };
+  if (!aio || !(aio.text_blocks && aio.text_blocks.length)) return { answer: '', citations: [], searched: true, shown: false, fields: ['serpapi', 'aio_not_shown'], location_used: used };
   const a = serpAnswer(aio);
-  return { answer: a.answer, citations: a.citations, searched: true, shown: true, fields: ['serpapi', 'ai_overview'] };
+  return { answer: a.answer, citations: a.citations, searched: true, shown: true, fields: ['serpapi', 'ai_overview'], location_used: used };
 }
-export async function callSerpAiMode(key, prompt) {
-  const data = await serpGet({ engine: 'google_ai_mode', q: prompt }, key);
+export async function callSerpAiMode(key, prompt, location) {
+  const data = await serpGet({ engine: 'google_ai_mode', q: prompt, location: location || '' }, key);
   const a = serpAnswer(data);
-  return { answer: a.answer, citations: a.citations, searched: true, shown: !!a.answer, fields: ['serpapi', 'ai_mode'] };
+  return { answer: a.answer, citations: a.citations, searched: true, shown: !!a.answer, fields: ['serpapi', 'ai_mode'], location_used: serpLocationUsed(data) };
+}
+/** SerpApi が実際に使った地域（指定しなかったときは null） */
+export function serpLocationUsed(data) {
+  const sp = (data && data.search_parameters) || {};
+  return sp.location_used || sp.location_requested || null;
+}
+/** 地域の指定を、SerpApi の地域名の形（英字・空白・カンマ）に限る。空なら null（日本全体）、形が違えば false */
+export function normalizeLocation(v) {
+  if (v == null || v === '') return null;
+  const t = String(v).trim().replace(/\s*,\s*/g, ',');
+  if (!t) return null;
+  if (!/^[A-Za-z][A-Za-z .'-]*(,[A-Za-z][A-Za-z .'-]*){0,3}$/.test(t) || t.length > 80) return false;
+  return t;
+}
+/** OpenAI の web_search に渡す地域（市区町村だけを渡す。国は日本） */
+export function userLocation(location) {
+  const parts = String(location || '').split(',').map((x) => x.trim()).filter(Boolean);
+  const out = { type: 'approximate', country: 'JP' };
+  // 「市区町村,都道府県,Japan」なら市区町村と都道府県、「都道府県,Japan」なら都道府県だけ
+  if (parts.length >= 3) { out.city = parts[0]; out.region = parts[1]; } else if (parts.length === 2) out.region = parts[0];
+  return out;
+}
+/** 失敗の種類（集計で分けて数える） */
+export function errorType(err) {
+  const m = String((err && err.message) || err || '');
+  if (/rate limit|回数の上限|429|too many requests/i.test(m)) return 'rate_limit';
+  if (/timeout|timed out|aborted|時間/i.test(m)) return 'timeout';
+  if (/fetch failed|network|ECONN|ENOTFOUND|socket/i.test(m)) return 'network';
+  if (/not configured|API_KEY|unauthorized|401|403/i.test(m)) return 'auth';
+  return 'other';
 }
 
 async function resolveRedirect(uri) {
@@ -911,13 +957,13 @@ export async function parseGeminiResponse(data, resolve) {
   return { answer, citations: list.length ? list : null, searched, fields: ['gemini'].concat(gm ? ['groundingMetadata'] : []) };
 }
 
-async function callProvider(engine, key, prompt) {
+async function callProvider(engine, key, prompt, location) {
   const system =
     'You are answering a Japanese business search question. Be concise. Prefer factual sources when known.';
   if (engine === 'gemini') return callGemini(key, prompt);
-  if (engine === 'google_aio') return callSerpAio(key, prompt);
-  if (engine === 'google_ai_mode') return callSerpAiMode(key, prompt);
-  if (engine === 'chatgpt_search') return callOpenAISearch(key, prompt);
+  if (engine === 'google_aio') return callSerpAio(key, prompt, location);
+  if (engine === 'google_ai_mode') return callSerpAiMode(key, prompt, location);
+  if (engine === 'chatgpt_search') return callOpenAISearch(key, prompt, location);
   if (engine === 'chatgpt') {
     const oai = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -1010,12 +1056,12 @@ export function parseClaudeSearch(data) {
   return { answer, citations: urls.length ? urls.slice(0, 20) : null, searched, fields: ['claude'].concat(searched ? ['web_search'] : []) };
 }
 /** ChatGPT（OpenAI の API・直接）を Web 検索つきで聞く（Responses API）。OPENAI_API_KEY が必要 */
-export async function callOpenAISearch(key, prompt) {
+export async function callOpenAISearch(key, prompt, location) {
   const model = directModel('chatgpt_search');
   const res = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, input: prompt, tools: [{ type: 'web_search', user_location: { type: 'approximate', country: 'JP' } }], max_tool_calls: 1, reasoning: { effort: 'low' }, store: false }),
+    body: JSON.stringify({ model, input: prompt, tools: [{ type: 'web_search', user_location: userLocation(location) }], max_tool_calls: 1, reasoning: { effort: 'low' }, store: false }),
     signal: AbortSignal.timeout(120000)
   });
   const data = await res.json().catch(() => ({}));
