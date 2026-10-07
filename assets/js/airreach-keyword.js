@@ -402,12 +402,22 @@
     var out = {};
     function clean(t) { return String(t || '').replace(/\s+/g, ' ').trim(); }
     function quote(text, at, len) { var a = Math.max(0, at - 20), b = Math.min(text.length, at + len + 30); return (a > 0 ? '…' : '') + clean(text.slice(a, b)) + (b < text.length ? '…' : ''); }
+    // 前後の短い範囲に、ナビの言葉が3つ以上か区切り記号が3つ以上あれば、メニューやナビの切れ端とみなす
+    var NAV_WORDS = /ホーム|トップ|TOP|お問い?合わせ|アクセス|会社概要|サイトマップ|プライバシー|個人情報保護|ログイン|カート|ブログ|お知らせ|採用情報|よくある質問|English|メニュー一覧|サービス一覧/g;
+    function navFragment(t, m) {
+      var w = t.slice(Math.max(0, m.index - 30), m.index + m[0].length + 30);
+      var words = (w.match(NAV_WORDS) || []).length;
+      var seps = (w.match(/[|｜›»＞>]/g) || []).length;
+      return words >= 3 || seps >= 3 || /[|｜]/.test(m[0]);
+    }
     function find(key, rx, pick, guard) {
       if (out[key]) return;
       for (var i = 0; i < docs.length; i++) {
         var t = docs[i].text, m, re = new RegExp(rx.source, rx.flags.indexOf('g') >= 0 ? rx.flags : rx.flags + 'g');
         while ((m = re.exec(t))) {
           if (guard && !guard(t, m)) continue;
+          // メニューやナビの切れ端（「ホーム | 料金 | アクセス」など）は答えの根拠にしない。電話・住所は除く（フッターに並んでいても事実なので）
+          if (key !== 'phone' && key !== 'address' && navFragment(t, m)) continue;
           var v = clean(pick ? pick(m) : m[0]);
           // 開いたかっこだけが残ったら閉じる（値を途中で切ったとき）
           if ((v.match(/（/g) || []).length > (v.match(/）/g) || []).length) v += '）';
