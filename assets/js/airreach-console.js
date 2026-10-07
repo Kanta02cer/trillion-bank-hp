@@ -408,52 +408,9 @@
    * 済み／まだ は登録された材料から判定する（手で付けるチェックは持たない）。
    * 「直す材料を作る」は、今月登録した施策の予定で判定する（前月から残った予定は持ち越しとして数えるだけ。お客様へ渡したかは記録が無いので判定しない）
    */
-  function monthPlan(c, sites, live, repNow, actions, lastEvent) {
-    var studio = studioHref(c, sites), base = '#/c/' + c.id + '/', mon = thisMonth();
-    var cur = live.site.current, tr = live.traffic;
-    var mat = window.AirReachStaff.materialsStep(actions, mon);
-    var rs = repNow ? repNow.status : '';
-    var md = function (d) { return String(d).slice(5, 10).replace('-', '/'); };
-    var returned = rs === 'draft' && lastEvent === 'returned';
-    var steps = [
-      { title: 'サイトを調べる', what: 'URL を確かめて「分析する」を押すだけ', time: '約1分',
-        why: cur ? '今月の診断がありません（最新は ' + md(day(cur.createdAt)) + '）' : 'まだ診断していません',
-        ok: !!(cur && cur.inMonth), note: cur && cur.inMonth ? md(day(cur.createdAt)) + ' 診断' : '', btn: '分析する', href: studio + '#start' },
-      { title: '直す材料を作る', what: 'よくある質問・お店の情報の下書きを作り、施策の予定として登録する', time: '約10分',
-        why: '今月の施策の予定がまだ登録されていません' + (mat.carry ? '（前月からの持ち越し ' + mat.carry + '件は数えません）' : ''),
-        ok: mat.ok, okLabel: mat.doneLabel, note: mat.note, btn: '直す材料を作る', href: studio + '#generator' },
-      { title: 'AI での見え方を測る', what: '質問を確かめて「計測する」を押す', time: '約2分',
-        why: '今月の AI 計測がありません', ok: !!live.ai, note: live.ai ? md(live.ai.measuredOn) + ' 計測' : '', btn: '計測する', href: studio + '#hack2' },
-      { title: '検索と訪問の数字を入れる', what: 'Google と連携していれば月を選ぶだけ', time: '約3分',
-        why: !tr.gsc && !tr.ga4 ? '今月の Search Console・GA4 の数字がありません' : !tr.gsc ? '今月の Search Console の数字がありません' : '今月の GA4 の数字がありません',
-        ok: !!(tr.gsc && tr.ga4), partial: !!(tr.gsc || tr.ga4) && !(tr.gsc && tr.ga4), note: tr.gsc || tr.ga4 ? (tr.gsc ? 'Search Console ✓' : 'Search Console まだ') + '・' + (tr.ga4 ? 'GA4 ✓' : 'GA4 まだ') : '', btn: '取り込む', href: base + 'traffic' },
-      { title: 'やったことを記録する', what: '直したことを「実施済み」にして、公開したページの URL を入れる', time: '約3分',
-        why: '今月「実施済み」にした施策がありません', ok: live.actions.length > 0, note: live.actions.length ? live.actions.length + '件' : '', btn: '記録する', href: base + 'actions' },
-      { title: '月次レポートを作る', what: '結論と次の施策を書いて、確認を依頼する', time: '約15分',
-        why: !repNow ? '今月のレポートがまだありません' : returned ? '差し戻されています。直して、もう一度確認を依頼してください' : '下書きのままです（確認を依頼していません）',
-        ok: rs === 'in_review' || rs === 'approved' || rs === 'published', note: repNow ? (REPORT_STATUS[rs] || [rs])[0] + (returned ? '・差し戻し' : '') : '',
-        btn: !repNow ? 'レポートを作る' : rs === 'draft' ? '続きを書く' : '開く', href: repNow ? '#/r/' + repNow.id : base + 'reports' },
-      { title: 'お客様に公開する', what: '承認されたレポートを公開する（お客様の画面と PDF に出る）', time: '約1分',
-        why: rs === 'approved' ? '承認済みです。公開するとお客様が見られます' : rs === 'in_review' ? '承認を待っています' : '承認されたら公開します',
-        ok: rs === 'published', note: '', btn: rs === 'approved' ? '公開する' : '開く', href: repNow ? '#/r/' + repNow.id : base + 'reports' }
-    ];
-    var doneN = steps.filter(function (s) { return s.ok; }).length;
-    var nextI = -1; steps.some(function (s, i) { if (!s.ok) { nextI = i; return true; } return false; });
-    return { steps: steps, doneN: doneN, nextI: nextI, next: nextI >= 0 ? steps[nextI] : null, returned: returned, mon: mon };
-  }
-  /**
-   * 作業画面の上に出す「今月の7工程」の帯：済み（✓）・次・途中・いまここ を並べ、どの工程にも1回で移れる
-   * cur: いま開いている工程の番号（0 始まり）
-   */
-  function flowStrip(plan, cur) {
-    if (!plan) return '';
-    return '<nav class="arc-flow" aria-label="今月の7工程"><ol>' + plan.steps.map(function (s, i) {
-      var here = i === cur;
-      var st = here ? 'いまここ' : s.ok ? '✓' : i === plan.nextI ? '次' : s.partial ? '途中' : '';
-      var cls = here ? ' is-here' : s.ok ? ' is-ok' : i === plan.nextI ? ' is-next' : s.partial ? ' is-part' : '';
-      return '<li><a class="arc-flow-i' + cls + '" href="' + esc(s.href) + '"' + (here ? ' aria-current="step"' : '') + '><span class="arc-flow-k">' + (i + 1) + (st ? (here ? ' · ' : ' ') + st : '') + '</span><span class="arc-flow-l">' + esc(s.title) + '</span></a></li>';
-    }).join('') + '</ol><span class="arc-flow-p">' + plan.doneN + ' / ' + plan.steps.length + ' 済み</span></nav>';
-  }
+  // 今月の7工程の判定と帯は assets/js/airreach-month-plan.js（Studio と共通）
+  function monthPlan(c, sites, live, repNow, actions, lastEvent) { return window.AirReachMonthPlan.build({ client: c, sites: sites, live: live, repNow: repNow, actions: actions, lastEvent: lastEvent }); }
+  function flowStrip(plan, cur) { return window.AirReachMonthPlan.strip(plan, cur); }
   function monthSteps(plan) {
     var steps = plan.steps, nextI = plan.nextI;
     var list = '<ol class="arc-msteps">' + steps.map(function (s, i) {
@@ -1422,7 +1379,11 @@
         '</section>';
 
       var reqConcl = function (i) { return i === 0 ? '（必須）' : '（任意）'; };
+      // 今月のレポートなら、上に今月の7工程の帯（6. レポート、承認済み・公開なら 7. 公開 を「いまここ」に）
+      var editPlan = null;
+      if (live && r.period_month === thisMonth() + '-01') { try { editPlan = monthPlan(client, sites, live, r, pack[7], events.length ? events[events.length - 1].action : null); } catch (e) { editPlan = null; } }
       shell(ymJa(r.period_month) + ' のレポート',
+        flowStrip(editPlan, r.status === 'approved' || r.status === 'published' ? 6 : 5) +
         '<div class="arc-editbar" id="arc-editbar"><span class="arc-editbar-t"><b>' + esc(cname) + '</b> · ' + esc(ymJa(r.period_month)) + ' ' + statusChip(r.status) + '</span>' +
           (editable ? '<span class="arc-save-state" id="arc-save-state" role="status" aria-live="polite">保存済み</span><button type="button" class="arc-btn-sm" id="arc-save-now">今すぐ保存</button>' : '<span class="arc-sub">' + (flow ? '下書きではないため編集できません' : '') + '</span>') +
           (flow && r.status === 'draft' ? '<button type="button" class="arc-btn" id="arc-submit">確認を依頼する</button>' : '') + '</div>' +
