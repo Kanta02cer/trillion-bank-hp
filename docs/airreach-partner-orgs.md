@@ -38,5 +38,5 @@ python3 scripts/airreach-api/phase2-apply.py assign-client <顧客ID> 共同会�
 
 ## テスト
 
-- `scripts/airreach-api/partner-orgs-test.sql`（ローカル Postgres）：共同会社2社と TB の顧客を置き、表8つ＋顧客・関数・書き込み・承認・割り当ての 48項目
+- `scripts/airreach-api/partner-orgs-test.sql`（ローカル Postgres）：共同会社2社と TB の顧客を置き、表8つ＋顧客・関数・書き込み・承認・割り当ての 50項目
 - 既存の SQL テスト10本すべて合格。取り消し → 既存テスト合格 → 再適用 → 合格
