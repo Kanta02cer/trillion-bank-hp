@@ -91,7 +91,7 @@
             (e.mentioned ? '名前あり' : '名前なし') + '・' + (e.cited === 1 ? '出典あり' : e.cited === 0 ? '出典なし' : '判定できない') + '<br><small class="arr-na">' + esc(HOW[e.citeSource] || '') + '</small>';
           var src = (e.citations || []).length ? '<ol class="arr-evi-src">' + e.citations.map(function (u) { return '<li>' + esc(String(u).replace(/^https?:\/\//, '').slice(0, 80)) + '</li>'; }).join('') + '</ol>' :
             ((e.urlsInAnswer || []).length ? '<small class="arr-na">本文の URL：' + esc(e.urlsInAnswer.map(function (u) { return String(u).replace(/^https?:\/\//, ''); }).join('、').slice(0, 160)) + '</small>' : '');
-          return '<tr><td>' + esc(e.measuredAt ? (window.AirReachReport ? window.AirReachReport.jstTime(e.measuredAt) : e.measuredAt) : e.measuredOn) + '</td><td>' + esc(prov(e.engine)) + (e.model ? '<br><small class="arr-na">' + esc(e.model) + (e.search ? '・検索あり' : '') + '</small>' : '') + '</td><td>' + res + '</td><td>' + src +
+          return '<tr><td>' + esc(e.measuredAt ? (window.AirReachReport ? window.AirReachReport.jstTime(e.measuredAt) : e.measuredAt) : e.measuredOn) + '</td><td>' + esc(prov(e.engine)) + (modelName(e.model) ? '<br><small class="arr-na">' + esc(modelName(e.model)) + (e.search ? '・検索あり' : '') + '</small>' : (e.search ? '<br><small class="arr-na">検索あり</small>' : '')) + '</td><td>' + res + '</td><td>' + src +
             (e.answer ? '<div class="arr-evi-a">' + esc(e.answer) + (e.answer.length >= 400 ? '…' : '') + '</div>' : '') + '</td></tr>';
         }).join('') + '</tbody></table></div>';
       }).join('') + '</details>';
@@ -186,6 +186,9 @@
     return h;
   }
 
+  // 計測の記録の model に入っている取得の手段（serpapi/… など）は出さない。AI の名前は prov() で出している
+  function modelName(m) { m = String(m || ''); return /^serpapi\//i.test(m) ? '' : m; }
+
   function render(r) {
     var c = r.compiled || {};
     var site = c.site || {}, cur = site.current || null, prev = site.previous || null;
@@ -244,7 +247,7 @@
         ai.providers.map(function (p) {
           var nd = function (n, dd) { return n != null && dd ? '<small class="arr-na">（' + esc(n) + ' ÷ ' + esc(dd) + '）</small>' : ''; };
           var aside = [p.undetermined ? '出典が取れず判定できない ' + p.undetermined : '', p.notShown ? 'AI の回答が表示されなかった ' + p.notShown : '', p.errors ? 'エラー ' + p.errors : ''].filter(Boolean).join('<br>');
-          return '<tr><td>' + esc(prov(p.provider)) + ' <small class="arr-na">' + esc(p.model) + '</small></td><td>' + v(p.answers) + (p.runs > 1 ? '<small class="arr-na">（' + esc(p.runs) + '回の計測）</small>' : '') + '</td><td>' + v(p.citeRate, '%') + nd(p.citeCount, p.judged) + '</td><td>' + v(p.mentionRate, '%') + nd(p.mentionCount, p.answers) + '</td><td>' + (aside || '0') + '</td></tr>';
+          return '<tr><td>' + esc(prov(p.provider)) + (modelName(p.model) ? ' <small class="arr-na">' + esc(modelName(p.model)) + '</small>' : '') + '</td><td>' + v(p.answers) + (p.runs > 1 ? '<small class="arr-na">（' + esc(p.runs) + '回の計測）</small>' : '') + '</td><td>' + v(p.citeRate, '%') + nd(p.citeCount, p.judged) + '</td><td>' + v(p.mentionRate, '%') + nd(p.mentionCount, p.answers) + '</td><td>' + (aside || '0') + '</td></tr>';
         }).join('') +
         '</tbody></table>' +
         typesHtml(ai) +
