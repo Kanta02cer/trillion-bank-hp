@@ -127,6 +127,12 @@ expect('Bistro inside word ignored', K.genreIn('MyBistroApp'), '');
 expect('長野市川中島町 is 長野', K.derive({ title: 'そば処 テスト', text: '〒381-2221 長野市川中島町1-2 営業時間 11時から' }).keyword, '長野 そば');
 expect('静岡県静岡市 is 静岡', K.derive({ title: 'テスト寿司', text: '住所 静岡県静岡市葵区1-2-3' }).keyword, '静岡 寿司');
 
+// 地名でないものを地名と読まない（2026-10-07：都市伝説のメディアで地域が「伝説」「都市」になっていた）
+expect('「北海道の都市伝説」は住所ではない', K.parseAddress('北海道 北海道の都市伝説7選').city, '');
+expect('「いの町」（の を含む実在の町）は読む', K.parseAddress('高知県吾川郡いの町枝川').city, 'いの町');
+expect('タイトルの「都市伝説」の「都市」は地名ではない', K.derive({ title: '都市伝説ラボ | 都市伝説・オカルト', text: '北海道 北海道の都市伝説7選 青森 青森の都市伝説7選' }, 'restaurant').area.value, '');
+expect('タイトルの本物の地名は今までどおり', K.derive({ title: '麺屋 札幌市のラーメン', text: '北海道札幌市中央区北1条 ラーメン ラーメン ラーメン' }).area.value, '札幌');
+
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);
