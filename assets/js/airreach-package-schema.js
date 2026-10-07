@@ -209,15 +209,19 @@
     });
     var lock = validateEntityLock(map, opts || {});
     lock.errors.forEach(function (e) { errors.push(e); });
+    // 会社・ブランド・サービスを人が確定していない（MANIFEST.entity_confirmed=false）・承認待ちの FAQ がある → 公開用にしない（下書きのみ）
+    var gate = [];
+    if (mf.entity_confirmed === false) gate.push('会社・ブランド・サービスが未確定です（担当者が確定するまで公開に使えません）');
+    if (mf.faq_counts && mf.faq_counts.pending_approval > 0) gate.push('承認待ちの FAQ が ' + mf.faq_counts.pending_approval + ' 問あります');
     var structureOk = errors.length === 0 && missing.length === 0;
     return {
       ok: structureOk,
       missing: missing,
       extra: extra,
       errors: errors,
-      warnings: (lock.warnings || []).slice(),
+      warnings: (lock.warnings || []).concat(gate),
       entityLock: lock,
-      publishable: structureOk && !!lock.publishable,
+      publishable: structureOk && !!lock.publishable && !gate.length,
       draftOk: structureOk && !!lock.draftOk
     };
   }

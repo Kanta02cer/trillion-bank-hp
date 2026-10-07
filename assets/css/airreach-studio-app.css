@@ -362,3 +362,29 @@ body:not(.has-job) [data-needs-job]{display:none}
 .ai3-o.is-warn { border-color: var(--ars-line-strong); font-weight: 600; }
 .ai3-o.is-muted, .ai3-mut { color: var(--ars-faint); }
 .ai3-o + small { display: block; color: var(--ars-muted); }
+
+/* 会社・サービスの確定と FAQ の承認（airreach-confirm.js） */
+.ocf { display: grid; gap: 14px; margin: 4px 0 16px; }
+.ocf-ver { margin: 0; color: var(--ars-ink-2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.ocf-ent, .ocf-faq { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--ars-line); border-radius: var(--ars-r-md); background: var(--ars-canvas); }
+.ocf-ent > div:first-child, .ocf-faq > div:first-child { display: grid; gap: 2px; }
+.ocf-ent > div:first-child span, .ocf-faq > div:first-child span { color: var(--ars-muted); font-size: 12px; }
+.ocf-ent.is-done { border-color: var(--ars-blue); }
+.ocf-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.ocf-form label { display: grid; gap: 4px; font-size: 12px; color: var(--ars-muted); min-width: 0; }
+.ocf-ent dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 6px 14px; margin: 0; }
+.ocf-ent dt { font-size: 12px; color: var(--ars-muted); }
+.ocf-ent dd { margin: 0; color: var(--ars-ink); overflow-wrap: anywhere; }
+.ocf-err { margin: 0; color: var(--ars-ink); font-size: 12px; border-left: 3px solid var(--ars-line-strong); padding-left: 8px; }
+.ocf-faq ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.ocf-q { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--ars-line); border-radius: var(--ars-r-sm); background: var(--ars-surface); }
+.ocf-q.is-approved { border-color: var(--ars-blue); }
+.ocf-q.is-rejected { opacity: .65; }
+.ocf-qt { margin: 0; font-weight: 600; color: var(--ars-ink); }
+.ocf-a { margin: 0; color: var(--ars-ink-2); white-space: pre-wrap; }
+.ocf-src { margin: 0; font-size: 12px; color: var(--ars-muted); overflow-wrap: anywhere; }
+.ocf-act { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ocf-st { font-size: 12px; color: var(--ars-muted); margin-right: auto; }
+.ocf-none { margin: 0; color: var(--ars-muted); font-size: 13px; }
+.ocf-gate { margin: 0; padding: 8px 12px; border-left: 3px solid var(--ars-line-strong); background: var(--ars-canvas); font-size: 13px; color: var(--ars-ink-2); }
+.ocf-gate.is-ok { border-left-color: var(--ars-blue); }
