@@ -21,6 +21,8 @@ Change ID（DEV-YYYY-NNN）の承認後にだけ使う。各手順は単独で�
   python3 scripts/airreach-api/phase2-apply.py add-partner-org <会社名>                       # 共同会社を作る
   python3 scripts/airreach-api/phase2-apply.py add-partner-staff <email> <会社名> [approver]   # 共同会社の人を追加（approver で承認者にする）
   python3 scripts/airreach-api/phase2-apply.py assign-client <顧客ID> <会社名|TB>              # 顧客の担当会社を決める（TB＝Trillion Bank に戻す）
+  python3 scripts/airreach-api/phase2-apply.py partner-status [会社名]                         # 共同会社・人・割り当て・ログインの状態（読み取りのみ）
+  python3 scripts/airreach-api/phase2-apply.py remove-partner-staff <email>                    # 共同会社の人を解除する（社内の人は消さない）
 
 Supabase のアクセストークン（Account → Access Tokens で発行・期限つき推奨）は、
 ~/.config/airreach/supabase_token（chmod 600）に置く。画面にもログにも出さない。
@@ -470,6 +472,32 @@ def cmd_assign_client(client_id, org):
     print(f"{r[0]['name']} の担当会社を {org} にしました（共同会社に移すときは、担当者は未設定に戻します）")
 
 
+def cmd_partner_status(org=None):
+    """共同会社ごとに、人（承認者か・最後のログイン）と割り当てた顧客を読む（変更しない）"""
+    confirm_project()
+    where = f"where o.name = '{_plain(org, '会社名')}'" if org else ''
+    for o in sql(f"select o.id, o.name from public.partner_orgs o {where} order by o.created_at", True) or []:
+        print(f"■ {o['name']}")
+        for s_ in sql(f"select s.email, s.name, s.can_approve, (select max(u.last_sign_in_at) from auth.users u where lower(u.email) = s.email) as last_sign_in from public.staff_members s where s.org_id = '{o['id']}' order by s.email", True) or []:
+            print(f"  人: {s_['email']} {s_['name'] or ''} 承認者={'はい' if s_['can_approve'] else 'いいえ'} 最後のログイン={s_['last_sign_in'] or 'まだ'}")
+        cl = sql(f"select c.id, c.name from public.clients c where c.org_id = '{o['id']}' order by c.name", True) or []
+        print(f"  割り当てた顧客: {len(cl)}件" + ''.join(f"\n    {c['id']} {c['name']}" for c in cl))
+
+
+def cmd_remove_partner_staff(email):
+    email = email.strip().lower()
+    if '@' not in email or "'" in email:
+        die('使い方: remove-partner-staff <email>')
+    confirm_project()
+    cur = sql(f"select org_id from public.staff_members where email = '{email}'", True)
+    if not cur:
+        die(f'{email} は登録されていません')
+    if cur[0].get('org_id') is None:
+        die(f'{email} は Trillion Bank の社内の人です。このコマンドでは消しません')
+    sql(f"delete from public.staff_members where email = '{email}' and org_id is not null")
+    print(f'{email} を解除しました（次の画面の読み込みから、社内向けの画面と自社の顧客のデータを使えなくなる）')
+
+
 MAIL_BODY = '''<h2>AirReach ログイン</h2>
 <p>下のリンクを押すと AirReach にログインします。このメールに心当たりがない場合は、何もせずに削除してください。</p>
 <p><a href="{{ .ConfirmationURL }}">ログインする</a></p>
@@ -568,6 +596,10 @@ def main():
         cmd_add_partner_staff(a[1], a[2], len(a) == 4)
     elif a and a[0] == 'assign-client' and len(a) == 3:
         cmd_assign_client(a[1], a[2])
+    elif a and a[0] == 'partner-status' and len(a) in (1, 2):
+        cmd_partner_status(a[1] if len(a) == 2 else None)
+    elif a and a[0] == 'remove-partner-staff' and len(a) == 2:
+        cmd_remove_partner_staff(a[1])
     else:
         print(__doc__)
         sys.exit(0 if not a else 2)

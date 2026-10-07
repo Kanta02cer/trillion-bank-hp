@@ -124,5 +124,30 @@ select pg_temp.as_user('p2@p2.test');
 select pg_temp.ok('割り当てられた顧客は、その共同会社に見える', (select count(*) from public.clients where id = :T) = 1);
 select pg_temp.as_user('p1@p1.test');
 select pg_temp.ok('ほかの共同会社に割り当てた顧客は見えない', (select count(*) from public.clients where id = :T) = 0);
+
+-- ---- 開通前の確認（2026-10-07 追加）：ID の直書き・割り当ての解除・人の解除 ----
+reset role;
+create temp table tb_rep as select id from public.reports where client_id = '00000000-0000-0000-0000-0000000000a0' and status = 'published' limit 1;
+create temp table p2_rep as select id from public.reports where client_id = '00000000-0000-0000-0000-0000000000a2' limit 1;
+grant select on tb_rep, p2_rep to authenticated;
+set local role authenticated;
+select pg_temp.as_user('p1@p1.test');
+select pg_temp.ok('ID の直書き：TB の顧客の公開レポートを ID で開いても0件（PDF・印刷も作れない）', (select count(*) from public.reports where id = (select id from tb_rep)) = 0);
+select pg_temp.ok('ID の直書き：P2 の顧客のレポートを ID で開いても0件', (select count(*) from public.reports where id = (select id from p2_rep)) = 0);
+select pg_temp.ok('ID の直書き：TB の顧客の診断・計測・Studio を ID で読んでも0件', (select count(*) from public.measurement_runs where client_id = '00000000-0000-0000-0000-0000000000a0') = 0 and (select count(*) from public.studio_workspaces where client_id = '00000000-0000-0000-0000-0000000000a0') = 0 and (select count(*) from public.traffic_snapshots where client_id = '00000000-0000-0000-0000-0000000000a0') = 0);
+select pg_temp.ok('ID の直書き：TB の顧客の依頼・お客様・サイトも0件', (select count(*) from public.client_requests where client_id = '00000000-0000-0000-0000-0000000000a0') = 0 and (select count(*) from public.client_members where client_id = '00000000-0000-0000-0000-0000000000a0') = 0 and (select count(*) from public.client_sites where client_id = '00000000-0000-0000-0000-0000000000a0') = 0);
+-- 割り当てを外す（TB の管理者が顧客を TB に戻す）→ 共同会社の人からは見えなくなる
+select pg_temp.as_user('adm@tb.test');
+select pg_temp.ok('割り当ての解除：TB の管理者が P1 の顧客を TB に戻せる', pg_temp.n($q$update public.clients set org_id = null, owner_email = null where id = '00000000-0000-0000-0000-0000000000a1'$q$) = 1);
+select pg_temp.as_user('p1@p1.test');
+select pg_temp.ok('割り当ての解除後：共同会社の人には顧客もレポートも計測も見えない', (select count(*) from public.clients where id = :A) = 0 and (select count(*) from public.reports where client_id = :A) = 0 and (select count(*) from public.measurement_runs where client_id = :A) = 0);
+select pg_temp.denied('割り当ての解除後：Studio にも保存できない', $q$select public.airreach_studio_save('00000000-0000-0000-0000-0000000000a1', '{"studio":{}}', 99)$q$);
+-- 人の解除（TB の管理者が共同会社の人を消す）→ 社内向けの画面もデータも使えない
+select pg_temp.as_user('adm@tb.test');
+select pg_temp.ok('人の解除：TB の管理者が共同会社の人を消せる', pg_temp.n($q$delete from public.staff_members where email = 'p2@p2.test'$q$) = 1);
+select pg_temp.as_user('p2@p2.test');
+select pg_temp.ok('人の解除後：社内向けの画面を使えない（me.is_staff=false）', (select not (m ->> 'is_staff')::boolean from public.airreach_me() m));
+select pg_temp.ok('人の解除後：自社の顧客だったものも0件', (select count(*) from public.clients) = 0 and (select count(*) from public.reports) = 0 and (select count(*) from public.studio_workspaces) = 0);
+select pg_temp.denied('人の解除後：依頼の関数も使えない', $q$select public.airreach_client_settings('00000000-0000-0000-0000-0000000000a2')$q$);
 rollback;
 \echo ALL PASS
