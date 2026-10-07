@@ -112,6 +112,52 @@
     document.addEventListener('click', function (e) { if (d.open && !d.contains(e.target)) d.open = false; });
   }
 
+  // ---- 今月の7工程の帯（ダッシュボードと同じ判定 airreach-month-plan.js）---------------------
+  //   Studio の 1〜3（サイトを調べる・直す材料・AI で測る）はこの画面の中で切り替え、4〜7 はダッシュボードへ
+  var STUDIO_STEP = { start: 0, generator: 1, hack2: 2 }, flowPlan = null;
+  function curPanel() { var b = document.querySelector('.ars-side button[data-panel].is-active'); return b ? b.getAttribute('data-panel') : 'start'; }
+  function drawFlow() {
+    var M = window.AirReachMonthPlan, box = document.getElementById('ars-flow');
+    if (!M || !flowPlan) { if (box) box.remove(); return; }
+    var cur = STUDIO_STEP[curPanel()]; cur = cur == null ? -1 : cur;
+    if (!box) { box = document.createElement('div'); box.id = 'ars-flow'; var main = document.getElementById('ars-main'); if (!main) return; main.insertBefore(box, main.firstChild); }
+    box.innerHTML = M.strip(flowPlan, cur);
+    var steps = Object.keys(STUDIO_STEP);
+    Array.prototype.forEach.call(box.querySelectorAll('.arc-flow-i'), function (a, i) {
+      if (i > 2) return;
+      a.addEventListener('click', function (e) { var btn = document.querySelector('.ars-side button[data-panel="' + steps[i] + '"]'); if (btn) { e.preventDefault(); btn.click(); } });
+    });
+    var n = box.querySelector('.arc-flow'), at = n && n.querySelector('[aria-current="step"]');
+    if (n && at && n.scrollWidth > n.clientWidth) n.scrollLeft = Math.max(0, at.offsetLeft - 16);
+  }
+  function loadFlow() {
+    var M = window.AirReachMonthPlan, R = window.AirReachReport;
+    if (!client || !M || !R) return;
+    var month = M.thisMonth() + '-01';
+    sb().then(function (s) {
+      return Promise.all([
+        s.from('clients').select('*').eq('id', client.id).maybeSingle(),
+        s.from('client_sites').select('*').eq('client_id', client.id).order('created_at'),
+        s.rpc('airreach_client_scans', { p_client_id: client.id }),
+        s.from('measurement_runs').select('id,measured_on,run_label,query_set_version,summary,created_at').eq('client_id', client.id),
+        s.from('traffic_snapshots').select('*').eq('client_id', client.id),
+        s.from('action_items').select('*').eq('client_id', client.id),
+        s.from('reports').select('id,period_month,status').eq('client_id', client.id).eq('period_month', month).maybeSingle()
+      ]).then(function (rs) {
+        var rep = rs[6] && rs[6].data;
+        var ev = rep ? s.from('report_events').select('action,created_at').eq('report_id', rep.id).order('created_at', { ascending: true }).then(function (x) { var e = x.data || []; return e.length ? e[e.length - 1].action : null; }, function () { return null; }) : Promise.resolve(null);
+        return ev.then(function (last) { return [rs, last]; });
+      });
+    }).then(function (pk) {
+      var rs = pk[0], c = rs[0].data; if (!c) return;
+      var sites = rs[1].data || [], actions = rs[5].data || [];
+      var live = R.compileReport({ client: c, periodMonth: month, scans: rs[2].data || [], runs: rs[3].data || [], traffic: rs[4].data || [], actions: actions });
+      flowPlan = M.build({ client: c, sites: sites, live: live, repNow: rs[6].data || null, actions: actions, lastEvent: pk[1], appBase: '/airreach/app/' });
+      drawFlow();
+    }).catch(function () { flowPlan = null; drawFlow(); });   // ログインしていない・読めないときは帯を出さない
+  }
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.ars-side button[data-panel]'); if (b && flowPlan) setTimeout(drawFlow, 0); });
+
   // ---- 顧客の状態（最新の診断・AI計測・今月のレポート）--------------------------------
   var STATUS_JA = { draft: '下書き', in_review: '確認待ち', approved: '承認済み・未公開', published: '公開' };
   function renderSummary() {
@@ -464,7 +510,7 @@
   }
   function savedRun(key) { try { return (JSON.parse(get(SAVED_RUNS) || '[]') || []).indexOf(key) >= 0; } catch (e) { return false; } }
 
-  function init() { rebuildSide(); renderPicker(); renderSummary(); prefillBrand(); startSync(); renderRunHistory(); setTimeout(function () { takeCustomerQuestions(); autoStart(); setTimeout(autoGscSync, 1500); }, 600); }
+  function init() { rebuildSide(); renderPicker(); renderSummary(); loadFlow(); prefillBrand(); startSync(); renderRunHistory(); setTimeout(function () { takeCustomerQuestions(); autoStart(); setTimeout(autoGscSync, 1500); }, 600); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   // ---- 分析したサイトを、この顧客のサイトとして登録する ------------------------------------------
   // ダッシュボードは「顧客に登録されたサイト」と同じサイトの診断だけを、その顧客の診断として出す。

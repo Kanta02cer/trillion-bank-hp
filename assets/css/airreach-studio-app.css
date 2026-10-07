@@ -311,3 +311,17 @@ body:not(.has-job) [data-needs-job]{display:none}
 .gap-faq summary span{font-weight:400;color:#64748b;font-size:12.5px}
 .gap-checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(14em,1fr));gap:4px 16px;margin-top:6px}
 @media (max-width:640px){.gap-row{grid-template-columns:1fr;gap:6px}.gap-st{justify-self:start}.gap-row.is-ok{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px}}
+
+/* 今月の7工程の帯（ダッシュボードと同じ見た目。airreach-month-plan.js が描く） */
+#ars-flow{margin:0 0 14px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:4px 12px 0}
+#ars-flow .arc-flow{margin:0;border-bottom:0}
+.arc-flow{position:relative;display:flex;align-items:flex-end;gap:12px;margin:-4px 0 14px;padding-bottom:2px;border-bottom:1px solid #e2e8f0;overflow-x:auto}
+.arc-flow ol{flex:1 1 auto;display:grid;grid-template-columns:repeat(7,minmax(88px,1fr));gap:4px;list-style:none;margin:0;padding:0}
+.arc-flow-i{display:flex;flex-direction:column;gap:1px;padding:8px 6px 7px;border-bottom:3px solid transparent;text-decoration:none;color:#475569;min-height:44px;box-sizing:border-box}
+.arc-flow-i:hover{background:#f8fafc}.arc-flow-i:focus-visible{outline:2px solid #1d4ed8;outline-offset:-2px}
+.arc-flow-k{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;font-variant-numeric:tabular-nums}.arc-flow-l{font-size:12.5px;line-height:1.35}
+.arc-flow-i.is-ok .arc-flow-k{color:#15803d}.arc-flow-i.is-next .arc-flow-k{color:#1d4ed8;font-weight:600}.arc-flow-i.is-part .arc-flow-k{color:#b45309}
+.arc-flow-i.is-here{border-bottom-color:#1d4ed8;color:#0f172a}.arc-flow-i.is-here .arc-flow-k{color:#1d4ed8;font-weight:700}.arc-flow-i.is-here .arc-flow-l{font-weight:700}
+.arc-flow-p{flex:none;font-size:12px;color:#64748b;padding-bottom:10px;white-space:nowrap}
+@media (max-width:720px){.arc-flow-p{display:none}}
+#ars-flow .arc-flow ol{grid-template-columns:repeat(7,minmax(108px,1fr))}#ars-flow .arc-flow-k{white-space:nowrap}
