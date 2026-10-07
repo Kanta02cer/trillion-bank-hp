@@ -398,3 +398,9 @@ body:not(.has-job) [data-needs-job]{display:none}
 .ocf-cli.is-none { color: var(--ars-muted); }
 .ocf-cli.is-bad { padding: 6px 10px; border-left: 3px solid var(--ars-line-strong); background: var(--ars-canvas); color: var(--ars-ink); }
 .ocf-ack { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ars-ink); }
+.ai3-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; max-width: 420px; margin: 0 0 10px; padding: 2px; border: 1px solid var(--ars-line); border-radius: var(--ars-r-sm); background: var(--ars-canvas); }
+.ai3-segb { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0 4px; min-width: 0; padding: 6px 8px; border: 0; border-radius: calc(var(--ars-r-sm) - 2px); background: transparent; color: var(--ars-ink-2); font: inherit; font-size: 13px; cursor: pointer; }
+.ai3-segb small { color: var(--ars-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.ai3-segb.is-on { background: var(--ars-surface); color: var(--ars-ink); box-shadow: 0 0 0 1px var(--ars-blue); }
+.ai3-segb:disabled { color: var(--ars-faint); cursor: default; }
+.ai3-segb:focus-visible { outline: 2px solid var(--ars-blue); outline-offset: 1px; }

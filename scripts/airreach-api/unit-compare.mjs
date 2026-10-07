@@ -72,5 +72,11 @@ const b2 = C.bodyHtml(c, info), p2 = C.printHtml(c, Object.assign({ clientName: 
 t('PDF：質問ごとの結果の表（概要なし・取得失敗も）', /質問ごとの結果（Google AI Overviews）/.test(p2) && /概要なし/.test(p2) && /取得失敗/.test(p2) && (p2.match(/<tr><td>/g) || []).length === 5);
 t('PDF：優先して直すこと3点だけ・材料が別だと明記', /優先して直すこと（3点）/.test(p2) && p2.includes('よくある質問のページを作る') && !p2.includes('4つ目') && /AI の計測の結果とは別の材料/.test(p2));
 t('画面と PDF は同じ本文（根拠と3点を含めても）', p2.includes(b2));
+// 一般の質問だけを比べる（指名の質問は別）
+const brQ = (engine, m) => ({ prompt: 'サンプルそば 口コミ', engine, status: 'ok', mentioned: m, cited_by_sources: null, measured_at: '2026-09-01T01:00:00Z', conditions: cond(engine) });
+const b2r = run('r9', '2026-09-01', 'v3', [answers('google_aio', 'mnsne'), [brQ('google_aio', 1)]]), a2r = run('r10', '2026-10-01', 'v3', [answers('google_aio', 'mmsmn'), [brQ('google_aio', 1)]]);
+c = C.compare(b2r, a2r, { brand: 'サンプルそば' });
+t('前後比較は一般の質問だけ（指名1問を混ぜず 1/4→3/5）', c.segment === 'general' && c.engines[0].before.denominator === 4 && c.engines[0].after.denominator === 5 && c.engines[0].diff === 35, c.engines[0]);
+t('本文に「一般の質問だけ」と書く', /一般の質問（名前を入れていない質問）だけ/.test(C.bodyHtml(c, {})));
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

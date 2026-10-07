@@ -19,12 +19,15 @@
     opts = opts || {};
     var A = A3();
     if (!A) throw new Error('AI の集計の部品（airreach-ai3.js）を読み込めませんでした');
-    var rb = rowsOf(before), ra = rowsOf(after);
-    var sb = A.summarize(rb, { brand: opts.brand || '' }), sa = A.summarize(ra, { brand: opts.brand || '' });
-    var out = { before: meta(before, rb), after: meta(after, ra), engines: [] };
+    // 比べるのは一般の質問（指名の質問は別集計）。opts.segment で変えられる
+    var seg = opts.segment || 'general';
+    var rb = A.bySegment(rowsOf(before), seg, opts.brand), ra = A.bySegment(rowsOf(after), seg, opts.brand);
+    var sb = A.summarize(rb, { brand: opts.brand || '', segment: 'all' }), sa = A.summarize(ra, { brand: opts.brand || '', segment: 'all' });
+    var out = { segment: seg, before: meta(before, rb), after: meta(after, ra), engines: [] };
     A.MAIN.forEach(function (def) {
       var b = sb[def.key], a = sa[def.key], reasons = [];
-      if (!rb.length || !ra.length) reasons.push('回答ごとの記録が無い計測です（古い形式）');
+      if (!rowsOf(before).length || !rowsOf(after).length) reasons.push('回答ごとの記録が無い計測です（古い形式）');
+      else if (!rb.length || !ra.length) reasons.push(seg === 'general' ? '一般の質問がありません' : '指名の質問がありません');
       else {
         if (b.status !== 'measured') reasons.push('前の計測でこの AI を測っていません');
         if (a.status !== 'measured') reasons.push('後の計測でこの AI を測っていません');
@@ -99,7 +102,7 @@
     var imp = (info.improvements || []).slice(0, 3);
     var impH = imp.length ? '<div class="acm-imp"><h3>優先して直すこと（' + imp.length + '点）</h3><ol>' + imp.map(function (x) { return '<li><b>' + esc(x.title) + '</b>' + (x.how ? '<span>' + esc(x.how) + '</span>' : '') + '</li>'; }).join('') + '</ol><p class="acm-note">' + esc(info.improvementsSource || 'サイトの診断から') + '（AI の計測の結果とは別の材料です）</p></div>' : '';
     return '<div class="acm-body">' + block(main, true) + rest.map(function (e) { return block(e, false); }).join('') + evid + impH +
-      '<p class="acm-cond">条件：' + esc(c.location === 'JP' || !c.location ? '日本（市区町村の指定なし）' : c.location) + ' · 質問の版 ' + esc(cmp.after.version || '—') +
+      '<p class="acm-cond">' + esc(cmp.segment === 'branded' ? '指名の質問（名前を入れた質問）だけ' : cmp.segment === 'all' ? '一般と指名の質問をすべて' : '一般の質問（名前を入れていない質問）だけ。指名の質問は含めていません') + ' · 条件：' + esc(c.location === 'JP' || !c.location ? '日本（市区町村の指定なし）' : c.location) + ' · 質問の版 ' + esc(cmp.after.version || '—') +
       ' · 計測 ' + esc(cmp.before.measured_on) + '（' + esc(cmp.before.answers) + '件）→ ' + esc(cmp.after.measured_on) + '（' + esc(cmp.after.answers) + '件）</p>' +
       '<p class="acm-note">同じ条件・同じ質問の計測どうしだけを比べています。3つの AI は合算しません。AI の答えは日や時間で変わり、一般の人が使う画面とは結果が違うことがあります。掲載や順位を保証するものではありません。' +
       (info.fp ? ' データの指紋：' + esc(info.fp.slice(0, 16)) : '') + '</p></div>';
