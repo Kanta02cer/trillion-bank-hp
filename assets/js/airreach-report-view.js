@@ -42,24 +42,69 @@
       }).join('') + '</tbody></table><p class="arr-note">' + esc(r.basis) + '「足りない情報」（点数の項目）は構造化データの種類があるか、この表は見つかった構造化データの中に業種で必要な項目がそろっているかを見ています。</p>';
   }
   // 競合との比較（今月の合計・すべての AI）。自社と、登録した競合を同じ数え方で並べる
+  // 競合との比較：①ひと言の結論 ②名前が出た回数の取り合い（1本の帯）③お店ごとの順位 ④質問ごとにどこが多く出たか
+  var COMP_COLORS = ['#475569', '#94a3b8', '#cbd5e1', '#64748b', '#e2e8f0'];
   function competitorsHtml(ai) {
     var k = ai && ai.competitors;
     if (!k || !k.rows || k.rows.length < 2) return '';
-    var max = Math.max.apply(null, k.rows.map(function (r) { return r.mentionRate || 0; }).concat([1]));
-    var rows = k.rows.slice().sort(function (a, b) { return (b.mentionRate || 0) - (a.mentionRate || 0) || (a.self ? -1 : 1); });
-    var bar = function (v, self) { return '<span class="arr-cbar"><span style="width:' + (v == null ? 0 : Math.max(2, Math.round(v / max * 100))) + '%"' + (self ? ' class="is-self"' : '') + '></span></span>'; };
+    var rows = k.rows.slice().sort(function (a, b) { return (b.mention || 0) - (a.mention || 0) || (b.first || 0) - (a.first || 0) || (a.self ? -1 : 1); });
+    var self = rows.filter(function (r) { return r.self; })[0];
+    var others = rows.filter(function (r) { return !r.self; });
+    var above = others.filter(function (r) { return (r.mention || 0) > (self.mention || 0); }).length;
+    var tie = others.some(function (r) { return (r.mention || 0) === (self.mention || 0); });
+    var rank = above + 1;
+    var topOther = others[0];
     var nd = function (n, d) { return d ? '<small class="arr-na">（' + esc(n) + ' ÷ ' + esc(d) + '）</small>' : ''; };
-    return '<h3 class="arr-h3">競合との比較（今月の合計・すべての AI）' + tag('reference') + '</h3>' +
-      '<p class="arr-sub">AI の同じ回答 ' + esc(k.answers) + '件で、自社と競合の名前が出たかを数えました。' + (k.sov != null ? '名前が出た回数の合計のうち、自社の割合は <b>' + esc(k.sov) + '%</b>' + (k.prevSov != null ? '（前月 ' + esc(k.prevSov) + '%）' : '') + 'です。' : '') + '</p>' +
-      '<table class="arr-table arr-comp"><thead><tr><th>お店・会社</th><th>名前が出た割合</th><th>最初に出た</th><th>出典になった割合</th></tr></thead><tbody>' +
-      rows.map(function (r) {
-        return '<tr' + (r.self ? ' class="is-self"' : '') + '><td>' + esc(r.name) + (r.self ? ' <span class="arr-self">自社</span>' : '') + '</td>' +
-          '<td>' + bar(r.mentionRate, r.self) + ' ' + (r.mentionRate == null ? '—' : esc(r.mentionRate) + '%') + nd(r.mention, r.answers) + '</td>' +
-          '<td>' + esc(r.first) + '回答</td>' +
-          '<td>' + (r.citeRate == null ? '<span class="arr-na">—</span>' + (r.self ? '' : '<small class="arr-na">（サイトの URL が未登録）</small>') : esc(r.citeRate) + '%' + nd(r.cite, r.citeJudged)) + '</td></tr>';
-      }).join('') + '</tbody></table>' +
-      '<p class="arr-note">「名前が出た割合」は AI の回答に名前が出た回答の割合、「最初に出た」は回答の中でいちばん先に名前が出た回答の数、「出典になった割合」は公式サイトが出典になった回答の割合です。競合は、登録した会社だけを数えています。名前は回答の文章の中から探しており、AI が別の呼び方をしたときは数えられないことがあります。出典は、AI が返した出典か回答の本文の URL で判定できた回答だけで数えます。</p>';
+    // ① ひと言の結論（数えた事実だけ。理由は断定しない）
+    var lead = '<b>' + esc(rows.length) + '社のうち ' + esc(rank) + '位' + (tie ? '（同じ回数のお店あり）' : '') + '</b>。';
+    if (rank === 1 && !tie) lead += 'AI の回答で、いちばん多く名前が出ました。';
+    else if (topOther && (topOther.mention || 0) > (self.mention || 0)) lead += 'いちばん多く名前が出たのは ' + esc(topOther.name) + '（' + esc(topOther.mention) + '回答）で、自社は ' + esc(self.mention) + '回答でした。';
+    else lead += '名前が出た回答の数は、' + others.filter(function (r) { return (r.mention || 0) === (self.mention || 0); }).map(function (r) { return esc(r.name); }).join('・') + ' と同じでした。';
+    var firstTop = rows.slice().sort(function (a, b) { return (b.first || 0) - (a.first || 0); })[0];
+    if (firstTop && (firstTop.first || 0) > 0) lead += '回答の中で<b>最初に</b>名前が出たのは ' + (firstTop.self ? '自社' : esc(firstTop.name)) + ' がいちばん多く（' + esc(firstTop.first) + '回答）' + (firstTop.self ? 'でした。' : '、自社は ' + esc(self.first) + '回答でした。');
+    // ② 取り合いの帯：名前が出た回数の合計のうち、それぞれの割合
+    var total = k.mentionsTotal || rows.reduce(function (s, r) { return s + (r.mention || 0); }, 0);
+    var ci = 0;
+    var seg = rows.map(function (r) { var c = r.self ? '#1d4ed8' : COMP_COLORS[ci++ % COMP_COLORS.length]; return { r: r, c: c, pct: total ? Math.round((r.mention || 0) / total * 1000) / 10 : 0 }; });
+    var share = total ? '<div class="arr-share" role="img" aria-label="名前が出た回数の内訳：' + esc(seg.map(function (x) { return (x.r.self ? '自社' : x.r.name) + ' ' + x.pct + '%'; }).join('、')) + '">' +
+      seg.filter(function (x) { return x.pct > 0; }).map(function (x) { return '<span style="width:' + x.pct + '%;background:' + x.c + '"' + (x.r.self ? ' class="is-self"' : '') + '>' + (x.pct >= 12 ? esc(x.pct) + '%' : '') + '</span>'; }).join('') + '</div>' +
+      '<ul class="arr-share-key">' + seg.map(function (x) { return '<li><i style="background:' + x.c + '"></i>' + esc(x.r.self ? x.r.name + '（自社）' : x.r.name) + ' <b>' + esc(x.pct) + '%</b></li>'; }).join('') + '</ul>' +
+      '<p class="arr-sub">AI の回答 ' + esc(k.answers) + '件で、名前が出た回数の合計 ' + esc(total) + '回の内訳です。' + (k.sov != null ? '自社の割合は <b>' + esc(k.sov) + '%</b>' + (k.prevSov != null ? '（前月 ' + esc(k.prevSov) + '%）' : '') + '。' : '') + '</p>' : '';
+    // ③ お店ごと（名前が出た割合の棒・最初に出た・出典）
+    var max = Math.max.apply(null, rows.map(function (r) { return r.mentionRate || 0; }).concat([1]));
+    var list = '<ol class="arr-rank">' + rows.map(function (r, i) {
+      return '<li class="' + (r.self ? 'is-self' : '') + '"><span class="arr-rank-n">' + (1 + rows.filter(function (x) { return (x.mention || 0) > (r.mention || 0); }).length) + '</span><span class="arr-rank-name">' + esc(r.name) + (r.self ? ' <span class="arr-self">自社</span>' : '') + '</span>' +
+        '<span class="arr-rank-bar"><span style="width:' + (r.mentionRate == null ? 0 : Math.max(2, Math.round(r.mentionRate / max * 100))) + '%"></span></span>' +
+        '<span class="arr-rank-v"><b>' + (r.mentionRate == null ? '—' : esc(r.mentionRate) + '%') + '</b>' + nd(r.mention, r.answers) + '</span>' +
+        '<span class="arr-rank-sub">最初に名前 ' + esc(r.first) + '回答 · 出典 ' + (r.citeRate == null ? (r.self ? '—' : '—（サイトの URL が未登録）') : esc(r.citeRate) + '%' + nd(r.cite, r.citeJudged)) + '</span></li>';
+    }).join('') + '</ol>';
+    // ④ 質問ごと（お店の名前を入れない質問だけ。名前を入れた質問は自社が出て当然のため除く）
+    var ev = (ai.evidence || []).filter(function (e) { return e.status === 'ok' && !e.branded && Array.isArray(e.competitors) && e.competitors.length; });
+    var byQ = {}, qs = [];
+    ev.forEach(function (e) {
+      var q = byQ[e.prompt] || (byQ[e.prompt] = (qs.push(e.prompt), { prompt: e.prompt, n: 0, self: 0, comp: {} }));
+      q.n += 1; if (e.mentioned) q.self += 1;
+      e.competitors.forEach(function (c) { if (c.mentioned) q.comp[c.name] = (q.comp[c.name] || 0) + 1; });
+    });
+    var names = others.map(function (r) { return r.name; });
+    var qrows = qs.map(function (p) { var q = byQ[p]; var best = Math.max.apply(null, names.map(function (n) { return q.comp[n] || 0; }).concat([0])); q.state = q.self === 0 && best === 0 ? 'none' : best > q.self ? 'lose' : q.self > best ? 'win' : 'even'; return q; });
+    var ord = { lose: 0, even: 1, win: 2, none: 3 };
+    qrows.sort(function (a, b) { return ord[a.state] - ord[b.state]; });
+    var lose = qrows.filter(function (q) { return q.state === 'lose'; }).length;
+    var ST = { lose: ['競合が多い', 'is-lose'], even: ['同じ', 'is-even'], win: ['自社が多い', 'is-win'], none: ['どこも出ない', 'is-none'] };
+    var cell = function (n, d, on) { return '<td class="arr-qc' + (on ? ' is-on' : '') + '">' + (n ? '<b>' + esc(n) + '</b>' : '<span class="arr-na">0</span>') + '<small>/' + esc(d) + '</small></td>'; };
+    var perQ = qrows.length ? '<h4 class="arr-h4">質問ごとに、どのお店の名前が出たか</h4>' +
+      '<p class="arr-sub">' + (lose ? '<b>' + esc(lose) + '問</b>で、競合のほうが多く名前が出ました（表の上から順）。この話題のページを厚くすると、差が縮まる可能性があります（保証するものではありません）。' : '競合のほうが多く名前が出た質問はありませんでした。') + 'お店の名前を入れた質問は除いています。数字は「名前が出た回答 / その質問の回答」です。</p>' +
+      '<div class="arr-qwrap"><table class="arr-table arr-qtable"><thead><tr><th>質問</th><th>結果</th><th>' + esc(self.name) + '<br><small>自社</small></th>' + names.map(function (n) { return '<th>' + esc(n) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      qrows.map(function (q) { return '<tr class="' + ST[q.state][1] + '"><td class="arr-qp">' + esc(q.prompt) + '</td><td><span class="arr-qs">' + ST[q.state][0] + '</span></td>' + cell(q.self, q.n, true) + names.map(function (n) { return cell(q.comp[n] || 0, q.n, false); }).join('') + '</tr>'; }).join('') +
+      '</tbody></table></div>' +
+      // 狭い画面では、質問ごとに縦に並べる（表は横に長くなり、自社の列が隠れるため）
+      '<ul class="arr-qlist">' + qrows.map(function (q) { return '<li class="' + ST[q.state][1] + '"><div><span class="arr-qs">' + ST[q.state][0] + '</span> ' + esc(q.prompt) + '</div><div class="arr-qlist-v"><span class="is-self">自社 <b>' + esc(q.self) + '</b>/' + esc(q.n) + '</span>' + names.map(function (n) { return '<span>' + esc(n) + ' <b>' + esc(q.comp[n] || 0) + '</b>/' + esc(q.n) + '</span>'; }).join('') + '</div></li>'; }).join('') + '</ul>' : '';
+    return '<h3 class="arr-h3">AI はどのお店の名前を出したか（競合との比較・今月の合計）' + tag('reference') + '</h3>' +
+      '<p class="arr-comp-lead">' + lead + '</p>' + share + list + perQ +
+      '<p class="arr-note">「名前が出た割合」は AI の回答に名前が出た回答の割合、「最初に名前」は回答の中でいちばん先に名前が出た回答の数、「出典」は公式サイトが出典になった回答の割合です。競合は、登録した会社だけを数えています。名前は回答の文章の中から探しており、AI が別の呼び方をしたときは数えられないことがあります。出典は、AI が返した出典か回答の本文の URL で判定できた回答だけで数えます。</p>';
   }
+
   // 一般質問（店名を含まない）と指名質問（店名を含む）の月の合計
   function typesHtml(ai) {
     var t = ai && ai.types;
