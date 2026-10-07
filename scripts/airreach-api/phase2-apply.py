@@ -16,6 +16,7 @@ Change ID（DEV-YYYY-NNN）の承認後にだけ使う。各手順は単独で�
   python3 scripts/airreach-api/phase2-apply.py apply-schedules           # AI計測の定期実行（measurement_schedules / measurement_jobs）を適用して検証。既定は無効
   python3 scripts/airreach-api/phase2-apply.py apply-client-requests     # お客様からの依頼（競合・キーワード・質問の追加と削除・担当者の承認）を適用して検証
   python3 scripts/airreach-api/phase2-apply.py apply-client-owner-due    # 顧客ごとの担当と報告期限の列（担当者ダッシュボードの絞り込み）を適用して検証
+  python3 scripts/airreach-api/phase2-apply.py apply-request-note        # お客様の依頼に付ける「補足」の列と関数を適用して検証
 
 Supabase のアクセストークン（Account → Access Tokens で発行・期限つき推奨）は、
 ~/.config/airreach/supabase_token（chmod 600）に置く。画面にもログにも出さない。
@@ -329,6 +330,32 @@ def cmd_apply_client_owner_due():
         die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261007180000_airreach_client_owner_due_rollback.sql で戻すか判断してください')
 
 
+def cmd_apply_request_note():
+    """お客様の依頼に「補足」（なぜ足したい・外したいか・500文字まで）を付けられるようにする"""
+    confirm_project()
+    if 'client_requests' not in tables():
+        die('client_requests がありません。先に apply-client-requests を実行してください')
+    path = ROOT / 'supabase/migrations/20261007190000_airreach_request_note.sql'
+    call('POST', f'/projects/{REF}/database/migrations', {'name': 'airreach_request_note', 'query': path.read_text()})
+    print('migration を適用しました: airreach_request_note')
+    checks = [
+        ('client_requests に note がある', "select count(*) = 1 as ok from information_schema.columns where table_schema = 'public' and table_name = 'client_requests' and column_name = 'note'"),
+        ('補足は500文字までの制約', "select exists(select 1 from pg_constraint where conname = 'client_requests_note_check') as ok"),
+        ('補足つきの依頼の関数がある（ログインした人だけ実行できる）', "select has_function_privilege('authenticated', 'public.airreach_request_create(uuid, text, text, jsonb, text)', 'execute') and not has_function_privilege('anon', 'public.airreach_request_create(uuid, text, text, jsonb, text)', 'execute') as ok"),
+        ('補足なしの関数もそのまま残る', "select has_function_privilege('authenticated', 'public.airreach_request_create(uuid, text, text, jsonb)', 'execute') as ok"),
+        ('既存の依頼に補足を入れていない', "select count(*) = 0 as ok from public.client_requests where note is not null"),
+        ('client_requests の RLS は有効のまま', "select relrowsecurity as ok from pg_class where oid = 'public.client_requests'::regclass"),
+    ]
+    bad = 0
+    for label, q in checks:
+        r = sql(q, True)
+        ok = bool(r and r[0].get('ok'))
+        bad += 0 if ok else 1
+        print(('OK  ' if ok else 'NG  ') + label)
+    if bad:
+        die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261007190000_airreach_request_note_rollback.sql で戻すか判断してください')
+
+
 def cmd_set_approver(email, flag):
     email = email.strip().lower()
     if flag not in ('on', 'off') or '@' not in email or "'" in email:
@@ -425,7 +452,7 @@ def cmd_anon_key_to_vercel():
 def main():
     a = sys.argv[1:]
     cmds = {'check': cmd_check, 'apply-db': cmd_apply_db, 'auth-config': cmd_auth_config, 'auth-hook': cmd_auth_hook,
-            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'apply-client-requests': cmd_apply_client_requests, 'apply-client-owner-due': cmd_apply_client_owner_due, 'verify': lambda: (confirm_project(), verify())}
+            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'apply-client-requests': cmd_apply_client_requests, 'apply-client-owner-due': cmd_apply_client_owner_due, 'apply-request-note': cmd_apply_request_note, 'verify': lambda: (confirm_project(), verify())}
     if a and a[0] in cmds and len(a) == 1:
         cmds[a[0]]()
     elif a and a[0] == 'add-staff' and len(a) == 3:

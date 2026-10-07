@@ -85,6 +85,18 @@ select pg_temp.ok('キーワードを外す', not exists (select 1 from public.s
 select public.airreach_request_create(:B, 'competitor', 'add', '{"name":"C社"}');
 select pg_temp.ok('Studio の作業が無い顧客でも承認できる', (public.airreach_request_decide((select id from public.client_requests where client_id = :B), true, null) ->> 'ok')::boolean);
 select pg_temp.ok('承認したときに Studio の作業を作る', (select version = 1 and data -> 'studio' -> 'competitors' -> 0 ->> 'name' = 'C社' from public.studio_workspaces where client_id = :B));
+-- 補足（20261007190000 を適用したとき）
+select pg_temp.as_user('m@a.test');
+select pg_temp.ok('補足つきで依頼できる', (public.airreach_request_create(:A, 'keyword', 'add', '{"text":"渋谷 白髪染め"}', '  白髪染めのお客様が増えているため  ') ->> 'ok')::boolean);
+select pg_temp.ok('補足の前後の空白は取る', (select note = '白髪染めのお客様が増えているため' from public.client_requests where payload ->> 'text' = '渋谷 白髪染め'));
+select pg_temp.ok('空の補足でも依頼できる', (public.airreach_request_create(:A, 'keyword', 'add', '{"text":"渋谷 トリートメント"}', '   ') ->> 'ok')::boolean);
+select pg_temp.ok('空の補足は付けない（null）', (select note is null from public.client_requests where payload ->> 'text' = '渋谷 トリートメント'));
+select pg_temp.denied('補足は500文字まで', $q$select public.airreach_request_create('00000000-0000-0000-0000-0000000000a1', 'keyword', 'add', '{"text":"x1"}', repeat('あ', 501))$q$);
+select pg_temp.ok('補足なしの4つの引数の呼び出しもそのまま使える', (public.airreach_request_create(:A, 'keyword', 'add', '{"text":"渋谷 前髪カット"}') ->> 'ok')::boolean);
+select pg_temp.as_user('m@b.test');
+select pg_temp.ok('他社のお客様には補足も見えない', (select count(*) from public.client_requests where note is not null) = 0);
+select pg_temp.as_user('s@tb.test');
+select public.airreach_request_cancel(id) from public.client_requests where client_id = :A and status = 'pending';
 -- 待っている依頼は30件まで
 select public.airreach_request_create(:A, 'keyword', 'add', json_build_object('text', 'kw' || g)::jsonb) from generate_series(1, 30) g;
 select pg_temp.ok('確認待ちが30件あれば新しい依頼は断る', (select count(*) from public.client_requests where client_id = :A and status = 'pending') = 30 and not (public.airreach_request_create(:A, 'keyword', 'add', '{"text":"31件目"}') ->> 'ok')::boolean);

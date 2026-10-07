@@ -120,6 +120,8 @@
           (waitRows(kind) ? '<ul class="arq-list">' + waitRows(kind) + '</ul>' : '') + form + '</div>';
       }
       var verb = staff ? '追加する' : '追加を依頼';
+      // お客様は「なぜ足したいか」を書ける（任意）。担当者が承認・見送りを決める材料になる
+      var noteIn = staff ? '' : '<input class="arc-input arq-wide" name="note" maxlength="500" placeholder="補足（任意）：なぜ足したいか など" aria-label="補足（任意）">';
 
       var compItems = comps.map(function (c, i) { return itemRow('competitor', c.name, c.url && hostOf(c.url) !== String(c.name || '').toLowerCase() ? esc(hostOf(c.url)) : '', { name: c.name }, i); }).join('');
       var candHtml = cands.length ? '<div class="arq-cands"><p class="arc-note"><b>候補</b>：' + esc(run.measured_on ? String(run.measured_on).slice(5).replace('-', '/') + ' の' : '最新の') +
@@ -130,16 +132,16 @@
             '<button type="button" class="arc-btn-sm" data-rq-cand="' + esc(c.host) + '">' + (staff ? '競合に追加' : '競合に追加を依頼') + '</button>') + '</li>';
         }).join('') + '</ul></div>' : '';
       var compForm = '<form class="arc-row arq-form" data-rq-form="competitor"><input class="arc-input" name="name" maxlength="80" placeholder="お店・会社の名前" required aria-label="競合の名前">' +
-        '<input class="arc-input" name="url" maxlength="300" placeholder="https://（わかれば）" aria-label="競合のサイトの URL"><button class="arc-btn" type="submit">' + verb + '</button></form>';
+        '<input class="arc-input" name="url" maxlength="300" placeholder="https://（わかれば）" aria-label="競合のサイトの URL">' + noteIn + '<button class="arc-btn" type="submit">' + verb + '</button></form>';
 
       var kwItems = kws.map(function (k, i) { return itemRow('keyword', k.text, (k.priority ? esc(k.priority) : '') + (k.customer ? ' · ご依頼' : ''), { text: k.text }, i); }).join('');
-      var kwForm = '<form class="arc-row arq-form" data-rq-form="keyword"><input class="arc-input" name="text" maxlength="60" placeholder="例: 渋谷 縮毛矯正" required aria-label="キーワード"><button class="arc-btn" type="submit">' + verb + '</button></form>';
+      var kwForm = '<form class="arc-row arq-form" data-rq-form="keyword"><input class="arc-input" name="text" maxlength="60" placeholder="例: 渋谷 縮毛矯正" required aria-label="キーワード">' + noteIn + '<button class="arc-btn" type="submit">' + verb + '</button></form>';
 
       // 毎月測る質問と、今は測っていない候補を分ける
       var onP = prompts.filter(function (p) { return p.on; }), offP = prompts.filter(function (p) { return !p.on; });
       var pOn = onP.map(function (p, i) { return itemRow('prompt', p.text, '', { text: p.text }, i); }).join('');
       var pOff = offP.map(function (p, i) { return itemRow('prompt', p.text, '', { text: p.text }, i); }).join('');
-      var pForm = '<form class="arc-row arq-form" data-rq-form="prompt"><input class="arc-input arq-wide" name="text" maxlength="200" placeholder="例: 渋谷で縮毛矯正が上手い美容室は？" required aria-label="質問"><button class="arc-btn" type="submit">' + verb + '</button></form>';
+      var pForm = '<form class="arc-row arq-form" data-rq-form="prompt"><input class="arc-input arq-wide" name="text" maxlength="200" placeholder="例: 渋谷で縮毛矯正が上手い美容室は？" required aria-label="質問">' + noteIn + '<button class="arc-btn" type="submit">' + verb + '</button></form>';
 
       var pend = reqs.filter(function (r) { return r.status === 'pending'; });
       var done = reqs.filter(function (r) { return r.status !== 'pending'; }).slice(0, 8);
@@ -153,7 +155,8 @@
         }
         var s = STATUS[r.status] || [r.status, ''];
         return '<li><span class="arc-chip ' + s[1] + '">' + esc(s[0]) + '</span><span class="arq-t">' + esc(KIND[r.kind] || r.kind) + 'を' + (r.action === 'add' ? '追加' : '外す') + '：' + esc(reqText(r)) +
-          ' <small>' + esc(md(r.requested_at)) + (r.decision_note && r.status !== 'pending' ? ' · ' + esc(r.decision_note) : '') + '</small>' + who + '</span>' + (acts ? '<span class="arq-acts">' + acts + '</span>' : '') + '</li>';
+          ' <small>' + esc(md(r.requested_at)) + (r.decision_note && r.status !== 'pending' ? ' · ' + esc(r.decision_note) : '') + '</small>' + who +
+          (r.note ? '<span class="arq-why">' + (staff ? 'お客様の補足' : '補足') + '：' + esc(r.note) + '</span>' : '') + '</span>' + (acts ? '<span class="arq-acts">' + acts + '</span>' : '') + '</li>';
       };
       // 確認待ちは全部、済んだものは直近3件だけ（残りは開く）
       var reqHtml = '<div class="arq-reqs"><h3 class="arc-h3">' + (staff ? 'お客様からの依頼' : 'ご依頼と変更の記録') + (pend.length ? ' <span class="arc-chip is-warn">確認待ち ' + pend.length + '件</span>' : staff ? ' <span class="arc-chip is-ok">確認待ちなし</span>' : '') + '</h3>' +
@@ -187,9 +190,14 @@
       }).catch(function (e) { say(e.message || String(e), 'error'); });
     }
     // 社内が直接追加・外すときは、依頼を作ってその場で承認する（だれがいつ変えたかの記録を同じ形で残す）
-    function request(kind, action, payload) {
-      var made = rpc('airreach_request_create', { p_client_id: cid, p_kind: kind, p_action: action, p_payload: payload });
-      if (!o.staff) return act(made, '依頼しました。担当者が確かめてから反映します。');
+    function request(kind, action, payload, note) {
+      var args = { p_client_id: cid, p_kind: kind, p_action: action, p_payload: payload };
+      var made = note ? rpc('airreach_request_create', Object.assign({ p_note: note }, args)).catch(function (e) {
+        // 補足の migration（20261007190000）がまだ無い DB では、補足なしで依頼だけ送る
+        if (!/p_note|airreach_request_create|schema cache|does not exist/i.test(e.message || '')) throw e;
+        return rpc('airreach_request_create', args).then(function (r) { if (r && r.ok) r.noteLost = true; return r; });
+      }) : rpc('airreach_request_create', args);
+      if (!o.staff) return act(made, function (r) { return r && r.noteLost ? '依頼しました。補足は保存できなかったため、担当者に直接お伝えください。' : '依頼しました。担当者が確かめてから反映します。'; });
       return act(made.then(function (r) { return r && r.ok ? rpc('airreach_request_decide', { p_id: r.id, p_approve: true, p_note: null }) : r; }), function (r) { return (r && r.applied) || (action === 'add' ? '追加しました' : '外しました'); });
     }
     function bind() {
@@ -214,7 +222,7 @@
           e.preventDefault();
           var kind = f.getAttribute('data-rq-form'), payload = kind === 'competitor' ? { name: f.name.value.trim(), url: f.url.value.trim() } : { text: f.text.value.trim() };
           if (!(payload.name || payload.text)) return;
-          request(kind, 'add', payload);
+          request(kind, 'add', payload, f.note ? f.note.value.trim() : '');
         });
       });
       Array.prototype.forEach.call(box.querySelectorAll('[data-rq-cand]'), function (b) {
