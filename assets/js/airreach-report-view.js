@@ -128,7 +128,7 @@
   };
   function tag(k) { var x = KIND[k]; return x ? '<span class="arr-kind is-' + k + '" title="' + esc(x[1]) + '">' + esc(x[0]) + '</span>' : ''; }
   function kindLegend() {
-    return '<details class="arr-legend" open><summary>表示の区分</summary><dl>' + Object.keys(KIND).map(function (k) { return '<dt>' + tag(k) + '</dt><dd>' + esc(KIND[k][1]) + '</dd>'; }).join('') + '</dl></details>';
+    return '<details class="arr-legend"><summary>表示の区分（見出しの「実測値」「手動入力」などの意味）</summary><dl>' + Object.keys(KIND).map(function (k) { return '<dt>' + tag(k) + '</dt><dd>' + esc(KIND[k][1]) + '</dd>'; }).join('') + '</dl></details>';
   }
   function trafficKind(t) { return !t ? 'unknown' : (t.source === 'ga4_manual' ? 'manual' : 'measured'); }
 
@@ -214,16 +214,16 @@
       '<header class="arr-head"><div class="arr-kicker">AirReach 月次レポート</div>' +
       '<h1 class="arr-title">' + esc(c.client ? c.client.name : '') + '　' + esc(ym(r.period_month)) + '</h1>' +
       '<div class="arr-meta">' + (r.published_at ? '公開 ' + esc(day(r.published_at)) : '作成 ' + esc(day(c.generatedAt))) + ' · 株式会社Trillion Bank</div></header>' +
-      kindLegend() + '<section><h2 class="arr-h2">今月の数字</h2>' + C.tiles(c) + '</section>' +
+      // 1ページ目：結論 → 数字 → 今月実施したこと → 次にやる3施策 → ご判断いただきたいこと（目立たせる）
       '<section><h2 class="arr-h2">今月の結論' + tag('manual') + '</h2><ol class="arr-ol arr-concl">' + (concl.length ? concl.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') : '<li class="arr-na">（未記入）</li>') + '</ol></section>' +
-      '<div class="arr-cols">' +
-      '<section><h2 class="arr-h2">今月実施したこと' + tag('manual') + '</h2><ul class="arr-ul">' + (acts.length ? acts.map(function (a) {
+      '<section><h2 class="arr-h2">今月の数字</h2>' + C.tiles(c) + '</section>' +
+      '<section><h2 class="arr-h2">今月実施したこと' + tag('manual') + '</h2><ul class="arr-ul arr-done">' + (acts.length ? acts.map(function (a) {
         return '<li><span class="arr-date">' + esc(String(a.doneOn || '').slice(5).replace('-', '/')) + '</span>' + esc(a.title) + (a.evidenceUrl ? ' <a href="' + esc(a.evidenceUrl) + '">' + esc(a.evidenceUrl) + '</a>' : '') + '</li>';
       }).join('') : '<li class="arr-na">記録なし</li>') + '</ul></section>' +
-      '<section><h2 class="arr-h2">ご判断いただきたいこと' + tag('manual') + '</h2><ul class="arr-ul">' + (dec.length ? dec.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') : '<li class="arr-na">なし</li>') + '</ul></section>' +
-      '</div>' +
       '<section><h2 class="arr-h2">次にやる3施策' + tag('manual') + '</h2><table class="arr-table"><thead><tr><th>施策</th><th style="width:22%">担当</th><th style="width:18%">期限</th></tr></thead><tbody>' +
       (next.length ? next.map(function (a) { return '<tr><td>' + esc(a.title) + '</td><td>' + esc(a.owner || '') + '</td><td>' + esc(a.due || '') + '</td></tr>'; }).join('') : '<tr><td colspan="3" class="arr-na">（未記入）</td></tr>') + '</tbody></table></section>' +
+      '<section class="arr-decide' + (dec.length ? '' : ' is-none') + '"><h2 class="arr-h2">ご判断いただきたいこと' + tag('manual') + '</h2><ul class="arr-ul">' + (dec.length ? dec.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') : '<li class="arr-na">なし</li>') + '</ul></section>' +
+      kindLegend() +
       '</article>' +
 
       '<article class="arr-page arr-break">' +
@@ -290,5 +290,5 @@
   }
   boot();
   // 印刷（PDF で保存）では、回答の記録を開いた状態で出す
-  if (typeof window !== 'undefined') window.addEventListener('beforeprint', function () { document.querySelectorAll('details.arr-evi').forEach(function (d) { d.open = true; }); });
+  if (typeof window !== 'undefined') window.addEventListener('beforeprint', function () { document.querySelectorAll('details.arr-evi, details.arr-legend').forEach(function (d) { d.open = true; }); });
 })();
