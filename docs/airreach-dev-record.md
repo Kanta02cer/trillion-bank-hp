@@ -1,13 +1,13 @@
 # AirReach 開発記録（最新）
 
-最終更新: 2026-10-07。古い記録（airreach-capability-now.md など）と食い違うときは、この記録と実装を優先する。
+最終更新: 2026-10-07（#152・#154 まで）。古い記録（airreach-capability-now.md など）と食い違うときは、この記録と実装を優先する。
 本番の DB・環境変数・cron を変える手順は `docs/airreach-measurement-runbook.md`。このリポジトリは公開なので、人名・メールアドレス・キーの値は書かない。
 
-## いまの状態（2026-10-06）
+## いまの状態（2026-10-07）
 
 | 項目 | 状態 |
 |---|---|
-| コード（main） | 7df8372（#149）まで本番に反映済み |
+| コード（main） | 376ddec（#154）まで本番に反映済み |
 | AI 計測の判定・10問・月次集計・FAQ 下書き・構造化データの不足判定 | 本番で動いている |
 | 定期計測 | **コードは本番にあるが、DB は未適用・cron なし・環境変数なし＝動かない** |
 | 本番の AI 実測（新しい判定） | **済み（2026-10-05）**。「テスト」で固定10問 × 4つの AI ＝ 40回答（下の「本番実測の結果」）。本番の計測は17回（新しい判定2回・判定方法を変える前15回） |
@@ -16,9 +16,12 @@
 | サイトのヘッダー | 全ページのグローバルメニューの右端に「ログイン」（`/airreach/app/`）。デモのページはサイトのヘッダーを使わない |
 | お客様のレポートの本番確認 | **まだ**。本番のレポート2件は下書きで、公開済みは0件 |
 | お客様からの依頼（競合・キーワード・質問） | **本番で使える（2026-10-06 に DB 適用）**。お客様が追加・外すを依頼 → 担当者が承認すると Studio の作業に反映（下の「お客様からの依頼」）。実際のログインでの画面確認はまだ |
+| 担当者ダッシュボード（#152） | **画面は本番に反映済み・DB は未適用**。顧客ごとの「担当」と「報告期限」は migration `20261007180000` の適用待ちで、それまでは「未設定（DB の更新待ち）」と出る（ほかの改善はそのまま使える） |
+| 依頼の補足（#154） | **画面は本番に反映済み・DB は未適用**。適用までは補足なしで依頼だけ届き、お客様に「補足は保存できなかった」と出る |
+| Google のデータの取扱い（#143・#151） | 本番に反映済み。governance と質問の無効化の migration は SQL Editor で適用済み、pg_cron（90日削除・`20261007170000`）は未適用（`docs/airreach-google-data-governance.md`） |
 | 社内メンバー | 管理者3名・担当2名（2026-10-05 に管理者1名を追加）。レポートの承認者は1名（管理者であることと承認権限は別） |
 
-## マージ済みの PR（2026-10-05〜06）
+## マージ済みの PR（2026-10-05〜07）
 
 | PR | 内容 |
 |---|---|
@@ -35,6 +38,11 @@
 | #145 | 開発記録を最新に（本番実測・デモ公開） |
 | #146 | 月次レポートに「競合との比較」（下記） |
 | #149 | お客様からの競合・キーワード・質問の依頼と担当者の承認（下記）。migration `20261007120000_airreach_client_requests.sql` は 2026-10-06 に本番へ適用 |
+| #143 | Google OAuth 審査への対応：Google のデータを外部の AI に送らない・アクセスの制限・同意・90日で削除・削除の依頼 |
+| #151 | プライバシーポリシーに、AirReach での Google のユーザーデータの扱い（日本語・英語） |
+| #148 | 開発記録を最新に（#146・#147・#149） |
+| #152 | 担当者ダッシュボードの改善12項目（下記）。migration `20261007180000_airreach_client_owner_due.sql` は未適用 |
+| #154 | お客様の依頼に「補足」（下記）。migration `20261007190000_airreach_request_note.sql` は未適用（#153 は土台のブランチが消えて閉じたため、同じ変更を #154 で出し直した） |
 | #147 | サイトのヘッダーに「ログイン」ボタン（`/airreach/app/`・`tb.css?v=20261007`）。社内の顧客一覧に「代理店・見込み顧客に見せるデモ」（デモを開く・URL をコピー。社内だけ） |
 
 ### #141 で直した定期計測の5件（新しい migration `20261006120000_airreach_schedule_guards.sql`・本番は未適用）
@@ -87,6 +95,18 @@
 - 戻し方：`supabase/rollback/20261007120000_airreach_client_requests_rollback.sql`（承認して Studio に反映した内容は残る）。画面は DB が無いと、お客様には何も出さず社内には「適用待ち」と出す
 - テスト：`client-requests-test.sql`（44件）・`unit-requests.mjs`（13件）
 
+## 担当者ダッシュボード（#152・画面は本番）
+
+- 12項目：数字の鮮度（取得日時・途中集計）・レポートの自動保存・削除の確認と取り消し・顧客の引き継ぎ（担当と報告期限）・比較期間の明示・ホームの「今日の作業」・顧客一覧の絞り込み（自分の担当・依頼あり・期限）・メニュー・スマホ・入力欄のラベル・完了の判定。詳細は `docs/airreach-staff-dashboard.md`
+- DB の適用：`python3 scripts/airreach-api/phase2-apply.py apply-client-owner-due`（戻し方は `supabase/rollback/20261007180000_airreach_client_owner_due_rollback.sql`）
+- 確認（架空データ・ローカル）：画面 66件・回帰 17件・単体 30件・SQL
+
+## お客様の依頼の補足（#154・画面は本番）
+
+- お客様が競合・キーワード・質問の追加を依頼するとき、補足（任意・500文字まで）を書ける。担当者の「お客様からの依頼」に「お客様の補足」として出る
+- DB の適用：`python3 scripts/airreach-api/phase2-apply.py apply-request-note`（戻し方は `supabase/rollback/20261007190000_airreach_request_note_rollback.sql`）。4つの引数の関数は残すので、適用の前後どちらでも依頼は届く
+- 担当者へのお知らせ（メール等）はまだ無い。依頼は顧客一覧の「依頼」の印と、顧客ホームの「今日の作業」で気づく
+
 ## 判定と数え方（決めたこと）
 
 - 回答ごとに分けて記録する: `mentioned`（社名への言及）／`cited_by_sources`（AI が返した出典に自社サイト）／`self_url_in_text`（回答の本文の URL に自社サイト）
@@ -128,8 +148,10 @@ ChatGPT 検索なし 0.0003／ChatGPT 検索あり 0.015（9/30 実測）／Clau
 4. お客様のレポートの本番確認のための公開（承認者の承認が要る。勝手に公開しない）
 5. 本番で「競合との比較」を確かめるなら、「テスト」に登録する競合（名前・あればサイトの URL）。#149 で、お客様の画面の候補や社内のホームから登録できるようになった
 6. お客様からの依頼を、実際のお客様のログインで1回試す（依頼 → 社内で承認 → 画面と Studio に出るか）
+7. 本番 DB への適用：`apply-client-owner-due`（#152）と `apply-request-note`（#154）
+8. 担当者へのお知らせ：送る手段（メール送信サービス・Slack・LINE など）・送り先（担当者だけか全員か）・頻度（すぐか毎朝まとめてか）
 
 ## テスト
 
 - JS: `scripts/airreach-api/unit-*.mjs`（measure-citation・schedule・monthly-ai・report・faq-draft・schema-gaps・js-names・demo・requests ほか）。`unit-pin.mjs` は main でも失敗する（DNS の確認で私的アドレス扱い。AirReach の変更とは無関係）
-- ローカル Postgres（本番 DB では実行しない）: `schedule-test.sql`・`schedule-guards-test.sql`・`phase2-rls-test.sql`・`approval-test.sql`・`studio-workspace-test.sql`・`client-requests-test.sql`、複数セッションは `schedule-concurrency-test.sh`（PGHOST は 127.0.0.1 のみ）
+- ローカル Postgres（本番 DB では実行しない）: `schedule-test.sql`・`schedule-guards-test.sql`・`phase2-rls-test.sql`・`approval-test.sql`・`studio-workspace-test.sql`・`client-requests-test.sql`・`client-owner-due-test.sql`、複数セッションは `schedule-concurrency-test.sh`（PGHOST は 127.0.0.1 のみ）
