@@ -47,6 +47,30 @@
   }
   var client = targetClient();
   swapTo(client ? client.id : NONE);
+
+  // ---- 複数のタブ：作業の保存場所はブラウザで1つだけ（全タブ共通）----------------------------
+  //   別のタブで別の顧客（または顧客なし）を開くと、保存場所の中身はその顧客の作業に入れ替わる。
+  //   そのまま古いタブが保存すると、別の顧客の作業を自分の顧客として共有してしまう（2026-10-07 に起きた）。
+  //   いまの保存場所が自分の顧客のものでなくなったタブは、保存（端末・共有とも）を止めて開き直しを案内する
+  var MINE = client ? client.id : NONE, stale = false;
+  function isMine() { return (get(CUR_KEY) || NONE) === MINE; }
+  var origSet = Storage.prototype.setItem, origRemove = Storage.prototype.removeItem;
+  Storage.prototype.setItem = function (k, v) { if (stale && this === window.localStorage && WORK_KEYS.indexOf(k) >= 0) return; return origSet.call(this, k, v); };
+  Storage.prototype.removeItem = function (k) { if (stale && this === window.localStorage && WORK_KEYS.indexOf(k) >= 0) return; return origRemove.call(this, k); };
+  function markStale() {
+    if (stale) return;
+    stale = true;
+    try { if (typeof sync !== 'undefined') sync.on = false; } catch (e) {}
+    var box = document.getElementById('ars-stale');
+    if (!box) {
+      box = document.createElement('div'); box.id = 'ars-stale'; box.className = 'ars-stale'; box.setAttribute('role', 'alertdialog'); box.setAttribute('aria-live', 'assertive');
+      box.innerHTML = '<div class="ars-stale-b"><b>このタブの保存を止めました</b><p>別のタブで' + (get(CUR_KEY) === NONE ? '顧客を選ばずに' : '別の顧客の') + ' Studio を開いたため、このタブの作業は保存していません（別の顧客の作業と混ざるのを防ぐため）。続けるときは、このタブを開き直してください。Studio は1つのタブで使ってください。</p>' +
+        '<button type="button" class="ars-btn ars-btn-primary" id="ars-stale-reload">開き直す</button></div>';
+      (document.body || document.documentElement).appendChild(box);
+      var b = document.getElementById('ars-stale-reload'); if (b) b.onclick = function () { location.reload(); };
+    }
+  }
+  window.addEventListener('storage', function (e) { if (e.key === CUR_KEY && !isMine()) markStale(); });
   // 共有されている作業の読み込みは、開き直した直後（Studio が保存場所を読む前）に書き込む。
   // 開き直す前に書くと、閉じるときに Studio が手元の古い作業を保存して上書きしてしまうため
   var ADOPT_KEY = 'airreach_studio_adopt_v1';
@@ -321,7 +345,8 @@
   }
   function upload() {
     sync.timer = 0;
-    if (!sync.on || sync.saving || sync.conflict) return;
+    if (!isMine()) { markStale(); return; }
+    if (stale || !sync.on || sync.saving || sync.conflict) return;
     var strs = localStrings(), sig = sigOf(strs);
     if (sig === sync.sig) return;
     sync.saving = true;
