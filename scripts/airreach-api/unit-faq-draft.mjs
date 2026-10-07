@@ -37,9 +37,9 @@ expect('お店の情報：電話と郵便番号はサイトの値だけ（番地
 expect('サイトから読めた情報の一覧：見つからない項目は「確認が必要」', /\| 営業時間 \| 10:00〜19:00 \|/.test(files['content/site-info.md']) && /\| 支払い方法 \| \*\*確認が必要\*\*/.test(files['content/site-info.md']));
 expect('手順書は日本語（作業の手順・守ること）', /## 作業の手順/.test(files['README.md']) && /推測で書き足さない/.test(files['README.md']) && !/implementation package/.test(files['README.md']));
 
-// サイトを読めなかった（事実なし）→ すべて確認が必要・faq.jsonld は空
+// サイトを読めなかった（事実なし）→ すべて確認が必要・faq.jsonld は出さない（空の FAQ の JSON-LD を置かせない）
 const empty = O.buildDraftFromDiagnose({ url: 'https://x.example/', industry: 'restaurant', brand: 'X', diagnose: {} });
-expect('事実が無い → すべて【確認が必要】・faq.jsonld の質問は0', (empty['content/faq.md'].match(/^【確認が必要】/gm) || []).length === 10 && JSON.parse(empty['schema/faq.jsonld']).mainEntity.length === 0);
+expect('事実が無い → すべて【確認が必要】・faq.jsonld は出さない', (empty['content/faq.md'].match(/^【確認が必要】/gm) || []).length === 10 && !('schema/faq.jsonld' in empty));
 // 業種に合った質問
 const clinic = O.buildDraftFromDiagnose({ url: 'https://c.example/', industry: 'clinic', brand: 'C', diagnose: diag })['content/faq.md'];
 expect('業種：クリニックはダウンタイム・受付時間の質問', /ダウンタイム/.test(clinic) && /受付時間と休みの日/.test(clinic) && !/個室/.test(clinic));
