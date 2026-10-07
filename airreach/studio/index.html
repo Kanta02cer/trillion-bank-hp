@@ -244,6 +244,10 @@ robots: "noindex, follow"
       <div class="ars-card orch-pack-card">
         <h3>下書き一式</h3>
         <div id="orch-confirm"><!-- 会社・サービスの確定と FAQ の承認（airreach-confirm.js） --></div>
+        <fieldset class="orch-zip-set"><legend>ZIP に入れるファイル</legend>
+          <label><input type="radio" name="orch-zip-set" value="minimal" checked> 設置に必要なものだけ（最小）<small>README・WordPress の手順・よくある質問・構造化データ・llms.txt・MANIFEST</small></label>
+          <label><input type="radio" name="orch-zip-set" value="all"> すべて<small>キーワード・質問・作業の一覧（CSV）、AI への指示、確認表も入れる</small></label>
+        </fieldset>
         <div class="ars-row">
           <button type="button" class="ars-btn ars-btn-primary" id="orch-zip">ダウンロード（ZIP）</button>
           <button type="button" class="ars-btn ars-btn-secondary" id="orch-to-dashboard" hidden>ダッシュボードに施策として登録</button>

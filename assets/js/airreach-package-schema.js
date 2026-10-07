@@ -24,6 +24,11 @@
     'validation/VALIDATION.md'
   ];
 
+  // 最小の ZIP：設置に必要なものだけ（README・MANIFEST・設置の手順・FAQ・構造化データ・llms.txt）。README と MANIFEST と手順は必ず入れる
+  var PACKAGE_FORMAT = 'airreach-package/2';
+  var ALWAYS_FILES = ['README.md', 'MANIFEST.json', 'INSTALL_WORDPRESS.md'];
+  var MINIMAL_FILES = ALWAYS_FILES.concat(['content/faq.md', 'schema/organization.jsonld', 'schema/service.jsonld', 'schema/faq.jsonld', 'public/llms.txt']);
+
   var KEYWORD_CSV_COLUMNS = [
     'priority', 'keyword', 'volume', 'volume_source',
     'gsc_impressions', 'gsc_clicks', 'ai_mention_rate', 'ai_citation_rate',
@@ -153,6 +158,34 @@
     };
   }
 
+  /** 文字列の SHA-256（16進）。ブラウザと Node（globalThis.crypto.subtle）で同じ */
+  function sha256Hex(text) {
+    var c = (typeof crypto !== 'undefined' && crypto.subtle) ? crypto : (root.crypto || null);
+    if (!c || !c.subtle) return Promise.reject(new Error('SHA-256 を計算できません'));
+    return c.subtle.digest('SHA-256', new TextEncoder().encode(String(text))).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+    });
+  }
+  /** 展開したファイルが MANIFEST.files の大きさ・ハッシュと同じかを確かめる → { ok, errors } */
+  function verifyManifestHashes(files) {
+    var map = files || {};
+    var mf = parseJsonMaybe(map['MANIFEST.json']) || {};
+    if (!Array.isArray(mf.files)) return Promise.resolve({ ok: false, errors: ['MANIFEST.files がありません'] });
+    return Promise.all(mf.files.map(function (x) {
+      if (!(x.path in map)) return Promise.resolve(x.path + ': 入っていません');
+      var bytes = new TextEncoder().encode(String(map[x.path])).length;
+      if (bytes !== x.bytes) return Promise.resolve(x.path + ': 大きさが違います（' + bytes + ' / ' + x.bytes + '）');
+      return sha256Hex(map[x.path]).then(function (h) { return h === x.sha256 ? null : x.path + ': 中身が MANIFEST と違います'; });
+    })).then(function (r) { var errors = r.filter(Boolean); return { ok: !errors.length, errors: errors }; });
+  }
+  /** 入れるファイルを選ぶ（README・MANIFEST・設置の手順は必ず入れる。無いファイルは飛ばす） */
+  function selectFiles(files, paths) {
+    var out = {};
+    var want = ALWAYS_FILES.concat(paths || []);
+    Object.keys(files || {}).forEach(function (k) { if (k !== '_validation' && want.indexOf(k) >= 0) out[k] = files[k]; });
+    return out;
+  }
+
   function validatePackageFiles(files, opts) {
     var missing = [];
     var extra = [];
@@ -163,7 +196,9 @@
     var industry = (opts && opts.industry) || mf.industry || '';
     // 確定した FAQ の数（MANIFEST の faq_counts.in_schema）。0件なら faq.jsonld は求めない（空の FAQ の JSON-LD は出さない）
     var faqCount = opts && opts.faqCount != null ? Number(opts.faqCount) : (mf.faq_counts && mf.faq_counts.in_schema != null ? Number(mf.faq_counts.in_schema) : null);
-    var required = REQUIRED_FILES.filter(function (f) {
+    // 一部だけを選んだ ZIP（MANIFEST.selection=partial）は、README と MANIFEST だけを必須にし、選んだファイルは MANIFEST.files と照らす
+    var partial = mf.selection === 'partial';
+    var required = (partial ? ['README.md', 'MANIFEST.json'] : REQUIRED_FILES).filter(function (f) {
       if (f === 'schema/service.jsonld' && industry === 'restaurant') return false;
       if (f === 'schema/faq.jsonld' && faqCount === 0) return false;
       return true;
@@ -174,9 +209,15 @@
       }
     }
     Object.keys(map).forEach(function (k) {
-      if (REQUIRED_FILES.indexOf(k) === -1) extra.push(k);
+      if (REQUIRED_FILES.indexOf(k) === -1 && ALWAYS_FILES.indexOf(k) === -1) extra.push(k);
     });
     var errors = [];
+    // MANIFEST.files（入れたファイルの一覧）があれば、一覧と実際のファイルが同じかを見る（中身のハッシュは verifyManifestHashes）
+    if (Array.isArray(mf.files)) {
+      var listed = mf.files.map(function (x) { return x.path; });
+      Object.keys(map).forEach(function (k) { if (k !== 'MANIFEST.json' && listed.indexOf(k) === -1) errors.push('MANIFEST.files に無いファイル: ' + k); });
+      listed.forEach(function (k) { if (!(k in map)) errors.push('MANIFEST.files にあるのに入っていないファイル: ' + k); });
+    }
     if (missing.length) errors.push('missing: ' + missing.join(', '));
     try {
       var manifest = typeof map['MANIFEST.json'] === 'string'
@@ -204,7 +245,7 @@
       if (hit) errors.push(k + ' contains "' + hit[2] + '"');
     });
     var kwHead = String(map['strategy/keywords.csv'] || '').split(/\r?\n/)[0] || '';
-    KEYWORD_CSV_COLUMNS.forEach(function (col) {
+    if (!(partial && !('strategy/keywords.csv' in map))) KEYWORD_CSV_COLUMNS.forEach(function (col) {
       if (kwHead.indexOf(col) === -1) errors.push('keywords.csv missing column: ' + col);
     });
     var lock = validateEntityLock(map, opts || {});
@@ -229,6 +270,12 @@
   var api = {
     PACKAGE_ROOT: PACKAGE_ROOT,
     ZIP_FILENAME: ZIP_FILENAME,
+    PACKAGE_FORMAT: PACKAGE_FORMAT,
+    ALWAYS_FILES: ALWAYS_FILES,
+    MINIMAL_FILES: MINIMAL_FILES,
+    sha256Hex: sha256Hex,
+    verifyManifestHashes: verifyManifestHashes,
+    selectFiles: selectFiles,
     REQUIRED_FILES: REQUIRED_FILES,
     KEYWORD_CSV_COLUMNS: KEYWORD_CSV_COLUMNS,
     PROMPT_CSV_COLUMNS: PROMPT_CSV_COLUMNS,

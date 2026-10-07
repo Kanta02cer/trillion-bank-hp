@@ -1010,8 +1010,48 @@
           (st ? '\n状態：' + st + '\n' : '');
       }).join('\n');
 
+    // 設置の手順（WordPress の1つに絞る。ほかの CMS は制作会社に README を渡す）
+    var install = [
+      '# WordPress に入れる手順',
+      '',
+      '対象：' + brand + '（' + job.url + '）' + (cf ? '　版：' + (cf.rev || 0) : ''),
+      '',
+      'WordPress のサイトに、この ZIP の中身を入れる手順です。ほかの仕組みのサイトは、README.md を制作会社に渡してください。',
+      '作業の前に、WordPress のバックアップを取ってください。',
+      '',
+      '## 1. よくある質問のページ',
+      '',
+      '1. WordPress の管理画面に**管理者**でログインします（管理者でないと、手順2のデータが保存時に消えることがあります）。',
+      '2. 固定ページ「よくある質問」を開きます（無ければ作ります）。',
+      '3. content/faq.md の質問を見出し、答えを本文として載せます。' + (cf ? '**「状態：承認済み」の質問だけ**を載せ、「承認待ち」「使わない」は載せません。' : '「' + CHECK + '」の答えは、実際の内容に書き直してから載せます。'),
+      '',
+      '## 2. 検索や AI が読む形のデータ（構造化データ）',
+      '',
+      schemaN ? '1. 同じ「よくある質問」のページの一番下に「カスタム HTML」ブロックを足し、schema/faq.jsonld の中身を、1行目に `<script type="application/ld+json">`、最後の行に `</script>` を足して貼ります。'
+        : '1. この ZIP に schema/faq.jsonld は入っていません（承認した答えが0問のため）。この手順は飛ばします。',
+      '2. トップページにも同じ方法で schema/organization.jsonld を貼ります。**テーマや SEO のプラグインがすでに会社・お店の情報を出している場合は、二重にしない**でください（ページのソースを開き「Organization」や「LocalBusiness」で検索して確かめます）。',
+      '3. 貼る内容は、ページに実際に書いてある内容と同じにします。ページに無い答えや情報は足しません。',
+      '',
+      '## 3. AI 向けの案内ファイル（llms.txt）',
+      '',
+      '1. public/llms.txt を、サーバーの公開フォルダの一番上（wp-config.php と同じ階層）に、llms.txt という名前で置きます（FTP やサーバーの管理画面から。わからなければ制作会社に依頼）。',
+      '2. ブラウザで ' + String(job.url || '').replace(/\/+$/, '') + '/llms.txt を開き、中身が表示されることを確かめます。',
+      '',
+      '## 4. 確かめる',
+      '',
+      '1. Google の「リッチリザルト テスト」に、よくある質問のページの URL を入れ、エラーが0件であることを確かめます。',
+      '2. ページの答えと、貼ったデータの答えが同じかを見比べます。',
+      '3. MANIFEST.json の files に、この ZIP に入れたファイルと SHA-256 があります。届いた ZIP が作ったものと同じかは、この値で確かめられます。',
+      '',
+      '## 戻し方',
+      '',
+      '- 足した「カスタム HTML」ブロックを消し、ページを更新します。',
+      '- サーバーに置いた llms.txt を消します。'
+    ].join('\n');
+
     var files = {
       'README.md': readme,
+      'INSTALL_WORDPRESS.md': install,
       'MANIFEST.json': JSON.stringify(manifest, null, 2),
       'AGENT_PROMPT.md': agent,
       'strategy/keywords.csv': toCsv(kwRows, (window.AirReachPackageSchema && window.AirReachPackageSchema.KEYWORD_CSV_COLUMNS) || ['priority', 'keyword', 'volume', 'volume_source', 'gsc_impressions', 'gsc_clicks', 'ai_mention_rate', 'ai_citation_rate', 'intent', 'cluster', 'gap', 'action', 'seed_source']),
@@ -1114,12 +1154,32 @@
     parts.forEach(function (p) { out.set(p, o); o += p.length; });
     return out;
   }
-  function downloadZip(filename, files) {
-    var clean = {};
-    Object.keys(files || {}).forEach(function (k) {
-      if (k === '_validation') return;
-      clean[k] = files[k];
-    });
+  /**
+   * ZIP に入れる直前の仕上げ：選んだファイルだけにし、MANIFEST に形式・選び方・入れたファイルの大きさと SHA-256 を書く。
+   *   paths を渡さなければ全部。README・MANIFEST・設置の手順は必ず入れる
+   */
+  function finalizePackage(files, paths) {
+    var S = window.AirReachPackageSchema;
+    var all = {};
+    Object.keys(files || {}).forEach(function (k) { if (k !== '_validation') all[k] = files[k]; });
+    var out = paths && S && S.selectFiles ? S.selectFiles(all, paths) : all;
+    var partial = Object.keys(out).length < Object.keys(all).length;
+    var names = Object.keys(out).filter(function (k) { return k !== 'MANIFEST.json'; }).sort();
+    return Promise.all(names.map(function (k) { return S.sha256Hex(out[k]).then(function (h) { return { path: k, bytes: new TextEncoder().encode(String(out[k])).length, sha256: h }; }); }))
+      .then(function (list) {
+        var mf = {};
+        try { mf = JSON.parse(out['MANIFEST.json'] || '{}'); } catch (e) {}
+        mf.package_format = (S && S.PACKAGE_FORMAT) || 'airreach-package/2';
+        mf.selection = partial ? 'partial' : 'all';
+        mf.files = list;
+        out['MANIFEST.json'] = JSON.stringify(mf, null, 2);
+        return out;
+      });
+  }
+  function downloadZip(filename, files, paths) {
+    return finalizePackage(files, paths).then(function (clean) { saveZip(filename, clean); });
+  }
+  function saveZip(filename, clean) {
     if (window.AirReachPackageSchema && window.AirReachPackageSchema.validatePackageFiles) {
       var v = window.AirReachPackageSchema.validatePackageFiles(clean);
       if (!v.ok) {
@@ -1976,6 +2036,8 @@
       }
     });
 
+    // 前回選んだ ZIP の中身（最小・すべて）を戻す
+    try { var lastSet = localStorage.getItem('airreach_zip_set'); var r0 = lastSet && document.querySelector('input[name="orch-zip-set"][value="' + lastSet + '"]'); if (r0) r0.checked = true; } catch (e) {}
     var zipBtn = q('orch-zip');
     if (zipBtn) {
       zipBtn.addEventListener('click', function () {
@@ -1991,7 +2053,11 @@
           alert('いま開いているサイト（' + cur + '）と、分析したサイト（' + hostOf(job.url) + '）が違います。いまのサイトをもう一度分析してから作ってください。');
           return;
         }
-        downloadZip((window.AirReachPackageSchema && window.AirReachPackageSchema.ZIP_FILENAME) || 'airreach-implementation.zip', job.files);
+        var set = (document.querySelector('input[name="orch-zip-set"]:checked') || {}).value || 'minimal';
+        try { localStorage.setItem('airreach_zip_set', set); } catch (e) {}
+        var paths = set === 'all' ? null : (window.AirReachPackageSchema && window.AirReachPackageSchema.MINIMAL_FILES) || null;
+        downloadZip((window.AirReachPackageSchema && window.AirReachPackageSchema.ZIP_FILENAME) || 'airreach-implementation.zip', job.files, paths)
+          .catch(function (e) { alert('ZIP を作れませんでした：' + (e && e.message ? e.message : e)); });
       });
     }
 
@@ -2024,6 +2090,8 @@
     buildPackageFiles: buildPackageFiles,
     googleFreeJob: googleFreeJob,
     downloadZip: downloadZip,
+    finalizePackage: finalizePackage,
+    _buildZip: buildZip,
     importGscRows: importGscRows,
     reattachGscToJob: reattachGscToJob,
     refreshJobArtifacts: refreshJobArtifacts,
