@@ -539,7 +539,7 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
         }
         if (!got) got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt)), deadline);
         out = got && typeof got === 'object'
-          ? { answer: got.answer, citations: got.citations, searched: got.searched != null ? got.searched : engine === 'perplexity', fields: got.fields, shown: got.shown }
+          ? { answer: got.answer, citations: got.citations, searched: got.searched != null ? got.searched : engine === 'perplexity', fields: got.fields, shown: got.shown, model_used: got.model_used || null }
           : { answer: got, citations: null, searched: engine === 'perplexity' };
       }
     } catch (err) {
@@ -568,6 +568,8 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
       });
     }
     const j = judgeAnswer({ answer: out.answer, citations: out.citations, shown: out.shown, brand, host, competitors, searched: out.searched });
+    // 案内に従って別のモデルで答えたときは、その行のモデルと条件を実際のものにする（条件の違う結果を混ぜないため）
+    if (out.model_used && out.model_used !== base.model) Object.assign(base, { model: out.model_used, conditions: Object.assign({}, conditions, { model: out.model_used }) });
     return Object.assign(base, j, {
       answer_excerpt: String(out.answer || '').slice(0, 400),
       // 根拠の確認用に、回答の本文を残す（長すぎる分は切る）
@@ -708,7 +710,7 @@ function directModel(engine) {
   if (engine === 'chatgpt_search') return process.env.AIRREACH_OPENAI_SEARCH_MODEL_DIRECT || 'gpt-5-mini';
   if (engine === 'claude') return process.env.AIRREACH_CLAUDE_MODEL || 'claude-haiku-4-5';
   if (engine === 'perplexity') return process.env.AIRREACH_PERPLEXITY_MODEL || 'sonar';
-  if (engine === 'gemini') return process.env.AIRREACH_GEMINI_MODEL || 'gemini-2.5-flash';
+  if (engine === 'gemini') return process.env.AIRREACH_GEMINI_MODEL || GEMINI_DEFAULT_MODEL;
   if (engine === 'google_aio') return 'serpapi/google_ai_overview';
   if (engine === 'google_ai_mode') return 'serpapi/google_ai_mode';
   return engine;
@@ -786,8 +788,15 @@ export function gatewayCitations(data) {
  * Gemini（Google の Gemini API・Google 検索で調べてから答える）。出典は groundingMetadata.groundingChunks[].web。
  * uri は Google の転送用 URL のことが多いので、title がドメインならそれを、違えば転送先（Location）を読んで実際の URL にする
  */
-export async function callGemini(key, prompt) {
-  const model = process.env.AIRREACH_GEMINI_MODEL || 'gemini-2.5-flash';
+// 2026-10-07 実測：gemini-2.5-flash は「新しい利用者には使えない」と断られた（Google の案内は gemini-3.8-flash）。
+// 変えるときは Vercel の環境変数 AIRREACH_GEMINI_MODEL で上書きできる
+export const GEMINI_DEFAULT_MODEL = 'gemini-3.8-flash';
+/** 「このモデルは使えない・〇〇を使って」という Google の案内から、案内されたモデル名を読む（無ければ null） */
+export function geminiSuggestedModel(msg) {
+  const m = /no longer available[\s\S]*?use models\/([a-z0-9.\-]+)/i.exec(String(msg || ''));
+  return m ? m[1].replace(/[.\-]+$/, '') : null;
+}
+export async function callGemini(key, prompt, model = process.env.AIRREACH_GEMINI_MODEL || GEMINI_DEFAULT_MODEL, retried = false) {
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
@@ -806,9 +815,13 @@ export async function callGemini(key, prompt) {
       const sec = d ? parseInt(String(d), 10) : 30;
       throw new Error('gemini の回数の上限に当たりました。' + sec + '秒ほどあけて、もう一度計測してください [rate limit; retry after ' + sec + 's]');
     }
+    // モデルが使えなくなったときは、Google が案内したモデルで1回だけ聞き直す（使ったモデルは行に残す）
+    const next = !retried && geminiSuggestedModel(msg);
+    if (next && next !== model) return callGemini(key, prompt, next, true);
     throw new Error(String(msg).slice(0, 200));
   }
-  return parseGeminiResponse(data, resolveRedirect);
+  const out = await parseGeminiResponse(data, resolveRedirect);
+  return Object.assign(out, { model_used: model });
 }
 // ---- SerpApi：Google の AI による概要（AI Overviews）と AI モード（AI Mode）--------------------------
 // 日本の Google（google.co.jp・日本語・日本）で取る。答えの本文は text_blocks の snippet、出典は references[].link。
