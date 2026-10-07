@@ -28,7 +28,7 @@
       '</ol><p class="arc-note" style="margin:8px 0 0">表示はすべてデモ用の架空データです。入力・保存・ログインはありません。</p></details>' +
       '<div class="arc-top"><div><div class="arc-kicker">お客様向け画面（デモ）</div><h1 class="arc-h1">' + esc(D.client.name) + '</h1></div></div>' +
       // 本番のお客様のホームと同じ並び：結論 → 数字 → ご判断いただきたいこと → 次にやること（部品は airreach-client-home.js）
-      H.latest(top, '#/report/' + key(top)) + H.numbers(top) + H.decision(top) +
+      H.latest(top, '#/report/' + key(top)) + H.numbers(top) + H.competitor(c, { href: '#/report/' + key(top), linkText: 'レポートで詳しく見る', note: ym(top.period_month) + 'のレポートの数字です。' }) + H.decision(top) +
       (next.length ? '<section class="arc-card"><h2 class="arc-h2">次にやること</h2><table class="arc-table"><thead><tr><th>施策</th><th style="width:22%">担当</th><th style="width:18%">期限</th></tr></thead><tbody>' + next.map(function (a) { return '<tr><td>' + esc(a.title) + '</td><td>' + esc(a.owner || '') + '</td><td>' + esc(a.due || '') + '</td></tr>'; }).join('') + '</tbody></table></section>' : '') +
       '<section class="arc-card"><h2 class="arc-h2">推移（直近6か月）</h2>' + C.trends(c) + '</section>' +
       '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">直すこと' + (items.length ? '（' + items.length + '件）' : '') + '</h2><span class="arc-sub">' + esc(R.jstDay(cur.createdAt)) + ' の診断で見つかった不足・優先度の高い順</span></div>' +
