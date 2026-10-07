@@ -298,7 +298,7 @@
         }).join('') : '<li class="arc-empty">' + (me.is_staff ? 'まだ顧客がありません。' : '閲覧できる顧客がありません。担当者にお問い合わせください。') + '</li>') + '</ul>';
       }
       var add = me.is_staff ?
-        '<h2 class="arc-h2">顧客を追加する</h2><p class="arc-note" style="margin:0 0 6px">サイトの URL も入れると、追加したあとそのまま Studio でサイトを調べ、足りない情報の判定と AI での見え方の計測（Perplexity・ChatGPT）まで自動で行います。お客様によく聞かれる質問を入れておくと、AI に聞く質問の先頭に入ります。</p>' +
+        '<h2 class="arc-h2">顧客を追加する</h2><p class="arc-note" style="margin:0 0 6px">サイトの URL も入れると、追加したあとそのまま Studio でサイトを調べ、お客さんが知りたい情報が書いてあるかの確認と AI での見え方の計測（Perplexity・ChatGPT）まで自動で行います。お客様によく聞かれる質問を入れておくと、AI に聞く質問の先頭に入ります。</p>' +
         (partnerOrg() ? '<p class="arc-note arc-org-note">追加した顧客は「' + esc(partnerOrg().name) + '」の顧客になります。Trillion Bank のほかの顧客や、ほかの共同会社からは見えません。</p>' : '') +
         '<form id="arc-add-client" class="arc-row"><input class="arc-input" id="arc-client-name" placeholder="顧客名（会社・店舗）" required>' +
         '<input class="arc-input" id="arc-client-url" type="text" inputmode="url" autocomplete="url" placeholder="サイトの URL（例: https://example.jp/）">' +

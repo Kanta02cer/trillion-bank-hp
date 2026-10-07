@@ -16,7 +16,7 @@
       lead: '「サイトを調べる」の結果です。点数と、直すところ、まず対策する言葉が分かります。' },
     keywords: { label: '対策する言葉を決める', desc: 'お客さんが探す言葉と優先度', where: 'studio', panel: 'keywords',
       lead: 'お客さんが AI や検索で探す言葉と、どれから対策するかが分かります。「サイトを調べる」で自動で作られ、足したり消したりできます。' },
-    gaps: { label: '足りない情報を探す', desc: '予約・料金など、書いていないこと', where: 'studio', panel: 'gaps' },
+    gaps: { label: 'お客さんが知りたい情報', desc: '予約・料金などが書いてあるか', where: 'studio', panel: 'gaps' },
     generator: { label: '直す材料を作る', desc: 'よくある質問・お店の情報の下書き', where: 'studio', panel: 'generator',
       lead: 'お客様や制作会社にそのまま渡せる「直すための下書き」（よくある質問・お店の情報・AI 向けの案内ファイル）を作ります。自動で公開はしません。' },
     actions: { label: 'やったことを記録する', desc: '直した日と公開したページ', where: 'dash', sec: 'actions',
