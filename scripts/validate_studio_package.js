@@ -32,7 +32,8 @@ function smokeFiles() {
           gsc: 'Unavailable',
           hack2: 'Unavailable',
           deployment: 'ZIP only'
-        }
+        },
+        faq_counts: { proposed: 1, from_site: 1, needs_check: 0, in_schema: 1 }
       }, null, 2);
     } else if (f === 'schema/organization.jsonld') {
       files[f] = JSON.stringify({
@@ -52,7 +53,8 @@ function smokeFiles() {
       files[f] = JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
-        mainEntity: []
+        // 空の FAQ の JSON-LD は誤り（0件なら faq.jsonld 自体を出さない）。見本は確認済みの質問を1つ入れる
+        mainEntity: [{ '@type': 'Question', name: 'Example question?', acceptedAnswer: { '@type': 'Answer', text: 'Example answer from the site.' } }]
       }, null, 2);
     } else if (f === 'strategy/keywords.csv') {
       files[f] = Schema.KEYWORD_CSV_COLUMNS.join(',') + '\nP0,example,100,Estimated,,,,,,Core,大,ページ改善,Generated\n';
