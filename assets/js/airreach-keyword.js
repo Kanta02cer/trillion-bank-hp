@@ -21,7 +21,8 @@
   }).map(function (p) { return p + '県'; }).join('|') + ')');
   var PREF_LOOSE = new RegExp('(' + PREF_ALT + ')(?:都|道|府|県)?\\s*(?=[^\\s\\d]{1,5}?(?:市|区|町|村|郡))', 'g');
   var PREF_STRIP = new RegExp('(' + PREF_ALT + ')(都|府|県)?', 'g');
-  var CITY = /(?:[^\s\d]{1,4}郡)?([^\s\d、。・◆■（）()「」,，]{1,5}?(?:市|区|町|村))/;
+  // 市区町村名の頭に助詞（の・は・が…）は来ない（「北海道の都市伝説」の「の都市」を市と読まない）
+  var CITY = /(?:[^\s\d]{1,4}郡)?([^\s\d、。・◆■（）()「」,，のはがでにをとも][^\s\d、。・◆■（）()「」,，]{0,4}?(?:市|区|町|村))/;
   var HEAD_CITY = /(?:^|[^一-龥ぁ-んァ-ヶ々ー])([一-龥ぁ-んァ-ヶ々ー]{1,4}(?:市|区|町|村))(?![A-Za-z])/g;
   var TOWN = /^([^\s\d０-９\-−－ー丁番、,（(]{2,5}?)(?=[\d０-９一二三四五六七八九十]|丁目|$)/;
   var POSTAL = /〒\s*\d{3}[-−－]?\d{4}\s*([^\s][^\n]{4,40})/g;
@@ -112,8 +113,11 @@
     var pref = pm ? pm[1] : '';
     var rest = pm ? s.slice(pm.index + pm[1].length) : s;
     var cm = CITY.exec(rest);
-    if (!cm) return { pref: pref, city: '', town: '' };
+    // 都道府県のすぐ後ろ（空白だけを挟んでよい）から始まるものだけを市区町村とみなす（「北海道の都市伝説」を「都市」と読まない）
+    if (!cm || (pm && /\S/.test(rest.slice(0, cm.index)))) return { pref: pref, city: '', town: '' };
     var city = cm[1];
+    // 「北海道の都市」のような文の一部は市区町村ではない（「の」を含む実在の名前は「いの町」のような短いものだけ）
+    if (/の/.test(city) && city.length > 3) return { pref: pref, city: '', town: '' };
     var after = rest.slice(cm.index + cm[0].length);
     // 野々市市・四日市市のように「市」で終わる市名
     if (city.slice(-1) === '市' && /^[市区町村]/.test(after)) { city += after.charAt(0); after = after.slice(1); }
@@ -185,7 +189,8 @@
       var cands = [], hm;
       var headNoPref = head.replace(PREF_STRIP, ' ');
       HEAD_CITY.lastIndex = 0;
-      while ((hm = HEAD_CITY.exec(headNoPref))) { if (!/地区$/.test(hm[1])) cands.push(hm[1]); }
+      // 「都市伝説」の「都市」や「下町」「城下町」のような一般的な言葉は地名として拾わない
+      while ((hm = HEAD_CITY.exec(headNoPref))) { if (!/地区$/.test(hm[1]) && !/^(都市|下町|城下町|港町|門前町|宿場町|温泉町|市区町村|都市部)$/.test(hm[1])) cands.push(hm[1]); }
       var confirmed = null;
       cands.some(function (c) { return addrs.some(function (p) { if (p.city === c) { confirmed = p; return true; } return false; }); });
       if (confirmed) { addr = confirmed; areaSource = 'title'; }

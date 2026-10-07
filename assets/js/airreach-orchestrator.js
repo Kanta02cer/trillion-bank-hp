@@ -338,14 +338,30 @@
     return text;
   }
 
+  // サービス名として使えるか（1文字や「サービス」だけなどは、入力の途中や読み違いとして使わない。「そば」のような2文字の業態は使う）
+  function validService(v) {
+    v = String(v || '').replace(/\s+/g, ' ').trim();
+    if (v.length < 2 || /^(サービス|公式|ホーム|トップ)$/.test(v)) return '';
+    return v;
+  }
+  // タイトルの区切りのあと（例「都市伝説ラボ | 都市伝説・オカルト・アニメ考察サイト」の「都市伝説」）から、扱っている分野を推定する
+  function serviceFromTitle(title, brand) {
+    var parts = String(title || '').split(/\s*[|｜\-–—]\s*/).map(function (x) { return x.trim(); }).filter(Boolean);
+    for (var i = 1; i < parts.length; i++) {
+      var first = parts[i].split(/[・、,，/]/)[0].replace(/(公式サイト|公式|オフィシャルサイト|サイト|ホームページ|ブログ|メディア)$/, '').trim();
+      if (validService(first) && (!brand || first !== brand)) return first;
+    }
+    return '';
+  }
+
   function profileFromDiagnose(diagnose, url, hint) {
     hint = hint || {};
     var page = (diagnose && diagnose.page) || {};
     var brand = hint.brand || '';
-    var service = hint.service || '';
+    var service = validService(hint.service);
     if (!brand) brand = serviceFromText(page.title) || hostOf(url);
     if (!service) {
-      service = serviceFromText(page.h1) || serviceFromText(page.title) || hostOf(url).split('.')[0];
+      service = serviceFromTitle(page.title, brand) || validService(serviceFromText(page.h1)) || serviceFromText(page.title) || hostOf(url).split('.')[0];
     }
     return {
       url: url,
@@ -1692,10 +1708,12 @@
     try {
       var survey = JSON.parse(localStorage.getItem('airreach_onboard_survey_v1') || 'null');
       if (survey) {
-        if (!url && survey.url) url = survey.url;
-        if (survey.industryId === 'restaurant') { prefillIndustry = 'restaurant'; prefillIndustryHost = hostOf(survey.url || ''); }
+        // 無料診断の入力はブラウザに1つだけ残る。顧客を開いたときは、同じサイトの診断のときだけ使う（別のサイトの言葉を混ぜない）
+        var sameSite = !studioClient || !!(url && survey.url && hostOf(survey.url) === hostOf(url));
+        if (!url && survey.url && !studioClient) url = survey.url;
+        if (sameSite && survey.industryId === 'restaurant') { prefillIndustry = 'restaurant'; prefillIndustryHost = hostOf(survey.url || ''); }
         // 飲食店の「調べる言葉」は地域＋業態なので、サービス名には使わない（業態は下の handoff から入れる）
-        if (!service && survey.keyword && prefillIndustry !== 'restaurant') service = survey.keyword;
+        if (sameSite && !service && survey.keyword && prefillIndustry !== 'restaurant') service = validService(survey.keyword);
         if (!goal && survey.outcomeGoal) goal = outcomeToGoal(survey.outcomeGoal);
         if (!goal && survey.goal) goal = mapGoal(survey.goal);
       }
@@ -1703,6 +1721,7 @@
 
     try {
       var handoff = JSON.parse(localStorage.getItem('airreach_diagnose_handoff_v1') || 'null');
+      if (handoff && studioClient && (!url || !handoff.url || hostOf(handoff.url) !== hostOf(url))) handoff = null; // 顧客の作業では、同じサイトの診断だけ使う
       if (handoff && !url && handoff.url) url = handoff.url;
       if (handoff && handoff.keywordAuto && handoff.keywordAuto.genre && (prefillIndustry === 'restaurant' || !service)) {
         if (!service || prefillIndustry === 'restaurant') service = handoff.keywordAuto.genre;
@@ -1713,7 +1732,7 @@
       var st = JSON.parse(localStorage.getItem('airreach_studio_v1') || '{}');
       if (st.profile) {
         if (!url && st.profile.url) url = st.profile.url;
-        if (!service && st.profile.service) service = st.profile.service;
+        if (!service && st.profile.service) service = validService(st.profile.service);
       }
     } catch (e) {}
 
@@ -1874,6 +1893,8 @@
       var goal = (q('orch-goal') && q('orch-goal').value) || '問い合わせを増やす';
       var region = (q('orch-region') && q('orch-region').value) || '全国';
       var service = (q('orch-service') && q('orch-service').value || '').trim();
+      // 1文字など短すぎるサービス名（入力の途中など）は使わず、サイトのタイトルから推定する
+      if (service && !validService(service)) { service = ''; if (q('orch-service')) q('orch-service').value = ''; }
 
       if (q('orch-proxy') && !q('orch-proxy').checked) {
         alert('「診断のための取得に同意」にチェックを入れてから分析してください。サイトを取得できないと分析できません。');
@@ -1898,7 +1919,7 @@
           profile: {
             url: url,
             brand: ((q('orch-brand') && q('orch-brand').value.trim()) || (q('brand-name') && q('brand-name').value) || ''),
-            service: service || (q('service-name') && q('service-name').value) || '',
+            service: service || validService(q('service-name') && q('service-name').value) || '',
             summary: (q('service-summary') && q('service-summary').value) || ''
           },
           proxyConsent: !!(q('orch-proxy') && q('orch-proxy').checked),
@@ -1952,6 +1973,9 @@
   }
 
   window.AirReachOrchestrator = {
+    validService: validService,
+    serviceFromTitle: serviceFromTitle,
+    profileFromDiagnose: profileFromDiagnose,
     runJob: runJob,
     buildPackageFiles: buildPackageFiles,
     googleFreeJob: googleFreeJob,
