@@ -473,6 +473,10 @@ export function judgeAnswer({ answer, citations, shown, brand, host, competitors
 
 async function measureWithProvider(engine, brand, prompts, pageUrl, competitors) {
   const gatewayKey = process.env.AI_GATEWAY_API_KEY || '';
+  // OpenRouter のキーがあれば、ChatGPT（検索あり）・Claude・Gemini は OpenRouter で、各社の本来の検索（native）を1回使って答えさせる。
+  // 出典は message.annotations の url_citation（gatewayCitations で読む）。キーが無ければ今までどおり（直接の API・AI Gateway）
+  const orKey = process.env.OPENROUTER_API_KEY || '';
+  const useOR = !!orKey && OPENROUTER_ENGINES.indexOf(engine) >= 0;
   const keyMap = {
     chatgpt: process.env.OPENAI_API_KEY,
     // ChatGPT（検索あり）：OpenAI の Responses API の web_search。出典（url_citation）が返る
@@ -493,10 +497,10 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
   if ((engine === 'google_aio' || engine === 'google_ai_mode') && !directKey) {
     return { rows: [], status: { ok: false, error: 'Google の AI の計測に使う API キーがまだ設定されていません（社内の設定が必要です）', engine } };
   }
-  if (engine === 'gemini' && !directKey) {
+  if (engine === 'gemini' && !directKey && !useOR) {
     return { rows: [], status: { ok: false, error: 'Gemini の API キー（GEMINI_API_KEY）がまだ設定されていません', engine } };
   }
-  if (!useGateway && !directKey) {
+  if (!useGateway && !directKey && !useOR) {
     return {
       rows: [],
       status: {
@@ -519,17 +523,18 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
   const withSearch = useGateway && (engine === 'claude' || engine === 'chatgpt_search');
   const mentionOnly = engine === 'chatgpt';
   const measuredAt = new Date().toISOString();
-  const conditions = { engine, model: useGateway ? gatewayModel(engine) : directModel(engine), via: useGateway ? 'ai-gateway' : 'direct', search: mentionOnly ? false : true, location: 'JP' };
+  const conditions = { engine, model: useOR ? openRouterModel(engine) : useGateway ? gatewayModel(engine) : directModel(engine), via: useOR ? 'openrouter' : useGateway ? 'ai-gateway' : 'direct', search: mentionOnly ? false : true, location: 'JP' };
 
   // Gateway の無料枠は1分あたりの回数に上限がある（Perplexity は5回/分）。同時に2問までにし、
   // 上限に当たったら返ってきた待ち時間だけ待って聞き直す（関数の制限時間に収まる範囲で）
   const deadline = Date.now() + 240000;
   const rows = await mapLimit(prompts, 2, async (p) => {
     const base = { engine: engineLabel(engine), keyword: p.keyword || p.prompt, prompt: p.prompt, evidenceClass: 'Observed',
-      model: conditions.model, source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API', measured_at: measuredAt, conditions };
+      model: conditions.model, source: useOR ? engineLabel(engine) : useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API', measured_at: measuredAt, conditions };
     let out;
     try {
-      if (withSearch) out = await withRateRetry(() => callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt), deadline);
+      if (useOR) out = await withRateRetry(() => callViaOpenRouter(engine, orKey, p.prompt), deadline);
+      else if (withSearch) out = await withRateRetry(() => callResponsesWithSearch(gatewayModel(engine), gatewayKey, p.prompt), deadline);
       else {
         let got = null;
         if (useGateway && engine === 'perplexity') {
@@ -593,8 +598,8 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors)
       evidenceClass: 'Observed',
       search: !mentionOnly,
       citeMethod: mentionOnly ? 'none' : (rows.some((r) => r.cite_source === 'ai_sources') ? 'citations' : 'text'),
-      model: useGateway ? gatewayModel(engine) : engine,
-      via: useGateway ? 'ai-gateway' : 'direct'
+      model: useOR ? openRouterModel(engine) : useGateway ? gatewayModel(engine) : engine,
+      via: useOR ? 'openrouter' : useGateway ? 'ai-gateway' : 'direct'
     }
   };
 }
@@ -701,6 +706,50 @@ function gatewayError(status, data, model) {
     return model.split('/')[0] + ' の回数の上限（1分あたりの回数）に当たりました。' + (sec ? sec + '秒ほど' : '1〜2分') + 'あけて、もう一度計測してください（続けて押すと上限に当たります）' + ' [rate limit' + (sec ? '; retry after ' + sec + 's' : '') + ']';
   }
   return String(msg || ('AI Gateway failed (' + status + ')')).slice(0, 200);
+}
+
+// ---- OpenRouter（ChatGPT の検索・Claude・Gemini）------------------------------------------------
+export const OPENROUTER_ENGINES = ['chatgpt_search', 'claude', 'gemini'];
+export function openRouterModel(engine) {
+  if (engine === 'chatgpt_search') return process.env.AIRREACH_OR_OPENAI_MODEL || 'openai/gpt-5-mini';
+  if (engine === 'claude') return process.env.AIRREACH_OR_CLAUDE_MODEL || 'anthropic/claude-haiku-4.5';
+  if (engine === 'gemini') return process.env.AIRREACH_OR_GEMINI_MODEL || 'google/gemini-2.5-flash';
+  return null;
+}
+/** OpenRouter の chat/completions に、各社の本来の検索（engine: native）を1回だけ付けて聞く。出典は annotations の url_citation */
+export function openRouterBody(engine, prompt) {
+  return {
+    model: openRouterModel(engine),
+    messages: [
+      { role: 'system', content: 'You are answering a Japanese business search question. Search the web, answer concisely in Japanese, and cite the sources you used.' },
+      { role: 'user', content: prompt }
+    ],
+    temperature: 0.2,
+    plugins: [{ id: 'web', engine: 'native', max_results: 5 }]
+  };
+}
+export async function callViaOpenRouter(engine, key, prompt, fetchImpl = globalThis.fetch) {
+  const body = openRouterBody(engine, prompt);
+  if (!body.model) throw new Error('Unknown engine for OpenRouter');
+  const res = await fetchImpl('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://trillion-bank.jp/airreach/', 'X-Title': 'AirReach' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(90000)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = String((data && data.error && (data.error.message || data.error)) || ('failed (' + res.status + ')'));
+    // 末尾の英語は自動で待って聞き直すための目印（rateLimitWait が読む）。画面にはサービス名や費用の事情を出さない
+    if (res.status === 429) throw new Error(engineLabel(engine) + ' の回数の上限に当たりました。1〜2分あけて、もう一度計測してください [rate limit; retry after 30s]');
+    if (res.status === 402) throw new Error(engineLabel(engine) + ' は今の設定では使えません（社内の設定が必要です）');
+    if (res.status === 401 || res.status === 403) throw new Error(engineLabel(engine) + ' の計測に使う API キーが使えません（社内の設定が必要です）');
+    throw new Error((engineLabel(engine) + ' の計測に失敗しました（' + res.status + '）：' + msg).slice(0, 200));
+  }
+  const ch = (data.choices && data.choices[0]) || {};
+  const msg = ch.message || {};
+  const cites = gatewayCitations(data);
+  return { answer: msg.content || '', citations: cites.urls, searched: true, fields: cites.fields };
 }
 
 function directModel(engine) {

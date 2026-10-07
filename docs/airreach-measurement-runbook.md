@@ -11,6 +11,19 @@
 
 ## 1. 接続ごとの試験表
 
+**OpenRouter（2026-10-07 追加）**：`OPENROUTER_API_KEY` を Vercel の環境変数に入れると、**ChatGPT（検索あり）・Claude（検索あり）・Gemini** の3つは OpenRouter で、各社の本来の検索（`plugins: [{ id: 'web', engine: 'native', max_results: 5 }]`）を1回だけ使って答えさせる。出典は `message.annotations` の `url_citation`。キーが無ければ下の表のとおり（直接の API・AI Gateway）。Perplexity・Google の AI による概要・AI モードは対象外（今までどおり）。
+
+| AI | OpenRouter のモデル（環境変数で上書き） | 検索1回の料金（2026-10-07 の OpenRouter の公開値） |
+|---|---|---|
+| ChatGPT（検索あり） | `openai/gpt-5-mini`（`AIRREACH_OR_OPENAI_MODEL`） | 0.01ドル＋トークン |
+| Claude（検索あり） | `anthropic/claude-haiku-4.5`（`AIRREACH_OR_CLAUDE_MODEL`） | 0.01ドル＋トークン |
+| Gemini | `google/gemini-2.5-flash`（`AIRREACH_OR_GEMINI_MODEL`） | 0.014ドル＋トークン |
+
+- キーは OpenRouter で AirReach 専用に作り、使える金額の上限を付ける。学習に使われない設定にする。**チャットや記録に貼らない**（Vercel の画面で登録する）
+- 計測の記録の条件は `via: 'openrouter'`。画面・レポートには OpenRouter の名前を出さない（エラーの文も「社内の設定が必要です」）
+- 実際の1回答あたりの額は、キーを入れたあとに1問だけ測って確かめ、`AIRREACH_COST_PER_ANSWER` に入れる（いまの見込み：ChatGPT 検索 0.015・Claude 0.02・Gemini 0.035 ドル）
+- 試験：`node scripts/airreach-api/unit-openrouter.mjs`（偽の fetch。OpenRouter には送らない）
+
 | AI（Studio の選択肢） | 経路 | 必要な設定 | 何が測れるか | 注意 |
 |---|---|---|---|---|
 | ChatGPT（検索なし） | AI Gateway（chat） | `AI_GATEWAY_API_KEY`（あり） | **言及だけ**。引用は測らない（`cite_source=not_measured`） | 出典の検証には使わない |
