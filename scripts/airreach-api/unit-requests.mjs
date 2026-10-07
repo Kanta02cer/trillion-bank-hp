@@ -28,6 +28,22 @@ t('候補：回数0と (unresolved) は除く', !Q.candidates(sum, opt).some((c)
 t('候補：上限（limit）', Q.candidates(sum, { limit: 1 }).length === 1);
 t('候補：計測が無い・形が違っても空', Q.candidates(null, opt).length === 0 && Q.candidates({ cited_domains: 'x' }, opt).length === 0);
 t('候補：{host, counts} の形も読める', hosts(Q.candidates({ cited_domains: [{ host: 'salon-e.example', counts: { perplexity: 2 } }] }, {})) === '["salon-e.example"]');
+// 名前の候補（AI の回答の本文から）
+const A = (prompt, answer, extra) => Object.assign({ prompt, answer, engine: 'perplexity', status: 'ok', branded: false }, extra || {});
+const ns = { answers: [
+  A('渋谷でおすすめの美容室は？', '1. **ヘアサロン ミドリ** - 説明\n2. **ビューティ ソラ** - 説明\n- **料金**: 目安'),
+  A('渋谷でカラーが上手い美容室は？', '・ヘアサロン ミドリ：説明\n・**ビューティ ソラ** はおすすめです\n・**サンプル美容室 Hana**'),
+  A('渋谷で縮毛矯正が上手い美容室は？', '1. **ヘアサロン ミドリ**\n2. **口裂け女**\n3. **口裂け女**'),
+  A('サンプル美容室 Hana の評判は？', '**丁寧な接客**: …\n**駐車場**: …'),
+  A('サンプル美容室 Hana の駐車場は？', '**丁寧な接客**: …\n**駐車場**: …'),
+  A('渋谷のメンズカットは？', '1. **ヘアサロン ミドリ**', { status: 'error' }),
+  A('渋谷の子連れ美容室は？', '1. **カット スター**', { branded: true })] };
+const names = (o) => JSON.stringify(Q.nameCandidates(ns, o).map((c) => c.name));
+t('名前の候補：2つ以上の質問で挙がったお店を、回数の多い順に', names({ brand: 'サンプル美容室 Hana' }) === '["ヘアサロン ミドリ","ビューティ ソラ"]', names({ brand: 'サンプル美容室 Hana' }));
+t('名前の候補：自社・指名質問の答え・特徴の言葉（料金・駐車場）・1つの質問の中だけの名前は出さない', !/Hana|接客|駐車場|料金|口裂け女|カット スター/.test(names({ brand: 'サンプル美容室 Hana' })));
+t('名前の候補：登録済みの競合（空白・大文字小文字を無視）は出さない', names({ brand: 'サンプル美容室 Hana', competitors: [{ name: 'ヘアサロンミドリ' }] }) === '["ビューティ ソラ"]');
+t('名前の候補：エラーの回答は数えない', Q.nameCandidates(ns, { brand: 'x' }).find((c) => c.name === 'ヘアサロン ミドリ').answers === 3);
+t('名前の候補：回答が無い・形が違っても空', Q.nameCandidates(null, {}).length === 0 && Q.nameCandidates({ answers: 'x' }, {}).length === 0);
 const ix = Q.pendingIndex([
   { status: 'pending', action: 'remove', kind: 'competitor', payload: { name: 'サロンA' } },
   { status: 'pending', action: 'add', kind: 'keyword', payload: { text: ' 渋谷 縮毛矯正 ' } },

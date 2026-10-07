@@ -32,6 +32,41 @@
   function md(iso) { var t = Date.parse(iso); if (isNaN(t)) return ''; var d = new Date(t + 9 * 3600 * 1000); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); }
 
   /**
+   * 競合の候補（名前）：AI の回答の本文に挙がったお店・会社の名前。
+   *   お店の名前を入れない質問（一般質問）の回答だけを見て、太字（**名前**）と箇条書きの頭（1. 名前 - …）から取り出し、
+   *   2つ以上の別々の質問で挙がったものだけを出す。自社・登録済みの競合・一般的な言葉・文の形のものは除く。最後は人が確かめて選ぶ
+   */
+  var NAME_STOP = /^(特徴|ポイント|メリット|デメリット|注意点?|まとめ|おすすめ|料金|価格|費用|立地|アクセス|サポート|サービス|プラン|口コミ|評判|予約|対応|設備|期間|契約|立地条件|清潔さ?|安全性?|利便性|コスパ|品質|実績|選び方|比較|結論|概要|はじめに|参考|その他)/;
+  function nameCandidates(summary, opt) {
+    opt = opt || {};
+    var answers = summary && Array.isArray(summary.answers) ? summary.answers : [];
+    var brand = opt.brand || '';
+    var comp = (opt.competitors || []).map(function (c) { return String(c.name || '').toLowerCase().replace(/\s+/g, ''); });
+    var by = {};
+    answers.forEach(function (a, ai) {
+      if (!a || a.status !== 'ok' || a.branded || (brand && isBranded(a.prompt || '', brand))) return;
+      var t = String(a.answer || ''), found = {};
+      t.replace(/\*\*([^*\n]{2,40})\*\*/g, function (m, x) { found[x] = 1; return m; });
+      t.replace(/(?:^|\n)\s*(?:\d+[\.\)．]|[-・●■])\s*([^\n*:：（(、。\-–—|]{2,30})\s*(?:[:：（(\-–—|]|$)/g, function (m, x) { found[x] = 1; return m; });
+      Object.keys(found).forEach(function (raw) {
+        var nm = raw.replace(/^[\s「『【]+|[\s」』】:：]+$/g, '').trim();
+        if (nm.length < 2 || nm.length > 30) return;
+        if (NAME_STOP.test(nm) || /です|ます|でしょう|ください|について|ため|場合|[?？。]/.test(nm) || /^[\d\s.,%円]+$/.test(nm)) return;
+        if (brand && isBranded(nm, brand)) return;
+        var key = nm.toLowerCase().replace(/\s+/g, '');
+        if (comp.indexOf(key) >= 0) return;
+        var x = by[key] || (by[key] = { name: nm, answers: 0, engines: {}, prompts: {} });
+        x.answers += 1; x.engines[a.engine || ''] = 1; x.prompts[a.prompt || ''] = 1;
+      });
+    });
+    return Object.keys(by).map(function (k) { var x = by[k]; return { name: x.name, answers: x.answers, engines: Object.keys(x.engines).filter(Boolean).length, prompts: Object.keys(x.prompts).length }; })
+      // 2つ以上の別々の質問で挙がった名前だけ（1つの質問の中で話題として何度も出る名前を除く）
+      .filter(function (x) { return x.prompts >= 2; })
+      .sort(function (a, b) { return b.answers - a.answers || b.prompts - a.prompts || (a.name < b.name ? -1 : 1); })
+      .slice(0, opt.limit || 8);
+  }
+
+  /**
    * 競合の候補：計測の summary.cited_domains（[[host, {provider: 回答数}]]）から、出典になった回数の多い順に。
    * 自社のサイト・登録済みの競合・SNS・口コミ／予約／まとめ・公的機関は除く
    */
@@ -106,6 +141,7 @@
       var comps = st.competitors || [], kws = st.keywords || [], prompts = st.prompts || [];
       var onN = prompts.filter(function (p) { return p.on; }).length;
       var cands = candidates(run && run.summary, { selfHosts: o.selfHosts || [], competitors: comps });
+      var nameCands = nameCandidates(run && run.summary, { brand: o.brand || '', competitors: comps });
       var pendingAdd = function (kind) { return reqs.filter(function (r) { return r.status === 'pending' && r.action === 'add' && r.kind === kind; }); };
 
       // 一覧は最初の LIMIT 件だけ出し、残りは「すべて表示」で開く（50件あってもホームが伸び続けない）。絞り込みもできる
@@ -140,6 +176,14 @@
           var waiting = pix['add:' + keyOf('competitor', { name: c.host })];
           return '<li><span>' + esc(c.host) + ' <small>' + esc(c.answers) + '回答</small></span>' + (waiting ? '<span class="arc-chip is-warn">確認待ち</span>' :
             '<button type="button" class="arc-btn-sm" data-rq-cand="' + esc(c.host) + '">' + (staff ? '競合に追加' : '競合に追加を依頼') + '</button>') + '</li>';
+        }).join('') + '</ul></div>' : '';
+      // AI の回答に名前が出たお店（出典のサイトとは別に）
+      var nameHtml = nameCands.length ? '<div class="arq-cands"><p class="arc-note"><b>AI の回答に名前が出たお店</b>：' + esc(run.measured_on ? String(run.measured_on).slice(5).replace('-', '/') + ' の' : '最新の') +
+        '計測で、お店の名前を入れない質問のうち、2つ以上の質問の回答に出てきた名前です。同業のお店かどうかを確かめてから選んでください。</p><ul class="arq-chips">' +
+        nameCands.map(function (c) {
+          var waiting = pix['add:' + keyOf('competitor', { name: c.name })];
+          return '<li><span>' + esc(c.name) + ' <small>' + esc(c.answers) + '回答</small></span>' + (waiting ? '<span class="arc-chip is-warn">確認待ち</span>' :
+            '<button type="button" class="arc-btn-sm" data-rq-cand-name="' + esc(c.name) + '">' + (staff ? '競合に追加' : '競合に追加を依頼') + '</button>') + '</li>';
         }).join('') + '</ul></div>' : '';
       var compForm = '<form class="arc-row arq-form" data-rq-form="competitor"><input class="arc-input" name="name" maxlength="80" placeholder="お店・会社の名前" required aria-label="競合の名前">' +
         '<input class="arc-input" name="url" maxlength="300" placeholder="https://（わかれば）" aria-label="競合のサイトの URL">' + noteIn + '<button class="arc-btn" type="submit">' + verb + '</button></form>';
@@ -185,11 +229,16 @@
         '<p class="arc-note">' + (staff ? '承認すると Studio の作業（競合・キーワード・質問）に反映します。ここで追加・外すと、その場で反映して記録が残ります。Studio を開いたままの画面は、開き直してから保存してください。' :
           '追加したい・外したいものがあれば、ここから依頼してください。担当者が確かめてから反映し、次の計測から使います（毎月測る質問は10問までです）。') + '</p>' +
         (staff ? reqHtml : '') +
+        // 最初の計測のあと、競合がまだ無ければ、AI がよく挙げたお店を提案する（上位3つに印。押すまで登録しない）
+        (staff && !comps.length && nameCands.length ? '<div class="arq-propose" id="arq-propose"><h3 class="arc-h3">競合の候補が見つかりました</h3>' +
+          '<p class="arc-note">' + esc(run.measured_on ? String(run.measured_on).slice(5).replace('-', '/') + ' の' : '最新の') + 'AI 計測で、お店の名前を入れない質問の回答によく挙がったお店です。同業のお店に印を付けて登録すると、次の計測から AI の回答で自社と比べます。</p>' +
+          '<ul class="arq-propose-l">' + nameCands.slice(0, 6).map(function (c, i) { return '<li><label><input type="checkbox" data-rq-propose-name="' + esc(c.name) + '"' + (i < 3 ? ' checked' : '') + '> <b>' + esc(c.name) + '</b> <small>' + esc(c.answers) + '回答・' + esc(c.prompts) + '問</small></label></li>'; }).join('') + '</ul>' +
+          '<div class="arc-row"><button type="button" class="arc-btn" data-rq-propose-go>印を付けたお店を競合に登録</button><span class="arc-note">まとめサイトや別の業種は外してください。</span></div></div>' : '') +
         // 社内のホームでは、一覧と編集は折りたたむ（依頼を埋もれさせない）。お客様の画面は開いたまま
         '<details class="arq-all"' + (staff && !openAll ? '' : ' open') + '><summary>' + (staff ? '競合・キーワード・質問の一覧と編集' : '登録している競合・キーワード・質問') +
           '<small>（競合 ' + comps.length + '・キーワード ' + kws.length + '・毎月測る質問 ' + onN + '・候補 ' + offP.length + '）</small></summary>' +
         '<div class="arq-grid">' +
-        block('competitor', '競合（AI の回答で比べる相手）', 'AI がどのお店をすすめたかを数えるときに、比べる相手です。', list('competitor', compItems, comps.length, 'まだ登録されていません。'), candHtml + compForm) +
+        block('competitor', '競合（AI の回答で比べる相手）', 'AI がどのお店をすすめたかを数えるときに、比べる相手です。', list('competitor', compItems, comps.length, 'まだ登録されていません。'), nameHtml + candHtml + compForm) +
         block('keyword', '調べるキーワード（' + kws.length + '件）', 'お客様が検索しそうな言葉です。対策と質問づくりの元にします。', list('keyword', kwItems, kws.length, 'まだ登録されていません。'), kwForm) +
         block('prompt', '毎月測る質問（' + onN + '/10問）', 'この質問を ChatGPT などの AI に毎月たずね、回答に出るかを測ります。' + (brand ? '一般と指名は、質問の文にお店の名前が入っているかで自動で分けます。' : ''),
           pMix + list('prompt-on', pOn, onP.length, 'まだ登録されていません。') +
@@ -251,6 +300,28 @@
           request(kind, 'add', payload, f.note ? f.note.value.trim() : '');
         });
       });
+      Array.prototype.forEach.call(box.querySelectorAll('[data-rq-cand-name]'), function (b) {
+        b.addEventListener('click', function () { request('competitor', 'add', { name: b.getAttribute('data-rq-cand-name') }); });
+      });
+      var pg = box.querySelector('[data-rq-propose-go]');
+      if (pg) pg.addEventListener('click', function () {
+        var names = Array.prototype.map.call(box.querySelectorAll('[data-rq-propose-name]:checked'), function (c) { return c.getAttribute('data-rq-propose-name'); });
+        if (!names.length) { say('登録するお店に印を付けてください', 'error'); return; }
+        pg.disabled = true;
+        // 1社ずつ登録（社内はその場で反映）。終わったら画面を作り直す
+        var chain = Promise.resolve(), done = 0, failed = [];
+        names.forEach(function (n) {
+          chain = chain.then(function () {
+            return rpc('airreach_request_create', { p_client_id: cid, p_kind: 'competitor', p_action: 'add', p_payload: { name: n } })
+              .then(function (r) { if (!(r && r.ok)) throw new Error((r && r.reason) || 'できませんでした'); return rpc('airreach_request_decide', { p_id: r.id, p_approve: true, p_note: null }); })
+              .then(function () { done += 1; }, function (e) { failed.push(n + '（' + (e.message || e) + '）'); });
+          });
+        });
+        chain.then(function () {
+          say(done + '社を競合に登録しました。次の計測から比べます。' + (failed.length ? '登録できなかったお店：' + failed.join('、') : ''), failed.length ? 'error' : 'ok');
+          return mount(box, o).then(function (x) { if (o.onChange) o.onChange(x); });
+        });
+      });
       Array.prototype.forEach.call(box.querySelectorAll('[data-rq-cand]'), function (b) {
         b.addEventListener('click', function () { var h = b.getAttribute('data-rq-cand'); request('competitor', 'add', { name: h, url: 'https://' + h + '/' }); });
       });
@@ -279,7 +350,7 @@
     }
   }
 
-  var api = { mount: mount, candidates: candidates, pendingIndex: pendingIndex, isBranded: isBranded, KIND: KIND };
+  var api = { mount: mount, candidates: candidates, nameCandidates: nameCandidates, pendingIndex: pendingIndex, isBranded: isBranded, KIND: KIND };
   if (typeof window !== 'undefined') window.AirReachRequests = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();
