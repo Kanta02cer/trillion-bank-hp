@@ -161,9 +161,13 @@
     // 飲食店は Service ではなく Restaurant（organization.jsonld）に業態を書くので service.jsonld を求めない
     var mf = parseJsonMaybe(map['MANIFEST.json']) || {};
     var industry = (opts && opts.industry) || mf.industry || '';
-    var required = (industry === 'restaurant')
-      ? REQUIRED_FILES.filter(function (f) { return f !== 'schema/service.jsonld'; })
-      : REQUIRED_FILES;
+    // 確定した FAQ の数（MANIFEST の faq_counts.in_schema）。0件なら faq.jsonld は求めない（空の FAQ の JSON-LD は出さない）
+    var faqCount = opts && opts.faqCount != null ? Number(opts.faqCount) : (mf.faq_counts && mf.faq_counts.in_schema != null ? Number(mf.faq_counts.in_schema) : null);
+    var required = REQUIRED_FILES.filter(function (f) {
+      if (f === 'schema/service.jsonld' && industry === 'restaurant') return false;
+      if (f === 'schema/faq.jsonld' && faqCount === 0) return false;
+      return true;
+    });
     for (i = 0; i < required.length; i++) {
       if (map[required[i]] == null || map[required[i]] === '') {
         missing.push(required[i]);
@@ -183,6 +187,22 @@
     } catch (e) {
       errors.push('MANIFEST.json is not valid JSON');
     }
+    // FAQ の JSON-LD：0件なら置かない。置くなら質問が1つ以上あり、件数が MANIFEST と一致する
+    if (map['schema/faq.jsonld']) {
+      var fl = parseJsonMaybe(map['schema/faq.jsonld']);
+      var nq = fl && Array.isArray(fl.mainEntity) ? fl.mainEntity.length : -1;
+      if (nq <= 0) errors.push('schema/faq.jsonld has no questions (do not ship an empty FAQ schema)');
+      else if (faqCount != null && nq !== faqCount) errors.push('schema/faq.jsonld has ' + nq + ' questions but MANIFEST says ' + faqCount);
+    } else if (faqCount === 0 && map['schema/faq.jsonld'] === '') {
+      errors.push('schema/faq.jsonld must be omitted when there is no confirmed FAQ');
+    }
+    // 文章のファイルに、作り途中の値（undefined・null・NaN）を残さない
+    Object.keys(map).forEach(function (k) {
+      var v = map[k];
+      if (typeof v !== 'string' || !/\.(md|txt|csv|jsonld|json)$/.test(k)) return;
+      var hit = /(^|[^A-Za-z_])(undefined|NaN)(?![A-Za-z_])/.exec(v.replace(/typeof [A-Za-z_.]+ !== 'undefined'/g, ''));
+      if (hit) errors.push(k + ' contains "' + hit[2] + '"');
+    });
     var kwHead = String(map['strategy/keywords.csv'] || '').split(/\r?\n/)[0] || '';
     KEYWORD_CSV_COLUMNS.forEach(function (col) {
       if (kwHead.indexOf(col) === -1) errors.push('keywords.csv missing column: ' + col);

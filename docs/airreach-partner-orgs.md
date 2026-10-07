@@ -40,3 +40,25 @@ python3 scripts/airreach-api/phase2-apply.py assign-client <顧客ID> 共同会�
 
 - `scripts/airreach-api/partner-orgs-test.sql`（ローカル Postgres）：共同会社2社と TB の顧客を置き、表8つ＋顧客・関数・書き込み・承認・割り当ての 50項目
 - 既存の SQL テスト10本すべて合格。取り消し → 既存テスト合格 → 再適用 → 合格
+
+## 開通の手順（共同会社の人の初回ログイン）
+
+確認が済んでから行う（NDA・共有してよい顧客・承認者・利用期間）。登録済み・ログイン成功・対象の顧客を開けた、は別々に確認する。
+
+1. 状態を見る：`phase2-apply.py partner-status`（共同会社・人・承認者・最後のログイン・割り当てた顧客。読み取りのみ）
+2. 会社名を正式名にする（必要なとき・SQL）：`update public.partner_orgs set name = '正式名' where id = '…'`
+3. 顧客を割り当てる：`assign-client <顧客ID> <会社名>`（共同会社に移すと、その顧客の担当者は未設定に戻る）
+4. 承認者を決める：`add-partner-staff <email> <会社名> approver`（確認を依頼した本人は承認できない）
+5. 本人に案内する：`/airreach/app/` を開いてメールアドレスを入れる → 届いたメールのリンクを押す（有効期限1時間）。ヘッダーに会社名が出る
+6. 確認する：`partner-status` で最後のログインが入ったこと、本人の画面で割り当てた顧客だけが出ること
+
+## 解除の手順
+
+- 顧客だけ外す：`assign-client <顧客ID> TB`
+- 人を外す：`remove-partner-staff <email>`（社内の人は消さない。次の画面の読み込みから使えなくなる）
+- 試験：`partner-orgs-test.sql` に、ID の直書き・割り当ての解除・人の解除の確認がある（ローカル Postgres）
+
+## 他社の情報が出ないこと（CSV・ZIP・PDF・API）
+
+- 画面の CSV・ZIP・月次レポート（PDF・印刷）は、ブラウザがデータベースから読めたデータだけで作る。読める範囲は RLS（`airreach_can_staff`）で決まる
+- サーバーの API はログインした人の権限で関数を呼ぶ。Google の API は、その人自身の Google の接続だけを使う。データベースを全権（service_role）で読むのは定期計測の処理だけで、定期計測の設定は社内だけ
