@@ -363,30 +363,73 @@
       if (!c) throw new Error('この顧客は表示できません');
       var C = window.AirReachCharts, top = reps[0], body = '';
       if (top && C) {
-        // 最新の公開レポートの数字と推移を、そのままホームに出す
-        body += '<section class="arc-card"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(top.period_month)) + 'の数字</h2>' +
-          '<a class="arc-btn" href="/airreach/app/report/?id=' + top.id + '">レポートを開く・PDF</a></div>' +
-          C.tiles(top.compiled || {}) +
-          ((top.conclusions || []).length ? '<h3 class="arc-h3">今月の結論</h3><ol class="arr-ol arr-concl">' + top.conclusions.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ol>' : '') +
-          '</section>' +
-          nextCard(top) +
-          '<section class="arc-card"><h2 class="arc-h2">推移（直近6か月）</h2>' + C.trends(top.compiled || {}) + '</section>' +
-          todoCard(window.AirReachReport ? window.AirReachReport.todoList(top.compiled || {}) : [], top.compiled || {}, 'client');
-      }
-      body += '<section class="arc-card"><h2 class="arc-h2">これまでのレポート</h2><ul class="arc-list">' +
+        // 最新の公開レポート：結論 → 数字（小さく・内訳は開く）→ ご判断いただきたいこと → 次にやること → 依頼の入口
+        body += clientLatest(top) + clientNumbers(top) + decisionCard(top) + nextCard(top, true) + reqEntry();
+      } else body += reqEntry();
+      body += '<section class="arc-card"><h2 class="arc-h2">これまでのレポート</h2><ul class="arc-list arc-replist">' +
         (reps.length ? reps.map(function (r) { return '<li><a href="/airreach/app/report/?id=' + r.id + '">' + esc(ymJa(r.period_month)) + ' のレポート</a>' + (r.published_at ? '<span class="arc-sub">公開 ' + esc(day(r.published_at)) + '</span>' : '') + '</li>'; }).join('') : '<li class="arc-empty">公開済みのレポートはまだありません。</li>') +
         '</ul></section>' +
+        (top && C ? '<details class="arc-card arc-more-card"><summary class="arc-h2">推移と直すこと（詳しく）</summary>' +
+          '<section class="arc-sub-sec"><h3 class="arc-h3">推移（直近6か月）</h3>' + C.trends(top.compiled || {}) + '</section>' +
+          todoCard(window.AirReachReport ? window.AirReachReport.todoList(top.compiled || {}) : [], top.compiled || {}, 'client') + '</details>' : '') +
         '<div id="arc-rq"></div>';
       // 見られる顧客が1社だけなら「戻る」は出さない（一覧に戻っても、この画面に戻されるため）
       shell(c.name, body, (me.client_ids || []).length > 1 ? '#/' : '', { client: { id: c.id, name: c.name } });
-      mountRequests(c.id, sites, false, c.name);
+      var pr = mountRequests(c.id, sites, false, c.name);
+      // 依頼の入口：確認待ちの件数を出し、押すと下の依頼の欄へ移る
+      var go = root.querySelector('[data-go-rq]');
+      if (go) go.addEventListener('click', function () { var t = $('#arq') || $('#arc-rq'); if (t) { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); var h = t.querySelector('h2'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); } } });
+      if (pr && pr.then) pr.then(function (x) {
+        var n = root.querySelector('[data-rq-count]');
+        if (!x) { var e = root.querySelector('.arc-rqentry'); if (e) e.hidden = true; return; }
+        if (n) n.textContent = x.pending ? 'ご依頼 ' + x.pending + '件が確認待ち' : '足したい・外したいものがあれば依頼できます';
+        if (n) n.className = x.pending ? 'is-wait' : '';
+      });
     });
+  }
+  /** お客様のホームの最上部：最新レポートの結論と、レポートを開くボタン */
+  function clientLatest(r) {
+    var concl = r.conclusions || [];
+    return '<section class="arc-card arc-latest"><div class="arc-latest-k">最新のレポート · ' + esc(ymJa(r.period_month)) + (r.published_at ? ' · 公開 ' + esc(day(r.published_at)) : '') + '</div>' +
+      (concl.length ? '<h2 class="arc-h2">今月の結論</h2><ol class="arc-latest-c">' + concl.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ol>' : '<h2 class="arc-h2">' + esc(ymJa(r.period_month)) + 'のレポートを公開しました</h2>') +
+      '<a class="arc-btn arc-latest-b" href="/airreach/app/report/?id=' + r.id + '">' + esc(ymJa(r.period_month).replace(/^\d+年/, '')) + 'のレポートを開く・PDF</a></section>';
+  }
+  /** お客様のホームの数字：4つを1行ずつ小さく。棒や AI ごとの内訳は「開く」の中 */
+  function clientNumbers(r) {
+    var c = r.compiled || {}, site = c.site || {}, cur = site.current, ai = c.ai, tr = c.traffic || {}, S = window.AirReachStaff;
+    var na = '<span class="arv-na">未計測</span>';
+    var delta = function (d, unit) { return d == null || d === 0 ? '' : '<em class="' + (d > 0 ? 'is-up' : 'is-down') + '">' + (d > 0 ? '▲' : '▼') + esc(Math.abs(d)) + esc(unit) + '</em>'; };
+    var row = function (k, v, sub) { return '<div class="arc-cnum"><span class="arc-cnum-k">' + k + '</span><span class="arc-cnum-v">' + v + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>'; };
+    var judged = 0, cited = 0;
+    ((ai && ai.providers) || []).forEach(function (p) { if (p.judged > 0 && p.citeCount != null) { judged += p.judged; cited += p.citeCount; } });
+    var rate = judged ? Math.round(cited / judged * 1000) / 10 : null;
+    // 検索と訪問の数字は、対象期間（全期間・途中集計・期間不明）を必ず添える
+    var traffic = function (k, rec, key, unit) {
+      if (!rec || rec[key] == null) return row(k, na);
+      var P = S ? S.periodOf(rec, r.period_month) : null;
+      return row(k, '<b>' + esc(rec[key]) + '</b><small>' + unit + '</small>', P ? '<span class="arc-period' + (P.status === 'partial' ? ' is-partial' : P.status === 'unknown' ? ' is-unknown' : '') + '">' + esc(P.label) + '</span>' : '');
+    };
+    return '<section class="arc-card arc-cnums-card"><h2 class="arc-h2">' + esc(ymJa(r.period_month)) + 'の数字</h2><div class="arc-cnums">' +
+      row('ホームページの情報整備', cur && cur.overall != null ? '<b>' + esc(cur.overall) + '</b><small>点</small>' + delta(site.overallDelta, '点') : na) +
+      row('AI の回答でサイトが出典になった', rate != null ? '<b>' + esc(rate) + '</b><small>%</small>' : na, rate != null ? esc(cited) + '/' + esc(judged) + '回答・出典を判定できた回答の合計' : '') +
+      traffic('検索からのクリック', tr.gsc, 'clicks', '回') +
+      traffic('問い合わせ・予約', tr.ga4, 'conversions', '件') + '</div>' +
+      '<p class="arc-note">測っていない数字は「未計測」と書きます（0 ではありません）。</p>' +
+      (window.AirReachCharts ? '<details class="arc-more"><summary>数字の内訳を開く（AI ごと・前月との比較・対象期間）</summary>' + window.AirReachCharts.tiles(c) + '</details>' : '') + '</section>';
+  }
+  function decisionCard(r) {
+    var dec = r.client_decisions || [];
+    return dec.length ? '<section class="arc-card arc-decide"><h2 class="arc-h2">ご判断いただきたいこと</h2><ul class="arr-ul">' + dec.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '<p class="arc-note">お返事は、担当者へのご連絡でお願いします。</p></section>' : '';
+  }
+  function reqEntry() {
+    return '<section class="arc-card arc-rqentry"><button type="button" class="arc-rqentry-b" data-go-rq><span><b>AI で比べる競合・調べる言葉・質問</b><small data-rq-count>読み込んでいます…</small></span><span aria-hidden="true">下へ ↓</span></button></section>';
   }
   // 競合・キーワード・質問の依頼（assets/js/airreach-requests.js）。DB が未適用なら顧客には何も出さない
   function mountRequests(clientId, sites, staff, clientName) {
     var box = $('#arc-rq');
-    if (!box || !window.AirReachRequests) return;
-    window.AirReachRequests.mount(box, { sb: sb, clientId: clientId, staff: staff, brand: clientName || '', email: me && me.email, selfHosts: (sites || []).map(function (s) { return s.url; }), onMsg: msg });
+    if (!box || !window.AirReachRequests) return null;
+    return window.AirReachRequests.mount(box, { sb: sb, clientId: clientId, staff: staff, brand: clientName || '', email: me && me.email, selfHosts: (sites || []).map(function (s) { return s.url; }), onMsg: msg });
   }
   /**
    * 今月の進め方：毎月の7工程を左のメニューと同じ名前で並べ、どこまで済んだかと「次にやること」（理由つき）を出す（社内向けホーム）。
@@ -556,8 +599,8 @@
         : C.todos(items, { audience: audience, studioHref: studioHref })) + '</section>';
   }
   // お客様のホーム: 最新の公開レポートの「次にやる3施策」と「ご判断いただきたいこと」
-  function nextCard(r) {
-    var next = r.next_actions || [], dec = r.client_decisions || [];
+  function nextCard(r, noDecisions) {
+    var next = r.next_actions || [], dec = noDecisions ? [] : (r.client_decisions || []);
     if (!next.length && !dec.length) return '';
     return '<section class="arc-card"><h2 class="arc-h2">次にやること</h2>' +
       (next.length ? '<table class="arc-table"><thead><tr><th>施策</th><th style="width:22%">担当</th><th style="width:18%">期限</th></tr></thead><tbody>' +
