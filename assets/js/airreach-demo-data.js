@@ -132,8 +132,9 @@
   var GSC = { '2026-04': [120, 3800, 14.2], '2026-05': [131, 4010, 13.6], '2026-06': [148, 4350, 12.9], '2026-07': [166, 4720, 12.1], '2026-08': [184, 5030, 11.4], '2026-09': [203, 5410, 10.8] };
   var GA4 = { '2026-04': [610, 2, 9], '2026-05': [640, 3, 10], '2026-06': [688, 4, 11], '2026-07': [722, 6, 12], '2026-08': [760, 7, 14], '2026-09': [801, 9, 15] };
   function trafficFor(m) {
-    var k = m.slice(0, 7), g = GSC[k], a = GA4[k], end = m.slice(0, 8) + '28';
-    return [{ period_month: m, source: 'gsc_api', metrics: { clicks: g[0], impressions: g[1], position: g[2], start_date: m, end_date: end, days: 28, property: 'sc-domain:' + HOST } },
+    // どの月も月末までそろった（全期間の）値として作る。月の途中の値は作らない
+    var k = m.slice(0, 7), g = GSC[k], a = GA4[k], end = new Date(Date.UTC(Number(k.slice(0, 4)), Number(k.slice(5, 7)), 0)).toISOString().slice(0, 10);
+    return [{ period_month: m, source: 'gsc_api', metrics: { clicks: g[0], impressions: g[1], position: g[2], start_date: m, end_date: end, days: Number(end.slice(8, 10)), property: 'sc-domain:' + HOST } },
       { period_month: m, source: 'ga4_api', metrics: { sessions: a[0], ai_sessions: a[1], conversions: a[2], start_date: m, end_date: end, host: HOST } }];
   }
 

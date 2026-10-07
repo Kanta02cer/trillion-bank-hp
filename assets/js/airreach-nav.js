@@ -32,7 +32,7 @@
       lead: '競合の名前と URL を登録します。AI の回答でどちらの名前が出やすいかは、「AI での見え方を測る」で測ると分かります。' },
     timeseries: { label: '変化を見る', desc: '言葉ごと・月ごとの数字の動き', where: 'studio', panel: 'timeseries',
       lead: '言葉ごとの表示・クリックと、AI 計測の結果が、月ごとにどう変わったかが分かります。' },
-    reports: { label: '月次レポートを作る', desc: '確認・承認・公開まで', where: 'dash', sec: 'reports',
+    reports: { label: '月次レポートを作る・公開する', desc: '結論を書く・確認を依頼・承認・公開', where: 'dash', sec: 'reports',
       lead: '今月のレポートを作り、確認・承認を経てお客様に届けます。数字は集めた材料から自動で入ります。' },
     sites: { label: 'これまでの診断', desc: '過去の点数と結果', where: 'dash', sec: 'sites',
       lead: 'これまでに調べた日と点数です。月次レポートの点数はここから使われます。' },
@@ -42,15 +42,16 @@
     review: { label: '確認待ちのレポート', desc: '承認を待っているレポート', where: 'dash', sec: 'review' }
   };
   Object.keys(ITEMS).forEach(function (k) { ITEMS[k].key = k; });
+  // 番号（7工程の番号）。番号の無い項目は空
   function pick(keys) { return keys.map(function (k) { return ITEMS[k]; }); }
-  // 毎月の作業の順（調べる → 直す → 測る → 報告する）。調べた結果（result）は「サイトを調べる」、AI計測の記録（runs）は「AI での見え方を測る」、
-  // Google 連携（google）は「検索と訪問の数字を入れる」の中で扱う（メニューには出さない。URL では開ける）
+  // 毎月の作業は、ホームの「7工程」と同じ名前・同じ番号で上から並べる（6・7 は月次レポートの画面の中で、確認の依頼と公開をする）。
+  // 細かい画面（言葉・足りない情報・競合・変化・これまでの診断）は「詳しく見る」にまとめる。
+  // 調べた結果（result）は「サイトを調べる」、AI計測の記録（runs）は「AI での見え方を測る」、Google 連携（google）は「検索と訪問の数字を入れる」の中で扱う（メニューには出さない。URL では開ける）
+  var STEP_NO = { start: '1', generator: '2', hack2: '3', traffic: '4', actions: '5', reports: '6・7' };
   var CLIENT_GROUPS = [
     { group: 'はじめに', items: pick(['home']) },
-    { group: '① 調べる', items: pick(['start', 'keywords', 'gaps']) },
-    { group: '② 直す', items: pick(['generator', 'actions']) },
-    { group: '③ 測る', items: pick(['hack2', 'traffic', 'competitors', 'timeseries']) },
-    { group: '④ 報告する', items: pick(['reports', 'sites']) },
+    { group: '毎月の作業（ホームの7工程と同じ番号）', items: pick(['start', 'generator', 'hack2', 'traffic', 'actions', 'reports']) },
+    { group: '詳しく見る', items: pick(['keywords', 'gaps', 'competitors', 'timeseries', 'sites']) },
     { group: '設定', items: pick(['members']) }
   ];
   // 顧客を選んでいないとき: ダッシュボードの全体の画面と、Studio（顧客なしの作業）
@@ -59,6 +60,7 @@
     { group: 'Studio（顧客を選ばずに）', items: pick(['start', 'keywords', 'gaps', 'generator', 'competitors', 'hack2', 'google', 'timeseries']) }
   ];
   function groups(hasClient) { return hasClient ? CLIENT_GROUPS : GLOBAL_GROUPS; }
+  function num(item, hasClient) { return hasClient ? (STEP_NO[item.key] || '') : ''; }
 
   // Studio を顧客の作業として開く URL（ダッシュボードの studioHref と同じ形）
   function studioBase(client) {
@@ -77,5 +79,5 @@
     return '/airreach/app/#/c/' + client.id + (item.sec === 'home' ? '' : '/' + item.sec);
   }
   function item(key) { return ITEMS[key] || null; }
-  window.AirReachNav = { groups: groups, href: href, studioBase: studioBase, item: item };
+  window.AirReachNav = { groups: groups, href: href, studioBase: studioBase, item: item, num: num };
 })();
