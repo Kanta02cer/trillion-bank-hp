@@ -501,6 +501,7 @@
     };
   }
 
+  function periodRec(t) { return { start_date: t.start_date || null, end_date: t.end_date || null, days: t.days != null ? t.days : null, fetched_at: t.fetched_at || null }; }
   function trafficFor(list, month) {
     // 連携（*_api）の値を優先し、連携で取れない項目（対象ページ閲覧など）は CSV・手入力の値で埋める
     var byKind = {};
@@ -628,7 +629,10 @@
         querySetVersion: ak ? (ak.versions.length === 1 ? ak.versions[0] : ak.versions.join(',')) : null,
         cite: cite,
         clicks: tr.gsc ? num(tr.gsc.clicks) : null,
-        conversions: tr.ga4 ? num(tr.ga4.conversions) : null
+        conversions: tr.ga4 ? num(tr.ga4.conversions) : null,
+        // 対象期間（取得した日付の範囲）。途中集計・期間の記録なしを区別するため。記録がなければ null（推測しない）
+        clicksPeriod: tr.gsc ? periodRec(tr.gsc) : null,
+        conversionsPeriod: tr.ga4 ? periodRec(tr.ga4) : null
       });
     }
 

@@ -204,18 +204,18 @@
     N.groups(!!client).forEach(function (g) {
       var gd = document.createElement('div'); gd.className = 'group'; gd.textContent = g.group; frag.appendChild(gd);
       g.items.forEach(function (it) {
-        n += 1;
+        n = N.num ? N.num(it, !!client) : String(++n);
         var el;
         if (it.where === 'studio' && btns[it.panel]) {
           el = btns[it.panel];
           if (it.also) el.setAttribute('data-also', it.also.join(' ')); // 中で一緒に扱う画面（そのときもこの項目を選んだ状態にする）
-          el.innerHTML = '<span class="n">' + n + '</span><span class="ars-side-l">' + esc(it.label) + (it.desc ? '<small>' + esc(it.desc) + '</small>' : '') + '</span>';
+          el.innerHTML = '<span class="n' + (n ? '' : ' is-blank') + '">' + esc(n || '・') + '</span><span class="ars-side-l">' + esc(it.label) + (it.desc ? '<small>' + esc(it.desc) + '</small>' : '') + '</span>';
           delete btns[it.panel];
         } else {
           el = document.createElement('a');
           el.className = 'ars-side-link';
           el.href = N.href(it, navClient);
-          el.innerHTML = '<span class="n">' + n + '</span><span class="ars-side-l">' + esc(it.label) + (it.desc ? '<small>' + esc(it.desc) + '</small>' : '') + '</span>';
+          el.innerHTML = '<span class="n' + (n ? '' : ' is-blank') + '">' + esc(n || '・') + '</span><span class="ars-side-l">' + esc(it.label) + (it.desc ? '<small>' + esc(it.desc) + '</small>' : '') + '</span>';
         }
         frag.appendChild(el);
       });

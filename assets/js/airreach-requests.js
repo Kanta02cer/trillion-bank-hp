@@ -8,6 +8,7 @@
  */
 (function () {
   'use strict';
+  var LIMIT = 10;
   var KIND = { competitor: '競合', keyword: 'キーワード', prompt: '質問' };
   var STATUS = { pending: ['確認待ち', 'is-warn'], approved: ['反映済み', 'is-ok'], rejected: ['見送り', ''], cancelled: ['取り消し', ''] };
   // 競合の候補から外すサイト（SNS・口コミ／予約／まとめは AirReachAIBreakdown.classify と同じ。加えて公的機関・学校）
@@ -66,6 +67,7 @@
    * 戻り値: Promise<{ pending: 件数 }>（DB が未適用なら null）
    */
   function mount(box, o) {
+    var openAll = !!(box.querySelector('.arq-all') && box.querySelector('.arq-all').open);
     var sb = o.sb, cid = o.clientId;
     function rpc(name, args) { return sb.rpc(name, args).then(function (r) { if (r.error) throw new Error(r.error.message || String(r.error)); return r.data; }); }
     function say(t, k) { if (o.onMsg) o.onMsg(t, k); }
@@ -96,22 +98,30 @@
       var cands = candidates(run && run.summary, { selfHosts: o.selfHosts || [], competitors: comps });
       var pendingAdd = function (kind) { return reqs.filter(function (r) { return r.status === 'pending' && r.action === 'add' && r.kind === kind; }); };
 
-      function itemRow(kind, label, sub, payload) {
+      // 一覧は最初の LIMIT 件だけ出し、残りは「すべて表示」で開く（50件あってもホームが伸び続けない）。絞り込みもできる
+      function itemRow(kind, label, sub, payload, i) {
         var rm = pix['remove:' + keyOf(kind, payload)];
         var btn = rm ? '<span class="arc-chip is-warn">外す依頼が確認待ち</span>' :
           '<button type="button" class="arc-btn-sm" data-rq-remove="' + kind + '" data-rq-payload="' + esc(JSON.stringify(payload)) + '">' + (staff ? '外す' : '外す依頼') + '</button>';
-        return '<li><span class="arq-t">' + esc(label) + (sub ? ' <small>' + sub + '</small>' : '') + '</span>' + btn + '</li>';
+        return '<li class="arq-item' + (i >= LIMIT ? ' arq-over' : '') + '" data-text="' + esc(String(label || '').toLowerCase()) + '"><span class="arq-t">' + esc(label) + (sub ? ' <small>' + sub + '</small>' : '') + '</span>' + btn + '</li>';
+      }
+      function tools(key, n) {
+        return n > LIMIT ? '<div class="arq-tools"><input class="arc-input arq-search" type="search" data-rq-search="' + key + '" placeholder="一覧を絞り込む" aria-label="一覧を絞り込む">' +
+          '<button type="button" class="arc-btn-sm" data-rq-all="' + key + '" aria-expanded="false">すべて表示（' + n + '件）</button></div>' : '';
       }
       function waitRows(kind) {
         return pendingAdd(kind).map(function (r) { return '<li class="arq-wait"><span class="arq-t">' + esc(reqText(r)) + '</span><span class="arc-chip is-warn">追加の依頼が確認待ち</span></li>'; }).join('');
       }
-      function block(kind, title, lead, items, empty, form) {
-        return '<div class="arq-block"><h3 class="arc-h3">' + title + '</h3><p class="arc-note">' + lead + '</p>' +
-          '<ul class="arq-list">' + (items + waitRows(kind) || '<li class="arc-empty">' + empty + '</li>') + '</ul>' + form + '</div>';
+      function list(key, items, n, empty) {
+        return tools(key, n) + '<ul class="arq-list" data-rq-list="' + key + '">' + (items || '<li class="arc-empty">' + empty + '</li>') + '</ul>';
+      }
+      function block(kind, title, lead, body, form) {
+        return '<div class="arq-block"><h3 class="arc-h3">' + title + '</h3><p class="arc-note">' + lead + '</p>' + body +
+          (waitRows(kind) ? '<ul class="arq-list">' + waitRows(kind) + '</ul>' : '') + form + '</div>';
       }
       var verb = staff ? '追加する' : '追加を依頼';
 
-      var compItems = comps.map(function (c) { return itemRow('competitor', c.name, c.url && hostOf(c.url) !== String(c.name || '').toLowerCase() ? esc(hostOf(c.url)) : '', { name: c.name }); }).join('');
+      var compItems = comps.map(function (c, i) { return itemRow('competitor', c.name, c.url && hostOf(c.url) !== String(c.name || '').toLowerCase() ? esc(hostOf(c.url)) : '', { name: c.name }, i); }).join('');
       var candHtml = cands.length ? '<div class="arq-cands"><p class="arc-note"><b>候補</b>：' + esc(run.measured_on ? String(run.measured_on).slice(5).replace('-', '/') + ' の' : '最新の') +
         'AI 計測で回答の出典になったサイトです（自社・SNS・口コミや予約のサイトは除いています）。同業のお店かどうかを確かめてから選んでください。</p><ul class="arq-chips">' +
         cands.map(function (c) {
@@ -122,10 +132,13 @@
       var compForm = '<form class="arc-row arq-form" data-rq-form="competitor"><input class="arc-input" name="name" maxlength="80" placeholder="お店・会社の名前" required aria-label="競合の名前">' +
         '<input class="arc-input" name="url" maxlength="300" placeholder="https://（わかれば）" aria-label="競合のサイトの URL"><button class="arc-btn" type="submit">' + verb + '</button></form>';
 
-      var kwItems = kws.map(function (k) { return itemRow('keyword', k.text, (k.priority ? esc(k.priority) : '') + (k.customer ? ' · ご依頼' : ''), { text: k.text }); }).join('');
+      var kwItems = kws.map(function (k, i) { return itemRow('keyword', k.text, (k.priority ? esc(k.priority) : '') + (k.customer ? ' · ご依頼' : ''), { text: k.text }, i); }).join('');
       var kwForm = '<form class="arc-row arq-form" data-rq-form="keyword"><input class="arc-input" name="text" maxlength="60" placeholder="例: 渋谷 縮毛矯正" required aria-label="キーワード"><button class="arc-btn" type="submit">' + verb + '</button></form>';
 
-      var pItems = prompts.map(function (p) { return itemRow('prompt', p.text, p.on ? '' : '候補（今は測っていません）', { text: p.text }); }).join('');
+      // 毎月測る質問と、今は測っていない候補を分ける
+      var onP = prompts.filter(function (p) { return p.on; }), offP = prompts.filter(function (p) { return !p.on; });
+      var pOn = onP.map(function (p, i) { return itemRow('prompt', p.text, '', { text: p.text }, i); }).join('');
+      var pOff = offP.map(function (p, i) { return itemRow('prompt', p.text, '', { text: p.text }, i); }).join('');
       var pForm = '<form class="arc-row arq-form" data-rq-form="prompt"><input class="arc-input arq-wide" name="text" maxlength="200" placeholder="例: 渋谷で縮毛矯正が上手い美容室は？" required aria-label="質問"><button class="arc-btn" type="submit">' + verb + '</button></form>';
 
       var pend = reqs.filter(function (r) { return r.status === 'pending'; });
@@ -142,19 +155,27 @@
         return '<li><span class="arc-chip ' + s[1] + '">' + esc(s[0]) + '</span><span class="arq-t">' + esc(KIND[r.kind] || r.kind) + 'を' + (r.action === 'add' ? '追加' : '外す') + '：' + esc(reqText(r)) +
           ' <small>' + esc(md(r.requested_at)) + (r.decision_note && r.status !== 'pending' ? ' · ' + esc(r.decision_note) : '') + '</small>' + who + '</span>' + (acts ? '<span class="arq-acts">' + acts + '</span>' : '') + '</li>';
       };
-      var reqHtml = '<div class="arq-reqs"><h3 class="arc-h3">' + (staff ? 'お客様からの依頼・変更の記録' : 'ご依頼と変更の記録') + (pend.length ? ' <span class="arc-chip is-warn">確認待ち ' + pend.length + '件</span>' : '') + '</h3>' +
-        (pend.length || done.length ? '<ul class="arq-rlist">' + pend.concat(done).map(reqRow).join('') + '</ul>' : '<p class="arc-empty">' + (staff ? 'まだ依頼はありません。' : 'まだご依頼はありません。') + '</p>') + '</div>';
+      // 確認待ちは全部、済んだものは直近3件だけ（残りは開く）
+      var reqHtml = '<div class="arq-reqs"><h3 class="arc-h3">' + (staff ? 'お客様からの依頼' : 'ご依頼と変更の記録') + (pend.length ? ' <span class="arc-chip is-warn">確認待ち ' + pend.length + '件</span>' : staff ? ' <span class="arc-chip is-ok">確認待ちなし</span>' : '') + '</h3>' +
+        (pend.length || done.length ? '<ul class="arq-rlist">' + pend.concat(done.slice(0, 3)).map(reqRow).join('') + '</ul>' +
+          (done.length > 3 ? '<details class="arq-hist"><summary>これまでの記録をもっと見る（' + (done.length - 3) + '件）</summary><ul class="arq-rlist">' + done.slice(3).map(reqRow).join('') + '</ul></details>' : '')
+          : '<p class="arc-empty">' + (staff ? 'まだ依頼はありません。' : 'まだご依頼はありません。') + '</p>') + '</div>';
 
       box.innerHTML = '<section class="arc-card arq" id="arq">' +
         '<div class="arv-home-head"><h2 class="arc-h2">AI で比べる競合・調べるキーワード・質問</h2></div>' +
         '<p class="arc-note">' + (staff ? '承認すると Studio の作業（競合・キーワード・質問）に反映します。ここで追加・外すと、その場で反映して記録が残ります。Studio を開いたままの画面は、開き直してから保存してください。' :
           '追加したい・外したいものがあれば、ここから依頼してください。担当者が確かめてから反映し、次の計測から使います（毎月測る質問は10問までです）。') + '</p>' +
         (staff ? reqHtml : '') +
+        // 社内のホームでは、一覧と編集は折りたたむ（依頼を埋もれさせない）。お客様の画面は開いたまま
+        '<details class="arq-all"' + (staff && !openAll ? '' : ' open') + '><summary>' + (staff ? '競合・キーワード・質問の一覧と編集' : '登録している競合・キーワード・質問') +
+          '<small>（競合 ' + comps.length + '・キーワード ' + kws.length + '・毎月測る質問 ' + onN + '・候補 ' + offP.length + '）</small></summary>' +
         '<div class="arq-grid">' +
-        block('competitor', '競合（AI の回答で比べる相手）', 'AI がどのお店をすすめたかを数えるときに、比べる相手です。', compItems, 'まだ登録されていません。', candHtml + compForm) +
-        block('keyword', '調べるキーワード', 'お客様が検索しそうな言葉です。対策と質問づくりの元にします。', kwItems, 'まだ登録されていません。', kwForm) +
-        block('prompt', '毎月測る質問（' + onN + '/10問）', 'この質問を ChatGPT などの AI に毎月たずね、回答に出るかを測ります。', pItems, 'まだ登録されていません。', pForm) +
-        '</div>' + (staff ? '' : reqHtml) + '</section>';
+        block('competitor', '競合（AI の回答で比べる相手）', 'AI がどのお店をすすめたかを数えるときに、比べる相手です。', list('competitor', compItems, comps.length, 'まだ登録されていません。'), candHtml + compForm) +
+        block('keyword', '調べるキーワード（' + kws.length + '件）', 'お客様が検索しそうな言葉です。対策と質問づくりの元にします。', list('keyword', kwItems, kws.length, 'まだ登録されていません。'), kwForm) +
+        block('prompt', '毎月測る質問（' + onN + '/10問）', 'この質問を ChatGPT などの AI に毎月たずね、回答に出るかを測ります。',
+          list('prompt-on', pOn, onP.length, 'まだ登録されていません。') +
+          (offP.length ? '<h4 class="arq-sub">候補（今は測っていない・' + offP.length + '件）</h4>' + list('prompt-off', pOff, offP.length, '') : ''), pForm) +
+        '</div></details>' + (staff ? '' : reqHtml) + '</section>';
       bind();
     }
 
@@ -172,6 +193,22 @@
       return act(made.then(function (r) { return r && r.ok ? rpc('airreach_request_decide', { p_id: r.id, p_approve: true, p_note: null }) : r; }), function (r) { return (r && r.applied) || (action === 'add' ? '追加しました' : '外しました'); });
     }
     function bind() {
+      var all = box.querySelector('.arq-all');
+      if (all) all.addEventListener('toggle', function () { openAll = all.open; });
+      Array.prototype.forEach.call(box.querySelectorAll('[data-rq-all]'), function (b) {
+        b.addEventListener('click', function () {
+          var ul = box.querySelector('[data-rq-list="' + b.getAttribute('data-rq-all') + '"]'), on = !ul.classList.contains('is-all');
+          ul.classList.toggle('is-all', on); b.setAttribute('aria-expanded', String(on));
+          b.textContent = on ? '最初の' + LIMIT + '件だけ表示' : 'すべて表示（' + ul.querySelectorAll('.arq-item').length + '件）';
+        });
+      });
+      Array.prototype.forEach.call(box.querySelectorAll('[data-rq-search]'), function (inp) {
+        inp.addEventListener('input', function () {
+          var ul = box.querySelector('[data-rq-list="' + inp.getAttribute('data-rq-search') + '"]'), v = inp.value.trim().toLowerCase();
+          ul.classList.toggle('is-search', !!v);
+          Array.prototype.forEach.call(ul.querySelectorAll('.arq-item'), function (li) { li.hidden = !!v && li.getAttribute('data-text').indexOf(v) < 0; });
+        });
+      });
       Array.prototype.forEach.call(box.querySelectorAll('form[data-rq-form]'), function (f) {
         f.addEventListener('submit', function (e) {
           e.preventDefault();

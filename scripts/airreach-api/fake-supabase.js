@@ -26,7 +26,7 @@
   var listeners = [];
 
   function Query(table) { this.t = table; this.filters = []; this.op = 'select'; this.ord = null; this.one = null; this.embed = null; this.retSelect = false; }
-  Query.prototype.select = function (cols) { if (this.op !== 'select') this.retSelect = true; var m = /(\w+)\((\w+)\)/.exec(cols || ''); if (m) this.embed = m; return this; };
+  Query.prototype.select = function (cols) { if (this.op !== 'select') this.retSelect = true; var m = /(\w+)\(([\w,]+)\)/.exec(cols || ''); if (m) this.embed = m; return this; };
   Query.prototype.eq = function (k, v) { this.filters.push([k, v]); return this; };
   Query.prototype.in = function (k, vs) { this.filters.push([k, vs, 'in']); return this; };
   Query.prototype.order = function (k, o) { this.ord = [k, !(o && o.ascending === false)]; return this; };
@@ -45,7 +45,7 @@
       if (this.op === 'select') {
         out = t.filter(function (r) { return visible(self.t, r) && self.match(r); });
         if (this.ord) { var k = this.ord[0], asc = this.ord[1]; out.sort(function (a, b) { return (String(a[k]) < String(b[k]) ? -1 : 1) * (asc ? 1 : -1); }); }
-        if (this.embed) out = out.map(function (r) { var c = db.clients.filter(function (x) { return x.id === r.client_id; })[0]; var o = Object.assign({}, r); o[self.embed[1]] = c ? { name: c.name } : null; return o; });
+        if (this.embed) out = out.map(function (r) { var c = db.clients.filter(function (x) { return x.id === r.client_id; })[0]; var o = Object.assign({}, r); o[self.embed[1]] = c ? self.embed[2].split(',').reduce(function (acc, k) { acc[k] = c[k]; return acc; }, {}) : null; return o; });
       } else if (this.op === 'insert') {
         var tbl = this.t;
         out = (Array.isArray(this.row) ? this.row : [this.row]).map(function (r) {

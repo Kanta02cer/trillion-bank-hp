@@ -15,6 +15,7 @@ Change ID（DEV-YYYY-NNN）の承認後にだけ使う。各手順は単独で�
   python3 scripts/airreach-api/phase2-apply.py apply-studio-workspaces   # Studio の作業の共有（studio_workspaces）を適用して検証
   python3 scripts/airreach-api/phase2-apply.py apply-schedules           # AI計測の定期実行（measurement_schedules / measurement_jobs）を適用して検証。既定は無効
   python3 scripts/airreach-api/phase2-apply.py apply-client-requests     # お客様からの依頼（競合・キーワード・質問の追加と削除・担当者の承認）を適用して検証
+  python3 scripts/airreach-api/phase2-apply.py apply-client-owner-due    # 顧客ごとの担当と報告期限の列（担当者ダッシュボードの絞り込み）を適用して検証
 
 Supabase のアクセストークン（Account → Access Tokens で発行・期限つき推奨）は、
 ~/.config/airreach/supabase_token（chmod 600）に置く。画面にもログにも出さない。
@@ -303,6 +304,31 @@ def cmd_apply_client_requests():
         die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261007120000_airreach_client_requests_rollback.sql で戻すか判断してください')
 
 
+def cmd_apply_client_owner_due():
+    """顧客ごとの担当（社内）と毎月の報告期限（日）の列を足す（担当者ダッシュボードの顧客一覧・ホームの「期限」）"""
+    confirm_project()
+    if 'clients' not in tables():
+        die('clients がありません。先に apply-db を実行してください')
+    path = ROOT / 'supabase/migrations/20261008120000_airreach_client_owner_due.sql'
+    call('POST', f'/projects/{REF}/database/migrations', {'name': 'airreach_client_owner_due', 'query': path.read_text()})
+    print('migration を適用しました: airreach_client_owner_due')
+    checks = [
+        ('clients に owner_email・report_due_day がある', "select count(*) = 2 as ok from information_schema.columns where table_schema = 'public' and table_name = 'clients' and column_name in ('owner_email', 'report_due_day')"),
+        ('担当は社内メンバーへの参照（消えたら未設定）', "select exists(select 1 from pg_constraint where conname = 'clients_owner_email_fkey' and confdeltype = 'n') as ok"),
+        ('期限は 1〜31 の制約', "select exists(select 1 from pg_constraint where conname = 'clients_report_due_day_check') as ok"),
+        ('既存の顧客は未設定のまま（架空の担当・期限を入れていない）', "select count(*) = 0 as ok from public.clients where owner_email is not null or report_due_day is not null"),
+        ('clients の RLS は有効のまま', "select relrowsecurity as ok from pg_class where oid = 'public.clients'::regclass"),
+    ]
+    bad = 0
+    for label, q in checks:
+        r = sql(q, True)
+        ok = bool(r and r[0].get('ok'))
+        bad += 0 if ok else 1
+        print(('OK  ' if ok else 'NG  ') + label)
+    if bad:
+        die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261008120000_airreach_client_owner_due_rollback.sql で戻すか判断してください')
+
+
 def cmd_set_approver(email, flag):
     email = email.strip().lower()
     if flag not in ('on', 'off') or '@' not in email or "'" in email:
@@ -399,7 +425,7 @@ def cmd_anon_key_to_vercel():
 def main():
     a = sys.argv[1:]
     cmds = {'check': cmd_check, 'apply-db': cmd_apply_db, 'auth-config': cmd_auth_config, 'auth-hook': cmd_auth_hook,
-            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'apply-client-requests': cmd_apply_client_requests, 'verify': lambda: (confirm_project(), verify())}
+            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'apply-client-requests': cmd_apply_client_requests, 'apply-client-owner-due': cmd_apply_client_owner_due, 'verify': lambda: (confirm_project(), verify())}
     if a and a[0] in cmds and len(a) == 1:
         cmds[a[0]]()
     elif a and a[0] == 'add-staff' and len(a) == 3:
