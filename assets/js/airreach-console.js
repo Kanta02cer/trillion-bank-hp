@@ -125,6 +125,7 @@
   if (window.AirReachNav) Object.keys(SEC_LABEL).forEach(function (k) { var it = window.AirReachNav.item(k); if (it && k !== 'home') SEC_LABEL[k] = it.label; });
   function secLead(k) { var it = window.AirReachNav && window.AirReachNav.item(k); return it && it.lead ? it.lead : ''; }
   // 左のメニューは Studio と共通（assets/js/airreach-nav.js）。ダッシュボードの節は同じページの中で、Studio の画面は Studio を開く
+  var SIDE_STEP = { start: 0, generator: 1, hack2: 2, traffic: 3, actions: 4, reports: 5 };
   function sideHtml(ctx) {
     var N = window.AirReachNav, cl = ctx.client;
     if (!N) return '';
@@ -138,6 +139,15 @@
         if (it.where === 'dash') url = url.replace('/airreach/app/', ''); // 同じページの中は # だけで移る
         var n = N.num ? N.num(it, !!cl) : '';
         var badge = it.sec === 'reports' && ctx.reportBadge ? '<span class="arc-side-b">' + esc(ctx.reportBadge) + '</span>' : '';
+        // 毎月の作業の項目には、7工程の状態（済み・次はここ・途中）を出す（ホームの7工程と同じ判定）
+        var si = ctx.plan ? SIDE_STEP[it.key] : null;
+        if (si != null) {
+          var st = ctx.plan.steps[si], st7 = ctx.plan.steps[6];
+          if (it.key === 'reports' && st7 && st7.ok) badge = '<span class="arc-side-b is-ok">✓ 公開</span>';
+          else if (it.key !== 'reports' && st.ok) badge = '<span class="arc-side-b is-ok" aria-label="済み">✓</span>';
+          else if (ctx.plan.nextI === si || (it.key === 'reports' && ctx.plan.nextI === 6)) badge = '<span class="arc-side-b is-next">次はここ</span>' + (it.key === 'reports' && ctx.reportBadge ? '<span class="arc-side-b">' + esc(ctx.reportBadge) + '</span>' : '');
+          else if (st.partial) badge = '<span class="arc-side-b">途中</span>';
+        }
         return '<a class="arc-side-i' + (on ? ' is-on' : '') + (it.where === 'studio' ? ' is-studio' : '') + '" href="' + esc(url) + '"' + (on ? ' aria-current="page"' : '') + '><span class="arc-side-n' + (n ? '' : ' is-blank') + '" aria-hidden="' + (n ? 'false' : 'true') + '">' + esc(n || '・') + '</span><span class="arc-side-l">' + esc(it.label) + (it.desc ? '<small>' + esc(it.desc) + '</small>' : '') + '</span>' + badge + '</a>';
       }).join('');
     }).join('');
@@ -444,7 +454,7 @@
       '<div class="arc-today-grid">' +
         cell('報告の期限', esc(dueTxt), due && due.daysLeft <= 3 ? '' : '') +
         cell('担当', esc(owner)) +
-        cell('残りの工程', (7 - plan.doneN) + ' <small>/ 7</small>', '<a href="#arc-steps">7工程を見る</a>') +
+        cell('今月の進み具合', plan.doneN + ' <small>/ 7 済み</small>', '<span class="arc-dots" aria-hidden="true">' + plan.steps.map(function (s, i) { return '<i class="' + (s.ok ? 'is-ok' : i === plan.nextI ? 'is-next' : '') + '"></i>'; }).join('') + '</span><a href="#arc-steps">7工程を見る</a>') +
         cell('お客様からの依頼', pendingReq == null ? '—' : pendingReq + '<small>件 確認待ち</small>', pendingReq ? '<a href="#arq">依頼を見る</a>' : '') +
         cell('今月のレポート', repNow ? statusChip(repNow.status) + (plan.returned ? ' <span class="arc-chip is-ng">差し戻し</span>' : '') : '<span class="arc-chip is-ng">未作成</span>', repNow ? '<a href="#/r/' + repNow.id + '">開く</a>' : '') +
       '</div></section>';
@@ -459,7 +469,7 @@
       return item(key === 'clicks' ? '検索からのクリック' : '問い合わせ・予約', esc(rec[key]) + '<small>' + unit + '</small>', esc(P ? P.short : ''));
     };
     return '<div class="arc-nums">' +
-      item('情報整備', cur && cur.overall != null ? esc(cur.overall) + '<small>点</small>' : '<span class="arv-na">未計測</span>', cur ? esc(day(cur.createdAt)) + ' の診断' + (cur.inMonth ? '' : '（今月はまだ）') : '') +
+      item('情報整備', cur && cur.overall != null ? esc(cur.overall) + '<small>点</small>' + (live.site.overallDelta ? ' <em class="arc-delta ' + (live.site.overallDelta > 0 ? 'is-up' : 'is-down') + '">' + (live.site.overallDelta > 0 ? '▲' : '▼') + esc(Math.abs(live.site.overallDelta)) + '</em>' : '') : '<span class="arv-na">未計測</span>', cur ? esc(day(cur.createdAt)) + ' の診断' + (cur.inMonth ? '' : '（今月はまだ）') + (live.site.overallDelta != null ? '・前月の診断との差' : '') : '') +
       item('AI 計測', ai ? esc(ai.runs || 1) + '<small>回</small>' : '<span class="arv-na">未計測</span>', ai ? '最新 ' + esc(String(ai.measuredOn || '').slice(5).replace('-', '/')) + '・' + esc(ai.providers.length) + '種類' : '') +
       traffic(tr.gsc, 'clicks', '回') + traffic(tr.ga4, 'conversions', '件') + '</div>';
   }
@@ -1093,7 +1103,7 @@
         ownerDueBlock(c, staffList) +
         googleDataBlock(c) +
         '</div></section>',
-        '', { client: { id: c.id, name: c.name, site: sites[0] && sites[0].url, industry: c.industry_id }, sec: curSec, reportBadge: repBadge, kicker: curSec === 'home' ? '' : c.name,
+        '', { client: { id: c.id, name: c.name, site: sites[0] && sites[0].url, industry: c.industry_id }, sec: curSec, reportBadge: repBadge, plan: plan, kicker: curSec === 'home' ? '' : c.name,
           action: '' });
 
       Array.prototype.forEach.call(root.querySelectorAll('details[data-fold]'), function (d) {

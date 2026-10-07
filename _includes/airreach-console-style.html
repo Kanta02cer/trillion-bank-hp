@@ -339,7 +339,15 @@ body.arc-app .arc-login{margin:80px auto 12px}
 .arc-side-i.is-on .arc-side-l small{color:#3b5bdb}
 .arc-lead{margin:0;font-size:.9rem;color:#334155;max-width:70ch}
 .arc-side-i.is-studio::after{content:'';width:6px;height:6px;border-top:1.5px solid #94a3b8;border-right:1.5px solid #94a3b8;transform:rotate(45deg);flex:none}
-.arc-side-b{font-size:11px;padding:1px 8px;border-radius:999px;background:#fffbeb;color:#b45309;font-weight:700}
+.arc-side-b{font-size:11px;padding:1px 8px;border-radius:999px;background:#fffbeb;color:#b45309;font-weight:700}.arc-side-b.is-ok{background:#ecfdf5;color:#047857}.arc-side-b.is-next{background:#2563eb;color:#fff}.arc-side-b+.arc-side-b{margin-left:4px}
+.arc-dots{display:flex;gap:3px;margin:3px 0 2px}.arc-dots i{display:block;width:14px;height:6px;border-radius:3px;background:#e2e8f0}.arc-dots i.is-ok{background:#16a34a}.arc-dots i.is-next{background:#2563eb}
+.arc-delta{font-style:normal;font-size:12px;font-weight:700;margin-left:4px}.arc-delta.is-up{color:#15803d}.arc-delta.is-down{color:#b91c1c}
+/* ホームの7工程：1工程1行に詰める（説明は1行で切る） */
+.arc-msteps .arc-mstep{padding:7px 12px;gap:10px}
+.arc-msteps .arc-mstep-b span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arc-msteps .arc-mstep-s{flex-direction:row;align-items:center;gap:10px}
+.arc-msteps .arc-mstep-st{align-items:flex-end;text-align:right}
+@media(max-width:640px){.arc-msteps .arc-mstep-b span{white-space:normal}}
 .arc-side-note{margin:8px 10px;font-size:13px;line-height:1.7;color:#64748b}
 .arc-main{padding:28px 40px 64px;max-width:1040px;box-sizing:border-box;width:100%}
 .arc-shell.is-full .arc-main{margin:0 auto}
