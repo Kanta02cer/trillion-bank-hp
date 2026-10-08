@@ -1261,7 +1261,7 @@
       // 競合との比較（airreach-rivals.js）：Studio に登録した競合と、いちばん新しい計測の回答から
       if (window.AirReachRivals) {
         var stw = (workspace && workspace.studio) || {};
-        window.AirReachRivals.mount(root.querySelector('#arc-rivals'), { runs: runs, brand: (stw.profile && stw.profile.brand) || c.name, selfUrl: (sites[0] && sites[0].url) || (stw.profile && stw.profile.url) || '', competitors: stw.competitors || [] });
+        window.AirReachRivals.mount(root.querySelector('#arc-rivals'), { runs: runs, brand: (stw.profile && stw.profile.brand) || c.name, selfUrl: (sites[0] && sites[0].url) || (stw.profile && stw.profile.url) || '', competitors: stw.competitors || [], sb: sb, clientId: c.id });
       }
       if (window.AirReachIssues) window.AirReachIssues.mount(root.querySelector('#arc-issues'), { sb: sb, clientId: c.id, issues: issues, runs: runs, onChange: function () { route(); } });
       root.querySelectorAll('[data-del-run]').forEach(function (b) { b.addEventListener('click', function () {

@@ -122,7 +122,9 @@
   function mount(box, ctx, engine) {
     if (!box) return;
     var r = compute(Object.assign({}, ctx, { engine: engine || 'aio' }));
-    box.innerHTML = html(r, ctx);
+    box.innerHTML = html(r, ctx) + '<div data-rv-why></div>';
+    // なぜ相手が出るのか（出典ページの中身・AI の紹介のされ方・直すこと。airreach-rivals-why.js）
+    if (root.AirReachRivalsWhy) { try { root.AirReachRivalsWhy.mount(box.querySelector('[data-rv-why]'), r, Object.assign({}, ctx, { engine: r.engine })); } catch (e) {} }
     Array.prototype.forEach.call(box.querySelectorAll('[data-rv-engine]'), function (b) { b.addEventListener('click', function () { mount(box, ctx, b.getAttribute('data-rv-engine')); }); });
   }
 
