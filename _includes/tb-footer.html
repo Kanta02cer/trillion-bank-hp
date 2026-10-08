@@ -18,11 +18,15 @@
         <a href="/trillionbank/business/pay-per-crawl/">Pay per Crawl</a>
       </div>
       <div class="fcol">
-        <h5>COMPANY</h5>
+        <h5>COMPANY</h5>{% if include.refresh_navigation %}
+        <a href="/trillionbank/mission/">企業理念</a>
+        <a href="/trillionbank/company/">企業概要</a>
+        <a href="/trillionbank/insights/">コラム</a>
+        {% else %}
         <a href="/trillionbank/mission/">Mission</a>
         <a href="/trillionbank/company/">会社概要</a>
         <a href="/trillionbank/media/">Media / News</a>
-        <a href="/trillionbank/insights/">Insights</a>
+        <a href="/trillionbank/insights/">Insights</a>{% endif %}
       </div>
       <div class="fcol">
         <h5>CONTACT</h5>

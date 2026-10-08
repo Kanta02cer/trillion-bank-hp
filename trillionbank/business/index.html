@@ -4,7 +4,7 @@ tbdesc: 株式会社Trillion Bank（トリリオンバンク）の事業概要�
 permalink: /trillionbank/business/
 ---
 <!DOCTYPE html>
-<html lang="ja"><head><meta charset="UTF-8">{% include tb-head.html %}
+<html lang="ja"><head><meta charset="UTF-8">{% include tb-head.html %}{% include tb-refresh-head.html %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -16,11 +16,11 @@ permalink: /trillionbank/business/
 }
 </script>
 </head>
-<body>{% include tb-header.html %}
+<body class="tb-refresh" data-site-refresh="business">{% include tb-refresh-header.html %}{% include tb-toriuru-guide.html %}
 <main id="main">
-<section class="phero"><div class="wrap"><div class="crumb"><a href="/">HOME</a> ／ 事業概要</div><span class="ey">BUSINESS</span><h1>事業概要</h1><p>AI検索の「見え方」を測るAirReach Consultingと、AIによるコンテンツ利用の「使われ方」を制御・記録するAdctor / Pay per Crawl。<br>AI情報流通インフラを開発しています。</p></div></section>
+<section class="phero tbr-scene tbr-character-right" data-toriuru-scene data-pose="neutral" data-x="82" data-y="48" data-scale=".92"><div class="wrap"><div class="crumb"><a href="/">HOME</a> ／ 事業概要</div><span class="ey">BUSINESS</span><h1>事業概要</h1><p>AI検索の「見え方」を測るAirReach Consultingと、AIによるコンテンツ利用の「使われ方」を制御・記録するAdctor / Pay per Crawl。<br>AI情報流通インフラを開発しています。</p></div></section>
 
-<section class="sec"><div class="wrap"><div class="khead"><span class="no">CORE — AI INFRASTRUCTURE</span><h2 class="rv">コアプロダクト</h2></div>
+<section class="sec tbr-scene tbr-character-right" data-toriuru-scene data-pose="point-left" data-x="80" data-y="50" data-scale=".9"><div class="wrap"><div class="khead"><span class="no">CORE — AI INFRASTRUCTURE</span><h2 class="rv">コアプロダクト</h2></div>
 <div class="bcards rv" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:20px">
   <a class="card bcard" href="/trillionbank/business/hack2/" style="display:flex;flex-direction:column;padding:clamp(30px,3.4vw,44px)">
     <div class="bt" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px"><h3 style="font-size:1.7rem;font-weight:700">AirReach Consulting</h3><span class="badge dev">限定商用検証・導入相談受付</span></div>
@@ -34,7 +34,7 @@ permalink: /trillionbank/business/
   </a>
 </div></div></section>
 
-<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">GUIDES & INSIGHTS</span><h2 class="rv">ガイド・読みもの</h2></div>
+<section class="sec tbr-scene tbr-scene--dense" style="padding-top:0" data-toriuru-scene data-pose="neutral" data-x="80" data-y="50" data-scale=".82" data-toriuru-hide="true"><div class="wrap"><div class="khead"><span class="no">GUIDES & INSIGHTS</span><h2 class="rv">ガイド・読みもの</h2></div>
 <div class="bcards rv" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:20px">
   <a class="card bcard" href="/trillionbank/guide/inhouse-or-outsource/" style="display:flex;flex-direction:column;padding:clamp(30px,3.4vw,44px)">
     <div class="bt" style="margin-bottom:14px"><h3 style="font-size:1.4rem;font-weight:700">内製／外注 判断ガイド</h3></div>
@@ -47,7 +47,7 @@ permalink: /trillionbank/business/
     <span class="btn btn-line">読む <span class="a">→</span></span>
   </a>
   <a class="card bcard" href="/trillionbank/insights/" style="display:flex;flex-direction:column;padding:clamp(30px,3.4vw,44px)">
-    <div class="bt" style="margin-bottom:14px"><h3 style="font-size:1.4rem;font-weight:700">Insights</h3></div>
+    <div class="bt" style="margin-bottom:14px"><h3 style="font-size:1.4rem;font-weight:700">コラム</h3></div>
     <p style="color:var(--muted);margin:8px 0 20px;flex:1">SEO・AEO・GEO・AIO・LLMOの違い、AI検索の効果測定方法など、一次情報にもとづく解説・調査記事。</p>
     <span class="btn btn-line">一覧を見る <span class="a">→</span></span>
   </a>
@@ -59,4 +59,4 @@ permalink: /trillionbank/business/
 </div>
 <div style="margin-top:40px"><a class="btn btn-primary" href="{{ site.data.contact.meeting_url }}" target="_blank" rel="noopener noreferrer" data-event="meeting_booking_click" data-service="general" data-cta="business_overview">商談を予約する <span class="a">→</span></a></div>
 </div></section>
-</main>{% include tb-footer.html %}</body></html>
+</main>{% include tb-footer.html refresh_navigation=true %}</body></html>
