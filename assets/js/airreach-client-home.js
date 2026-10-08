@@ -34,6 +34,8 @@
     };
     return '<section class="arc-card arc-cnums-card"><h2 class="arc-h2">' + esc(ymJa(r.period_month)) + 'の数字</h2><div class="arc-cnums">' +
       row('ホームページの情報整備', cur && cur.overall != null ? '<b>' + esc(cur.overall) + '</b><small>点</small>' + delta(site.overallDelta, '点') : na) +
+      // 2026年10月から：Google の AI による概要に名前が出た回数を主に（compiled.aio が無い古いレポートは出典の割合のまま）
+      (c.aio && c.aio.now ? row('Google の AI による概要に名前が出た', '<b>' + esc(c.aio.now.x) + '</b><small> / ' + esc(c.aio.now.n) + '回</small>', c.aio.prev ? (c.aio.comparable ? '先月 ' + esc(c.aio.prev.x) + ' / ' + esc(c.aio.prev.n) + '回' : '先月と条件が違うため比べていません') : '名前を入れていない質問・概要が出なかった検索も回数に入れています') : '') +
       row('AI の回答でサイトが出典になった', rate != null ? '<b>' + esc(rate) + '</b><small>%</small>' : na, rate != null ? esc(cited) + '/' + esc(judged) + '回答・出典を判定できた回答の合計' : '') +
       traffic('検索からのクリック', tr.gsc, 'clicks', '回') +
       traffic('問い合わせ・予約', tr.ga4, 'conversions', '件') + '</div>' +

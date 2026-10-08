@@ -92,6 +92,21 @@
       '<div class="arv-big">' + (v == null ? '<span class="arv-na">未計測</span>' : esc(v) + '<small>' + esc(unit) + '</small>') + '</div>' +
       per + dl + '<div class="arv-tile-f">' + esc(foot) + '</div></div>';
   }
+  /**
+   * お客様に見せる主の AI の数字（compiled.aio。2026年10月から）：Google の AI による概要に名前が出た回数 X / N と、前月の X / N。
+   *   前月と条件が違えば差を出さない。compiled.aio が無い（それより前に作ったレポート）ときは空
+   */
+  function aioHero(c, opt) {
+    var a = c && c.aio;
+    if (!a || !a.now) return '';
+    opt = opt || {};
+    var n = a.now, p = a.prev;
+    var cmp = p ? (a.comparable ? '先月 ' + esc(p.x) + ' / ' + esc(p.n) + '回' + (a.diff != null ? '（出現率 ' + (a.diff > 0 ? '+' : a.diff < 0 ? '−' : '±') + esc(Math.abs(a.diff)) + 'ポイント）' : '') : '先月と条件が違うため、比べていません') : '先月の計測はありません';
+    return '<div class="arr-aio' + (opt.compact ? ' is-compact' : '') + '"><span class="arr-aio-k">Google の AI による概要に、お店・会社の名前が出た回数</span>' +
+      '<span class="arr-aio-v"><b>' + esc(n.x) + '</b> / ' + esc(n.n) + '回' + (n.rate != null ? '<em>出現率 ' + esc(n.rate) + '%</em>' : '') + '</span>' +
+      '<span class="arr-aio-s">' + cmp + '</span>' +
+      (opt.compact ? '' : '<small class="arr-aio-n">' + esc(n.measuredOn || '') + ' の計測・名前を入れていない質問だけ。AI による概要が出なかった検索も回数に入れ、取得できなかった検索は入れていません。2026年10月から、この数え方の数字を主に示しています。</small>') + '</div>';
+  }
   function tiles(c) {
     c = c || {};
     var site = c.site || {}, cur = site.current, prev = site.previous, ai = c.ai, tr = c.traffic || {};
@@ -322,5 +337,5 @@
       '<p class="arr-sub">AI の回答 ' + esc(k.answers) + '件で、名前が出た回数の合計 ' + esc(total) + '回の内訳です。' + (k.sov != null ? '自社の割合は <b>' + esc(k.sov) + '%</b>' + (k.prevSov != null ? '（前月 ' + esc(k.prevSov) + '%）' : '') + '。' : '') + '</p>' : '';
     return { rows: rows, self: self, others: others, rank: rank, tie: tie, lead: lead, share: share };
   }
-  window.AirReachCharts = { compSummary: compSummary, tiles: tiles, trends: trends, factors: factors, aiCompare: aiCompare, sparkline: sparkline, readiness: readiness, todos: todos, band: band, series: series };
+  window.AirReachCharts = { aioHero: aioHero, compSummary: compSummary, tiles: tiles, trends: trends, factors: factors, aiCompare: aiCompare, sparkline: sparkline, readiness: readiness, todos: todos, band: band, series: series };
 })();
