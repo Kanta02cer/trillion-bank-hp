@@ -248,6 +248,8 @@
     var site = c.site || {}, cur = site.current || null, prev = site.previous || null;
     var ai = c.ai || null, tr = c.traffic || {};
     var kpi = [];
+    // 2026年10月から：Google の AI による概要に名前が出た回数（一般の質問）を一覧の先頭に
+    if (c.aio && c.aio.now) kpi.push('<tr><th>Google の AI による概要に名前が出た回数（名前を入れていない質問）</th><td>' + (c.aio.prev ? esc(c.aio.prev.x) + ' / ' + esc(c.aio.prev.n) + '回' : '<span class="arr-na">—</span>') + '</td><td>' + esc(c.aio.now.x) + ' / ' + esc(c.aio.now.n) + '回</td><td>' + (c.aio.comparable && c.aio.diff != null ? (c.aio.diff > 0 ? '+' : '') + esc(c.aio.diff) + 'pt' : '<span class="arr-na">' + (c.aio.prev ? '条件が違う' : '—') + '</span>') + '</td></tr>');
     kpi.push('<tr><th>ホームページの情報整備' + tag('judged') + '</th><td>' + v(prev && prev.overall, '点') + '</td><td>' + v(cur && cur.overall, '点') + '</td><td>' + d(site.overallDelta, '点') + '</td></tr>');
     if (ai) ai.providers.forEach(function (p) {
       kpi.push('<tr><th>AIの回答で公式サイトが出典になった割合（' + esc(prov(p.provider)) + '）' + tag('reference') + '</th><td>' + v(p.prevCiteRate, '%') + '</td><td>' + v(p.citeRate, '%') + '</td><td>' + d(p.citeDelta, 'ポイント') + '</td></tr>');
@@ -273,7 +275,7 @@
       '<div class="arr-meta">' + (r.published_at ? '公開 ' + esc(day(r.published_at)) : '作成 ' + esc(day(c.generatedAt))) + ' · 株式会社Trillion Bank</div></header>' +
       // 1ページ目：結論 → 数字 → 今月実施したこと → 次にやる3施策 → ご判断いただきたいこと（目立たせる）
       '<section><h2 class="arr-h2">今月の結論' + tag('manual') + '</h2><ol class="arr-ol arr-concl">' + (concl.length ? concl.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') : '<li class="arr-na">（未記入）</li>') + '</ol></section>' +
-      '<section><h2 class="arr-h2">今月の数字</h2>' + C.tiles(c) + '</section>' +
+      '<section><h2 class="arr-h2">今月の数字</h2>' + (C.aioHero ? C.aioHero(c) : '') + C.tiles(c) + '</section>' +
       '<section><h2 class="arr-h2">今月実施したこと' + tag('manual') + '</h2><ul class="arr-ul arr-done">' + (acts.length ? acts.map(function (a) {
         return '<li><span class="arr-date">' + esc(String(a.doneOn || '').slice(5).replace('-', '/')) + '</span>' + esc(a.title) + (a.evidenceUrl ? ' <a href="' + esc(a.evidenceUrl) + '">' + esc(a.evidenceUrl) + '</a>' : '') + '</li>';
       }).join('') : '<li class="arr-na">記録なし</li>') + '</ul></section>' +
