@@ -19,6 +19,7 @@ Change ID（DEV-YYYY-NNN）の承認後にだけ使う。各手順は単独で�
   python3 scripts/airreach-api/phase2-apply.py apply-request-note        # お客様の依頼に付ける「補足」の列と関数を適用して検証
   python3 scripts/airreach-api/phase2-apply.py apply-partner-orgs        # 共同会社（自社の顧客だけ見える人）の仕組みを適用して検証
   python3 scripts/airreach-api/phase2-apply.py apply-client-issues       # 案件の課題（client_issues）の表を適用して検証
+  python3 scripts/airreach-api/phase2-apply.py apply-decision-replies    # ご判断へのお客様のお返事（client_requests の decision）を適用して検証
   python3 scripts/airreach-api/phase2-apply.py add-partner-org <会社名>                       # 共同会社を作る
   python3 scripts/airreach-api/phase2-apply.py add-partner-staff <email> <会社名> [approver]   # 共同会社の人を追加（approver で承認者にする）
   python3 scripts/airreach-api/phase2-apply.py assign-client <顧客ID> <会社名|TB>              # 顧客の担当会社を決める（TB＝Trillion Bank に戻す）
@@ -365,6 +366,32 @@ def cmd_apply_client_issues():
         die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261009120000_airreach_client_issues_rollback.sql で戻すか判断してください')
 
 
+def cmd_apply_decision_replies():
+    """「ご判断いただきたいこと」へのお客様のお返事（client_requests に kind = 'decision'）。担当者は「確認した」を押すだけ"""
+    confirm_project()
+    if 'client_requests' not in tables() or 'partner_orgs' not in tables():
+        die('client_requests か partner_orgs がありません。先に apply-client-requests・apply-partner-orgs を実行してください')
+    path = ROOT / 'supabase/migrations/20261009130000_airreach_decision_replies.sql'
+    call('POST', f'/projects/{REF}/database/migrations', {'name': 'airreach_decision_replies', 'query': path.read_text()})
+    print('migration を適用しました: airreach_decision_replies')
+    fn = "'public.airreach_decision_reply(uuid, integer, text, text)'"
+    checks = [
+        ('返事の関数がある', f"select to_regprocedure({fn}) is not null as ok"),
+        ('ログインした人だけが呼べる（anon は呼べない）', f"select has_function_privilege('authenticated', {fn}, 'execute') and not has_function_privilege('anon', {fn}, 'execute') as ok"),
+        ('種類に decision・動作に ok / revise が入った', "select bool_and(pg_get_constraintdef(oid) like '%decision%') and count(*) = 2 as ok from pg_constraint where conrelid = 'public.client_requests'::regclass and conname in ('client_requests_kind_check', 'client_requests_kind_action_check')"),
+        ('担当者の承認に「ご判断の返事は確認だけ」の分かれ道がある', "select position($k$kind = 'decision'$k$ in pg_get_functiondef('public.airreach_request_decide(uuid, boolean, text)'::regprocedure)) > 0 as ok"),
+        ('これまでの依頼はそのまま（decision の行は0件）', "select count(*) = 0 as ok from public.client_requests where kind = 'decision'"),
+    ]
+    bad = 0
+    for label, q in checks:
+        r = sql(q, True)
+        ok = bool(r and r[0].get('ok'))
+        bad += 0 if ok else 1
+        print(('OK  ' if ok else 'NG  ') + label)
+    if bad:
+        die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261009130000_airreach_decision_replies_rollback.sql で戻すか判断してください')
+
+
 def cmd_apply_request_note():
     """お客様の依頼に「補足」（なぜ足したい・外したいか・500文字まで）を付けられるようにする"""
     confirm_project()
@@ -611,7 +638,7 @@ def cmd_anon_key_to_vercel():
 def main():
     a = sys.argv[1:]
     cmds = {'check': cmd_check, 'apply-db': cmd_apply_db, 'auth-config': cmd_auth_config, 'auth-hook': cmd_auth_hook,
-            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'apply-client-requests': cmd_apply_client_requests, 'apply-client-owner-due': cmd_apply_client_owner_due, 'apply-request-note': cmd_apply_request_note, 'apply-partner-orgs': cmd_apply_partner_orgs, 'apply-client-issues': cmd_apply_client_issues, 'verify': lambda: (confirm_project(), verify())}
+            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'apply-client-requests': cmd_apply_client_requests, 'apply-client-owner-due': cmd_apply_client_owner_due, 'apply-request-note': cmd_apply_request_note, 'apply-partner-orgs': cmd_apply_partner_orgs, 'apply-client-issues': cmd_apply_client_issues, 'apply-decision-replies': cmd_apply_decision_replies, 'verify': lambda: (confirm_project(), verify())}
     if a and a[0] in cmds and len(a) == 1:
         cmds[a[0]]()
     elif a and a[0] == 'add-staff' and len(a) == 3:

@@ -406,7 +406,7 @@
       var C = window.AirReachCharts, top = reps[0], body = '';
       if (top && C) {
         // 最新の公開レポート：結論 → 数字（小さく・内訳は開く）→ ご判断いただきたいこと → 次にやること → 依頼の入口
-        body += clientLatest(top) + clientNumbers(top) + window.AirReachClientHome.competitor(top.compiled, { href: '/airreach/app/report/?id=' + top.id, linkText: 'レポートで詳しく見る', note: ymJa(top.period_month) + 'のレポートの数字です。' }) + decisionCard(top) + nextCard(top, true) + reqEntry();
+        body += clientLatest(top) + clientNumbers(top) + window.AirReachClientHome.competitor(top.compiled, { href: '/airreach/app/report/?id=' + top.id, linkText: 'レポートで詳しく見る', note: ymJa(top.period_month) + 'のレポートの数字です。' }) + window.AirReachClientHome.decision(top, { reply: true }) + nextCard(top, true) + reqEntry();
       } else body += reqEntry();
       body += '<section class="arc-card"><h2 class="arc-h2">これまでのレポート</h2><ul class="arc-list arc-replist">' +
         (reps.length ? reps.map(function (r) { return '<li><a href="/airreach/app/report/?id=' + r.id + '">' + esc(ymJa(r.period_month)) + ' のレポート</a>' + (r.published_at ? '<span class="arc-sub">公開 ' + esc(day(r.published_at)) + '</span>' : '') + '</li>'; }).join('') : '<li class="arc-empty">公開済みのレポートはまだありません。</li>') +
@@ -418,6 +418,8 @@
       // 見られる顧客が1社だけなら「戻る」は出さない（一覧に戻っても、この画面に戻されるため）
       shell(c.name, body, (me.client_ids || []).length > 1 ? '#/' : '', { client: { id: c.id, name: c.name } });
       var pr = mountRequests(c.id, sites, false, c.name);
+      // ご判断いただきたいことへの返事（返事のあとは依頼の記録も描き直す）
+      if (top) window.AirReachClientHome.mountDecisions(root.querySelector('.arc-decide[data-dec-report]'), { sb: sb, report: Object.assign({ client_id: c.id }, top), email: me && me.email, onMsg: msg, onChange: function () { mountRequests(c.id, sites, false, c.name); } });
       // 依頼の入口：確認待ちの件数を出し、押すと下の依頼の欄へ移る
       var go = root.querySelector('[data-go-rq]');
       if (go) go.addEventListener('click', function () { var t = $('#arq') || $('#arc-rq'); if (t) { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); var h = t.querySelector('h2'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); } } });

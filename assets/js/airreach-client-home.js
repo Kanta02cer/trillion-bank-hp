@@ -40,10 +40,98 @@
       '<p class="arc-note">測っていない数字は「未計測」と書きます（0 ではありません）。</p>' +
       (window.AirReachCharts ? '<details class="arc-more"><summary>数字の内訳を開く（AI ごと・前月との比較・対象期間）</summary>' + window.AirReachCharts.tiles(c) + '</details>' : '') + '</section>';
   }
-  function decisionCard(r) {
-    var dec = r.client_decisions || [];
-    return dec.length ? '<section class="arc-card arc-decide"><h2 class="arc-h2">ご判断いただきたいこと</h2><ul class="arr-ul">' + dec.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
-      '<p class="arc-note">お返事は、担当者へのご連絡でお願いします。</p></section>' : '';
+  /**
+   * ご判断いただきたいこと。opt.reply（お客様の画面）のときは項目ごとに返事の欄を置き、mountDecisions で返事のボタンと状態を描く
+   *   返事を受け取れない画面（代理店向けデモ・DB が未適用）では、今までどおり「担当者へのご連絡で」
+   */
+  function decisionCard(r, opt) {
+    var dec = r.client_decisions || [], reply = !!(opt && opt.reply);
+    return dec.length ? '<section class="arc-card arc-decide"' + (reply ? ' data-dec-report="' + esc(r.id) + '"' : '') + '><h2 class="arc-h2">ご判断いただきたいこと</h2><ul class="arr-ul' + (reply ? ' arc-dec-list' : '') + '">' +
+      dec.map(function (t, i) { return '<li' + (reply ? ' data-dec-i="' + i + '"' : '') + '><span class="arc-dec-t">' + esc(t) + '</span>' + (reply ? '<div class="arc-dec-a" data-dec-a></div>' : '') + '</li>'; }).join('') + '</ul>' +
+      '<p class="arc-note" data-dec-note>' + (reply ? 'それぞれ、下のボタンでお返事ください。担当者が確認してから進めます。' : 'お返事は、担当者へのご連絡でお願いします。') + '</p></section>' : '';
+  }
+  var ANSWER = { ok: 'このまま進めてよい', revise: '直して返す' };
+  function md(iso) { var t = Date.parse(iso); if (isNaN(t)) return ''; var d = new Date(t + 9 * 3600 * 1000); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); }
+  /**
+   * ご判断への返事（お客様の画面）。sec = decisionCard(r, { reply: true }) の section
+   *   o: { sb, report, email, onMsg(text, kind), onChange() }
+   *   返事は airreach_decision_reply（supabase/migrations/20261009130000_airreach_decision_replies.sql）。返事の記録は client_requests（kind = 'decision'）
+   */
+  function mountDecisions(sec, o) {
+    if (!sec || !o || !o.sb || !o.report) return Promise.resolve(null);
+    var sb = o.sb, rep = o.report;
+    function say(t, k) { if (o.onMsg) o.onMsg(t, k); }
+    function load() {
+      return sb.from('client_requests').select('*').eq('client_id', rep.client_id).eq('kind', 'decision').order('requested_at', { ascending: false }).limit(100)
+        .then(function (x) { if (x.error) throw new Error(x.error.message); return (x.data || []).filter(function (r) { return r.payload && String(r.payload.report_id) === String(rep.id) && r.status !== 'cancelled'; }); });
+    }
+    function draw(rows) {
+      Array.prototype.forEach.call(sec.querySelectorAll('[data-dec-i]'), function (li) {
+        var i = Number(li.getAttribute('data-dec-i')), box = li.querySelector('[data-dec-a]');
+        var last = rows.filter(function (r) { return Number(r.payload.index) === i; })[0] || null;
+        var mine = last && last.requested_by && o.email && String(last.requested_by).toLowerCase() === String(o.email).toLowerCase();
+        var buttons = '<div class="arc-dec-btns"><button type="button" class="arc-btn arc-dec-ok" data-dec-pick="ok">' + ANSWER.ok + '</button><button type="button" class="arc-btn-sm arc-dec-rv" data-dec-pick="revise">' + ANSWER.revise + '</button></div>';
+        box.innerHTML = last ? '<div class="arc-dec-done ' + (last.status === 'approved' ? 'is-ok' : 'is-wait') + '"><b>お返事：' + esc(ANSWER[last.action] || last.action) + '</b>' +
+            '<small>' + esc(md(last.requested_at)) + ' · ' + (last.status === 'approved' ? '担当者が確認しました' + (last.decided_at ? '（' + esc(md(last.decided_at)) + '）' : '') : '担当者の確認待ち') + '</small>' +
+            (last.note ? '<span class="arc-dec-n">' + esc(last.note) + '</span>' : '') +
+            '<span class="arc-dec-more">' + (last.status === 'pending' && mine ? '<button type="button" class="arc-btn-sm" data-dec-cancel="' + esc(last.id) + '">取り消す</button>' : '') +
+            '<button type="button" class="arc-btn-sm" data-dec-change>返事を変える</button></span></div>' : buttons;
+        box.setAttribute('data-buttons', buttons);
+      });
+      var left = Array.prototype.filter.call(sec.querySelectorAll('[data-dec-i]'), function (li) { return !!li.querySelector('[data-dec-pick]'); }).length;
+      var n = sec.querySelector('[data-dec-note]');
+      if (n) n.textContent = left ? 'それぞれ、下のボタンでお返事ください。担当者が確認してから進めます。' : 'お返事ありがとうございます。担当者が確認してから進めます。';
+      bind();
+    }
+    function form(box, kind) {
+      var rv = kind === 'revise';
+      box.innerHTML = '<form class="arc-dec-form" data-dec-form="' + kind + '"><label class="arc-dec-l">' + (rv ? '直してほしい点（必ず書いてください）' : '補足（任意）') +
+        '<textarea class="arc-input" name="note" rows="' + (rv ? 3 : 2) + '" maxlength="500"' + (rv ? ' required' : '') + ' placeholder="' + (rv ? '例：料金は 17,600円〜 です' : '例：来週から載せてください') + '"></textarea></label>' +
+        '<div class="arc-dec-btns"><button type="submit" class="arc-btn">「' + ANSWER[kind] + '」と返事する</button><button type="button" class="arc-btn-sm" data-dec-back>やめる</button></div></form>';
+      var f = box.querySelector('form'); f.note.focus();
+      f.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var note = f.note.value.trim();
+        if (rv && !note) { say('直してほしい点を書いてください', 'error'); f.note.focus(); return; }
+        var b = f.querySelector('[type=submit]'); b.disabled = true;
+        sb.rpc('airreach_decision_reply', { p_report_id: rep.id, p_index: Number(box.closest('[data-dec-i]').getAttribute('data-dec-i')), p_answer: kind, p_note: note || null }).then(function (x) {
+          if (x.error) throw new Error(x.error.message || String(x.error));
+          if (x.data && x.data.ok === false) throw new Error(x.data.reason || 'できませんでした');
+          say('お返事を送りました。担当者が確認してから進めます。', 'ok');
+          return refresh().then(function () { if (o.onChange) o.onChange(); });
+        }).catch(function (e2) {
+          b.disabled = false;
+          // DB がまだ返事に対応していないとき（migration 20261009130000 の適用前）
+          say(/airreach_decision_reply|schema cache|does not exist|Could not find/i.test(e2.message || '') ? '画面からのお返事はまだお使いいただけません。担当者へご連絡ください。' : (e2.message || String(e2)), 'error');
+        });
+      });
+      box.querySelector('[data-dec-back]').addEventListener('click', function () { refresh(); });
+    }
+    function bind() {
+      Array.prototype.forEach.call(sec.querySelectorAll('[data-dec-pick]'), function (b) {
+        b.addEventListener('click', function () { form(b.closest('[data-dec-a]'), b.getAttribute('data-dec-pick')); });
+      });
+      Array.prototype.forEach.call(sec.querySelectorAll('[data-dec-change]'), function (b) {
+        b.addEventListener('click', function () { var box = b.closest('[data-dec-a]'); box.innerHTML = box.getAttribute('data-buttons'); bind(); });
+      });
+      Array.prototype.forEach.call(sec.querySelectorAll('[data-dec-cancel]'), function (b) {
+        b.addEventListener('click', function () {
+          b.disabled = true;
+          sb.rpc('airreach_request_cancel', { p_id: b.getAttribute('data-dec-cancel') }).then(function (x) {
+            if (x.error) throw new Error(x.error.message);
+            say('お返事を取り消しました', 'ok');
+            return refresh().then(function () { if (o.onChange) o.onChange(); });
+          }).catch(function (e) { b.disabled = false; say(e.message || String(e), 'error'); });
+        });
+      });
+    }
+    function refresh() { return load().then(draw); }
+    return refresh().then(function () { return true; }, function () {
+      // 返事の記録を読めないときは、今までどおり「担当者へのご連絡で」（ボタンは出さない）
+      Array.prototype.forEach.call(sec.querySelectorAll('[data-dec-a]'), function (x) { x.remove(); });
+      var n = sec.querySelector('[data-dec-note]'); if (n) n.textContent = 'お返事は、担当者へのご連絡でお願いします。';
+      return null;
+    });
   }
   /**
    * 競合との比較（小さく）：ひと言の結論と、名前が出た回数の取り合いの帯。詳しくは月次レポート
@@ -66,7 +154,7 @@
       '<p class="arr-comp-lead">' + sum.lead + '</p>' + sum.share +
       (opt.note ? '<p class="arc-note">' + esc(opt.note) + '</p>' : '') + '</section>';
   }
-  var api = { latest: clientLatest, numbers: clientNumbers, decision: decisionCard, competitor: competitorCard };
+  var api = { latest: clientLatest, numbers: clientNumbers, decision: decisionCard, mountDecisions: mountDecisions, competitor: competitorCard };
   root.AirReachClientHome = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
