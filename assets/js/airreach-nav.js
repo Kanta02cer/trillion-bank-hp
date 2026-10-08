@@ -31,7 +31,9 @@
       lead: 'Google 検索での表示・クリック（Search Console）と、サイトへの訪問・問い合わせ（GA4）を月ごとに入れます。Google とつなぐと、月を選ぶだけで取り込めます。月次レポートの数字になります。' },
     google: { label: 'Google とつなぐ', desc: '検索と訪問の数字を自動で取り込む', where: 'studio', panel: 'google',
       lead: 'Search Console と GA4 をつなぐと、検索と訪問の数字を月ごとに自動で取り込めます（読み取りだけ）。CSV・JSON の取り込みもここです。' },
-    competitors: { label: '競合と比べる', desc: '競合を登録して AI の回答で比べる', where: 'studio', panel: 'competitors',
+    rivals: { label: '競合との比較', desc: '順位・質問ごと・なぜ相手が出るか', where: 'dash', sec: 'rivals',
+      lead: 'いちばん新しい計測で、近くの同業のお店と、AI の回答に名前が出た回数を比べます。相手だけが出た質問と、AI がどこを見て名前を出したか（出典の種類）が分かります。AI ごとに分け、合算しません。' },
+    competitors: { label: '競合を登録する', desc: '比べるお店の名前と URL', where: 'studio', panel: 'competitors',
       lead: '競合の名前と URL を登録します。AI の回答でどちらの名前が出やすいかは、「AI での見え方を測る」で測ると分かります。' },
     timeseries: { label: '変化を見る', desc: '言葉ごと・月ごとの数字の動き', where: 'studio', panel: 'timeseries',
       lead: '言葉ごとの表示・クリックと、AI 計測の結果が、月ごとにどう変わったかが分かります。' },
@@ -56,7 +58,7 @@
     { group: 'はじめに', items: pick(['home', 'issues']) },
     { group: 'AI パッチ（5段階）', items: pick(['start', 'hack2', 'generator', 'verify', 'runs']) },
     { group: '毎月の仕事', items: pick(['traffic', 'actions', 'reports']) },
-    { group: '詳しく見る', items: pick(['keywords', 'gaps', 'competitors', 'timeseries', 'sites']) },
+    { group: '詳しく見る', items: pick(['rivals', 'competitors', 'keywords', 'gaps', 'timeseries', 'sites']) },
     { group: '設定', items: pick(['members']) }
   ];
   // 顧客を選んでいないとき: ダッシュボードの全体の画面と、Studio（顧客なしの作業）

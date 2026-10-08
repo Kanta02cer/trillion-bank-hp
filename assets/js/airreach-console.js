@@ -116,7 +116,7 @@
   // ctx: { client: { id, name, site }, sec: 'list'|'review'|'home'|'sites'|'runs'|'traffic'|'actions'|'reports'|'members' }
   var SECTIONS = [
     { group: '概要', items: [['home', 'ホーム'], ['issues', 'この案件の課題']] },
-    { group: '材料', items: [['sites', '診断'], ['runs', 'AI計測'], ['traffic', '検索と訪問'], ['actions', '施策']] },
+    { group: '材料', items: [['sites', '診断'], ['runs', 'AI計測'], ['rivals', '競合との比較'], ['traffic', '検索と訪問'], ['actions', '施策']] },
     { group: 'レポート', items: [['reports', '月次レポート']] },
     { group: '設定', items: [['members', '顧客側のメンバー']] }
   ];
@@ -1118,6 +1118,8 @@
         '<button class="arc-btn" type="submit">追加</button></form>' +
         '<table class="arc-table"><tbody>' + (actRows || '<tr><td class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
+        fold('rivals', SEC_LABEL.rivals, '') + '<div id="arc-rivals"></div></div></section>' +
+
         fold('issues', SEC_LABEL.issues, issues == null ? '準備中' : issues.filter(function (x) { return x.status !== 'done'; }).length + 'つ') + '<div id="arc-issues"></div></div></section>' +
 
         fold('members', SEC_LABEL.members, members.length + '人') +
@@ -1256,6 +1258,11 @@
             .catch(function (e) { box.innerHTML = '<p class="arc-note">比べられませんでした：' + esc(e.message || e) + '</p>'; });
         } catch (e) { box.innerHTML = '<p class="arc-note">比べられませんでした：' + esc(e.message || e) + '</p>'; }
       });
+      // 競合との比較（airreach-rivals.js）：Studio に登録した競合と、いちばん新しい計測の回答から
+      if (window.AirReachRivals) {
+        var stw = (workspace && workspace.studio) || {};
+        window.AirReachRivals.mount(root.querySelector('#arc-rivals'), { runs: runs, brand: (stw.profile && stw.profile.brand) || c.name, selfUrl: (sites[0] && sites[0].url) || (stw.profile && stw.profile.url) || '', competitors: stw.competitors || [] });
+      }
       if (window.AirReachIssues) window.AirReachIssues.mount(root.querySelector('#arc-issues'), { sb: sb, clientId: c.id, issues: issues, runs: runs, onChange: function () { route(); } });
       root.querySelectorAll('[data-del-run]').forEach(function (b) { b.addEventListener('click', function () {
         var row = byId(runs, 'id', b.getAttribute('data-del-run'));

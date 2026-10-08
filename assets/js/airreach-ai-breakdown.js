@@ -233,5 +233,5 @@
     el.innerHTML = h;
   }
 
-  window.AirReachAIBreakdown = { isBranded: isBranded, summarize: summarize, render: render, latestRows: latestRows, classify: classify, CAT: CAT };
+  window.AirReachAIBreakdown = { isBranded: isBranded, summarize: summarize, render: render, latestRows: latestRows, classify: classify, CAT: CAT, SNS: SNS, PORTAL: PORTAL, hostOf: hostOf };
 })();
