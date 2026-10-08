@@ -44,12 +44,12 @@
         detail: base ? (function () { var a = aioOf(base); return day(base.created_at || base.measured_on) + (a && a.n ? '：AI による概要 ' + a.x + ' / ' + a.n + '回' : '：計測あり'); })() : 'まだ測っていない' },
       { key: 'patch', label: 'パッチを作る', done: !!zipped,
         detail: zipped ? 'ZIP v' + (zipped.version || '?') + '（' + day(zipped.at) + '）' : (fc.pending_approval ? '承認待ち ' + fc.pending_approval + '問' : (job ? 'まだ ZIP を作っていない' : '—')) },
-      { key: 'verify', label: '入れたか確かめる', done: !!(job && job.verified), manual: true,
-        detail: job && job.verified ? '確かめた ' + day(job.verified.at) : (zipped ? 'サイトに入ったら確かめる' : '—') },
+      { key: 'verify', label: '入れたか確かめる', done: !!(job && job.verified && job.verified.ok && zipped),
+        detail: job && job.verified ? (job.verified.ok ? '入っている（' + day(job.verified.at) + '）' : '入っていないところがある（' + day(job.verified.at) + '）') : (zipped ? 'サイトに入ったら確かめる' : '—') },
       { key: 'compare', label: '効果を比べる', done: after.length > 0 && !!base,
         detail: after.length && base ? '導入後の計測 ' + after.length + '回' : (zipped ? '導入後にまだ測っていない' : '—') }
     ];
-    // いまの段階＝最初の未完了。「入れたか確かめる」は手で確かめる段階なので、導入後の計測があれば済んだものとみなす
+    // いまの段階＝最初の未完了。④を確かめる前に導入後の計測をしていれば、④は済んだものとみなす（手で確かめた場合）
     if (!steps[3].done && steps[4].done) steps[3].done = true;
     var cur = -1;
     steps.forEach(function (s, i) { s.state = s.done ? 'done' : (cur < 0 ? (cur = i, 'current') : 'todo'); });
@@ -57,7 +57,7 @@
       { title: job ? '会社・サービスを確定する' : 'サイトを調べる', why: job ? '確定した名前とサービスを、計測とパッチで使います。' : 'サイトを読んで、会社・サービス・質問の候補を作ります。', href: S + (job ? '#generator' : '#start'), button: job ? '確定に進む' : 'サイトを調べる' },
       { title: '導入前の計測をする', why: 'あとで比べる「導入前」になります。確定した質問を AI に聞きます。', href: S + '#hack2', button: '計測に進む' },
       { title: fc.pending_approval ? 'よくある質問 ' + fc.pending_approval + '問を承認して、パッチを作る' : 'パッチ（ZIP）を作る', why: '承認した答えだけがパッチに入ります。', href: S + '#generator', button: fc.pending_approval ? '承認に進む' : 'パッチを作る' },
-      { title: 'パッチがサイトに入ったか確かめる', why: 'ページに承認した質問と答えが出ているか、手順書の「確かめる」で見ます。入ったら、Google が読んだあとに測ります。', href: S + '#generator', button: '手順を見る' },
+      { title: job && job.verified && !job.verified.ok ? 'サイトに入っていないところを直して、もう一度確かめる' : 'パッチがサイトに入ったか確かめる', why: '公開ページを読んで、承認した質問と答え・構造化データ・llms.txt が ZIP と同じかを見ます。入ったら、Google が読んだあとに測ります。', href: S + '#verify', button: '確かめる' },
       { title: '導入後の計測をして、比べる', why: '導入前と同じ質問・地域・AI で測り、「AI 計測の記録」で2回を選んで比べます。', href: opts.runsHref || '#', button: '比べる' }
     ];
     var next = cur >= 0 ? NEXT[cur] : { title: '次の改善を始める', why: '効果を確かめました。課題を見直して、次のパッチを作ります。', href: S + '#generator', button: '次の改善へ' };

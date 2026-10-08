@@ -2081,7 +2081,12 @@
             // 案件の段階（airreach-case-steps.js）が「パッチを作った」と分かるように、作った日時と版を分析に残す
             var mf = {}; try { mf = JSON.parse(job.files['MANIFEST.json'] || '{}'); } catch (e2) {}
             var ok = window.AirReachPackageSchema ? window.AirReachPackageSchema.validatePackageFiles(job.files).publishable : false;
-            job.zipped = { at: new Date().toISOString(), version: mf.package_version || '', draft: !ok, selection: paths ? 'minimal' : 'all' };
+            // ④ 入れたか確かめる（airreach-verify.js）は、作ったときの ZIP の中身と比べる（あとで承認を変えても、渡したものと比べる）
+            var fl = {}; try { fl = JSON.parse(job.files['schema/faq.jsonld'] || '{}'); } catch (e3) {}
+            var og = {}; try { og = JSON.parse(job.files['schema/organization.jsonld'] || '{}'); } catch (e4) {}
+            job.zipped = { at: new Date().toISOString(), version: mf.package_version || '', draft: !ok, selection: paths ? 'minimal' : 'all',
+              faq: (fl.mainEntity || []).map(function (x) { return { q: String(x.name || ''), a: String((x.acceptedAnswer && x.acceptedAnswer.text) || '') }; }),
+              llms: String(job.files['public/llms.txt'] || '').slice(0, 20000), org_name: String(og.name || '') };
             persistJob(job);
             try { if (window.AirReachStudioSteps) window.AirReachStudioSteps.refresh(); } catch (e3) {}
           })
