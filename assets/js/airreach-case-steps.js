@@ -8,7 +8,8 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function day(iso) { var t = Date.parse(iso); if (isNaN(t)) return ''; var d = new Date(t + 9 * 3600000); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); }
   function manifestOf(job) { try { return JSON.parse(((job && job.files) || {})['MANIFEST.json'] || '{}'); } catch (e) { return {}; } }
-  function hasAnswers(r) { return !!(r && r.summary && Array.isArray(r.summary.answers) && r.summary.answers.length); }
+  // 回答の記録がある計測（一覧では軽くするため要約 summary.ai3 だけを読むので、ai3 があれば回答ありとみなす）
+  function hasAnswers(r) { var s = r && r.summary; return !!(s && ((Array.isArray(s.answers) && s.answers.length) || (s.ai3 && typeof s.ai3 === 'object'))); }
   function runTime(r) { return Date.parse(r.created_at || r.measured_on || '') || 0; }
   /** 計測1回の AI による概要の X/N（一般の質問）。保存した要約（summary.ai3）があればそれを、無ければ回答から数える */
   function aioOf(run) {
