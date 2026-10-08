@@ -45,7 +45,7 @@
       lead: 'お客様のうち、だれが月次レポートを見られるかを決めます。招待するとログイン用のメールが届きます。' },
     list: { label: '顧客一覧', desc: '顧客ごとの点数と今月のレポート', where: 'dash', sec: 'list' },
     review: { label: '確認待ちのレポート', desc: '承認を待っているレポート', where: 'dash', sec: 'review' },
-    schedules: { label: '定期計測と費用', desc: '自動の計測と月の費用の上限（社内）', where: 'dash', sec: 'schedules' }
+    schedules: { label: '計測の予定', desc: '測る時期が来た案件・AI の状態', where: 'dash', sec: 'schedules' }
   };
   Object.keys(ITEMS).forEach(function (k) { ITEMS[k].key = k; });
   // 番号（7工程の番号）。番号の無い項目は空
