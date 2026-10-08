@@ -404,3 +404,25 @@ body:not(.has-job) [data-needs-job]{display:none}
 .ai3-segb.is-on { background: var(--ars-surface); color: var(--ars-ink); box-shadow: 0 0 0 1px var(--ars-blue); }
 .ai3-segb:disabled { color: var(--ars-faint); cursor: default; }
 .ai3-segb:focus-visible { outline: 2px solid var(--ars-blue); outline-offset: 1px; }
+
+/* 案件の5段階と次にやること（airreach-studio-steps.js・ダッシュボードと同じ形） */
+#ars-case-banner:empty { display: none; }
+.acs { display: flex; flex-direction: column; gap: 14px; margin: 0 0 18px; padding: 18px 20px; border: 1px solid var(--ars-line); border-radius: var(--ars-r-md); background: var(--ars-surface); }
+.acs-next { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
+.acs-next > div { flex: 1 1 360px; min-width: 0; }
+.acs-eyebrow { font-size: 12px; font-weight: 700; color: var(--ars-blue-deep); letter-spacing: .06em; }
+.acs-title { font-size: 18px; font-weight: 700; color: var(--ars-ink); margin: 2px 0; }
+.acs-why { margin: 0; color: var(--ars-ink-2); font-size: 13px; }
+.acs-go { min-height: 46px; padding: 0 20px; display: inline-flex; align-items: center; text-decoration: none; }
+.acs-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.acs-step { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: var(--ars-r-sm); border: 1px solid var(--ars-line); min-width: 0; }
+.acs-step b { display: block; font-size: 13px; font-weight: 500; color: var(--ars-ink); }
+.acs-step small { display: block; font-size: 11px; color: var(--ars-muted); overflow-wrap: anywhere; }
+.acs-dot { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--ars-line-strong); font-size: 12px; color: var(--ars-muted); }
+.acs-step.is-done .acs-dot { background: var(--ars-blue); border-color: var(--ars-blue); color: #fff; font-weight: 700; }
+.acs-step.is-current { border: 2px solid var(--ars-blue); background: var(--ars-soft); }
+.acs-step.is-current .acs-dot { border: 2px solid var(--ars-blue); color: var(--ars-blue-deep); font-weight: 700; background: var(--ars-surface); }
+.acs-step.is-current b { font-weight: 700; }
+@media (max-width: 720px) { .acs-steps { grid-template-columns: minmax(0, 1fr); } }
+.ars-side-link { display: flex; align-items: center; min-height: 40px; padding: 0 12px; color: var(--ars-blue-deep); text-decoration: none; font-size: 13px; }
+.ars-side-link:hover { text-decoration: underline; }

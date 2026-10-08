@@ -10,20 +10,20 @@
   // lead は画面の上に出す説明。ダッシュボードの節の見出しと Studio の画面の見出しもここに合わせる
   var ITEMS = {
     home: { label: 'ホーム', desc: '今月の数字と、次にやること', where: 'dash', sec: 'home' },
-    start: { label: 'サイトを調べる', desc: '点数・直すところ・まず対策する言葉', where: 'studio', panel: 'start', also: ['result'],
+    start: { label: '対象を決める', desc: 'サイトを調べて、会社・サービスを確定', where: 'studio', panel: 'start', also: ['result'],
       lead: 'お客様のサイトを読み、AI と検索に伝わっているか、何が足りないかを調べます（約1分）。結果は「これまでの診断」と月次レポートの点数に使われます。' },
     result: { label: '調べた結果を見る', desc: '点数・直すところ・まず対策する言葉', where: 'studio', panel: 'result',
       lead: '「サイトを調べる」の結果です。点数と、直すところ、まず対策する言葉が分かります。' },
     keywords: { label: '対策する言葉を決める', desc: 'お客さんが探す言葉と優先度', where: 'studio', panel: 'keywords',
       lead: 'お客さんが AI や検索で探す言葉と、どれから対策するかが分かります。「サイトを調べる」で自動で作られ、足したり消したりできます。' },
     gaps: { label: 'お客さんが知りたい情報', desc: '予約・料金などが書いてあるか', where: 'studio', panel: 'gaps' },
-    generator: { label: '直す材料を作る', desc: 'よくある質問・お店の情報の下書き', where: 'studio', panel: 'generator',
-      lead: 'お客様や制作会社にそのまま渡せる「直すための下書き」（よくある質問・お店の情報・AI 向けの案内ファイル）を作ります。自動で公開はしません。' },
+    generator: { label: 'パッチを作る', desc: 'よくある質問の承認と ZIP', where: 'studio', panel: 'generator',
+      lead: 'よくある質問を承認して、お客様や制作会社にそのまま渡せる ZIP（よくある質問・お店の情報・AI 向けの案内ファイル・入れ方の手順書）を作ります。承認した答えだけが入ります。自動で公開はしません。' },
     actions: { label: 'やったことを記録する', desc: '直した日と公開したページ', where: 'dash', sec: 'actions',
       lead: '今月お客様のサイトで直したことを残します。月次レポートの「今月実施したこと」になります。' },
-    hack2: { label: 'AI での見え方を測る', desc: 'AI の回答に名前が出るか・これまでの記録', where: 'studio', panel: 'hack2' },
-    runs: { label: 'これまでの AI 計測', desc: '測った日ごとの結果', where: 'dash', sec: 'runs',
-      lead: '「AI での見え方を測る」で測った結果が、自動でここに入ります。月次レポートの AI の数字に使われます。' },
+    hack2: { label: 'AI での見え方を測る', desc: '導入前・毎月の計測（AI の回答に名前が出るか）', where: 'studio', panel: 'hack2' },
+    runs: { label: '効果を比べる', desc: '計測の記録・2回を選んで前後を比べる', where: 'dash', sec: 'runs',
+      lead: '「AI での見え方を測る」で測った結果が、自動でここに入ります。2回を選ぶと、同じ条件のときだけ前後の差を出します。月次レポートの AI の数字にも使われます。' },
     traffic: { label: '検索と訪問の数字を入れる', desc: 'Google とつなぐ・Search Console・GA4', where: 'dash', sec: 'traffic',
       lead: 'Google 検索での表示・クリック（Search Console）と、サイトへの訪問・問い合わせ（GA4）を月ごとに入れます。Google とつなぐと、月を選ぶだけで取り込めます。月次レポートの数字になります。' },
     google: { label: 'Google とつなぐ', desc: '検索と訪問の数字を自動で取り込む', where: 'studio', panel: 'google',
@@ -47,17 +47,20 @@
   // 毎月の作業は、ホームの「7工程」と同じ名前・同じ番号で上から並べる（6・7 は月次レポートの画面の中で、確認の依頼と公開をする）。
   // 細かい画面（言葉・足りない情報・競合・変化・これまでの診断）は「詳しく見る」にまとめる。
   // 調べた結果（result）は「サイトを調べる」、AI計測の記録（runs）は「AI での見え方を測る」、Google 連携（google）は「検索と訪問の数字を入れる」の中で扱う（メニューには出さない。URL では開ける）
-  var STEP_NO = { start: '1', generator: '2', hack2: '3', traffic: '4', actions: '5', reports: '6・7' };
+  // AI パッチの5段階（ホームの「次にやること」と同じ。airreach-case-steps.js）を上に、毎月の仕事をその下に並べる。
+  //   ④（入れたか確かめる）はいまはホームの段階の表示と ZIP の手順書で行う（専用の画面はまだ無い）
+  var STEP_NO = { start: '①', hack2: '②', generator: '③', runs: '⑤' };
   var CLIENT_GROUPS = [
     { group: 'はじめに', items: pick(['home']) },
-    { group: '毎月の作業（ホームの7工程と同じ番号）', items: pick(['start', 'generator', 'hack2', 'traffic', 'actions', 'reports']) },
+    { group: 'AI パッチ（5段階）', items: pick(['start', 'hack2', 'generator', 'runs']) },
+    { group: '毎月の仕事', items: pick(['traffic', 'actions', 'reports']) },
     { group: '詳しく見る', items: pick(['keywords', 'gaps', 'competitors', 'timeseries', 'sites']) },
     { group: '設定', items: pick(['members']) }
   ];
   // 顧客を選んでいないとき: ダッシュボードの全体の画面と、Studio（顧客なしの作業）
   var GLOBAL_GROUPS = [
     { group: '全体', items: pick(['list', 'review']) },
-    { group: 'Studio（顧客を選ばずに）', items: pick(['start', 'keywords', 'gaps', 'generator', 'competitors', 'hack2', 'google', 'timeseries']) }
+    { group: 'Studio（顧客を選ばずに）', items: pick(['start', 'hack2', 'generator', 'competitors', 'keywords', 'gaps', 'google', 'timeseries']) }
   ];
   function groups(hasClient) { return hasClient ? CLIENT_GROUPS : GLOBAL_GROUPS; }
   function num(item, hasClient) { return hasClient ? (STEP_NO[item.key] || '') : ''; }

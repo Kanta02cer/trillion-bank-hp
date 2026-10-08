@@ -36,7 +36,7 @@
     var before = zipped ? runs.filter(function (r) { return runTime(r) <= Date.parse(zipped.at); }) : runs;
     var base = before.length ? before[before.length - 1] : null;
     var fc = mf.faq_counts || {};
-    var S = opts.studioHref || '/airreach/studio/';
+    var S = opts.studioHref != null ? opts.studioHref : '/airreach/studio/'; // Studio の中から使うときは ''（#panel だけ）
     var steps = [
       { key: 'target', label: '対象を決める', done: !!ent,
         detail: ent ? '確定 ' + day(ent.at) + '：' + ent.company + '・' + ent.service : (job ? '会社・サービスが未確定' : 'まだサイトを調べていない') },
