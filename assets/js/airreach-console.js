@@ -994,16 +994,18 @@
       sb.rpc('airreach_client_scans', { p_client_id: id }),
       // お客様からの確認待ちの依頼の件数（DB が未適用なら null）
       sb.from('client_requests').select('id').eq('client_id', id).eq('status', 'pending').then(function (x) { return x.error ? null : (x.data || []).length; }, function () { return null; }),
-      sb.from('staff_members').select('email,name').then(function (x) { return x.error ? [] : (x.data || []); }, function () { return []; })
+      sb.from('staff_members').select('email,name').then(function (x) { return x.error ? [] : (x.data || []); }, function () { return []; }),
+      // 案件の5段階（airreach-case-steps.js）の材料：Studio の作業（無ければ null）
+      sb.from('studio_workspaces').select('data').eq('client_id', id).maybeSingle().then(function (x) { return x.error || !x.data ? null : x.data.data; }, function () { return null; })
     ]).then(function (rs) {
       var c = q(rs[0]); if (!c) throw new Error('顧客が見つかりません');
       var sites = q(rs[1]) || [], members = q(rs[2]) || [], runs = q(rs[3]) || [], traffic = q(rs[4]) || [], actions = q(rs[5]) || [], reports = q(rs[6]) || [], scans = q(rs[7]) || [], pendingReq = rs[8];
       var repThis = reports.filter(function (x) { return x.period_month === thisMonth() + '-01'; })[0];
       // 今月のレポートが差し戻されたか（最後の出来事）
       return (repThis && approvalOn() ? sb.from('report_events').select('action,created_at').eq('report_id', repThis.id).order('created_at', { ascending: true }).then(function (x) { var ev = x.data || []; return ev.length ? ev[ev.length - 1].action : null; }, function () { return null; }) : Promise.resolve(null))
-        .then(function (lastEvent) { return [c, sites, members, runs, traffic, actions, reports, scans, pendingReq, lastEvent, rs[9]]; });
+        .then(function (lastEvent) { return [c, sites, members, runs, traffic, actions, reports, scans, pendingReq, lastEvent, rs[9], rs[10]]; });
     }).then(function (pk) {
-      var c = pk[0], sites = pk[1], members = pk[2], runs = pk[3], traffic = pk[4], actions = pk[5], reports = pk[6], scans = pk[7], pendingReq = pk[8], lastEvent = pk[9], staffList = pk[10];
+      var c = pk[0], sites = pk[1], members = pk[2], runs = pk[3], traffic = pk[4], actions = pk[5], reports = pk[6], scans = pk[7], pendingReq = pk[8], lastEvent = pk[9], staffList = pk[10], workspace = pk[11];
       var R = window.AirReachReport, C = window.AirReachCharts;
 
       // 今月の状況（材料からその場で集計。レポートの下書きとは別に、いつでも最新）
@@ -1015,6 +1017,10 @@
         // ホーム：今日の作業（次にやること・期限・依頼・レポート）→ 数字（小さく）→ 7工程・直すこと → 依頼 → AI の詳しい結果 → 推移
         var studioH = studioHref(c, sites);
         plan = monthPlan(c, sites, live, repNow, actions, lastEvent);
+        // 案件の5段階と「次にやること」を一番上に（AI パッチの進み具合。毎月の7工程とは別）
+        if (window.AirReachCaseSteps) {
+          try { overview += window.AirReachCaseSteps.cardHtml(window.AirReachCaseSteps.compute({ workspace: workspace, runs: runs, studioHref: studioH, runsHref: '#/c/' + c.id + '/runs' })); } catch (e4) {}
+        }
         overview += todayCard(c, plan, repNow, pendingReq, me.email);
         // サイトが登録されていないと、分析しても診断がこの顧客に紐づかない（ホームに何も出ない）
         if (!sites.length) overview += '<section class="arc-card arc-nosite"><b>この顧客にはサイトが登録されていません</b><p class="arc-note" style="margin:4px 0 8px">診断はサイトごとに保存されるため、サイトを登録するまでここには出ません。Studio で「サイトを調べる」を行うと、調べたサイトを自動で登録します。</p>' +

@@ -2076,6 +2076,13 @@
         try { localStorage.setItem('airreach_zip_set', set); } catch (e) {}
         var paths = set === 'all' ? null : (window.AirReachPackageSchema && window.AirReachPackageSchema.MINIMAL_FILES) || null;
         downloadZip(packageFilename(job), job.files, paths)
+          .then(function () {
+            // 案件の段階（airreach-case-steps.js）が「パッチを作った」と分かるように、作った日時と版を分析に残す
+            var mf = {}; try { mf = JSON.parse(job.files['MANIFEST.json'] || '{}'); } catch (e2) {}
+            var ok = window.AirReachPackageSchema ? window.AirReachPackageSchema.validatePackageFiles(job.files).publishable : false;
+            job.zipped = { at: new Date().toISOString(), version: mf.package_version || '', draft: !ok, selection: paths ? 'minimal' : 'all' };
+            persistJob(job);
+          })
           .catch(function (e) { alert('ZIP を作れませんでした：' + (e && e.message ? e.message : e)); });
       });
     }
