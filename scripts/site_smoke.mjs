@@ -11,7 +11,7 @@ const routes = [
   { name: 'business', url: '/trillionbank/business/', text: '事業' },
   { name: 'hack2', url: '/trillionbank/business/hack2/', text: 'HackⅡ' },
   { name: 'adctor', url: '/trillionbank/business/pay-per-crawl/', text: 'Adctor' },
-  { name: 'insights', url: '/trillionbank/insights/', text: 'Insights' },
+  { name: 'insights', url: '/trillionbank/insights/', text: 'コラム' },
   { name: 'company', url: '/trillionbank/company/', text: '株式会社Trillion Bank' },
   { name: 'contact', url: '/trillionbank/contact/', text: 'お問い合わせフォーム' },
   { name: 'meeting', url: '/trillionbank/meeting/', text: '商談のご予約' },

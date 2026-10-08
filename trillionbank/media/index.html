@@ -4,7 +4,7 @@ tbdesc: 株式会社トリリオンバンクのメディア掲載・出演とお
 permalink: /trillionbank/media/
 ---
 <!DOCTYPE html>
-<html lang="ja"><head><meta charset="UTF-8">{% include tb-head.html %}
+<html lang="ja"><head><meta charset="UTF-8">{% include tb-head.html %}{% include tb-refresh-head.html %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -16,11 +16,11 @@ permalink: /trillionbank/media/
 }
 </script>
 </head>
-<body>{% include tb-header.html %}
+<body class="tb-refresh" data-site-refresh="media">{% include tb-refresh-header.html %}{% include tb-toriuru-guide.html %}
 <main id="main">
-<section class="phero"><div class="wrap"><div class="crumb"><a href="/">HOME</a> ／ Media / News</div><span class="ey">MEDIA / NEWS</span><h1>メディア・お知らせ</h1></div></section>
+<section class="phero tbr-scene tbr-character-right" data-toriuru-scene data-pose="neutral" data-x="82" data-y="48" data-scale=".9"><div class="wrap"><div class="crumb"><a href="/">HOME</a> ／ Media / News</div><span class="ey">MEDIA / NEWS</span><h1>メディア・お知らせ</h1></div></section>
 
-<section class="sec"><div class="wrap"><div class="khead"><span class="no">01 — MEDIA</span><h2 class="rv">メディア掲載・出演</h2></div>
+<section class="sec tbr-scene tbr-character-right" data-toriuru-scene data-pose="point-left" data-x="82" data-y="52" data-scale=".84"><div class="wrap"><div class="khead"><span class="no">01 — MEDIA</span><h2 class="rv">メディア掲載・出演</h2></div>
 <div class="mcards rv">
   <a class="mcard" href="https://www.youtube.com/watch?v=tXTnZBE4-wM" target="_blank" rel="noopener"><span class="badge past">代表出演</span><div class="mt">令和の虎 CHANNEL（人財版）</div><div class="ms">累計1,600万円・2連続完全ALL達成 <span class="a">▶</span></div></a>
   <a class="mcard" href="https://youtu.be/tvK855skBTM" target="_blank" rel="noopener"><span class="badge past">代表出演</span><div class="mt">令和の虎 CHANNEL（受験生版）</div><div class="ms">代表出演 <span class="a">▶</span></div></a>
@@ -32,7 +32,7 @@ permalink: /trillionbank/media/
 <p style="margin-top:16px;font-size:.78rem;color:var(--muted)">※ 画像利用の許諾が確認できるまで、番組・媒体のサムネイル画像は掲載していません。媒体名はテキストで表記しています。分類は「代表出演／会社掲載／代表者 過去掲載／掲載予定／確認中」に基づきます。</p>
 </div></section>
 
-<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">02 — NEWS</span><h2 class="rv">お知らせ・コラム</h2></div>
+<section class="sec tbr-scene tbr-scene--dense" style="padding-top:0" data-toriuru-scene data-pose="neutral" data-x="80" data-y="50" data-scale=".82" data-toriuru-hide="true"><div class="wrap"><div class="khead"><span class="no">02 — NEWS</span><h2 class="rv">お知らせ・コラム</h2></div>
 {% assign posts = site.tbnews | sort:'date' | reverse %}
 <div class="nlist rv">
   {% for p in posts %}<a class="nitem" href="{{ p.url }}"><span class="date">{{ p.date | date:'%Y.%m.%d' }}</span><span class="ncat">{{ p.category }}</span><span class="nt">{{ p.title }}</span><span class="go">→</span></a>{% endfor %}
@@ -41,7 +41,7 @@ permalink: /trillionbank/media/
 </div>
 </div></section>
 
-<section class="sec" style="padding-top:0"><div class="wrap"><div class="khead"><span class="no">03 — RESEARCH</span><h2 class="rv">AirReach Consulting Research</h2></div>
+<section class="sec tbr-scene tbr-scene--dense" style="padding-top:0" data-toriuru-scene data-pose="neutral" data-x="80" data-y="50" data-scale=".82" data-toriuru-hide="true"><div class="wrap"><div class="khead"><span class="no">03 — RESEARCH</span><h2 class="rv">AirReach Consulting Research</h2></div>
 <p class="lead rv" style="margin-bottom:24px">AI検索での企業推薦・引用元・競合差を、AirReach Consultingの測定プロセスにもとづく独自データ・公開調査として発信する研究シリーズです。</p>
 {% assign research = site.tbnews | where: 'category', '調査レポート' | sort: 'date' | reverse %}
 {% if research.size > 0 %}
@@ -51,7 +51,7 @@ permalink: /trillionbank/media/
 {% endif %}
 </div></section>
 
-<section class="sec" style="padding-top:0"><div class="wrap">
+<section class="sec tbr-scene tbr-character-right" style="padding-top:0" data-toriuru-scene data-pose="explain" data-x="80" data-y="50" data-scale=".82"><div class="wrap">
 <div class="khead"><span class="no">CONTACT</span><h2 class="rv">取材・メディアに関するお問い合わせ</h2></div>
 <p class="lead rv" style="margin-bottom:28px">取材・登壇・出演のご依頼はお問い合わせフォームを優先してお送りください。メールも同じ窓口から選べます。</p>
 <div style="display:flex;gap:clamp(20px,3vw,36px);flex-wrap:wrap" class="rv">
@@ -59,4 +59,4 @@ permalink: /trillionbank/media/
   <a class="btn btn-line" href="{{ site.data.contact.meeting_url }}" target="_blank" rel="noopener noreferrer" data-event="meeting_booking_click" data-service="general" data-cta="media_meeting">商談を予約する <span class="a" aria-hidden="true">→</span></a>
 </div>
 </div></section>
-</main>{% include tb-footer.html %}</body></html>
+</main>{% include tb-footer.html refresh_navigation=true %}</body></html>
