@@ -115,7 +115,7 @@
   // ---- 画面の枠（Studio と同じ: 上の帯・左の段階・右の作業）-------------------------
   // ctx: { client: { id, name, site }, sec: 'list'|'review'|'home'|'sites'|'runs'|'traffic'|'actions'|'reports'|'members' }
   var SECTIONS = [
-    { group: '概要', items: [['home', 'ホーム']] },
+    { group: '概要', items: [['home', 'ホーム'], ['issues', 'この案件の課題']] },
     { group: '材料', items: [['sites', '診断'], ['runs', 'AI計測'], ['traffic', '検索と訪問'], ['actions', '施策']] },
     { group: 'レポート', items: [['reports', '月次レポート']] },
     { group: '設定', items: [['members', '顧客側のメンバー']] }
@@ -996,16 +996,18 @@
       sb.from('client_requests').select('id').eq('client_id', id).eq('status', 'pending').then(function (x) { return x.error ? null : (x.data || []).length; }, function () { return null; }),
       sb.from('staff_members').select('email,name').then(function (x) { return x.error ? [] : (x.data || []); }, function () { return []; }),
       // 案件の5段階（airreach-case-steps.js）の材料：Studio の作業（無ければ null）
-      sb.from('studio_workspaces').select('data').eq('client_id', id).maybeSingle().then(function (x) { return x.error || !x.data ? null : x.data.data; }, function () { return null; })
+      sb.from('studio_workspaces').select('data').eq('client_id', id).maybeSingle().then(function (x) { return x.error || !x.data ? null : x.data.data; }, function () { return null; }),
+      // この案件の課題（airreach-issues.js）。表が無ければ（DB 未適用）null
+      sb.from('client_issues').select('*').eq('client_id', id).order('rank').then(function (x) { return x.error ? null : (x.data || []); }, function () { return null; })
     ]).then(function (rs) {
       var c = q(rs[0]); if (!c) throw new Error('顧客が見つかりません');
       var sites = q(rs[1]) || [], members = q(rs[2]) || [], runs = q(rs[3]) || [], traffic = q(rs[4]) || [], actions = q(rs[5]) || [], reports = q(rs[6]) || [], scans = q(rs[7]) || [], pendingReq = rs[8];
       var repThis = reports.filter(function (x) { return x.period_month === thisMonth() + '-01'; })[0];
       // 今月のレポートが差し戻されたか（最後の出来事）
       return (repThis && approvalOn() ? sb.from('report_events').select('action,created_at').eq('report_id', repThis.id).order('created_at', { ascending: true }).then(function (x) { var ev = x.data || []; return ev.length ? ev[ev.length - 1].action : null; }, function () { return null; }) : Promise.resolve(null))
-        .then(function (lastEvent) { return [c, sites, members, runs, traffic, actions, reports, scans, pendingReq, lastEvent, rs[9], rs[10]]; });
+        .then(function (lastEvent) { return [c, sites, members, runs, traffic, actions, reports, scans, pendingReq, lastEvent, rs[9], rs[10], rs[11]]; });
     }).then(function (pk) {
-      var c = pk[0], sites = pk[1], members = pk[2], runs = pk[3], traffic = pk[4], actions = pk[5], reports = pk[6], scans = pk[7], pendingReq = pk[8], lastEvent = pk[9], staffList = pk[10], workspace = pk[11];
+      var c = pk[0], sites = pk[1], members = pk[2], runs = pk[3], traffic = pk[4], actions = pk[5], reports = pk[6], scans = pk[7], pendingReq = pk[8], lastEvent = pk[9], staffList = pk[10], workspace = pk[11], issues = pk[12];
       var R = window.AirReachReport, C = window.AirReachCharts;
 
       // 今月の状況（材料からその場で集計。レポートの下書きとは別に、いつでも最新）
@@ -1021,6 +1023,8 @@
         if (window.AirReachCaseSteps) {
           try { overview += window.AirReachCaseSteps.cardHtml(window.AirReachCaseSteps.compute({ workspace: workspace, runs: runs, studioHref: studioH, runsHref: '#/c/' + c.id + '/runs' })); } catch (e4) {}
         }
+        // この案件の課題（上から3つ）
+        if (window.AirReachIssues) { try { overview += window.AirReachIssues.homeHtml(issues, c.id); } catch (e5) {} }
         overview += todayCard(c, plan, repNow, pendingReq, me.email);
         // サイトが登録されていないと、分析しても診断がこの顧客に紐づかない（ホームに何も出ない）
         if (!sites.length) overview += '<section class="arc-card arc-nosite"><b>この顧客にはサイトが登録されていません</b><p class="arc-note" style="margin:4px 0 8px">診断はサイトごとに保存されるため、サイトを登録するまでここには出ません。Studio で「サイトを調べる」を行うと、調べたサイトを自動で登録します。</p>' +
@@ -1105,6 +1109,8 @@
         '<input class="arc-input" id="arc-act-url" placeholder="証拠のURL（公開ページ）"><select class="arc-input" id="arc-act-status"><option value="done">実施済み</option><option value="planned">予定</option></select>' +
         '<button class="arc-btn" type="submit">追加</button></form>' +
         '<table class="arc-table"><tbody>' + (actRows || '<tr><td class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
+
+        fold('issues', SEC_LABEL.issues, issues == null ? '準備中' : issues.filter(function (x) { return x.status !== 'done'; }).length + 'つ') + '<div id="arc-issues"></div></div></section>' +
 
         fold('members', SEC_LABEL.members, members.length + '人') +
         '<ul class="arc-list">' + (members.map(function (m) { return '<li>' + esc(m.email) + ' <button class="arc-btn-sm" data-resend-member="' + esc(m.email) + '">ログインメールを再送</button> <button class="arc-btn-sm" data-del-member="' + esc(m.email) + '">削除</button></li>'; }).join('') || '<li class="arc-empty">まだいません</li>') + '</ul>' +
@@ -1242,6 +1248,7 @@
             .catch(function (e) { box.innerHTML = '<p class="arc-note">比べられませんでした：' + esc(e.message || e) + '</p>'; });
         } catch (e) { box.innerHTML = '<p class="arc-note">比べられませんでした：' + esc(e.message || e) + '</p>'; }
       });
+      if (window.AirReachIssues) window.AirReachIssues.mount(root.querySelector('#arc-issues'), { sb: sb, clientId: c.id, issues: issues, runs: runs, onChange: function () { route(); } });
       root.querySelectorAll('[data-del-run]').forEach(function (b) { b.addEventListener('click', function () {
         var row = byId(runs, 'id', b.getAttribute('data-del-run'));
         guardedDelete({ client: c, what: 'AI 計測', detail: '質問の版 ' + (row.query_set_version || '—') + '・' + (row.run_label || ''), date: '計測 ' + row.measured_on, table: 'measurement_runs', match: [['id', row.id]], row: row, sec: 'runs',

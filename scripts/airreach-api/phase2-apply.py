@@ -18,6 +18,7 @@ Change ID（DEV-YYYY-NNN）の承認後にだけ使う。各手順は単独で�
   python3 scripts/airreach-api/phase2-apply.py apply-client-owner-due    # 顧客ごとの担当と報告期限の列（担当者ダッシュボードの絞り込み）を適用して検証
   python3 scripts/airreach-api/phase2-apply.py apply-request-note        # お客様の依頼に付ける「補足」の列と関数を適用して検証
   python3 scripts/airreach-api/phase2-apply.py apply-partner-orgs        # 共同会社（自社の顧客だけ見える人）の仕組みを適用して検証
+  python3 scripts/airreach-api/phase2-apply.py apply-client-issues       # 案件の課題（client_issues）の表を適用して検証
   python3 scripts/airreach-api/phase2-apply.py add-partner-org <会社名>                       # 共同会社を作る
   python3 scripts/airreach-api/phase2-apply.py add-partner-staff <email> <会社名> [approver]   # 共同会社の人を追加（approver で承認者にする）
   python3 scripts/airreach-api/phase2-apply.py assign-client <顧客ID> <会社名|TB>              # 顧客の担当会社を決める（TB＝Trillion Bank に戻す）
@@ -337,6 +338,33 @@ def cmd_apply_client_owner_due():
         die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261007180000_airreach_client_owner_due_rollback.sql で戻すか判断してください')
 
 
+def cmd_apply_client_issues():
+    """案件の課題（client_issues）の表と RLS を足す。担当者（社内・共同会社は自社の顧客だけ）が書く。お客様には見せない"""
+    confirm_project()
+    if 'clients' not in tables() or 'partner_orgs' not in tables():
+        die('clients か partner_orgs がありません。先に apply-db・apply-partner-orgs を実行してください')
+    path = ROOT / 'supabase/migrations/20261009120000_airreach_client_issues.sql'
+    call('POST', f'/projects/{REF}/database/migrations', {'name': 'airreach_client_issues', 'query': path.read_text()})
+    print('migration を適用しました: airreach_client_issues')
+    checks = [
+        ('client_issues がある', "select to_regclass('public.client_issues') is not null as ok"),
+        ('RLS が有効', "select relrowsecurity as ok from pg_class where oid = 'public.client_issues'::regclass"),
+        ('方針は airreach_can_staff の1つだけ（お客様の方針は無い）', "select count(*) = 1 and bool_and(qual like '%airreach_can_staff%') as ok from pg_policies where schemaname = 'public' and tablename = 'client_issues'"),
+        ('anon に権限が無い', "select not has_table_privilege('anon', 'public.client_issues', 'select') as ok"),
+        ('書いた人・日時を入れるトリガーがある', "select exists(select 1 from pg_trigger where tgname = 'client_issues_touch' and not tgisinternal) as ok"),
+        ('顧客を消すと課題も消える（on delete cascade）', "select exists(select 1 from pg_constraint where conrelid = 'public.client_issues'::regclass and contype = 'f' and confdeltype = 'c') as ok"),
+        ('まだ課題は0件（架空の課題を入れていない）', "select count(*) = 0 as ok from public.client_issues"),
+    ]
+    bad = 0
+    for label, q in checks:
+        r = sql(q, True)
+        ok = bool(r and r[0].get('ok'))
+        bad += 0 if ok else 1
+        print(('OK  ' if ok else 'NG  ') + label)
+    if bad:
+        die(f'検証で {bad} 件が想定と違います。supabase/rollback/20261009120000_airreach_client_issues_rollback.sql で戻すか判断してください')
+
+
 def cmd_apply_request_note():
     """お客様の依頼に「補足」（なぜ足したい・外したいか・500文字まで）を付けられるようにする"""
     confirm_project()
@@ -583,7 +611,7 @@ def cmd_anon_key_to_vercel():
 def main():
     a = sys.argv[1:]
     cmds = {'check': cmd_check, 'apply-db': cmd_apply_db, 'auth-config': cmd_auth_config, 'auth-hook': cmd_auth_hook,
-            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'apply-client-requests': cmd_apply_client_requests, 'apply-client-owner-due': cmd_apply_client_owner_due, 'apply-request-note': cmd_apply_request_note, 'apply-partner-orgs': cmd_apply_partner_orgs, 'verify': lambda: (confirm_project(), verify())}
+            'anon-key-to-vercel': cmd_anon_key_to_vercel, 'apply-report-2026-10': cmd_apply_report_2026_10, 'apply-studio-workspaces': cmd_apply_studio_workspaces, 'apply-schedules': cmd_apply_schedules, 'apply-client-requests': cmd_apply_client_requests, 'apply-client-owner-due': cmd_apply_client_owner_due, 'apply-request-note': cmd_apply_request_note, 'apply-partner-orgs': cmd_apply_partner_orgs, 'apply-client-issues': cmd_apply_client_issues, 'verify': lambda: (confirm_project(), verify())}
     if a and a[0] in cmds and len(a) == 1:
         cmds[a[0]]()
     elif a and a[0] == 'add-staff' and len(a) == 3:

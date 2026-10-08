@@ -10,6 +10,8 @@
   // lead は画面の上に出す説明。ダッシュボードの節の見出しと Studio の画面の見出しもここに合わせる
   var ITEMS = {
     home: { label: 'ホーム', desc: '今月の数字と、次にやること', where: 'dash', sec: 'home' },
+    issues: { label: 'この案件の課題', desc: '何が起きているか・なぜ・直すこと', where: 'dash', sec: 'issues',
+      lead: 'AI に名前が出ない理由を、課題ごとに残します（何が起きているか・なぜ・直すこと・どう確かめるか）。保存すると、そのときの計測の数字を根拠として添えます。お客様には見えません。' },
     start: { label: '対象を決める', desc: 'サイトを調べて、会社・サービスを確定', where: 'studio', panel: 'start', also: ['result'],
       lead: 'お客様のサイトを読み、AI と検索に伝わっているか、何が足りないかを調べます（約1分）。結果は「これまでの診断」と月次レポートの点数に使われます。' },
     result: { label: '調べた結果を見る', desc: '点数・直すところ・まず対策する言葉', where: 'studio', panel: 'result',
@@ -51,7 +53,7 @@
   //   ④（入れたか確かめる）はいまはホームの段階の表示と ZIP の手順書で行う（専用の画面はまだ無い）
   var STEP_NO = { start: '①', hack2: '②', generator: '③', runs: '⑤' };
   var CLIENT_GROUPS = [
-    { group: 'はじめに', items: pick(['home']) },
+    { group: 'はじめに', items: pick(['home', 'issues']) },
     { group: 'AI パッチ（5段階）', items: pick(['start', 'hack2', 'generator', 'runs']) },
     { group: '毎月の仕事', items: pick(['traffic', 'actions', 'reports']) },
     { group: '詳しく見る', items: pick(['keywords', 'gaps', 'competitors', 'timeseries', 'sites']) },
