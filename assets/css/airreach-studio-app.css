@@ -426,3 +426,23 @@ body:not(.has-job) [data-needs-job]{display:none}
 @media (max-width: 720px) { .acs-steps { grid-template-columns: minmax(0, 1fr); } }
 .ars-side-link { display: flex; align-items: center; min-height: 40px; padding: 0 12px; color: var(--ars-blue-deep); text-decoration: none; font-size: 13px; }
 .ars-side-link:hover { text-decoration: underline; }
+
+/* ④ 入れたか確かめる（airreach-verify.js） */
+.avf { display: flex; flex-direction: column; gap: 16px; }
+.avf-form label { display: block; font-size: 13px; color: var(--ars-ink-2); margin-bottom: 4px; }
+.avf-form .ars-row { gap: 8px; flex-wrap: wrap; }
+.avf-form .ars-input { flex: 1 1 320px; min-width: 0; }
+.avf-res { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: var(--ars-r-sm); border: 1px solid var(--ars-line); }
+.avf-res.is-ok { border-color: var(--ars-blue); background: var(--ars-soft); }
+.avf-res.is-ng { border-color: var(--ars-line-strong); background: var(--ars-canvas); }
+.avf-res small { color: var(--ars-muted); overflow-wrap: anywhere; }
+.avf-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; }
+.avf-list li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--ars-line); }
+.avf-list b { display: block; font-weight: 500; color: var(--ars-ink); }
+.avf-list small { display: block; color: var(--ars-muted); overflow-wrap: anywhere; }
+.avf-mark { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700; border: 1px solid var(--ars-line-strong); color: var(--ars-muted); }
+.avf-list li.is-ok .avf-mark { background: var(--ars-blue); border-color: var(--ars-blue); color: #fff; }
+.avf-list li.is-ng .avf-mark { border: 2px solid var(--ars-ink); color: var(--ars-ink); }
+.avf-list li.is-warn .avf-mark { border: 2px solid var(--ars-line-strong); color: var(--ars-ink-2); }
+.avf-next { padding: 12px 14px; border-radius: var(--ars-r-sm); background: var(--ars-canvas); color: var(--ars-ink-2); font-size: 13px; }
+.avf-next ol { margin: 6px 0 0; padding-left: 20px; }

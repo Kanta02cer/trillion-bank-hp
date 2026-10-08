@@ -126,6 +126,7 @@
   function secLead(k) { var it = window.AirReachNav && window.AirReachNav.item(k); return it && it.lead ? it.lead : ''; }
   // 左のメニューは Studio と共通（assets/js/airreach-nav.js）。ダッシュボードの節は同じページの中で、Studio の画面は Studio を開く
   var SIDE_STEP = { start: 0, generator: 1, hack2: 2, traffic: 3, actions: 4, reports: 5 };
+  var CASE_STEP = { start: 0, hack2: 1, generator: 2, verify: 3, runs: 4 };
   function sideHtml(ctx) {
     var N = window.AirReachNav, cl = ctx.client;
     if (!N) return '';
@@ -139,8 +140,15 @@
         if (it.where === 'dash') url = url.replace('/airreach/app/', ''); // 同じページの中は # だけで移る
         var n = N.num ? N.num(it, !!cl) : '';
         var badge = it.sec === 'reports' && ctx.reportBadge ? '<span class="arc-side-b">' + esc(ctx.reportBadge) + '</span>' : '';
-        // 毎月の作業の項目には、7工程の状態（済み・次はここ・途中）を出す（ホームの7工程と同じ判定）
-        var si = ctx.plan ? SIDE_STEP[it.key] : null;
+        // AI パッチの5段階の項目には、案件の段階の状態（済み・次はここ）を出す（ホームの5段階と同じ判定・airreach-case-steps.js）
+        var ci = ctx.caseSteps ? CASE_STEP[it.key] : null;
+        if (ci != null) {
+          var cs = ctx.caseSteps.steps[ci];
+          if (cs.state === 'done') badge = '<span class="arc-side-b is-ok" aria-label="済み">✓</span>';
+          else if (cs.state === 'current') badge = '<span class="arc-side-b is-next">次はここ</span>';
+        }
+        // 毎月の仕事の項目には、7工程の状態（済み・次はここ・途中）を出す（ホームの7工程と同じ判定）
+        var si = ctx.plan && (!ctx.caseSteps || CASE_STEP[it.key] == null) ? SIDE_STEP[it.key] : null;
         if (si != null) {
           var st = ctx.plan.steps[si], st7 = ctx.plan.steps[6];
           if (it.key === 'reports' && st7 && st7.ok) badge = '<span class="arc-side-b is-ok">✓ 公開</span>';
@@ -1014,14 +1022,14 @@
       var month = thisMonth() + '-01', live = null;
       try { live = R.compileReport({ client: c, periodMonth: month, scans: scans, runs: runs, traffic: traffic, actions: actions }); } catch (e) { live = null; }
       var repNow = reports.filter(function (x) { return x.period_month === month; })[0];
-      var overview = '', plan = null;
+      var overview = '', plan = null, caseRes = null;
       if (live && C) {
         // ホーム：今日の作業（次にやること・期限・依頼・レポート）→ 数字（小さく）→ 7工程・直すこと → 依頼 → AI の詳しい結果 → 推移
         var studioH = studioHref(c, sites);
         plan = monthPlan(c, sites, live, repNow, actions, lastEvent);
         // 案件の5段階と「次にやること」を一番上に（AI パッチの進み具合。毎月の7工程とは別）
         if (window.AirReachCaseSteps) {
-          try { overview += window.AirReachCaseSteps.cardHtml(window.AirReachCaseSteps.compute({ workspace: workspace, runs: runs, studioHref: studioH, runsHref: '#/c/' + c.id + '/runs' })); } catch (e4) {}
+          try { caseRes = window.AirReachCaseSteps.compute({ workspace: workspace, runs: runs, studioHref: studioH, runsHref: '#/c/' + c.id + '/runs' }); overview += window.AirReachCaseSteps.cardHtml(caseRes); } catch (e4) {}
         }
         // この案件の課題（上から3つ）
         if (window.AirReachIssues) { try { overview += window.AirReachIssues.homeHtml(issues, c.id); } catch (e5) {} }
@@ -1119,7 +1127,7 @@
         ownerDueBlock(c, staffList) +
         googleDataBlock(c) +
         '</div></section>',
-        '', { client: { id: c.id, name: c.name, site: sites[0] && sites[0].url, industry: c.industry_id }, sec: curSec, reportBadge: repBadge, plan: plan, kicker: curSec === 'home' ? '' : c.name,
+        '', { client: { id: c.id, name: c.name, site: sites[0] && sites[0].url, industry: c.industry_id }, sec: curSec, reportBadge: repBadge, plan: plan, caseSteps: caseRes, kicker: curSec === 'home' ? '' : c.name,
           action: '' });
 
       Array.prototype.forEach.call(root.querySelectorAll('details[data-fold]'), function (d) {
