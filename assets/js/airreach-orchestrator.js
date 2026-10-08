@@ -1602,6 +1602,7 @@
     if (!wrap || !job || job.status !== 'completed') return;
     wrap.hidden = false;
     try { if (window.AirReachConfirm) window.AirReachConfirm.render(job); } catch (e) {}
+    try { if (window.AirReachStudioSteps) window.AirReachStudioSteps.refresh(); } catch (e) {}
     renderDashboardButton(job);
     var h = job.headline4 || {};
     if (q('orch-n-kw')) q('orch-n-kw').textContent = String(h.keywords || 0);
@@ -2082,6 +2083,7 @@
             var ok = window.AirReachPackageSchema ? window.AirReachPackageSchema.validatePackageFiles(job.files).publishable : false;
             job.zipped = { at: new Date().toISOString(), version: mf.package_version || '', draft: !ok, selection: paths ? 'minimal' : 'all' };
             persistJob(job);
+            try { if (window.AirReachStudioSteps) window.AirReachStudioSteps.refresh(); } catch (e3) {}
           })
           .catch(function (e) { alert('ZIP を作れませんでした：' + (e && e.message ? e.message : e)); });
       });

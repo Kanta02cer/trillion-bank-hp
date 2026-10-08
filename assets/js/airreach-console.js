@@ -416,7 +416,7 @@
   /**
    * 今月の進め方：毎月の7工程を左のメニューと同じ名前で並べ、どこまで済んだかと「次にやること」（理由つき）を出す（社内向けホーム）。
    * 済み／まだ は登録された材料から判定する（手で付けるチェックは持たない）。
-   * 「直す材料を作る」は、今月登録した施策の予定で判定する（前月から残った予定は持ち越しとして数えるだけ。お客様へ渡したかは記録が無いので判定しない）
+   * Studio の「③ 承認と ZIP」は、今月登録した施策の予定で判定する（前月から残った予定は持ち越しとして数えるだけ。お客様へ渡したかは記録が無いので判定しない）
    */
   // 今月の7工程の判定と帯は assets/js/airreach-month-plan.js（Studio と共通）
   function monthPlan(c, sites, live, repNow, actions, lastEvent) { return window.AirReachMonthPlan.build({ client: c, sites: sites, live: live, repNow: repNow, actions: actions, lastEvent: lastEvent }); }
@@ -586,7 +586,7 @@
     return t.getFullYear() + '-' + p2(t.getMonth() + 1) + '-' + p2(t.getDate()) + ' ' + p2(t.getHours()) + ':' + p2(t.getMinutes());
   }
   function studioActionsCard(d) {
-    return '<section class="arc-card arc-studio-in"><h2 class="arc-h2">「直す材料を作る」の下書きから、施策の候補が ' + d.items.length + '件あります</h2>' +
+    return '<section class="arc-card arc-studio-in"><h2 class="arc-h2">Studio の「③ 承認と ZIP」の下書きから、施策の候補が ' + d.items.length + '件あります</h2>' +
       '<p class="arc-note">' + esc(localTime(d.createdAt)) + ' に ' + esc(d.url || '') + ' の下書きを作成。登録すると「実施した施策」に<b>予定</b>として入り、実施したら日付と証拠のURLを入れて「実施済み」にします。</p>' +
       '<ul class="arc-list">' + d.items.map(function (it, i) {
         return '<li><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" data-studio-item="' + i + '" checked><span>' + esc(it.title) + (it.file ? '<span class="arc-sub">（' + esc(it.file) + '）</span>' : '') + '</span></label></li>';

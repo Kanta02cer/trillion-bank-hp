@@ -22,12 +22,14 @@
     if (/[、,]/.test(t) && t.length > 12) return true;
     return false;
   }
+  function entBox0() { return !!q('orch-entity'); }
   function commit(job) {
     job.confirm.rev = (job.confirm.rev || 0) + 1;
     var O = window.AirReachOrchestrator;
     if (O && O.refreshJobArtifacts) O.refreshJobArtifacts(job);
     window.__orchLastJob = job;
     render(job);
+    try { if (window.AirReachStudioSteps) window.AirReachStudioSteps.refresh(); } catch (e) {}
   }
 
   function render(job) {
@@ -44,14 +46,15 @@
       : (cli.url && hostOf(cli.url) !== hostOf(job.url)) ? '<p class="ocf-cli is-bad">顧客：' + esc(cli.name || '') + '（' + esc(String(cli.id).slice(0, 8)) + '）の登録サイトは ' + esc(hostOf(cli.url)) + ' です。分析したサイト ' + esc(hostOf(job.url)) + ' と違うため、ZIP に顧客 ID を入れません。顧客かサイトを確かめてください。</p>'
       : '<p class="ocf-cli">顧客：<b>' + esc(cli.name || '') + '</b>（ID ' + esc(String(cli.id).slice(0, 8)) + '…）· 対象のサイト ' + esc(hostOf(job.url)) + '</p>';
     var html = '<section class="ocf" aria-label="確定と承認">' +
-      cliHtml + '<p class="ocf-ver">版 <b>' + esc(mf.version != null ? mf.version : cf.rev || 0) + '</b> · よくある質問 提案 ' + esc(fc.proposed || 0) + '問・サイトの記載から ' + esc(fc.from_site || 0) + '問・承認 ' + esc(fc.approved || 0) + '問・<b>設置用に入れる ' + esc(fc.in_schema || 0) + '問</b>' + (fc.pending_approval ? '・承認待ち ' + esc(fc.pending_approval) + '問' : '') + '</p>';
-    // ① 会社・ブランド・サービス
+      (entBox0() ? '' : cliHtml) + '<p class="ocf-ver">版 <b>' + esc(mf.version != null ? mf.version : cf.rev || 0) + '</b> · よくある質問 提案 ' + esc(fc.proposed || 0) + '問・サイトの記載から ' + esc(fc.from_site || 0) + '問・承認 ' + esc(fc.approved || 0) + '問・<b>設置用に入れる ' + esc(fc.in_schema || 0) + '問</b>' + (fc.pending_approval ? '・承認待ち ' + esc(fc.pending_approval) + '問' : '') + '</p>';
+    // ① 会社・ブランド・サービス（Studio の「① 結果と確定」に #orch-entity があればそこへ、無ければここへ）
+    var entHtml = '';
     if (ent) {
-      html += '<div class="ocf-ent is-done"><div><b>① 会社・サービス：確定済み</b><span>' + esc(day(ent.at)) + '</span></div>' +
+      entHtml += '<div class="ocf-ent is-done"><div><b>① 会社・サービス：確定済み</b><span>' + esc(day(ent.at)) + '</span></div>' +
         '<dl><div><dt>会社</dt><dd>' + esc(ent.company) + '</dd></div><div><dt>ブランド・店名</dt><dd>' + esc(ent.brand) + '</dd></div><div><dt>サービス</dt><dd>' + esc(ent.service) + '</dd></div><div><dt>対象のサイト</dt><dd>' + esc(ent.url) + '</dd></div></dl>' +
         '<button type="button" class="ars-btn ars-btn-secondary" data-ocf="reopen">確定を取り消して直す</button></div>';
     } else {
-      html += '<div class="ocf-ent"><div><b>① 会社・サービスを確定する</b><span>サイトから推定した値です。正しい名前に直して確定してください。確定するまで ZIP は下書きです。</span></div>' +
+      entHtml += '<div class="ocf-ent"><div><b>① 会社・サービスを確定する</b><span>サイトから推定した値です。正しい名前に直して確定してください。確定するまで ZIP は下書きです。</span></div>' +
         '<div class="ocf-form">' +
         '<label>会社（正式名）<input class="ars-input" id="ocf-company" value="' + esc(p.company || p.brand || '') + '" autocomplete="off"></label>' +
         '<label>ブランド・店名<input class="ars-input" id="ocf-brand" value="' + esc(p.brand || '') + '" autocomplete="off"></label>' +
@@ -62,6 +65,12 @@
         '<p class="ocf-err" id="ocf-err" hidden></p>' +
         '<button type="button" class="ars-btn ars-btn-primary" data-ocf="confirm">この内容で確定する</button></div>';
     }
+    var entBox = q('orch-entity');
+    if (entBox) {
+      // ③ の画面には、確定の結果だけを1行で（直すのは ① で）
+      html += ent ? '<p class="ocf-cli">会社・サービス：<b>' + esc(ent.company) + '</b>・' + esc(ent.service) + '（' + esc(day(ent.at)) + ' 確定）</p>'
+        : '<p class="ocf-cli is-bad">会社・サービスがまだ確定していません。<button type="button" class="ars-btn ars-btn-secondary" data-ocf="goto-entity">① で確定する</button></p>';
+    } else html += entHtml;
     // ② FAQ の承認（サイトの記載から作った答えだけ。確認が必要な質問は faq.md で書き足す）
     html += '<div class="ocf-faq"><div><b>② よくある質問を承認する</b><span>承認した答えだけを、検索や AI が読む形のデータ（faq.jsonld）に入れます。</span></div>';
     if (!items.length) html += '<p class="ocf-none">サイトの記載から作れた答えはありません。faq.md で答えを書いてから載せてください。</p>';
@@ -78,8 +87,12 @@
     var ready = ent && !fc.pending_approval;
     html += '<p class="ocf-gate' + (ready ? ' is-ok' : '') + '">' + (ready ? '確定と承認が済みました。ZIP は公開用として作れます（公開前の確認は README の手順で）。' : 'まだ下書きです：' + [!ent ? '会社・サービスが未確定' : '', fc.pending_approval ? '承認待ちの質問が ' + fc.pending_approval + '問' : ''].filter(Boolean).join('・') + '。ZIP は「-DRAFT」として保存されます。') + '</p></section>';
     box.innerHTML = html;
+    if (entBox) entBox.innerHTML = '<section class="ocf" aria-label="会社・サービスの確定">' + cliHtml + entHtml + '</section>';
+    var scope = document;
+    var gEnt = box.querySelector('[data-ocf="goto-entity"]');
+    if (gEnt) gEnt.addEventListener('click', function () { var b = document.querySelector('.ars-side button[data-panel="result"]'); if (b) { b.hidden = false; b.click(); } });
 
-    var cbtn = box.querySelector('[data-ocf="confirm"]');
+    var cbtn = scope.querySelector('[data-ocf="confirm"]');
     if (cbtn) cbtn.addEventListener('click', function () {
       var company = q('ocf-company').value.trim(), brand = q('ocf-brand').value.trim(), service = q('ocf-service').value.trim();
       var err = q('ocf-err'), bad = [];
@@ -98,7 +111,7 @@
       job.profile = Object.assign({}, job.profile || {}, { brand: brand, service: service, company: company });
       commit(job);
     });
-    var rbtn = box.querySelector('[data-ocf="reopen"]');
+    var rbtn = scope.querySelector('[data-ocf="reopen"]');
     if (rbtn) rbtn.addEventListener('click', function () { cf.entity = null; commit(job); });
     Array.prototype.forEach.call(box.querySelectorAll('[data-ocf-q]'), function (b) {
       b.addEventListener('click', function () {
