@@ -265,16 +265,29 @@
         Promise.all(rows.map(function (c) { return sb.rpc('airreach_client_scans', { p_client_id: c.id, p_limit: 24 }).then(function (x) { return x.data || []; }, function () { return []; }); })),
         soft(sb.from('client_requests').select('client_id').eq('status', 'pending')),
         soft(sb.from('measurement_runs').select('client_id,measured_on').gte('measured_on', mon)),
-        soft(sb.from('traffic_snapshots').select('client_id,source').eq('period_month', mon))
+        soft(sb.from('traffic_snapshots').select('client_id,source').eq('period_month', mon)),
+        // 案件の5段階（airreach-case-steps.js）の材料：分析の確定・ZIP・確かめた結果と、計測の要約（ZIP の中身や回答の本文は読まない）
+        sb.from('studio_workspaces').select('client_id,confirm:data->orch->lastJob->confirm,zipped:data->orch->lastJob->zipped,verified:data->orch->lastJob->verified,url:data->orch->lastJob->>url').then(function (x) { return x.error ? null : (x.data || []); }, function () { return null; }),
+        soft(sb.from('measurement_runs').select('client_id,measured_on,created_at,ai3:summary->ai3').order('created_at', { ascending: false }).limit(400))
       ]).then(function (rs) {
         var reps = q(rs[0]) || [];
         var drafts = reps.filter(function (x) { return x.status === 'draft'; }).map(function (x) { return x.id; });
         return (drafts.length && approvalOn() ? soft(sb.from('report_events').select('report_id,action,created_at').in('report_id', drafts).order('created_at', { ascending: true })) : Promise.resolve([]))
-          .then(function (ev) { return [rows, { reports: reps, scans: rs[1], requests: rs[2], runs: rs[3], traffic: rs[4], events: ev }]; });
+          .then(function (ev) { return [rows, { reports: reps, scans: rs[1], requests: rs[2], runs: rs[3], traffic: rs[4], events: ev, workspaces: rs[5], allRuns: rs[6] }]; });
       });
     }).then(function (pair) {
       var rows = pair[0], extra = pair[1], C = window.AirReachCharts, S = window.AirReachStaff;
-      var list, filters = '';
+      var list, filters = '', today3 = '';
+      // 顧客ごとの案件の5段階（材料が無い・部品が無いときは null）
+      function caseOf(c) {
+        if (!extra || !window.AirReachCaseSteps || extra.workspaces == null) return null;
+        var w = (extra.workspaces || []).filter(function (x) { return x.client_id === c.id; })[0];
+        var job = null;
+        if (w && w.data) job = w.data.orch && w.data.orch.lastJob; // 全体を返す環境（テスト）
+        else if (w && (w.confirm || w.zipped || w.url)) job = { url: w.url, confirm: w.confirm, zipped: w.zipped, verified: w.verified, files: {} };
+        var runs = (extra.allRuns || []).filter(function (x) { return x.client_id === c.id; }).map(function (x) { return x.summary ? x : { client_id: x.client_id, measured_on: x.measured_on, created_at: x.created_at, summary: { ai3: x.ai3 } }; });
+        try { return window.AirReachCaseSteps.compute({ workspace: { orch: { lastJob: job } }, runs: runs, studioHref: '', runsHref: '' }); } catch (e) { return null; }
+      }
       if (extra) {
         var today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
         var items = rows.filter(function (c) { return c.status !== 'ended'; }).map(function (c, i) {
@@ -286,9 +299,16 @@
             runsThisMonth: extra.runs.filter(function (x) { return x.client_id === c.id; }).length,
             trafficThisMonth: extra.traffic.filter(function (x) { return x.client_id === c.id; }).map(function (x) { return x.source; }),
             pendingRequests: extra.requests.filter(function (x) { return x.client_id === c.id; }).length });
-          return { c: c, scans: scans, rep: rep, f: f, hasCols: Object.prototype.hasOwnProperty.call(c, 'report_due_day') };
+          return { c: c, scans: scans, rep: rep, f: f, hasCols: Object.prototype.hasOwnProperty.call(c, 'report_due_day'), cs: caseOf(c) };
         });
+
         items.sort(function (a, b) { return a.f.rank - b.f.rank || ((a.f.due ? a.f.due.daysLeft : 999) - (b.f.due ? b.f.due.daysLeft : 999)) || String(a.c.name).localeCompare(String(b.c.name), 'ja'); });
+        // 今日やること：案件ごとの「次にやること」を、急ぎの順（上の並びと同じ）に3つまで
+        var todays = items.filter(function (it) { return it.cs && it.cs.current >= 0; }).slice(0, 3);
+        var today3 = todays.length ? '<section class="arc-card apf-today"><h2 class="arc-h2">今日やること（' + todays.length + '件）</h2><div class="apf-cards">' + todays.map(function (it) {
+          var st = it.cs.steps[it.cs.current];
+          return '<a class="apf-card" href="#/c/' + it.c.id + '"><small>' + esc(it.c.name) + ' · ' + esc('①②③④⑤'.charAt(it.cs.current)) + ' ' + esc(st.label) + '</small><b>' + esc(it.cs.next.title) + '</b></a>';
+        }).join('') + '</div></section>' : '';
         var FIL = [['all', 'すべて', function () { return true; }], ['mine', '自分の担当', function (f) { return f.mine; }], ['due', '期限が近い・超過', function (f) { return f.dueSoon || f.overdue; }],
           ['ai', 'AI 未計測', function (f) { return f.aiMissing; }], ['google', 'Google 未取得', function (f) { return f.googleMissing; }], ['returned', '差し戻し', function (f) { return f.returned; }], ['req', '依頼あり', function (f) { return f.requests > 0; }]];
         filters = '<div class="arc-filter"><label class="arc-filter-q"><span>顧客を探す</span><input class="arc-input" type="search" id="arc-list-q" placeholder="顧客名" value="' + esc(listQuery) + '"></label>' +
@@ -308,6 +328,7 @@
           var keys = ['all'].concat(FIL.slice(1).filter(function (x) { return x[2](f); }).map(function (x) { return x[0]; }));
           return '<a class="arc-client" href="#/c/' + c.id + '" data-keys="' + keys.join(' ') + '" data-name="' + esc(String(c.name).toLowerCase()) + '"><span class="arc-client-n">' + esc(c.name) + '<small>' + esc(INDUSTRY[c.industry_id] || '') + (c.status !== 'active' ? ' · ' + esc(c.status) : '') + '</small></span>' +
             '<span class="arc-client-t">' + st + tags + '</span>' +
+            (it.cs ? '<span class="apf-steps" aria-label="AI パッチ ' + (it.cs.current < 0 ? '5段階すべて済み' : '①〜⑤のうち ' + '①②③④⑤'.charAt(it.cs.current) + ' が今') + '">' + it.cs.steps.map(function (s2) { return '<i class="is-' + s2.state + '"></i>'; }).join('') + '<small>' + esc(it.cs.current < 0 ? '5段階すべて済み' : '次：' + it.cs.next.title) + '</small></span>' : '') +
             '<span class="arc-client-s"><span class="arc-client-sv">' + (sc == null ? '<span class="arv-na">診断なし</span>' : '<b>' + esc(sc) + '</b><small>点</small> <span class="arv-band" style="border-color:' + b.color + ';color:' + b.color + '">' + esc(b.label) + '</span>') + '</span>' + (last ? '<small>最終診断 ' + esc(day(last.createdAt)) + '</small>' : '') + '</span></a>';
         }).join('') + '<p class="arc-empty" id="arc-list-none" hidden>条件に合う顧客はありません。</p></div>';
       } else {
@@ -327,7 +348,7 @@
       var demo = me.is_staff ? '<details class="arc-card arc-demo"><summary class="arc-h3">代理店・見込み顧客に見せるデモ（ログイン不要・架空のお店のデータ）</summary>' +
         '<p class="arc-note" style="margin:0 0 10px">お客様向けの画面（ホーム・推移・直すこと・月次レポート・競合との比較・PDF）を、架空の美容室「サンプル美容室 Hana」で操作できます。本番のお客様のデータには一切つながりません。</p>' +
         '<div class="arc-row"><a class="arc-btn" href="/airreach/demo/" target="_blank" rel="noopener">デモを開く</a><button type="button" class="arc-btn-sm" id="arc-demo-copy">URL をコピー</button><code class="arc-demo-url">https://trillion-bank.jp/airreach/demo/</code></div></details>' : '';
-      shell(me.is_staff ? '顧客一覧' : 'レポート', '<section class="arc-card">' + filters + list + '</section>' + (me.is_staff ? '<section class="arc-card">' + add + '</section>' : '') + demo, '', { sec: 'list' });
+      shell(me.is_staff ? '顧客一覧' : 'レポート', today3 + '<section class="arc-card">' + filters + list + '</section>' + (me.is_staff ? '<section class="arc-card">' + add + '</section>' : '') + demo, '', { sec: 'list' });
       // 絞り込み（名前・条件）。表示を切り替えるだけで、データは読み直さない
       function applyFilter() {
         var shown = 0, qv = listQuery.trim().toLowerCase();
