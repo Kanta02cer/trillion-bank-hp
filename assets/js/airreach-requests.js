@@ -9,7 +9,8 @@
 (function () {
   'use strict';
   var LIMIT = 10;
-  var KIND = { competitor: '競合', keyword: 'キーワード', prompt: '質問' };
+  var KIND = { competitor: '競合', keyword: 'キーワード', prompt: '質問', decision: 'ご判断' };
+  var ANSWER = { ok: 'このまま進めてよい', revise: '直して返す' };
   var STATUS = { pending: ['確認待ち', 'is-warn'], approved: ['反映済み', 'is-ok'], rejected: ['見送り', ''], cancelled: ['取り消し', ''] };
   // 競合の候補から外すサイト（SNS・口コミ／予約／まとめは AirReachAIBreakdown.classify と同じ。加えて公的機関・学校）
   var SNS = ['instagram.com', 'facebook.com', 'x.com', 'twitter.com', 'tiktok.com', 'youtube.com', 'youtu.be', 'line.me', 'lin.ee', 'threads.net', 'pinterest.com', 'ameblo.jp', 'note.com'];
@@ -104,6 +105,7 @@
   function reqText(r) {
     var p = r.payload || {};
     if (r.kind === 'competitor') return (p.name || '') + (p.url && hostOf(p.url) !== String(p.name || '').toLowerCase() ? '（' + hostOf(p.url) + '）' : '');
+    if (r.kind === 'decision') return '「' + (p.text || '') + '」→ ' + (ANSWER[r.action] || r.action);
     return p.text || '';
   }
 
@@ -209,14 +211,17 @@
         var who = staff ? '<small>' + esc(r.requested_by || '') + '</small>' : '';
         var acts = '';
         if (r.status === 'pending') {
-          if (staff) acts = '<input class="arc-input arq-note" data-rq-note="' + r.id + '" maxlength="500" placeholder="見送る理由（お客様に表示）" aria-label="見送る理由">' +
+          // ご判断へのお返事は、担当者は「確認した」だけ（Studio の作業は変えない・見送りは無い）
+          if (staff && r.kind === 'decision') acts = '<button type="button" class="arc-btn-sm arq-ok" data-rq-approve="' + r.id + '" data-rq-kind="decision">確認した</button>';
+          else if (staff) acts = '<input class="arc-input arq-note" data-rq-note="' + r.id + '" maxlength="500" placeholder="見送る理由（お客様に表示）" aria-label="見送る理由">' +
             '<button type="button" class="arc-btn-sm arq-ok" data-rq-approve="' + r.id + '">承認して反映</button><button type="button" class="arc-btn-sm" data-rq-reject="' + r.id + '">見送る</button>';
           else if (r.requested_by && o.email && String(r.requested_by).toLowerCase() === String(o.email).toLowerCase()) acts = '<button type="button" class="arc-btn-sm" data-rq-cancel="' + r.id + '">取り消す</button>';
         }
-        var s = STATUS[r.status] || [r.status, ''];
-        return '<li><span class="arc-chip ' + s[1] + '">' + esc(s[0]) + '</span><span class="arq-t">' + esc(KIND[r.kind] || r.kind) + 'を' + (r.action === 'add' ? '追加' : '外す') + '：' + esc(reqText(r)) +
+        var s = r.kind === 'decision' && r.status === 'approved' ? ['確認済み', 'is-ok'] : (STATUS[r.status] || [r.status, '']);
+        var what = r.kind === 'decision' ? 'ご判断へのお返事' + (r.payload && r.payload.period_month ? '（' + Number(String(r.payload.period_month).slice(5, 7)) + '月のレポート）' : '') : esc(KIND[r.kind] || r.kind) + 'を' + (r.action === 'add' ? '追加' : '外す');
+        return '<li' + (r.kind === 'decision' ? ' class="arq-dec"' : '') + '><span class="arc-chip ' + s[1] + '">' + esc(s[0]) + '</span><span class="arq-t">' + what + '：' + esc(reqText(r)) +
           ' <small>' + esc(md(r.requested_at)) + (r.decision_note && r.status !== 'pending' ? ' · ' + esc(r.decision_note) : '') + '</small>' + who +
-          (r.note ? '<span class="arq-why">' + (staff ? 'お客様の補足' : '補足') + '：' + esc(r.note) + '</span>' : '') + '</span>' + (acts ? '<span class="arq-acts">' + acts + '</span>' : '') + '</li>';
+          (r.note ? '<span class="arq-why">' + (r.kind === 'decision' ? (staff ? 'お客様のお返事' : 'お返事') : staff ? 'お客様の補足' : '補足') + '：' + esc(r.note) + '</span>' : '') + '</span>' + (acts ? '<span class="arq-acts">' + acts + '</span>' : '') + '</li>';
       };
       // 確認待ちは全部、済んだものは直近3件だけ（残りは開く）
       var reqHtml = '<div class="arq-reqs"><h3 class="arc-h3">' + (staff ? 'お客様からの依頼' : 'ご依頼と変更の記録') + (pend.length ? ' <span class="arc-chip is-warn">確認待ち ' + pend.length + '件</span>' : staff ? ' <span class="arc-chip is-ok">確認待ちなし</span>' : '') + '</h3>' +
@@ -338,7 +343,8 @@
       });
       Array.prototype.forEach.call(box.querySelectorAll('[data-rq-approve]'), function (b) {
         b.addEventListener('click', function () {
-          act(rpc('airreach_request_decide', { p_id: b.getAttribute('data-rq-approve'), p_approve: true, p_note: null }), function (r) { return '承認しました：' + ((r && r.applied) || '反映しました'); });
+          var dec = b.getAttribute('data-rq-kind') === 'decision';
+          act(rpc('airreach_request_decide', { p_id: b.getAttribute('data-rq-approve'), p_approve: true, p_note: null }), function (r) { return dec ? 'お客様のお返事を確認済みにしました' : '承認しました：' + ((r && r.applied) || '反映しました'); });
         });
       });
       Array.prototype.forEach.call(box.querySelectorAll('[data-rq-reject]'), function (b) {
