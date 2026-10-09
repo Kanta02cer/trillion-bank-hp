@@ -2,6 +2,7 @@ import { getAccessToken, requestClientId } from './_lib/token.js';
 import { googleAccess, denyAccess } from './_lib/access.js';
 import { isGa4Enabled } from './_lib/scopes.js';
 import { ga4Host, siteHost } from './_lib/host.js';
+import { saveTraffic, periodOf, jwtEmail, googleEmailOf } from './_lib/save.js';
 
 function setCors(req, res) {
   const origin = req.headers.origin || '';
@@ -83,6 +84,15 @@ export default async function handler(req, res) {
   if (req.body.summaryOnly) {
     const s = await fetchSummary(url, token, startDate, endDate, host);
     if (s.error) return res.status(s.status).json(s.error);
+    // save: お客様が自分で取り込むとき。サーバーが読んだ合計だけを、サーバーが保存する（_lib/save.js）
+    if (req.body.save === true) {
+      const clientId = requestClientId(req), g = s.summary || {};
+      const saved = await saveTraffic({ clientId, period: periodOf(startDate), source: 'ga4_api', savedBy: jwtEmail(req),
+        metrics: { sessions: g.sessions, ai_sessions: g.aiSessions, conversions: g.keyEvents, target_page_views: null, ai_sources: g.aiSources,
+          property_id: pid, host, start_date: startDate, end_date: endDate, google_email: googleEmailOf(req, clientId), fetched_at: new Date().toISOString(), saved_via: 'server' } });
+      if (!saved.ok) return res.status(saved.status).json({ code: saved.code, error: saved.error });
+      return res.status(200).json({ summary: s.summary, propertyId: pid, siteUrl: String(siteUrl), host, saved: true });
+    }
     return res.status(200).json({ summary: s.summary, propertyId: pid, siteUrl: String(siteUrl), host });
   }
   const r = await fetch(url, {

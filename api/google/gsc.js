@@ -1,5 +1,6 @@
 import { getAccessToken, requestClientId } from './_lib/token.js';
 import { googleAccess, denyAccess } from './_lib/access.js';
+import { saveTraffic, periodOf, jwtEmail, googleEmailOf } from './_lib/save.js';
 function setCors(req, res) {
   const origin = req.headers.origin || '';
   let allow = 'https://trillion-bank.jp';
@@ -108,6 +109,16 @@ export default async function handler(req, res) {
       startDate,
       endDate: last < endDate ? last : endDate
     };
+  }
+  // save: お客様が自分で取り込むとき。サーバーが読んだ合計だけを、サーバーが保存する（画面から数字は受け取らない。_lib/save.js）
+  if (req.body && req.body.save === true) {
+    if (!totalsOnly || !totals) return res.status(400).json({ code: 'bad_request', error: '保存は月の合計の取り込みだけです。' });
+    const clientId = requestClientId(req);
+    const saved = await saveTraffic({ clientId, period: periodOf(startDate), source: 'gsc_api', savedBy: jwtEmail(req),
+      metrics: { clicks: totals.clicks, impressions: totals.impressions, ctr: totals.ctr, position: totals.position, days: totals.days, start_date: totals.startDate, end_date: totals.endDate,
+        property: siteUrl, google_email: googleEmailOf(req, clientId), fetched_at: new Date().toISOString(), saved_via: 'server' } });
+    if (!saved.ok) return res.status(saved.status).json({ code: saved.code, error: saved.error });
+    return res.status(200).json({ rows: [], count: 0, siteUrl, totals, saved: true });
   }
   // siteUrl: どの Search Console プロパティのデータか（クライアントは各行に記録し、同じサイトの診断にだけ使う）
   return res.status(200).json({ rows, count: rows.length, siteUrl, totals });
