@@ -323,7 +323,9 @@ robots: "noindex, follow"
           <div class="avf-form">
             <label for="verify-url">よくある質問を載せたページの URL</label>
             <div class="ars-row"><input class="ars-input" id="verify-url" placeholder="https://example.jp/faq/" inputmode="url" autocomplete="off"><button type="button" class="ars-btn ars-btn-primary" id="verify-run">確かめる</button></div>
-            <p class="ars-gnote" id="verify-zip-note"></p>
+            <label for="verify-org-url" class="avf-sub">会社の情報を入れたページ（トップページなど・上と別のときだけ）</label>
+            <input class="ars-input" id="verify-org-url" placeholder="https://example.jp/" inputmode="url" autocomplete="off">
+                        <p class="ars-gnote" id="verify-zip-note"></p>
           </div>
           <div id="verify-result" aria-live="polite"></div>
           <div class="avf-next">

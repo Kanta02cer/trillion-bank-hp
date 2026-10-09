@@ -19,30 +19,33 @@ const ld = (o) => '<script type="application/ld+json">' + JSON.stringify(o) + '<
 const faqHtml = Q.map((x) => '<h3>' + x.q + '</h3>\n<p>' + x.a.replace('10:00〜19:00', '10:00〜19:00 ') + '</p>').join('\n');
 const page = (body, extra) => ({ status: 200, html: '<html><head>' + (extra || '') + '</head><body><nav>ホーム</nav>' + body + '</body></html>' });
 const state = (r, k) => r.checks.find((c) => c.key === k).state;
-let r = V.judge(job, page(faqHtml, ld(faqLd) + ld(orgLd)), { status: 200, text: LLMS });
+// 描画して読んだ見える文字の代わり（テストでは、静的に見える文字＝隠す指定の要素を除いた文字）
+const RD = (p) => ({ text: V.visibleText(p.html), complete: true, method: 'test' });
+const J = (j, p, l) => V.judge(j, p, l, RD(p));
+let r = J(job, page(faqHtml, ld(faqLd) + ld(orgLd)), { status: 200, text: LLMS });
 t('すべて入っている：ok・FAQ 2/2・データ・お店の情報・llms', r.ok && state(r, 'faq_text') === 'ok' && state(r, 'faq_ld') === 'ok' && state(r, 'org') === 'ok' && state(r, 'llms') === 'ok', r.checks);
-r = V.judge(job, page('<h3>' + Q[0].q + '</h3><p>' + Q[0].a + '</p>', ld(faqLd) + ld(orgLd)), { status: 200, text: LLMS });
+r = J(job, page('<h3>' + Q[0].q + '</h3><p>' + Q[0].a + '</p>', ld(faqLd) + ld(orgLd)), { status: 200, text: LLMS });
 t('1問がページに出ていない：ng・どの質問か', !r.ok && state(r, 'faq_text') === 'ng' && /1 \/ 2問/.test(r.checks[0].detail) && /料金の目安/.test(r.checks[0].detail), r.checks[0]);
-r = V.judge(job, page(faqHtml, ld(orgLd)), { status: 200, text: LLMS });
+r = J(job, page(faqHtml, ld(orgLd)), { status: 200, text: LLMS });
 t('FAQPage のデータが無い：ng', !r.ok && state(r, 'faq_ld') === 'ng');
-r = V.judge(job, page(faqHtml, ld(faqLd) + ld(orgLd) + ld({ '@context': 'https://schema.org', '@type': 'LocalBusiness', name: '別の名前' })), { status: 200, text: LLMS });
-t('お店の情報が2つ：warn（二重）・全体は ok', r.ok && state(r, 'org') === 'warn' && /2つ/.test(r.checks.find((c) => c.key === 'org').detail));
-r = V.judge(job, page(faqHtml, ld(faqLd) + ld(orgLd) + '<script type="application/ld+json">{"@type": "FAQPage",</script>'), { status: 200, text: LLMS });
+r = J(job, page(faqHtml, ld(faqLd) + ld(orgLd) + ld({ '@context': 'https://schema.org', '@type': 'LocalBusiness', name: '別の名前' })), { status: 200, text: LLMS });
+t('お店の情報が2つ（1つはパッチと同じ）：warn（二重）・全体は ok', r.ok && state(r, 'org') === 'warn' && /2つ/.test(r.checks.find((c) => c.key === 'org').detail), r.checks);
+r = J(job, page(faqHtml, ld(faqLd) + ld(orgLd) + '<script type="application/ld+json">{"@type": "FAQPage",</script>'), { status: 200, text: LLMS });
 t('読めない JSON-LD：ng', !r.ok && state(r, 'ld_broken') === 'ng');
-r = V.judge(job, page(faqHtml, ld(faqLd) + ld(orgLd)), { status: 404, text: '' });
+r = J(job, page(faqHtml, ld(faqLd) + ld(orgLd)), { status: 404, text: '' });
 t('llms.txt が開けない：ng', !r.ok && state(r, 'llms') === 'ng' && /404/.test(r.checks.find((c) => c.key === 'llms').detail));
-r = V.judge(job, page(faqHtml, ld(faqLd) + ld(orgLd)), { status: 200, text: '# 別の内容' });
+r = J(job, page(faqHtml, ld(faqLd) + ld(orgLd)), { status: 200, text: '# 別の内容' });
 t('llms.txt の中身が違う：warn・全体は ok', r.ok && state(r, 'llms') === 'warn');
 r = V.judge(job, { status: 404, html: '' }, null);
 t('ページが無い（404）：ng だけ', !r.ok && r.checks.length === 1 && /404/.test(r.checks[0].detail));
-r = V.judge(job, page(faqHtml, ld({ '@context': 'https://schema.org', '@graph': [faqLd, orgLd] })), { status: 200, text: LLMS });
+r = J(job, page(faqHtml, ld({ '@context': 'https://schema.org', '@graph': [faqLd, orgLd] })), { status: 200, text: LLMS });
 t('@graph の中の FAQPage・お店の情報も読む', r.ok && state(r, 'faq_ld') === 'ok' && state(r, 'org') === 'ok', r.checks);
 const job0 = { url: job.url, files: { 'schema/organization.jsonld': job.files['schema/organization.jsonld'], 'MANIFEST.json': '{}' } };
-r = V.judge(job0, page('<p>本文</p>', ld(orgLd)), null);
-t('承認した FAQ が無いパッチ：FAQ の2項目は対象外・llms も対象外', r.ok && state(r, 'faq_text') === 'skip' && state(r, 'faq_ld') === 'skip' && state(r, 'llms') === 'skip');
+r = J(job0, page('<p>本文</p>', ld(orgLd)), null);
+t('承認した FAQ が無いパッチ：FAQ の2項目は対象外・llms も対象外（採用したものだけ照合）', r.ok && state(r, 'faq_text') === 'skip' && state(r, 'faq_ld') === 'skip' && state(r, 'llms') === 'skip', r.checks);
 t('ページの見える文字に script の中身を入れない', !/FAQPage/.test(V.visibleText(page('x', ld(faqLd)).html)));
 const html = V.resultHtml({ ok: false, at: '2026-10-12T05:00:00Z', url: 'https://sample-salon.example/faq/', version: '1.3.0', checks: [{ key: 'x', label: '<b>x</b>', state: 'ng', detail: 'd' }] });
-t('結果の表示：まだ入っていない・エスケープ', /まだ入っていないところがあります/.test(html) && !/<b>x<\/b>/.test(html));
+t('結果の表示：まだ入っていない・エスケープ', /まだ入っていない・違うところがあります/.test(html) && !/<b>x<\/b>/.test(html), html);
 // ④ の段階
 const ent = { company: 'c', service: 's', at: '2026-10-07T01:00:00Z' };
 const ans = (n) => Array.from({ length: n }, (_, i) => ({ prompt: 'q' + i, engine: 'google_aio', status: 'ok', mentioned: i < 2 ? 1 : 0, conditions: { engine: 'google_aio', search: true, location: 'JP', model: 'm' } }));
@@ -54,9 +57,72 @@ s = K.compute({ workspace: { orch: { lastJob: Object.assign({}, base, { verified
 t('④ 入っていないところがあれば今のまま・次は「直して、もう一度確かめる」・#verify へ', s.steps[3].state === 'current' && /直して、もう一度確かめる/.test(s.next.title) && s.next.href === '#verify');
 // 作ったときの ZIP の中身と比べる（あとで承認を変えても）
 const snapJob = { url: job.url, files: { 'MANIFEST.json': '{}' }, zipped: { at: '2026-10-08T00:00:00Z', version: '1.3.0', draft: false, faq: Q, llms: LLMS, org_name: '株式会社サンプル' } };
-r = V.judge(snapJob, page(faqHtml, ld(faqLd) + ld(orgLd)), { status: 200, text: LLMS });
+r = J(snapJob, page(faqHtml, ld(faqLd) + ld(orgLd)), { status: 200, text: LLMS });
 t('作ったときの ZIP の中身（job.zipped）と比べる：いまの承認が0でも FAQ 2/2・llms 同じ', r.ok && state(r, 'faq_text') === 'ok' && /2 \/ 2問/.test(r.checks[0].detail) && state(r, 'llms') === 'ok', r.checks);
 r = V.judge(Object.assign({}, snapJob, { zipped: Object.assign({}, snapJob.zipped, { draft: true }) }), page(faqHtml, ld(faqLd)), null);
 t('下書きの ZIP の中身とは比べない（いまの承認で比べる）', state(r, 'faq_text') === 'skip');
+
+// ---- 2026-10-09 の見直し：誤って合格にしない（修正前は4つとも合格になっていた） ----
+const L2 = '営業時間は 10:00〜19:00 です。定休日は 火曜 です。カットの最終受付は 18:00 です。ご予約はお電話かウェブからどうぞ。';
+const Q2 = [{ q: '営業時間・定休日を教えてください。', a: L2 }];
+const fl2 = (a) => ({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: Q2.map((x) => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: a || x.a } })) });
+const og2 = (n) => ({ '@context': 'https://schema.org', '@type': 'Organization', name: n || '株式会社サンプル' });
+const job2 = { url: 'https://sample.example/', files: { 'schema/faq.jsonld': JSON.stringify(fl2()), 'schema/organization.jsonld': JSON.stringify(og2()), 'MANIFEST.json': '{"package_version":"1.0.0"}' } };
+const fh2 = (a) => '<h3>' + Q2[0].q + '</h3><p>' + (a || L2) + '</p>';
+const head2 = ld(fl2()) + ld(og2());
+r = J(job2, page('<div style="display:none">' + fh2() + '</div>', head2), null);
+t('隠した FAQ（style="display:none"）：不合格・「隠れている」', !r.ok && state(r, 'faq_text') === 'ng' && /隠れ/.test(r.checks[0].detail), r.checks[0]);
+r = J(job2, page('<section hidden>' + fh2() + '</section>', head2), null);
+t('hidden 属性の中の FAQ：不合格', !r.ok && state(r, 'faq_text') === 'ng');
+r = V.judge(job2, page('<div class="is-hidden">' + fh2() + '</div>', head2), null, { text: '', complete: true });
+t('CSS のクラスで隠した FAQ（描画では見えない）：不合格', !r.ok && state(r, 'faq_text') === 'ng' && /隠れ/.test(r.checks[0].detail), r.checks[0]);
+r = J(job2, page(fh2(L2.slice(0, 45) + '（後半を書き換えた）'), head2), null);
+t('答えの先頭40文字だけ一致し後半が違う：不合格・「後半が承認と違う」', !r.ok && state(r, 'faq_text') === 'ng' && /後半が承認と違います/.test(r.checks[0].detail), r.checks[0]);
+r = J(job2, page(fh2(), ld(fl2('別の答え')) + ld(og2())), null);
+t('構造化データの acceptedAnswer だけ違う：不合格・どの質問か', !r.ok && state(r, 'faq_ld') === 'ng' && /答えが承認と違います/.test(r.checks.find((c) => c.key === 'faq_ld').detail), r.checks);
+r = J(job2, page(fh2(), ld(fl2()) + ld(og2('株式会社まったく別'))), null);
+t('会社の情報の名前が別の会社（主体の不一致）：警告でなく不合格', !r.ok && state(r, 'org') === 'ng' && /別の会社・お店として読まれます/.test(r.checks.find((c) => c.key === 'org').detail));
+r = J(job2, page(fh2(), ld(fl2()) + ld(Object.assign(og2('株式会社サンプル（本店）'), { alternateName: ['株式会社サンプル'] }))), null);
+t('別名（alternateName）が採用した名前と同じなら同じ主体', r.ok && state(r, 'org') === 'ok', r.checks);
+r = J(job2, page(fh2(), head2), null);
+t('正常：採用した内容と見える全文・データが同じなら合格', r.ok && r.state === 'ok' && state(r, 'faq_text') === 'ok' && state(r, 'faq_ld') === 'ok' && state(r, 'org') === 'ok', r.checks);
+r = V.judge(job2, page(fh2(), head2), null, null);
+t('描画で確かめていない（ブラウザの外）：HTML にあっても「要確認」で合格にしない', !r.ok && r.state === 'review' && state(r, 'faq_text') === 'review', r);
+r = V.judge(job2, page(fh2(), head2), null, { text: fh2(), complete: false });
+t('描画したがスタイルを読めなかった：要確認', !r.ok && r.state === 'review');
+r = V.judge(job2, page('<p>本文だけ</p>', head2), null, null);
+t('描画していなくても、HTML に無ければ不合格（要確認にしない）', !r.ok && r.state === 'ng');
+// 記事（Article・NewsArticle）を採用したパッチ：見出し・著者・発行者
+const art = { '@context': 'https://schema.org', '@type': 'NewsArticle', headline: 'サンプル社の新サービス', author: { '@type': 'Person', name: '山田 花子' }, publisher: { '@type': 'Organization', name: 'サンプル新聞' } };
+const jobA = { url: 'https://media.example/article.php?id=111', files: { 'schema/article.jsonld': JSON.stringify(art), 'MANIFEST.json': '{}' } };
+r = J(jobA, page('<h1>サンプル社の新サービス</h1>', ld(art)), null);
+t('記事：見出し・著者・発行者が同じなら合格（FAQ・会社・llms は求めない）', r.ok && state(r, 'article') === 'ok' && state(r, 'faq_text') === 'skip' && state(r, 'org') === 'skip' && state(r, 'llms') === 'skip', r.checks);
+r = J(jobA, page('<h1>x</h1>', ld(Object.assign({}, art, { publisher: { '@type': 'Organization', name: '別の媒体' } }))), null);
+t('記事：発行者が違う（主体の不一致）は不合格', !r.ok && /発行者が違います/.test(r.checks.find((c) => c.key === 'article').detail));
+r = J(jobA, page('<h1>x</h1>', ld(Object.assign({}, art, { '@type': 'Article' }))), null);
+t('記事：種類が違う（NewsArticle → Article）は不合格', !r.ok && /種類が違います/.test(r.checks.find((c) => c.key === 'article').detail));
+r = J(jobA, page('<h1>x</h1>', ''), null);
+t('記事：データが無ければ不合格', !r.ok && state(r, 'article') === 'ng');
+t('ZIP の記録（job.zipped.articles）があればそれと比べる', V.adopted({ files: {}, zipped: { at: 'x', version: '2', draft: false, faq: [], articles: [{ type: 'Article', headline: 'h' }] } }).articles.length === 1);
+t('結果の表示：要確認と「描画では確かめていない」', /要確認/.test(V.resultHtml({ state: 'review', ok: false, at: '2026-10-12T05:00:00Z', url: 'u', checks: [] })) && /描画では確かめていない/.test(V.resultHtml({ state: 'review', ok: false, at: '2026-10-12T05:00:00Z', url: 'u', checks: [] })));
+t('静的に見える文字に、隠す指定の要素の中身を入れない（入れ子・閉じタグの省略に強い）', !/秘密/.test(V.visibleText('<div><p hidden>秘密<b>も</b></p><p>見える</p></div>')) && /見える/.test(V.visibleText('<div><p hidden>秘密<b>も</b></p><p>見える</p></div>')) && /あと/.test(V.visibleText('<div aria-hidden="true"><span>秘密</div><p>あと</p>')));
+
+// ---- レビュー（10/9）：採用した会社データが確かめたページに無ければ合格にしない ----
+{
+  const og3 = { '@context': 'https://schema.org', '@type': 'Organization', name: '株式会社サンプル' };
+  const jobO = { url: 'https://s.example/faq/', files: { 'schema/organization.jsonld': JSON.stringify(og3), 'MANIFEST.json': '{}' } };
+  const pg3 = { url: 'https://s.example/faq/', status: 200, html: '<html><body><p>本文</p></body></html>' };
+  const R3 = { text: '本文', complete: true };
+  let x = V.judge(jobO, pg3, null, R3);
+  t('FAQ なし・会社データだけ採用・このページに無い：要確認で合格にしない（修正前は ok）', !x.ok && x.state === 'review' && state(x, 'org') === 'review' && /要確認/.test(x.checks.find((c) => c.key === 'org').detail), x);
+  x = V.judge(jobO, pg3, null, R3, [{ url: 'https://s.example/', status: 200, html: ld(og3) }]);
+  t('会社の情報を入れたページ（トップページ）で確かめた：合格・どこで確かめたか', x.ok && state(x, 'org') === 'ok' && /https:\/\/s\.example\/ で確かめた/.test(x.checks.find((c) => c.key === 'org').detail), x.checks);
+  x = V.judge(jobO, pg3, null, R3, [{ url: 'https://s.example/', status: 200, html: ld(Object.assign({}, og3, { name: '別の会社' })) }]);
+  t('入れたページの会社の名前が違う：不合格（主体の不一致）', !x.ok && state(x, 'org') === 'ng');
+  x = V.judge(jobO, pg3, null, R3, [{ url: 'https://s.example/', status: 404, html: '' }]);
+  t('入れたページを読めない：要確認（読めなかった URL と状態）', !x.ok && x.state === 'review' && /読めませんでした（https:\/\/s\.example\/・404）/.test(x.checks.find((c) => c.key === 'org').detail), x.checks);
+  x = V.judge(jobO, Object.assign({}, pg3, { html: '<html><head>' + ld(og3) + '</head><body><p>本文</p></body></html>' }), null, R3);
+  t('FAQ なし・会社データがこのページにある：合格', x.ok && state(x, 'org') === 'ok');
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

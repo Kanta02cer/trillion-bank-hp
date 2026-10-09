@@ -2086,7 +2086,11 @@
             var og = {}; try { og = JSON.parse(job.files['schema/organization.jsonld'] || '{}'); } catch (e4) {}
             job.zipped = { at: new Date().toISOString(), version: mf.package_version || '', draft: !ok, selection: paths ? 'minimal' : 'all',
               faq: (fl.mainEntity || []).map(function (x) { return { q: String(x.name || ''), a: String((x.acceptedAnswer && x.acceptedAnswer.text) || '') }; }),
-              llms: String(job.files['public/llms.txt'] || '').slice(0, 20000), org_name: String(og.name || '') };
+              llms: String(job.files['public/llms.txt'] || '').slice(0, 20000), org_name: String(og.name || ''),
+              // 採用した記事のデータ（Article・NewsArticle など）と、MANIFEST の指紋（版が変わったら前の公開確認を使わないため）
+              articles: (window.AirReachVerify && window.AirReachVerify.adopted ? window.AirReachVerify.adopted({ files: job.files }).articles : []), manifest_sha256: '' };
+            var zrec = job.zipped;
+            if (window.AirReachPackageSchema && window.AirReachPackageSchema.sha256Hex) window.AirReachPackageSchema.sha256Hex(String(job.files['MANIFEST.json'] || '')).then(function (h) { if (job.zipped === zrec) { zrec.manifest_sha256 = h; persistJob(job); } }).catch(function () {});
             persistJob(job);
             try { if (window.AirReachStudioSteps) window.AirReachStudioSteps.refresh(); } catch (e3) {}
           })
