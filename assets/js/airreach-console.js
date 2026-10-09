@@ -428,7 +428,9 @@
       var mt = root.querySelector('[data-mtiming]');
       if (mt && window.AirReachCaseSteps) sb.rpc('airreach_measure_timing', { p_client_id: c.id }).then(function (x) {
         if (x.error || !x.data) return;
-        var t = window.AirReachCaseSteps.timing({ entityAt: x.data.entity_at, verifiedAt: x.data.verified_at, verifiedOk: x.data.verified_ok, lastRunAt: x.data.last_run_at });
+        // いまの版の公開を、見える形で確かめたときだけ「効果を測る」時期にする（DB の関数が古い形なら、公開の記録が無いものとして扱う）
+        var d = x.data, okNow = !!(d.verified_ok && d.verified_state === 'ok' && /^verify\/2026\.10\.09/.test(d.verified_rule || '') && d.published_at && d.zipped_version != null && d.verified_version === d.zipped_version && d.published_version === d.zipped_version);
+        var t = window.AirReachCaseSteps.timing({ entityAt: d.entity_at, verifiedAt: okNow ? d.verified_at : null, verifiedOk: okNow, publishedAt: okNow ? d.published_at : null, lastRunAt: d.last_run_at });
         var txt = window.AirReachCaseSteps.timingCustomer(t);
         if (txt) mt.innerHTML = '<section class="arc-card amt-cust"><h2 class="arc-h2">次の計測</h2><p>' + esc(txt) + '</p><p class="arc-note">担当者が、同じ質問・同じ地域で AI に聞いて、名前が出るかを測ります。結果は月次レポートでお知らせします。</p></section>';
       }, function () {});
@@ -1214,7 +1216,9 @@
         try {
           // 優先して直すこと3点：今月の材料（サイトの診断）の直すことの上位3つ
           var imps = []; try { imps = R.todoList(live).slice(0, 3).map(function (x) { return { title: x.plainText || x.text, how: x.plainHow || x.how || '' }; }); } catch (e3) { imps = []; }
-          window.AirReachCompare.render(box, p[0], p[1], { brand: c.name, clientName: c.name, site: (sites[0] && sites[0].url) || '', improvements: imps, improvementsSource: 'サイトの診断（最新）から' })
+          // 施策の前後か、時系列の比較か：いまのパッチの公開の記録と、見える形で入ったかの確認（airreach-case-steps.js の publishState）
+          var ps = caseRes && caseRes.publish, pub = ps && ps.published.ok ? { at: ps.published.at, ok: !!ps.done, version: ps.zipped && ps.zipped.version } : null;
+          window.AirReachCompare.render(box, p[0], p[1], { brand: c.name, clientName: c.name, site: (sites[0] && sites[0].url) || '', improvements: imps, improvementsSource: 'サイトの診断（最新）から', publish: pub })
             .catch(function (e) { box.innerHTML = '<p class="arc-note">比べられませんでした：' + esc(e.message || e) + '</p>'; });
         } catch (e) { box.innerHTML = '<p class="arc-note">比べられませんでした：' + esc(e.message || e) + '</p>'; }
       });

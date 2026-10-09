@@ -1,0 +1,22 @@
+// 公開・収録の記録（assets/js/airreach-publish.js）。架空のデータだけ
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+globalThis.window = undefined;
+const P = require('../../assets/js/airreach-publish.js');
+let pass = 0, fail = 0;
+const t = (n, ok, got) => { if (ok) { pass++; console.log('PASS', n); } else { fail++; console.log('FAIL', n, got === undefined ? '' : JSON.stringify(got)); } };
+const now = new Date('2026-10-20T00:00:00Z');
+const job = () => ({ zipped: { at: '2026-10-08T00:00:00Z', version: '1.3.0', draft: false, manifest_sha256: 'abc' } });
+let j = job(), r = P.recordPublish(j, '2026-10-14T01:00:00Z', 'https://sample.example/faq/', now);
+t('公開を記録：日時・URL・版・ZIP の日時・MANIFEST の指紋', r.ok && j.published.at === '2026-10-14T01:00:00.000Z' && j.published.version === '1.3.0' && j.published.zipped_at === '2026-10-08T00:00:00Z' && j.published.manifest_sha256 === 'abc', j.published);
+t('ZIP より前の日時は記録しない', !P.recordPublish(job(), '2026-10-01T00:00:00Z', 'https://x.example/', now).ok);
+t('未来の日時は記録しない', !P.recordPublish(job(), '2026-12-01T00:00:00Z', 'https://x.example/', now).ok);
+t('正式な ZIP が無ければ記録しない（下書きも）', !P.recordPublish({}, '2026-10-14T01:00:00Z', 'https://x.example/', now).ok && !P.recordPublish({ zipped: { at: '2026-10-08T00:00:00Z', draft: true } }, '2026-10-14T01:00:00Z', 'https://x.example/', now).ok);
+t('URL が無ければ記録しない', !P.recordPublish(job(), '2026-10-14T01:00:00Z', '', now).ok);
+r = P.recordIndexed(j, '2026-10-18T00:00:00Z', 'Search Console の URL 検査', now);
+t('収録を記録：公開のあと・版つき', r.ok && j.indexed.how === 'Search Console の URL 検査' && j.indexed.version === '1.3.0');
+t('収録の日時が公開より前なら記録しない', !P.recordIndexed(j, '2026-10-10T00:00:00Z', 'x', now).ok);
+t('公開の記録が無ければ収録は記録しない', !P.recordIndexed(job(), '2026-10-18T00:00:00Z', 'x', now).ok);
+t('日時の入力（日本時間）を ISO に', P.fromLocal('2026-10-14T10:00') === '2026-10-14T01:00:00.000Z' && P.fromLocal('x') === null);
+console.log(`\n${pass} passed, ${fail} failed`);
+process.exit(fail ? 1 : 0);

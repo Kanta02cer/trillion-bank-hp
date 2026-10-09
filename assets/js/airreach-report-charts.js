@@ -101,7 +101,7 @@
     if (!a || !a.now) return '';
     opt = opt || {};
     var n = a.now, p = a.prev;
-    var cmp = p ? (a.comparable ? '先月 ' + esc(p.x) + ' / ' + esc(p.n) + '回' + (a.diff != null ? '（出現率 ' + (a.diff > 0 ? '+' : a.diff < 0 ? '−' : '±') + esc(Math.abs(a.diff)) + 'ポイント）' : '') : '先月と条件が違うため、比べていません') : '先月の計測はありません';
+    var cmp = p ? (a.comparable ? '先月 ' + esc(p.x) + ' / ' + esc(p.n) + '回' + (a.diff != null ? '（出現率 ' + (a.diff > 0 ? '+' : a.diff < 0 ? '−' : '±') + esc(Math.abs(a.diff)) + 'ポイント）' : '') : '先月と条件がそろっていない（違う・記録が無い）ため、比べていません') : '先月の計測はありません';
     return '<div class="arr-aio' + (opt.compact ? ' is-compact' : '') + '"><span class="arr-aio-k">Google の AI による概要に、お店・会社の名前が出た回数</span>' +
       '<span class="arr-aio-v"><b>' + esc(n.x) + '</b> / ' + esc(n.n) + '回' + (n.rate != null ? '<em>出現率 ' + esc(n.rate) + '%</em>' : '') + '</span>' +
       '<span class="arr-aio-s">' + cmp + '</span>' +

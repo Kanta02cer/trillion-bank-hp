@@ -102,5 +102,22 @@ const box5 = { innerHTML: '', querySelectorAll: () => [] };
 A.render(box5, [ok('google_aio', 1, { prompt: 'サンプル商店の場所' })], { brand });
 t('描画：一般の質問が0なら「すべて」で出す', /1<small> \/ 1回/.test(box5.innerHTML) && /一般と指名の質問をすべて/.test(box5.innerHTML));
 t('API：試行番号と判定ルールの版', M.JUDGE_VERSION && /^judge\//.test(M.JUDGE_VERSION));
+
+// ---- 2026-10-09：記事を見分ける URL（Global News Asia の article.php?id=）と判定の版 ----
+{
+  const A = ctx.window.AirReachAI3;
+  const row = (cites) => ({ engine: 'google_aio', status: 'ok', mentioned: 0, citations: cites, conditions: { engine: 'google_aio', search: true, location: 'JP', model: 'm' } });
+  const target = ['https://www.globalnewsasia.com/article.php?id=111'];
+  let tt = A.tally([row(['https://www.globalnewsasia.com/article.php?id=222'])], A.MAIN[0], { articleUrls: target });
+  t('対象の記事 id=111・引用は id=222：別の記事として数えない（修正前は1）', tt.article === 0, tt);
+  tt = A.tally([row(['https://globalnewsasia.com/article.php?id=111&utm_source=x#top'])], A.MAIN[0], { articleUrls: target });
+  t('同じ id=111 は、www・追跡用の utm・# が違っても同じ記事', tt.article === 1, tt);
+  t('URL をそろえる：id は残し、utm・fbclid・srsltid は外す・並びをそろえる', A.normUrl('https://www.Example.com/a.php?utm_source=x&id=9&fbclid=y&srsltid=z') === 'example.com/a.php?id=9' && A.normUrl('https://example.com/p?b=2&a=1') === A.normUrl('https://example.com/p?a=1&b=2'));
+  t('問い合わせの無い URL は前と同じ形', A.normUrl('https://www.example.com/faq/') === 'example.com/faq');
+  const r1 = { engine: 'google_aio', judge_version: 'judge/1', conditions: { engine: 'google_aio', search: true, location: 'JP', model: 'm' } };
+  t('判定の版が違えば条件の鍵も違う（混ぜない）', A.conditionKey(r1) !== A.conditionKey(Object.assign({}, r1, { judge_version: 'judge/2' })));
+  const S = A.summarize([Object.assign({ status: 'ok', mentioned: 1, measured_at: '2026-10-01' }, r1), Object.assign({ status: 'ok', mentioned: 0, measured_at: '2026-10-02' }, r1, { judge_version: 'judge/2' })], {});
+  t('判定の版が違う結果は1つにまとめない（others に残す）', S.aio.others === 1 && S.aio.t.attempts === 1, S.aio);
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

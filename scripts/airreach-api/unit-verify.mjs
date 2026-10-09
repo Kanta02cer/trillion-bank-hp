@@ -51,9 +51,12 @@ const ent = { company: 'c', service: 's', at: '2026-10-07T01:00:00Z' };
 const ans = (n) => Array.from({ length: n }, (_, i) => ({ prompt: 'q' + i, engine: 'google_aio', status: 'ok', mentioned: i < 2 ? 1 : 0, conditions: { engine: 'google_aio', search: true, location: 'JP', model: 'm' } }));
 const base = { files: { 'MANIFEST.json': '{}' }, confirm: { entity: ent }, zipped: { at: '2026-10-08T00:00:00Z', version: '1.3.0', draft: false } };
 const runs = [{ id: 'r1', created_at: '2026-10-07T02:00:00Z', summary: { answers: ans(9) } }];
-let s = K.compute({ workspace: { orch: { lastJob: Object.assign({}, base, { verified: { at: '2026-10-12T00:00:00Z', ok: true } }) } }, runs, studioHref: '' });
-t('④ 確かめて入っていれば済み・次は⑤', s.steps[3].state === 'done' && s.steps[4].state === 'current' && /入っている/.test(s.steps[3].detail));
-s = K.compute({ workspace: { orch: { lastJob: Object.assign({}, base, { verified: { at: '2026-10-12T00:00:00Z', ok: false } }) } }, runs, studioHref: '' });
+// ④ は、公開の記録と、同じ版を新しい判定で確かめた記録がそろって済み（airreach-case-steps.js）
+const pubR = { at: '2026-10-11T00:00:00Z', version: '1.3.0', zipped_at: '2026-10-08T00:00:00Z', url: 'https://sample-salon.example/faq/' };
+const okV = { at: '2026-10-12T00:00:00Z', ok: true, state: 'ok', rule: 'verify/2026.10.09', version: '1.3.0', zipped_at: '2026-10-08T00:00:00Z' };
+let s = K.compute({ workspace: { orch: { lastJob: Object.assign({}, base, { published: pubR, verified: okV }) } }, runs, studioHref: '', now: new Date('2026-10-13T00:00:00Z') });
+t('④ 公開を記録し、同じ版を確かめて入っていれば済み・次は⑤', s.steps[3].state === 'done' && s.steps[4].state === 'current' && /見える形で入っている/.test(s.steps[3].detail), [s.steps[3], s.steps[4]]);
+s = K.compute({ workspace: { orch: { lastJob: Object.assign({}, base, { published: pubR, verified: Object.assign({}, okV, { ok: false, state: 'ng' }) }) } }, runs, studioHref: '', now: new Date('2026-10-13T00:00:00Z') });
 t('④ 入っていないところがあれば今のまま・次は「直して、もう一度確かめる」・#verify へ', s.steps[3].state === 'current' && /直して、もう一度確かめる/.test(s.next.title) && s.next.href === '#verify');
 // 作ったときの ZIP の中身と比べる（あとで承認を変えても）
 const snapJob = { url: job.url, files: { 'MANIFEST.json': '{}' }, zipped: { at: '2026-10-08T00:00:00Z', version: '1.3.0', draft: false, faq: Q, llms: LLMS, org_name: '株式会社サンプル' } };
