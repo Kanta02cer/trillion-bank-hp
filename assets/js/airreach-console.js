@@ -300,18 +300,22 @@
             runsThisMonth: extra.runs.filter(function (x) { return x.client_id === c.id; }).length,
             trafficThisMonth: extra.traffic.filter(function (x) { return x.client_id === c.id; }).map(function (x) { return x.source; }),
             pendingRequests: extra.requests.filter(function (x) { return x.client_id === c.id; }).length });
-          return { c: c, scans: scans, rep: rep, f: f, hasCols: Object.prototype.hasOwnProperty.call(c, 'report_due_day'), cs: caseOf(c) };
+          var cs = caseOf(c), tm = cs && cs.timing;
+          // 計測の時期（担当者が測る。自動の定期計測は使わない）：時期が来た・遅れている案件
+          f.measure = !!(tm && (tm.state === 'due' || tm.state === 'late'));
+          return { c: c, scans: scans, rep: rep, f: f, hasCols: Object.prototype.hasOwnProperty.call(c, 'report_due_day'), cs: cs };
         });
 
         items.sort(function (a, b) { return a.f.rank - b.f.rank || ((a.f.due ? a.f.due.daysLeft : 999) - (b.f.due ? b.f.due.daysLeft : 999)) || String(a.c.name).localeCompare(String(b.c.name), 'ja'); });
         // 今日やること：案件ごとの「次にやること」を、急ぎの順（上の並びと同じ）に3つまで
-        var todays = items.filter(function (it) { return it.cs && it.cs.current >= 0; }).slice(0, 3);
+        var todays = items.filter(function (it) { return it.cs && (it.cs.current >= 0 || it.cs.next.timing); }).slice(0, 3);
         var today3 = todays.length ? '<section class="arc-card apf-today"><h2 class="arc-h2">今日やること（' + todays.length + '件）</h2><div class="apf-cards">' + todays.map(function (it) {
-          var st = it.cs.steps[it.cs.current];
-          return '<a class="apf-card" href="#/c/' + it.c.id + '"><small>' + esc(it.c.name) + ' · ' + esc('①②③④⑤'.charAt(it.cs.current)) + ' ' + esc(st.label) + '</small><b>' + esc(it.cs.next.title) + '</b></a>';
+          var st = it.cs.steps[it.cs.current], tm = it.cs.timing;
+          var where = it.cs.next.timing ? window.AirReachCaseSteps.KIND_LABEL[tm.kind] : '①②③④⑤'.charAt(it.cs.current) + ' ' + st.label;
+          return '<a class="apf-card' + (tm && tm.state === 'late' && it.cs.next.timing ? ' is-late' : '') + '" href="#/c/' + it.c.id + '"><small>' + esc(it.c.name) + ' · ' + esc(where) + '</small><b>' + esc(it.cs.next.title) + '</b></a>';
         }).join('') + '</div></section>' : '';
         var FIL = [['all', 'すべて', function () { return true; }], ['mine', '自分の担当', function (f) { return f.mine; }], ['due', '期限が近い・超過', function (f) { return f.dueSoon || f.overdue; }],
-          ['ai', 'AI 未計測', function (f) { return f.aiMissing; }], ['google', 'Google 未取得', function (f) { return f.googleMissing; }], ['returned', '差し戻し', function (f) { return f.returned; }], ['req', '依頼あり', function (f) { return f.requests > 0; }]];
+          ['ai', 'AI 未計測', function (f) { return f.aiMissing; }], ['google', 'Google 未取得', function (f) { return f.googleMissing; }], ['returned', '差し戻し', function (f) { return f.returned; }], ['req', '依頼あり', function (f) { return f.requests > 0; }], ['measure', '計測の時期・遅れ', function (f) { return f.measure; }]];
         filters = '<div class="arc-filter"><label class="arc-filter-q"><span>顧客を探す</span><input class="arc-input" type="search" id="arc-list-q" placeholder="顧客名" value="' + esc(listQuery) + '"></label>' +
           '<div class="arc-filter-b" role="group" aria-label="絞り込み">' + FIL.map(function (x) {
             var n = items.filter(function (it) { return x[2](it.f); }).length;
@@ -325,7 +329,8 @@
             f.overdue ? chip('is-ng', '期限 ' + f.due.label) : f.due ? chip(f.dueSoon ? 'is-warn' : '', '期限 ' + f.due.label) : chip('is-muted', it.hasCols ? '期限 未設定' : '期限 未設定（DB 更新待ち）'),
             c.owner_email ? chip(f.mine ? 'is-ok' : '', '担当 ' + (f.mine ? 'あなた' : c.owner_email.split('@')[0])) : chip('is-muted', '担当 未設定'),
             f.returned ? chip('is-ng', '差し戻し') : '', f.requests ? chip('is-warn', '依頼 ' + f.requests + '件') : '',
-            f.aiMissing ? chip('is-muted', 'AI 未計測') : '', f.googleMissing ? chip('is-muted', 'Google 未取得') : ''].join('');
+            f.aiMissing ? chip('is-muted', 'AI 未計測') : '', f.googleMissing ? chip('is-muted', 'Google 未取得') : '',
+            (function () { var x = it.cs && window.AirReachCaseSteps.timingChip(it.cs.timing); return x ? chip(x.cls, x.text) : ''; })()].join('');
           var keys = ['all'].concat(FIL.slice(1).filter(function (x) { return x[2](f); }).map(function (x) { return x[0]; }));
           return '<a class="arc-client" href="#/c/' + c.id + '" data-keys="' + keys.join(' ') + '" data-name="' + esc(String(c.name).toLowerCase()) + '"><span class="arc-client-n">' + esc(c.name) + '<small>' + esc(INDUSTRY[c.industry_id] || '') + (c.status !== 'active' ? ' · ' + esc(c.status) : '') + '</small></span>' +
             '<span class="arc-client-t">' + st + tags + '</span>' +
@@ -407,8 +412,8 @@
       var C = window.AirReachCharts, top = reps[0], body = '';
       if (top && C) {
         // 最新の公開レポート：結論 → 数字（小さく・内訳は開く）→ ご判断いただきたいこと → 次にやること → 依頼の入口
-        body += clientLatest(top) + clientNumbers(top) + window.AirReachClientHome.competitor(top.compiled, { href: '/airreach/app/report/?id=' + top.id, linkText: 'レポートで詳しく見る', note: ymJa(top.period_month) + 'のレポートの数字です。' }) + window.AirReachClientHome.decision(top, { reply: true }) + nextCard(top, true) + reqEntry();
-      } else body += reqEntry();
+        body += clientLatest(top) + clientNumbers(top) + window.AirReachClientHome.competitor(top.compiled, { href: '/airreach/app/report/?id=' + top.id, linkText: 'レポートで詳しく見る', note: ymJa(top.period_month) + 'のレポートの数字です。' }) + window.AirReachClientHome.decision(top, { reply: true }) + nextCard(top, true) + '<div data-mtiming></div>' + reqEntry();
+      } else body += '<div data-mtiming></div>' + reqEntry();
       body += '<section class="arc-card"><h2 class="arc-h2">これまでのレポート</h2><ul class="arc-list arc-replist">' +
         (reps.length ? reps.map(function (r) { return '<li><a href="/airreach/app/report/?id=' + r.id + '">' + esc(ymJa(r.period_month)) + ' のレポート</a>' + (r.published_at ? '<span class="arc-sub">公開 ' + esc(day(r.published_at)) + '</span>' : '') + '</li>'; }).join('') : '<li class="arc-empty">公開済みのレポートはまだありません。</li>') +
         '</ul></section>' +
@@ -419,6 +424,14 @@
       // 見られる顧客が1社だけなら「戻る」は出さない（一覧に戻っても、この画面に戻されるため）
       shell(c.name, body, (me.client_ids || []).length > 1 ? '#/' : '', { client: { id: c.id, name: c.name } });
       var pr = mountRequests(c.id, sites, false, c.name);
+      // 次の計測の時期（担当者が測る。遅れは出さない）。DB の airreach_measure_timing が無ければ何も出さない
+      var mt = root.querySelector('[data-mtiming]');
+      if (mt && window.AirReachCaseSteps) sb.rpc('airreach_measure_timing', { p_client_id: c.id }).then(function (x) {
+        if (x.error || !x.data) return;
+        var t = window.AirReachCaseSteps.timing({ entityAt: x.data.entity_at, verifiedAt: x.data.verified_at, verifiedOk: x.data.verified_ok, lastRunAt: x.data.last_run_at });
+        var txt = window.AirReachCaseSteps.timingCustomer(t);
+        if (txt) mt.innerHTML = '<section class="arc-card amt-cust"><h2 class="arc-h2">次の計測</h2><p>' + esc(txt) + '</p><p class="arc-note">担当者が、同じ質問・同じ地域で AI に聞いて、名前が出るかを測ります。結果は月次レポートでお知らせします。</p></section>';
+      }, function () {});
       // ご判断いただきたいことへの返事（返事のあとは依頼の記録も描き直す）
       if (top) window.AirReachClientHome.mountDecisions(root.querySelector('.arc-decide[data-dec-report]'), { sb: sb, report: Object.assign({ client_id: c.id }, top), email: me && me.email, onMsg: msg, onChange: function () { mountRequests(c.id, sites, false, c.name); } });
       // 依頼の入口：確認待ちの件数を出し、押すと下の依頼の欄へ移る
@@ -926,113 +939,15 @@
     });
   }
 
-  // ---- AI計測の定期実行（社内だけ）-------------------------------------------------------
-  // 設定（measurement_schedules）と実行の記録（measurement_jobs）。自動で動くのは、設定を「有効」にし、
-  // さらに計測サーバーの AIRREACH_SCHEDULE_ENABLED を true にしたときだけ（既定は止めてある）
-  var WD = ['日', '月', '火', '水', '木', '金', '土'];
-  var JOB_STATUS = { queued: ['待ち', 'is-warn'], running: ['実行中', 'is-warn'], succeeded: ['成功', 'is-ok'], partial: ['一部成功', 'is-warn'], failed: ['失敗', 'is-bad'], skipped: ['見送り', ''] };
-  function schedPrompts(text) { return String(text || '').split(/\n+/).map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 10).map(function (t) { return { prompt: t, keyword: t }; }); }
-  function loadSchedule(c, sites) {
-    var box = $('#arc-schedule'); if (!box) return;
-    // 定期計測は費用がかかるため、設定は Trillion Bank の社内だけ（DB も社内だけに許している）
-    if (partnerOrg()) { box.innerHTML = '<p class="arc-note">定期計測の設定は、Trillion Bank の社内だけが行えます。計測は Studio の「AI での見え方を測る」から1回ずつ行えます。</p>'; return; }
-    Promise.all([
-      sb.from('measurement_schedules').select('*').eq('client_id', c.id).maybeSingle(),
-      sb.from('measurement_jobs').select('id,slot,trigger,status,attempts,answers_planned,answers_done,errors,not_shown,est_cost_usd,skip_reason,last_error,run_id,finished_at').eq('client_id', c.id).order('slot', { ascending: false }).limit(40),
-      // AI ごとの状態（使える・支払いの設定待ち など）は、いちばん新しい計測の回答から
-      sb.from('measurement_runs').select('created_at,answers:summary->answers').eq('client_id', c.id).order('created_at', { ascending: false }).limit(1).then(function (x) { var r = !x.error && x.data && x.data[0]; return r ? (r.answers || (r.summary && r.summary.answers) || []) : []; }, function () { return []; })
-    ]).then(function (rs) {
-      if (rs[0].error && /measurement_schedules|relation|schema cache/i.test(String(rs[0].error.message || ''))) {
-        box.innerHTML = '<p class="arc-note">定期計測の表がまだデータベースにありません（migration 20261005120000 の適用待ち）。</p>'; return;
-      }
-      renderSchedule(box, c, sites, q(rs[0]), q(rs[1]) || [], rs[2]);
-    }).catch(function (e) { box.innerHTML = '<p class="arc-note">定期計測の設定を読めませんでした：' + esc(e.message || e) + '</p>'; });
-  }
-  function renderSchedule(box, c, sites, sc, jobs, answers) {
-    var V = window.AirReachScheduleView;
-    var s = sc || { enabled: false, brand: c.name, site_url: (sites[0] && sites[0].url) || '', engines: ['google_aio', 'google_ai_mode', 'chatgpt_search'], prompts: [], weekdays: [1], hour_jst: 10, repeats: 1, max_runs_per_month: 4, monthly_answer_cap: 200, monthly_cost_cap_usd: 5 };
-    var est = V.engineStatus(answers || []);
-    var jobRows = jobs.slice(0, 20).map(function (j) {
-      var st = JOB_STATUS[j.status] || [j.status, ''];
-      return '<tr><td>' + esc(jst(j.slot).slice(0, 16)) + (j.trigger === 'manual' ? ' <span class="arc-sub">手動</span>' : '') + '</td><td><span class="arc-chip ' + st[1] + '">' + esc(st[0]) + '</span>' + (j.attempts > 1 ? ' <span class="arc-sub">' + j.attempts + '回目</span>' : '') + '</td>' +
-        '<td>' + esc(j.answers_done) + ' / ' + esc(j.answers_planned) + (j.errors ? ' · 取れなかった ' + esc(j.errors) : '') + (j.not_shown ? ' · AI の回答なし ' + esc(j.not_shown) : '') + '</td><td>' + esc(Number(j.est_cost_usd || 0).toFixed(3)) + 'ドル</td>' +
-        '<td>' + esc(j.skip_reason || j.last_error || '') + '</td></tr>';
-    }).join('');
-    var used = V.usage(jobs), rest = V.remaining(s, jobs), nx = V.nextSlot(s);
-    var last = jobs.filter(function (j) { return j.status !== 'queued'; })[0] || null;
-    var one = V.perRun(s);
-    box.innerHTML = '<section class="arc-card arc-sched"><div class="arv-home-head"><h2 class="arc-h2">定期計測と費用 <span class="arc-chip ' + (s.enabled ? 'is-ok' : '') + '">' + (s.enabled ? '有効' : '止めています') + '</span></h2></div>' +
-      '<p class="arc-note">決めた曜日・時刻に、同じ質問を同じ AI に聞いて記録します。月の上限に達した回は実行せず「見送り」にするので、勝手に増えることはありません。自動で動くのは、ここで「有効」にし、さらに計測サーバー側の設定（AIRREACH_SCHEDULE_ENABLED）を入れたときだけです。「今すぐ1回測る」はいつでも使えます。</p>' +
-      V.tilesHtml({ used: used.cost, cap: s.monthly_cost_cap_usd, planned: s.enabled ? used.cost + rest.cost : null, next: nx, nextSub: nx ? '1回 ' + one.answers + '回答・約 ' + V.usd(one.cost) + ' ドルの見込み' : (sc ? '「有効にする」で予定に入ります' : 'まだ設定していません'), last: last }) +
-      '<form id="arc-sched-form" class="arc-sched-form">' +
-      '<h3 class="arc-h3">いつ・どれだけ測るか</h3>' +
-      '<label class="arc-sched-chk"><input type="checkbox" id="arc-sched-enabled"' + (s.enabled ? ' checked' : '') + '> 有効にする</label>' +
-      '<fieldset><legend>曜日</legend>' + WD.map(function (w, i) { return '<label><input type="checkbox" name="arc-sched-wd" value="' + i + '"' + ((s.weekdays || []).indexOf(i) >= 0 ? ' checked' : '') + '> ' + w + '</label>'; }).join('') + '</fieldset>' +
-      '<div class="arc-row"><label>時刻（日本時間）<select class="arc-input" id="arc-sched-hour">' + Array.from({ length: 24 }, function (_, h) { return '<option value="' + h + '"' + (h === s.hour_jst ? ' selected' : '') + '>' + h + '時</option>'; }).join('') + '</select></label>' +
-      '<label>1つの質問を何回聞くか<select class="arc-input" id="arc-sched-repeats">' + [[1, '1回'], [2, '2回（費用 2倍）'], [3, '3回（ばらつきを見る・費用 3倍）']].map(function (n) { return '<option value="' + n[0] + '"' + (n[0] === s.repeats ? ' selected' : '') + '>' + n[1] + '</option>'; }).join('') + '</select></label></div>' +
-      '<div class="arc-row"><label>月の費用の上限（ドル・見込み）<input class="arc-input" type="number" min="0" max="500" step="0.5" id="arc-sched-cost" value="' + esc(s.monthly_cost_cap_usd) + '"></label>' +
-      '<label>月の実行回数の上限<input class="arc-input" type="number" min="1" max="31" id="arc-sched-runs" value="' + esc(s.max_runs_per_month) + '"></label>' +
-      '<label>月の回答数の上限<input class="arc-input" type="number" min="1" max="5000" id="arc-sched-answers" value="' + esc(s.monthly_answer_cap) + '"></label></div>' +
-      '<label class="arc-sched-full">質問（1行に1問・10問まで） <button type="button" class="arc-btn-sm" id="arc-sched-from-studio">Studio の「毎月測る質問」を読み込む</button><textarea class="arc-input" id="arc-sched-prompts" rows="6">' + esc((s.prompts || []).map(function (p) { return p.prompt; }).join('\n')) + '</textarea></label>' +
-      '<h3 class="arc-h3">測る AI と状態</h3><div class="arc-table-wrap"><table class="arc-table asv-eng"><thead><tr><th>AI</th><th>状態（いちばん新しい計測から）</th><th>1回答あたり（見込み）</th><th>定期計測に入れる</th></tr></thead><tbody>' +
-      V.ENGINES.map(function (e) {
-        var st = est[e[0]] || ['まだ測っていない', ''], on = (s.engines || []).indexOf(e[0]) >= 0;
-        return '<tr' + (st[0] === '支払いの設定待ち' ? ' class="is-warn"' : '') + '><td>' + esc(e[1]) + '</td><td><span class="arc-chip ' + st[1] + '">' + esc(st[0]) + '</span></td><td>約 ' + esc(V.COST[e[0]] < 0.01 ? V.COST[e[0]].toFixed(4) : V.COST[e[0]].toFixed(3)) + ' ドル</td>' +
-          '<td><input type="checkbox" name="arc-sched-eng" value="' + e[0] + '"' + (on ? ' checked' : '') + ' aria-label="' + esc(e[1]) + 'を定期計測に入れる"></td></tr>';
-      }).join('') + '</tbody></table></div>' +
-      '<p class="asv-plan" id="arc-sched-calc" role="status"></p>' +
-      '<div class="arc-row"><button class="arc-btn" type="submit">設定を保存</button>' + (sc ? '<button class="arc-btn-sm" type="button" id="arc-sched-now">今すぐ1回測る</button>' : '') + '</div></form>' +
-      '<h3 class="arc-h3">最近の実行（直近20回）</h3><div class="arc-table-wrap"><table class="arc-table"><thead><tr><th>予定の時刻</th><th>結果</th><th>回答</th><th>費用の見込み</th><th>見送り・失敗の理由</th></tr></thead><tbody>' +
-      (jobRows || '<tr><td colspan="5" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>';
-    // 入力に合わせて、月の見込み（何回目から止まるか）を出し直す
-    function formState() {
-      return { enabled: $('#arc-sched-enabled').checked, engines: Array.prototype.map.call(document.querySelectorAll('input[name="arc-sched-eng"]:checked'), function (x) { return x.value; }),
-        weekdays: Array.prototype.map.call(document.querySelectorAll('input[name="arc-sched-wd"]:checked'), function (x) { return Number(x.value); }), prompts: schedPrompts($('#arc-sched-prompts').value),
-        hour_jst: Number($('#arc-sched-hour').value), repeats: Number($('#arc-sched-repeats').value), max_runs_per_month: Number($('#arc-sched-runs').value), monthly_answer_cap: Number($('#arc-sched-answers').value), monthly_cost_cap_usd: Number($('#arc-sched-cost').value) };
-    }
-    function calc() { $('#arc-sched-calc').innerHTML = V.planLine(formState()); }
-    calc();
-    $('#arc-sched-form').addEventListener('input', calc);
-    $('#arc-sched-form').addEventListener('change', calc);
-    $('#arc-sched-from-studio').addEventListener('click', function () {
-      sb.from('studio_workspaces').select('data').eq('client_id', c.id).maybeSingle().then(function (r) {
-        var d = q(r), list = d && d.data && d.data.studio && d.data.studio.prompts;
-        // 外部の AI に送るのは、Studio で確定した質問だけ。Search Console 由来の質問は読み込まない（airreach-google-guard.js）
-        var G = window.AirReachGoogleGuard;
-        if (!G) { msg('質問を確かめる部品を読み込めなかったため、読み込んでいません。ページを開き直してください。', 'error'); return; }
-        var pick = G.sendablePrompts(list || [], G.ctxOf(d.data.studio, d.data.orch && d.data.orch.lastJob));
-        var on = pick.send.slice(0, 10).map(function (x) { return x.text; });
-        var skipped = (pick.unconfirmed ? '未確定の ' + pick.unconfirmed + '問' : '') + (pick.unconfirmed && pick.google ? '・' : '') + (pick.google ? 'Search Console 由来の ' + pick.google + '問' : '');
-        if (!on.length) { msg('Studio に確定した「毎月測る質問」がありません。Studio の「AI での見え方を測る」で質問を確かめて「確定」してください。' + (skipped ? '（' + skipped + 'は読み込みません）' : ''), 'error'); return; }
-        $('#arc-sched-prompts').value = on.join('\n'); calc(); msg('Studio の確定した質問を ' + on.length + ' 問読み込みました。' + (skipped ? skipped + 'は読み込んでいません。' : '') + '「設定を保存」で保存します。', 'ok');
-      }).catch(fail);
-    });
-    $('#arc-sched-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-      var engs = Array.prototype.map.call(document.querySelectorAll('input[name="arc-sched-eng"]:checked'), function (x) { return x.value; });
-      var wds = Array.prototype.map.call(document.querySelectorAll('input[name="arc-sched-wd"]:checked'), function (x) { return Number(x.value); });
-      var ps = schedPrompts($('#arc-sched-prompts').value);
-      if (!engs.length || !wds.length) { msg('AI と曜日を1つ以上選んでください。', 'error'); return; }
-      if ($('#arc-sched-enabled').checked && !ps.length) { msg('有効にするには、質問を1問以上入れてください。', 'error'); return; }
-      var row = { client_id: c.id, enabled: $('#arc-sched-enabled').checked, brand: s.brand || c.name, site_url: s.site_url || (sites[0] && sites[0].url) || null, engines: engs, prompts: ps, weekdays: wds,
-        hour_jst: Number($('#arc-sched-hour').value), repeats: Number($('#arc-sched-repeats').value), max_runs_per_month: Number($('#arc-sched-runs').value), monthly_answer_cap: Number($('#arc-sched-answers').value),
-        monthly_cost_cap_usd: Number($('#arc-sched-cost').value), updated_by: me.email, updated_at: new Date().toISOString() };
-      if (!sc) row.created_by = me.email;
-      sb.from('measurement_schedules').upsert(row, { onConflict: 'client_id' }).then(function (r) { if (r.error) throw r.error; msg('定期計測の設定を保存しました。', 'ok'); loadSchedule(c, sites); }).catch(fail);
-    });
-    var now = $('#arc-sched-now');
-    if (now) now.addEventListener('click', function () {
-      now.disabled = true; now.textContent = '測っています…（数分かかります）';
-      sb.auth.getSession().then(function (r) {
-        var tok = r && r.data && r.data.session && r.data.session.access_token;
-        return fetch('/api/airreach/schedule-run/', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok }, body: JSON.stringify({ action: 'run_now', scheduleId: sc.id }) });
-      }).then(function (res) { return res.json().then(function (d) { return { ok: res.ok, d: d }; }); }).then(function (x) {
-        if (!x.ok || !x.d.ok) throw new Error((x.d && x.d.error) || '計測できませんでした');
-        var o = x.d.result || {};
-        msg('測りました：回答 ' + o.answers + (o.not_shown ? '・AI の回答なし ' + o.not_shown : '') + (o.errors ? '・エラー ' + o.errors : '') + '（費用の見込み ' + Number(o.cost_usd || 0).toFixed(3) + 'ドル）。', o.errors ? 'error' : 'ok');
-        loadSchedule(c, sites);
-      }).catch(function (e2) { now.disabled = false; now.textContent = '今すぐ1回測る'; fail(e2); });
-    });
+  // ---- 計測の予定（社内）---------------------------------------------------------------
+  //   自動の定期計測は使わない（10/8 決定）。担当者が Studio で測り、いつ測るかは airreach-case-steps.js の timing が知らせる。
+  //   DB の measurement_schedules / measurement_jobs（20261005・20261006 の migration）と api/airreach/schedule-run.js は、本番に入れていない
+  function measureCard(cs, studioH) {
+    var CS = window.AirReachCaseSteps, tm = cs && cs.timing;
+    return '<section class="arc-card amt-card' + (tm && tm.state === 'late' ? ' is-late' : tm && tm.state === 'due' ? ' is-due' : '') + '"><h3 class="arc-h3">計測の予定</h3>' +
+      '<p class="amt-line">' + esc(CS ? CS.timingLine(tm) : '') + '</p>' +
+      '<p class="arc-note">自動では測りません。時期が来たら、Studio の「AI での見え方を測る」で、導入前と同じ質問・地域・AI で測ります。お客様のホームには「次の計測は ◯/◯ ごろの予定です」と出ます（遅れは出しません）。</p>' +
+      (tm ? '<a class="arc-btn' + (tm.state === 'due' || tm.state === 'late' ? '' : ' arc-btn-ghost') + '" href="' + esc(studioH + '#hack2') + '">Studio で測る</a>' : '') + '</section>';
   }
 
   function clientStaff(id, sec) {
@@ -1137,7 +1052,7 @@
         '<table class="arc-table"><thead><tr><th>日付</th><th>URL</th><th>点数</th><th>不足</th></tr></thead><tbody>' + (scanRows || '<tr><td colspan="4" class="arc-empty">まだありません</td></tr>') + '</tbody></table></div></section>' +
 
         fold('runs', SEC_LABEL.runs, runs.length + '回') +
-        '<div id="arc-schedule" class="arc-schedule"><p class="arc-note">定期計測の設定を読み込んでいます…</p></div>' +
+        measureCard(caseRes, studioH) +
         '<details class="arc-dev"><summary>社内向け：計測スクリプトの結果（summary.json）を取り込む</summary>' + '<form id="arc-add-run" class="arc-row"><input class="arc-input" type="date" id="arc-run-date" required><input class="arc-input" type="file" id="arc-run-file" accept=".json,application/json" required><button class="arc-btn" type="submit">summary.json を取り込む</button></form>' +
         '<p class="arc-note">社内の計測スクリプトが出力する summary.json（runs/&lt;実行名&gt;/summary.json）を選びます。</p></details>' +
         '<div class="arc-row arc-cmp-bar"><button type="button" class="arc-btn" id="arc-cmp-go" disabled>選んだ2回を比べる</button><span class="arc-note" id="arc-cmp-hint">比べたい計測を2回選んでください（同じ条件・同じ質問のときだけ差を出します）。</span></div>' +
@@ -1230,7 +1145,6 @@
         done(sb.from('action_items').insert({ client_id: id, title: $('#arc-act-title').value.trim(), done_on: $('#arc-act-date').value || null,
           evidence_url: $('#arc-act-url').value.trim() || null, status: $('#arc-act-status').value, created_by: me.email }));
       });
-      loadSchedule(c, sites);
       bindGoogleData(c);
       bindOwnerDue(c);
       if (curSec === 'home') mountRequests(c.id, sites, true, c.name);
@@ -1396,54 +1310,54 @@
     }).catch(fail);
   }
 
-  // ---- 定期計測と費用（Trillion Bank の社内・全顧客）---------------------------------------
-  //   顧客ごとの設定（measurement_schedules）と今月の実行（measurement_jobs）をまとめて見る。設定を変えるのは顧客ごとの画面（AI 計測の記録の欄）
+  // ---- 計測の予定（社内・全顧客）--------------------------------------------------------
+  //   顧客ごとの計測の時期（遅れ・時期・今週・これから）と、測る AI の状態。押すとその顧客の Studio の計測を開く
   function scheduleOverview() {
-    var V = window.AirReachScheduleView;
-    if (partnerOrg() || !V) { shell('定期計測と費用', '<section class="arc-card"><p class="arc-note">定期計測の設定は、Trillion Bank の社内だけが行えます。</p></section>', '', { sec: 'schedules' }); return Promise.resolve(); }
-    var since = new Date(Date.now() - 40 * 86400000).toISOString();
+    var V = window.AirReachScheduleView, CS = window.AirReachCaseSteps;
+    if (!V || !CS) { shell('計測の予定', '<section class="arc-card"><p class="arc-note">画面の部品を読み込めませんでした。ページを開き直してください。</p></section>', '', { sec: 'schedules' }); return Promise.resolve(); }
+    var soft = function (p) { return p.then(function (x) { return x.error ? [] : (x.data || []); }, function () { return []; }); };
     return Promise.all([
-      sb.from('measurement_schedules').select('*,clients(name)'),
-      sb.from('measurement_jobs').select('id,schedule_id,client_id,slot,trigger,status,answers_planned,answers_done,errors,est_cost_usd,skip_reason,last_error').gte('slot', since).order('slot', { ascending: false }).limit(1000),
-      sb.from('measurement_runs').select('client_id,created_at,answers:summary->answers').order('created_at', { ascending: false }).limit(10).then(function (x) { return x.error ? [] : (x.data || []); }, function () { return []; })
+      sb.from('clients').select('*').order('name'),
+      sb.from('studio_workspaces').select('client_id,confirm:data->orch->lastJob->confirm,zipped:data->orch->lastJob->zipped,verified:data->orch->lastJob->verified,url:data->orch->lastJob->>url').then(function (x) { return x.error ? null : (x.data || []); }, function () { return null; }),
+      soft(sb.from('measurement_runs').select('client_id,measured_on,created_at,ai3:summary->ai3').order('created_at', { ascending: false }).limit(400)),
+      soft(sb.from('client_sites').select('client_id,url')),
+      soft(sb.from('measurement_runs').select('client_id,created_at,answers:summary->answers').order('created_at', { ascending: false }).limit(10))
     ]).then(function (rs) {
-      if (rs[0].error && /measurement_schedules|relation|schema cache/i.test(String(rs[0].error.message || ''))) {
-        shell('定期計測と費用', '<section class="arc-card"><p class="arc-note">定期計測の表がまだデータベースにありません（migration 20261005120000 の適用待ち）。</p></section>', '', { sec: 'schedules' }); return;
-      }
-      var scs = q(rs[0]) || [], jobs = q(rs[1]) || [];
-      // AI の状態は、直近の計測の回答をまとめて（どれかの顧客で取れていれば「使える」）
-      var ans = []; (rs[2] || []).forEach(function (r) { ans = ans.concat(r.answers || (r.summary && r.summary.answers) || []); });
+      var clients = (q(rs[0]) || []).filter(function (c) { return c.status !== 'ended'; }), wss = rs[1], runs = rs[2], sites = rs[3];
+      if (wss == null) { shell('計測の予定', '<section class="arc-card"><p class="arc-note">Studio の作業を読めなかったため、計測の時期を出せません。</p></section>', '', { sec: 'schedules' }); return; }
+      var rows = clients.map(function (c) {
+        var w = wss.filter(function (x) { return x.client_id === c.id; })[0];
+        var job = w && w.data ? (w.data.orch && w.data.orch.lastJob) : (w ? { url: w.url, confirm: w.confirm, zipped: w.zipped, verified: w.verified, files: {} } : null);
+        var rr = runs.filter(function (x) { return x.client_id === c.id; }).map(function (x) { return x.summary ? x : { client_id: x.client_id, measured_on: x.measured_on, created_at: x.created_at, summary: { ai3: x.ai3 } }; });
+        var cs = null; try { cs = CS.compute({ workspace: { orch: { lastJob: job } }, runs: rr, studioHref: '', runsHref: '' }); } catch (e) { cs = null; }
+        var site = sites.filter(function (x) { return x.client_id === c.id; })[0];
+        return { c: c, tm: cs && cs.timing, studio: (window.AirReachNav ? window.AirReachNav.studioBase({ id: c.id, name: c.name, site: site && site.url, industry: c.industry_id }) : '/airreach/studio/') + '#hack2' };
+      });
+      var ORDER = { late: 0, due: 1, soon: 2, later: 3 };
+      rows.sort(function (a, b) { var x = a.tm ? ORDER[a.tm.state] : 4, y = b.tm ? ORDER[b.tm.state] : 4; return x - y || (a.tm && b.tm ? a.tm.due - b.tm.due : 0) || String(a.c.name).localeCompare(String(b.c.name), 'ja'); });
+      var G = [['late', '遅れている'], ['due', '時期が来た'], ['soon', '7日以内'], ['later', 'これから'], ['none', 'まだ時期が決まっていない（会社・サービスが未確定）']];
+      var cnt = function (k) { return rows.filter(function (r) { return (r.tm ? r.tm.state : 'none') === k; }).length; };
+      var ST = { late: ['遅れ', 'is-bad'], due: ['時期', 'is-warn'], soon: ['7日以内', ''] }; // 「これから」は見出しで分かるので印を付けない
+      var ans = []; (rs[4] || []).forEach(function (r) { ans = ans.concat(r.answers || (r.summary && r.summary.answers) || []); });
       var est = V.engineStatus(ans);
-      var rows = scs.map(function (sc) {
-        var js = jobs.filter(function (j) { return j.schedule_id === sc.id || (!j.schedule_id && j.client_id === sc.client_id); });
-        return { sc: sc, name: (sc.clients && sc.clients.name) || sc.brand || '', jobs: js, used: V.usage(js), rest: V.remaining(sc, js), next: V.nextSlot(sc), plan: V.monthPlan(sc, new Date()), last: js.filter(function (j) { return j.status !== 'queued'; })[0] || null };
-      }).sort(function (a, b) { return (b.sc.enabled ? 1 : 0) - (a.sc.enabled ? 1 : 0) || ((a.next ? a.next.getTime() : 9e15) - (b.next ? b.next.getTime() : 9e15)) || (a.name < b.name ? -1 : 1); });
-      var on = rows.filter(function (r) { return r.sc.enabled; });
-      var used = rows.reduce(function (a, r) { return a + r.used.cost; }, 0), cap = on.reduce(function (a, r) { return a + Number(r.sc.monthly_cost_cap_usd || 0); }, 0);
-      var planned = used + on.reduce(function (a, r) { return a + r.rest.cost; }, 0);
-      var nexts = on.filter(function (r) { return r.next; }).sort(function (a, b) { return a.next - b.next; });
-      var next = nexts[0] ? nexts[0].next : null, sameNext = nexts.filter(function (r) { return next && r.next.getTime() === next.getTime(); });
-      var lastAll = jobs.filter(function (j) { return j.status !== 'queued'; })[0] || null;
-      var STL = JOB_STATUS;
-      var body = '<section class="arc-card asv-head"><p class="arc-note">顧客ごとの自動の計測と、月の費用の上限です。上限に達した回は実行せず「見送り」にするので、勝手に増えることはありません。設定は顧客ごとの画面（「設定を開く」）で変えます。自動で動くのは、設定を「有効」にし、さらに計測サーバー側の設定を入れたときだけです。</p>' +
-        V.tilesHtml({ used: used, cap: cap, planned: planned, next: next, nextSub: next ? sameNext.length + '件の案件 · 約 ' + sameNext.reduce(function (a, r) { return a + V.perRun(r.sc).answers; }, 0) + '回答の見込み' : (rows.length ? '有効な設定がありません' : 'まだ設定がありません'), last: lastAll }) + '</section>' +
-        '<section class="arc-card"><h2 class="arc-h2">顧客ごと（' + rows.length + '件・有効 ' + on.length + '件）</h2>' +
-        (rows.length ? '<div class="arc-table-wrap"><table class="arc-table asv-list"><thead><tr><th>顧客</th><th>状態</th><th>次の計測</th><th>今月の費用（見込み）</th><th>月の見込み</th><th>前回</th><th></th></tr></thead><tbody>' +
-          rows.map(function (r) {
-            var pct = Number(r.sc.monthly_cost_cap_usd) ? Math.min(100, Math.round(r.used.cost / Number(r.sc.monthly_cost_cap_usd) * 100)) : 0, ls = r.last ? (STL[r.last.status] || [r.last.status, '']) : null;
-            return '<tr><td>' + esc(r.name) + '</td><td><span class="arc-chip ' + (r.sc.enabled ? 'is-ok' : '') + '">' + (r.sc.enabled ? '有効' : '止めています') + '</span></td>' +
-              '<td>' + (r.next ? esc(V.slotLabel(r.next)) : '—') + '</td>' +
-              '<td><span class="asv-mini">' + esc(V.usd(r.used.cost)) + ' / ' + esc(V.usd(r.sc.monthly_cost_cap_usd)) + ' ドル</span><span class="asv-bar is-sm"><i style="width:' + pct + '%"' + (pct >= 90 ? ' class="is-hi"' : '') + '></i></span></td>' +
-              '<td>' + esc(r.plan.runs) + '回 · 約 ' + esc(V.usd(r.plan.wanted.cost)) + ' ドル' + (r.plan.stopAt ? '<br><b class="asv-stop">' + esc(r.plan.stopAt) + '回目から止まる</b>' : '') + '</td>' +
-              '<td>' + (r.last ? esc(V.slotLabel(new Date(r.last.slot))) + ' <span class="arc-chip ' + ls[1] + '">' + esc(ls[0]) + '</span>' + (r.last.errors ? '<br><small>取れなかった ' + esc(r.last.errors) + '回</small>' : '') + (r.last.status === 'skipped' && r.last.skip_reason ? '<br><small>' + esc(r.last.skip_reason) + '</small>' : '') : '—') + '</td>' +
-              '<td><a class="arc-btn-sm" href="#/c/' + esc(r.sc.client_id) + '/runs">設定を開く</a></td></tr>';
-          }).join('') + '</tbody></table></div>' : '<p class="arc-empty">まだ定期計測を設定した顧客はありません。顧客のホームの「AI 計測の記録」から設定します。</p>') + '</section>' +
-        '<section class="arc-card"><h2 class="arc-h2">測る AI の状態</h2><div class="arc-table-wrap"><table class="arc-table asv-eng"><thead><tr><th>AI</th><th>状態（直近の計測から）</th><th>1回答あたり（見込み）</th><th>有効な設定で使っている顧客</th></tr></thead><tbody>' +
+      var body = '<section class="arc-card"><p class="arc-note">自動では測りません。時期が来た案件を担当者が Studio で測ります。時期の決まり：①会社・サービスを確定したらすぐ（導入前）②パッチを入れたと確かめた日から14日後（効果）③それ以外は前回の計測から30日後（毎月）。期日から3日過ぎたら「遅れ」。お客様のホームには「次の計測は ◯/◯ ごろの予定です」と出ます。</p>' +
+        '<div class="amt-sum">' + [['late', '遅れ'], ['due', '時期が来た'], ['soon', '7日以内']].map(function (x) { var n = cnt(x[0]); return '<div class="amt-sum-i is-' + x[0] + (n ? '' : ' is-zero') + '"><span>' + x[1] + '</span><b>' + n + '</b><small>件</small></div>'; }).join('') + '</div></section>' +
+        G.map(function (g) {
+          var rr = rows.filter(function (r) { return (r.tm ? r.tm.state : 'none') === g[0]; });
+          if (!rr.length) return '';
+          return '<section class="arc-card amt-group is-' + g[0] + '"><h2 class="arc-h2">' + esc(g[1]) + '（' + rr.length + '件）</h2><ul class="amt-list">' + rr.map(function (r) {
+            var t = r.tm, st = t ? ST[t.state] || null : null;
+            return '<li><span class="amt-n"><a href="#/c/' + esc(r.c.id) + '">' + esc(r.c.name) + '</a>' + (st ? ' <span class="arc-chip ' + st[1] + '">' + esc(t.state === 'late' ? (-t.days) + '日遅れ' : st[0]) + '</span>' : '') + '</span>' +
+              '<span class="amt-w">' + esc(CS.timingLine(t)) + '</span>' +
+              (t ? '<a class="arc-btn-sm' + (t.state === 'late' || t.state === 'due' ? ' amt-go' : '') + '" href="' + esc(r.studio) + '">Studio で測る</a>' : '<a class="arc-btn-sm" href="#/c/' + esc(r.c.id) + '">案件を開く</a>') + '</li>';
+          }).join('') + '</ul></section>';
+        }).join('') +
+        '<section class="arc-card"><h2 class="arc-h2">測る AI の状態</h2><div class="arc-table-wrap"><table class="arc-table asv-eng"><thead><tr><th>AI</th><th>状態（直近の計測から）</th><th>1回答あたり（見込み）</th></tr></thead><tbody>' +
           V.ENGINES.map(function (e) {
-            var st = est[e[0]] || ['まだ測っていない', ''], n = on.filter(function (r) { return (r.sc.engines || []).indexOf(e[0]) >= 0; }).length;
-            return '<tr' + (st[0] === '支払いの設定待ち' ? ' class="is-warn"' : '') + '><td>' + esc(e[1]) + '</td><td><span class="arc-chip ' + st[1] + '">' + esc(st[0]) + '</span></td><td>約 ' + esc(V.COST[e[0]] < 0.01 ? V.COST[e[0]].toFixed(4) : V.COST[e[0]].toFixed(3)) + ' ドル</td><td>' + n + '件</td></tr>';
-          }).join('') + '</tbody></table></div><p class="arc-note">1回答あたりの費用は見込みです。実際の上限の判定は計測サーバーの単価で行います。</p></section>';
-      shell('定期計測と費用', body, '', { sec: 'schedules' });
+            var st = est[e[0]] || ['まだ測っていない', ''];
+            return '<tr' + (st[0] === '支払いの設定待ち' ? ' class="is-warn"' : '') + '><td>' + esc(e[1]) + '</td><td><span class="arc-chip ' + st[1] + '">' + esc(st[0]) + '</span></td><td>約 ' + esc(V.COST[e[0]] < 0.01 ? V.COST[e[0]].toFixed(4) : V.COST[e[0]].toFixed(3)) + ' ドル</td></tr>';
+          }).join('') + '</tbody></table></div><p class="arc-note">1回答あたりの費用は見込みです。1回の計測は「質問の数 × AI の数」回答です（例：10問 × 3つの AI ＝ 30回答・約 0.6 ドル）。</p></section>';
+      shell('計測の予定', body, '', { sec: 'schedules' });
     });
   }
 
