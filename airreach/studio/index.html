@@ -364,7 +364,7 @@ robots: "noindex, follow"
               <label>同じ検索語を聞く回数 <select class="ars-input" id="hack2-repeats" style="width:auto"><option value="1">1回</option><option value="3">3回（ばらつきを見る・費用 3倍）</option><option value="5">5回（費用 5倍）</option></select></label>
               <label><input type="checkbox" id="hack2-retry"> 取れなかった回（時間切れ・回数の上限）を1回だけ取り直す（費用がかかることがあります）</label>
             </div>
-            <p class="ars-gnote" style="margin:0 0 8px">検索語は入力したままの文で送ります。1回ごとに観測 ID を付け、取り直しや後続の取得は同じ観測として1回に数えます。</p>
+            <p class="ars-gnote" style="margin:0 0 8px">検索語は入力したままの文で送ります。1回ごとに観測 ID を付け、取り直し・後続の取得・同じ結果のキャッシュは同じ観測として1回に数えます。2回以上のときは、AI による概要は保存済みの結果（キャッシュ）を使わずに毎回取り直すので、費用は回数分かかります。1回のときは、1時間以内の同じ検索の保存済みの結果になることがあります（その旨を記録します）。</p>
             <details class="ars-other-ai">
               <summary>ほかの AI（初期の計測対象ではありません。過去の履歴と比べるときだけ・費用がかかります）</summary>
               <p class="ars-gnote">ほかの AI を選ぶと、2対象だけに絞る決まりを付けずに計測します。AI による概要と ChatGPT とは合算しません。</p>

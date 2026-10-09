@@ -32,18 +32,27 @@
    *   同じ obs_id の行が複数ある（再試行・後続の取得）ときは、取れた行（失敗でない）のうち新しいもの、無ければ新しい失敗の行を1つだけ残す
    */
   function dedupeObs(rows) {
-    var by = {}, out = [], extra = 0;
+    var by = {}, pidKey = {}, out = [], extra = 0, cached = 0;
     (rows || []).forEach(function (r) {
-      if (!r || !r.obs_id) { out.push(r); return; }
-      var k = String(r.obs_id), cur = by[k];
+      if (!r) return;
+      // 取得元の検索 ID が同じ結果（キャッシュ）は、観測 ID が違っても同じ観測（先に出た観測にまとめる）
+      var f = r.fetch || {}, pid = f.provider_id ? engineOf(r) + '|' + f.provider_id : null;
+      var k = pid && pidKey[pid] ? pidKey[pid] : (r.obs_id ? String(r.obs_id) : null);
+      if (pid && !pidKey[pid] && k) pidKey[pid] = k;
+      if (!k) { out.push(r); return; }
+      var cur = by[k];
       if (!cur) { by[k] = r; out.push(r); return; }
       extra += 1;
+      if (pid && cur.fetch && cur.fetch.provider_id === f.provider_id && String(cur.obs_id) !== String(r.obs_id)) cached += 1;
       var okN = r.status !== 'error', okC = cur.status !== 'error', newer = (Number(r.attempt) || 0) > (Number(cur.attempt) || 0) || ((Number(r.attempt) || 0) === (Number(cur.attempt) || 0) && String(r.measured_at || '') > String(cur.measured_at || ''));
-      if ((okN && !okC) || (okN === okC && newer)) { out[out.indexOf(cur)] = r; by[k] = r; }
+      if ((okN && !okC) || (okN === okC && newer && String(cur.obs_id) === String(r.obs_id))) { out[out.indexOf(cur)] = r; by[k] = r; }
     });
     out.superseded = extra;
+    out.cached = cached;
     return out;
   }
+  /** 保存した回答を、集計に使う形にする（観測 ID・取得元 ID で重ねない）。ほかの部品（競合・月次・前後比較）も同じ関数を使う */
+  function finalRows(rows) { return dedupeObs(rows); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function pct(n, d) { return d ? Math.round(n / d * 1000) / 10 : null; }
   // URL をそろえる。記事を見分ける問い合わせ（article.php?id=111 の id など）は残し、追跡用（utm_* など）だけ外す。
@@ -119,7 +128,7 @@
   /** 1つの AI・1つの条件の集計 */
   function tally(rows, def, opts) {
     opts = opts || {};
-    var dd = dedupeObs(rows), superseded = dd.superseded || 0; rows = dd;
+    var dd = dedupeObs(rows), superseded = dd.superseded || 0, cachedN = dd.cached || 0; rows = dd;
     var articles = (opts.articleUrls || []).map(normUrl).filter(Boolean);
     var t = { attempts: rows.length, errors: 0, notShown: 0, mentioned: 0, noMention: 0, review: 0, official: 0, officialJudged: 0, article: 0, bodyUrl: 0, errorKinds: {} };
     rows.forEach(function (r) {
@@ -141,7 +150,9 @@
     t.shownRate = def.notShownInDenominator ? pct(t.shown, t.ok) : null;
     t.officialRate = pct(t.official, t.officialJudged);
     t.small = t.denominator > 0 && t.denominator < 5;
-    t.superseded = superseded; // 取り直し・後続の取得で重ねなかった行の数
+    t.superseded = superseded; // 取り直し・後続の取得・キャッシュで重ねなかった行の数
+    t.cached = cachedN; // そのうち、同じ取得元 ID（キャッシュ）だった行の数
+    t.cacheHits = rows.filter(function (r) { return r.fetch && r.fetch.cache_hit; }).length; // 前に作られた検索の結果（キャッシュ）を使った観測の数
     var trials = {}; rows.forEach(function (r) { trials[String(r.prompt || '') + '|' + (r.trial || 1)] = 1; });
     t.trials = Object.keys(trials).length;
     return t;
@@ -160,7 +171,7 @@
     out.history = hist;
     MAIN.forEach(function (def) {
       // 取り直し・後続の取得を、条件でまとめる前に1回にする（失敗の行と取り直しの行で記録した条件が違っても重ねない）
-      var all = (rows || []).filter(function (r) { return engineOf(r) === def.key; }), mine = dedupeObs(all), sup = mine.superseded || 0;
+      var all = (rows || []).filter(function (r) { return engineOf(r) === def.key; }), mine = dedupeObs(all), sup = mine.superseded || 0, csup = mine.cached || 0;
       if (!mine.length) { out[def.key] = { def: def, status: 'unmeasured', groups: 0 }; return; }
       var groups = {};
       mine.forEach(function (r) { var k = conditionKey(r, r.query_set_version || opts.version); (groups[k] = groups[k] || []).push(r); });
@@ -169,7 +180,7 @@
         return la < lb ? 1 : -1;
       });
       var rs = groups[keys[0]], c = rs[0].conditions || {};
-      var tt = tally(rs, def, opts); tt.superseded += sup;
+      var tt = tally(rs, def, opts); tt.superseded += sup; tt.cached += csup;
       out[def.key] = { def: def, status: 'measured', t: tt, rows: rs,
         cond: { model: c.model || rs[0].model || '', search: c.search !== false, location: c.location || 'JP', locationUsed: c.location_used || null, version: rs[0].query_set_version || opts.version || '',
           from: rs.reduce(function (m, r) { return !m || r.measured_at < m ? r.measured_at : m; }, ''), to: rs.reduce(function (m, r) { return r.measured_at > m ? r.measured_at : m; }, '') },
@@ -193,7 +204,8 @@
     var nGen = bySegment(mainRows, 'general', opts.brand).length, nBr = bySegment(mainRows, 'branded', opts.brand).length;
     var seg = opts.segment || (nGen ? 'general' : 'all');
     opts = Object.assign({}, opts, { segment: seg });
-    var S = summarize(rows, opts), cur = opts.current || 'aio';
+    // AI による概要を測っていないときは、測った ChatGPT の枠を最初に開く（2つの枠はいつも出す）
+    var S = summarize(rows, opts), cur = opts.current || (S.aio.status !== 'measured' && S.chatgpt_search.status === 'measured' ? 'chatgpt_search' : 'aio');
     var segs = '<div class="ai3-seg" role="group" aria-label="質問の種類">' + [['general', '一般の質問', nGen], ['branded', '指名の質問', nBr], ['all', 'すべて', nGen + nBr]].map(function (x) {
       return '<button type="button" class="ai3-segb' + (x[0] === seg ? ' is-on' : '') + '" aria-pressed="' + (x[0] === seg) + '" data-ai3-seg="' + x[0] + '"' + (x[2] ? '' : ' disabled') + '>' + esc(x[1]) + '<small>' + esc(x[2]) + '回</small></button>';
     }).join('') + '</div>';
@@ -205,6 +217,8 @@
     if (s.status !== 'measured') body = '<p class="ai3-na">' + esc(d.label) + ' はまだ計測していません（未計測）。</p>';
     else {
       var t = s.t;
+      // 保存の前に重ねた件数（Studio が計測のときに数えたもの）も、表示の注記に足す
+      if (opts.meta && opts.meta.superseded) t = Object.assign({}, t, { superseded: (t.superseded || 0) + opts.meta.superseded, cached: (t.cached || 0) + (opts.meta.cached || 0) });
       body = '<div class="ai3-main"><div class="ai3-big"><span>' + esc(d.label) + 'で名前が出た回数<small class="ai3-sub">' + esc(d.sub || '') + '</small></span><b>' + (t.denominator ? esc(t.mentioned) + '<small> / ' + esc(t.denominator) + (d.notShownInDenominator ? '回（正常に取れた検索）' : '回（取れた回答）') + '</small>' : 'N/A<small>（分母が0）</small>') + '</b>' +
         '<em>' + (t.rate == null ? '出現率 N/A' : '出現率 ' + esc(t.rate) + '%') + '</em></div>' +
         '<dl class="ai3-status"><div><dt>正常取得</dt><dd>' + esc(t.ok) + ' / ' + esc(t.attempts) + '回</dd></div>' +
@@ -212,7 +226,8 @@
         '<div><dt>取得失敗</dt><dd>' + esc(t.errors) + '回</dd></div>' + (t.review ? '<div><dt>要確認</dt><dd>' + esc(t.review) + '回（言及に数えない）</dd></div>' : '') + '</dl>' +
         (t.small ? '<p class="ai3-warn">分母が ' + esc(t.denominator) + ' 回と少ないため、出現率は大きく動きます。</p>' : '') +
         (t.errors ? '<p class="ai3-warn">取得失敗 ' + esc(t.errors) + '回は分母に入れていません（0回の成功ではありません）。</p>' : '') +
-        (t.superseded ? '<p class="ai3-warn">取り直し・後続の取得の ' + esc(t.superseded) + '件は、同じ観測として1回に数えています（二重に数えていません）。</p>' : '') +
+        (t.superseded ? '<p class="ai3-warn">取り直し・後続の取得' + (t.cached ? '・同じ結果のキャッシュ' : '') + 'の ' + esc(t.superseded) + '件は、同じ観測として1回に数えています（二重に数えていません）。</p>' : '') +
+        (t.cacheHits ? '<p class="ai3-warn">' + esc(t.cacheHits) + '回は、前に作られた検索の結果（キャッシュ）を使いました。反復の計測では、キャッシュを使わずに取り直します。</p>' : '') +
         '<dl class="ai3-cite"><div><dt>公式サイトが正式な出典</dt><dd>' + (t.officialJudged ? esc(t.official) + ' / ' + esc(t.officialJudged) + '回' : 'N/A') + '</dd></div>' +
         (opts.articleUrls && opts.articleUrls.length ? '<div><dt>対象の記事が正式な出典</dt><dd>' + esc(t.article) + '回</dd></div>' : '') +
         '<div><dt>回答の本文に公式サイトの URL</dt><dd>' + esc(t.bodyUrl) + '回</dd></div></dl>' +
@@ -235,7 +250,7 @@
     Array.prototype.forEach.call(box.querySelectorAll('[data-ai3-seg]'), function (b) { b.addEventListener('click', function () { render(box, rows, Object.assign({}, opts, { segment: b.getAttribute('data-ai3-seg') })); }); });
   }
 
-  var api = { MAIN: MAIN, HISTORY: HISTORY, dedupeObs: dedupeObs, normUrl: normUrl, isBranded: isBranded, bySegment: bySegment, engineOf: engineOf, conditionKey: conditionKey, outcome: outcome, tally: tally, summarize: summarize, render: render };
+  var api = { MAIN: MAIN, HISTORY: HISTORY, dedupeObs: dedupeObs, finalRows: finalRows, normUrl: normUrl, isBranded: isBranded, bySegment: bySegment, engineOf: engineOf, conditionKey: conditionKey, outcome: outcome, tally: tally, summarize: summarize, render: render };
   root.AirReachAI3 = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

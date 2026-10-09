@@ -37,7 +37,8 @@
     if (!run || !A) { out.reason = run ? '' : 'まだ計測がありません'; return out; }
     var comps = (opts.competitors || []).filter(function (c) { return c && c.name; });
     if (!comps.length) { out.reason = '比べるお店が登録されていません'; return out; }
-    var rows = A.bySegment(run.summary.answers, 'general', opts.brand).filter(function (r) { return A.engineOf(r) === out.engine; });
+    // 観測 ID・取得元 ID で重ねない（取り直し・キャッシュを別の回答として数えない。airreach-ai3.js の finalRows）
+    var rows = A.bySegment(A.finalRows ? A.finalRows(run.summary.answers) : run.summary.answers, 'general', opts.brand).filter(function (r) { return A.engineOf(r) === out.engine; });
     if (!rows.length) { out.reason = 'この AI の一般の質問の回答がありません'; return out; }
     var selfHost = hostOf(opts.selfUrl);
     var shops = [{ name: opts.brand || '自分', self: true, host: selfHost }].concat(comps.map(function (c) { return { name: c.name, self: false, host: hostOf(c.url) }; }));

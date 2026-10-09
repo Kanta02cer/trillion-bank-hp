@@ -135,5 +135,20 @@ t('API：試行番号と判定ルールの版', M.JUDGE_VERSION && /^judge\//.te
   t('観測 ID の無いこれまでの記録は、今までどおり1行1回', t4.attempts === 2 && t4.mentioned === 2);
   t('現行の名称出現率のまま（AI による概要の分母に概要なしを含む）', tt.rate === 33.3, tt.rate);
 }
+
+// ---- #210 レビュー：同じキャッシュ（取得元 ID）を別の観測にしない・競合との比較も同じ ----
+{
+  const c = { engine: 'google_aio', search: true, location: 'JP', model: 'serpapi/aio' };
+  const cache = [1, 2, 3].map((tr) => ({ obs_id: 'r|google_aio|q|' + tr, attempt: 1, trial: tr, engine: 'google_aio', prompt: 'q', status: 'ok', mentioned: 1, conditions: c, fetch: { provider: 'serpapi', provider_id: 'SAME', cache_policy: 'allow_cache' } }));
+  const t1 = A.tally(cache, A.MAIN[0], {});
+  t('同じ取得元 ID の結果3つは1回（修正前は 3/3）・キャッシュとして数える', t1.mentioned === 1 && t1.denominator === 1 && t1.cached === 2 && t1.superseded === 2, t1);
+  const diff = [1, 2, 3].map((tr) => ({ obs_id: 'r|google_aio|q|' + tr, attempt: 1, trial: tr, engine: 'google_aio', prompt: 'q', status: 'ok', mentioned: tr === 1 ? 1 : 0, conditions: c, fetch: { provider: 'serpapi', provider_id: 'ID' + tr, cache_policy: 'no_cache' } }));
+  const t2 = A.tally(diff, A.MAIN[0], {});
+  t('キャッシュを使わない別々の取得（ID が違う）は3回', t2.denominator === 3 && t2.mentioned === 1 && !t2.cached, t2);
+  const hit = A.tally([{ obs_id: 'x|1', engine: 'google_aio', prompt: 'q', status: 'ok', mentioned: 0, conditions: c, fetch: { provider_id: 'OLD', cache_hit: true } }], A.MAIN[0], {});
+  t('前に作られた検索の結果（キャッシュ）を使った観測を数える', hit.cacheHits === 1, hit);
+  const fr = A.finalRows([{ obs_id: 'o1', attempt: 1, engine: 'google_aio', status: 'error', conditions: c }, { obs_id: 'o1', attempt: 2, engine: 'google_aio', status: 'ok', mentioned: 1, conditions: c }]);
+  t('保存する行（finalRows）：取り直して取れた観測は1行・失敗0', fr.length === 1 && fr[0].status === 'ok' && fr.superseded === 1);
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

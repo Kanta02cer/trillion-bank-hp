@@ -42,5 +42,9 @@ t('aio が無い古いレポートでは何も出さない', C.aioHero({}) === '
   t('ChatGPT（補助）：今月 1/4（失敗は分母に入れない）・先月 0/5・同じ条件で +25', cc.chatgpt && cc.chatgpt.now.x === 1 && cc.chatgpt.now.n === 4 && cc.chatgpt.prev.x === 0 && cc.chatgpt.prev.n === 5 && cc.chatgpt.diff === 25 && cc.aio.now.x === 3, cc.chatgpt);
   const hh = C.aioHero(cc);
   t('月次の数字：AI による概要（主）のあとに ChatGPT（補助・検索付き API での観測）・合算しない', hh.indexOf('AI による概要') < hh.indexOf('ChatGPT の回答に名前が出た回数') && /検索付き API での観測（補助）/.test(hh) && /合算しません/.test(hh), hh.slice(0, 300)); }
+{ const onlyG = C.aioHero({ aio: null, chatgpt: { now: { x: 1, n: 4, rate: 25, measuredOn: '2026-10-07' }, prev: null } });
+  t('AI による概要を測っていない月：2つの枠（AI による概要は未計測・ChatGPT は 1/4）', /AI による概要[\s\S]*未計測/.test(onlyG) && /ChatGPT の回答に名前が出た回数[\s\S]*1<\/b> \/ 4回/.test(onlyG), onlyG); }
+{ const H = ctx.AirReachClientHome; const nh = H.numbers({ period_month: '2026-10-01', compiled: { site: {}, ai: { providers: [{ provider: 'perplexity', judged: 8, citeCount: 3 }, { provider: 'openai', judged: 6, citeCount: 2 }] }, traffic: {}, chatgpt: { now: { x: 1, n: 4 }, prev: null }, aio: null } });
+  t('お客様のホーム：複数の AI を合わせた出典の割合を出さない・2つの枠', !/出典になった/.test(nh) && /AI による概要に名前が出た[\s\S]*未計測/.test(nh) && /ChatGPT の回答に名前が出た（補助）[\s\S]*1<\/b>/.test(nh), nh.slice(0, 600)); }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

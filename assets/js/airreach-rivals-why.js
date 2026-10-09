@@ -162,6 +162,7 @@
   function mount(box, r, ctx) {
     if (!box || !r || !r.ok) { if (box) box.innerHTML = ''; return; }
     var answers = (r.run && r.run.summary && r.run.summary.answers) || [];
+    if (root.AirReachAI3 && root.AirReachAI3.finalRows) answers = root.AirReachAI3.finalRows(answers);
     var tr = traits(r, answers, ctx), pageRes = null, pages = pickPages(r, answers, ctx);
     function draw() {
       var sugs = suggestions(r, tr, pageRes);
