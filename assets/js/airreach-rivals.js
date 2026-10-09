@@ -10,7 +10,8 @@
   function hostOf(u) { try { return new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) { return ''; } }
   function under(h, base) { return !!base && !!h && (h === base || h.slice(-base.length - 1) === '.' + base); }
   function normName(t) { return String(t || '').toLowerCase().replace(/[\s　・･]+/g, ''); }
-  var ENGINES = [['aio', 'AI による概要'], ['aimode', 'AI モード'], ['chatgpt_search', 'ChatGPT']];
+  // 2対象（AI による概要が主・ChatGPT は補助）。AI モードなどの過去の記録は消さないが、比較のタブには出さない
+  var ENGINES = [['aio', 'AI による概要'], ['chatgpt_search', 'ChatGPT']];
   var SRC = [['official', 'お店の公式サイト'], ['portal', '口コミ・予約・まとめ'], ['sns', 'SNS'], ['other', 'そのほか']];
 
   function latestRun(runs) {
@@ -27,7 +28,7 @@
   }
 
   /**
-   * opts: { runs, brand, selfUrl, competitors: [{ name, url }], engine: 'aio'|'aimode'|'chatgpt_search' }
+   * opts: { runs, brand, selfUrl, competitors: [{ name, url }], engine: 'aio'|'chatgpt_search' }
    */
   function compute(opts) {
     opts = opts || {};

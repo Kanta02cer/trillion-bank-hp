@@ -100,12 +100,17 @@
     var a = c && c.aio;
     if (!a || !a.now) return '';
     opt = opt || {};
-    var n = a.now, p = a.prev;
-    var cmp = p ? (a.comparable ? '先月 ' + esc(p.x) + ' / ' + esc(p.n) + '回' + (a.diff != null ? '（出現率 ' + (a.diff > 0 ? '+' : a.diff < 0 ? '−' : '±') + esc(Math.abs(a.diff)) + 'ポイント）' : '') : '先月と条件がそろっていない（違う・記録が無い）ため、比べていません') : '先月の計測はありません';
-    return '<div class="arr-aio' + (opt.compact ? ' is-compact' : '') + '"><span class="arr-aio-k">Google の AI による概要に、お店・会社の名前が出た回数</span>' +
-      '<span class="arr-aio-v"><b>' + esc(n.x) + '</b> / ' + esc(n.n) + '回' + (n.rate != null ? '<em>出現率 ' + esc(n.rate) + '%</em>' : '') + '</span>' +
-      '<span class="arr-aio-s">' + cmp + '</span>' +
-      (opt.compact ? '' : '<small class="arr-aio-n">' + esc(n.measuredOn || '') + ' の計測・名前を入れていない質問だけ。AI による概要が出なかった検索も回数に入れ、取得できなかった検索は入れていません。2026年10月から、この数え方の数字を主に示しています。</small>') + '</div>';
+    // 補助の ChatGPT（検索付き API での観測）。AI による概要とは合算しない
+    var g = c.chatgpt && c.chatgpt.now ? c.chatgpt : null;
+    var line = function (k, sub, x, big) {
+      var n = x.now, p = x.prev;
+      var cmp = p ? (x.comparable ? '先月 ' + esc(p.x) + ' / ' + esc(p.n) + '回' + (x.diff != null ? '（出現率 ' + (x.diff > 0 ? '+' : x.diff < 0 ? '−' : '±') + esc(Math.abs(x.diff)) + 'ポイント）' : '') : '先月と条件がそろっていない（違う・記録が無い）ため、比べていません') : '先月の計測はありません';
+      return '<div class="arr-aio' + (opt.compact ? ' is-compact' : '') + (big ? '' : ' is-sub') + '"><span class="arr-aio-k">' + k + (sub ? '<small> · ' + sub + '</small>' : '') + '</span>' +
+        '<span class="arr-aio-v"><b>' + esc(n.x) + '</b> / ' + esc(n.n) + '回' + (n.rate != null ? '<em>出現率 ' + esc(n.rate) + '%</em>' : '') + '</span><span class="arr-aio-s">' + cmp + '</span>';
+    };
+    return line('Google の AI による概要に、お店・会社の名前が出た回数', '主', a, true) +
+      (opt.compact ? '' : '<small class="arr-aio-n">' + esc(a.now.measuredOn || '') + ' の計測・名前を入れていない質問だけ。AI による概要が出なかった検索も回数に入れ、取得できなかった検索は入れていません。2026年10月から、この数え方の数字を主に示しています。</small>') + '</div>' +
+      (g ? line('ChatGPT の回答に名前が出た回数', '検索付き API での観測（補助）', g, false) + (opt.compact ? '' : '<small class="arr-aio-n">回答が取れた数が分母です。AI による概要とは合算しません。</small>') + '</div>' : '');
   }
   function tiles(c) {
     c = c || {};

@@ -106,7 +106,9 @@ export default async function handler(req, res) {
   const rows = [];
   const engineStatus = {};
 
-  const measured = await measureEngines({ brand, prompts, engines, competitors, pageText, pageUrl, pageTitle, date, location });
+  // trial：同じ検索語を何回目に聞いたか（反復観測。1回の要求は1回分。Studio が回数分の要求を分けて送る）
+  const trial = trialOf(body.trial);
+  const measured = await measureEngines({ brand, prompts, engines, competitors, pageText, pageUrl, pageTitle, date, location, trial });
   measured.rows.forEach((r) => rows.push(r));
   Object.assign(engineStatus, measured.engineStatus);
 
@@ -157,7 +159,7 @@ export default async function handler(req, res) {
  * 計測の本体（Studio の計測 API と定期計測の両方から使う）。AI ごとに並べて聞き、行と AI ごとの状態を返す
  *   prompts: [{ keyword, prompt }] / engines: normalizeEngines 済み / competitors: [{ name, url }]
  */
-export async function measureEngines({ brand, prompts, engines, competitors, pageText = '', pageUrl = null, pageTitle = null, date = new Date().toISOString().slice(0, 10), location = null }) {
+export async function measureEngines({ brand, prompts, engines, competitors, pageText = '', pageUrl = null, pageTitle = null, date = new Date().toISOString().slice(0, 10), location = null, trial = 1 }) {
   const rows = [];
   const engineStatus = {};
   await Promise.all(engines.map(async (engine) => {
@@ -181,7 +183,7 @@ export async function measureEngines({ brand, prompts, engines, competitors, pag
         });
         engineStatus.jev = { ok: true, count: judged.length, evidenceClass: 'Estimated' };
       } else {
-        const live = await measureWithProvider(engine, brand, prompts, pageUrl, competitors, { location });
+        const live = await measureWithProvider(engine, brand, prompts, pageUrl, competitors, { location, trial });
         live.rows.forEach((r) => {
           rows.push(Object.assign({ measurement_date: date, url: pageUrl || '' }, r));
         });
@@ -306,6 +308,8 @@ function normalizePrompts(raw) {
  * 計測する AI の決まり（2026-10-08 の方針・10/9 の受入）。policy が 'two-engine/1' のときは、AI による概要（google_aio）と
  * 検索ありの ChatGPT（chatgpt_search）と、外部に聞かない推定（jev）だけを許す。ほかの AI・知らない決まりは断る（代わりの AI に落とさない）
  */
+/** 反復観測の何回目か（1〜20。数でなければ1） */
+export function trialOf(v) { return Math.min(20, Math.max(1, parseInt(v, 10) || 1)); }
 export const TWO_ENGINE_POLICY = 'two-engine/1';
 export function enginePolicyError(policy, engines) {
   if (policy == null || policy === '') return null;
@@ -547,8 +551,8 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors,
   // Gemini は遅いと他の AI の結果まで待たせる（Studio は全部の AI を1回の要求で聞く）。Gemini だけ持ち時間を短くし、超えたら失敗として先に返す
   const deadline = Date.now() + (ENGINE_BUDGET_MS[engine] || 240000);
   const rows = await mapLimit(prompts, 2, async (p) => {
-    // trial：同じ計測の中で同じ質問を何回目に聞いたか（いまは1回ずつ）。judge_version：言及・引用を判定したルールの版
-    const base = { engine: engineLabel(engine), keyword: p.keyword || p.prompt, prompt: p.prompt, evidenceClass: 'Observed', trial: 1, judge_version: JUDGE_VERSION,
+    // trial：同じ計測の中で同じ検索語を何回目に聞いたか。prompt_raw：送った検索語の原文（AI による概要には、この文をそのまま検索語として送る）。judge_version：言及・引用を判定したルールの版
+    const base = { engine: engineLabel(engine), keyword: p.keyword || p.prompt, prompt: p.prompt, prompt_raw: p.prompt, evidenceClass: 'Observed', trial: trialOf(opts.trial), judge_version: JUDGE_VERSION,
       model: conditions.model, source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API', measured_at: measuredAt, conditions };
     let out;
     try {

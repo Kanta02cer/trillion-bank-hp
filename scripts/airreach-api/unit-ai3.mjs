@@ -1,4 +1,4 @@
-// 3つの AI の集計（assets/js/airreach-ai3.js）と、計測 API の地域・検索の確認（依頼書 R04・R09・T06・T07・T12）。架空のデータだけ
+// 2対象（AI による概要・ChatGPT）の集計（assets/js/airreach-ai3.js）と、計測 API の地域・検索の確認（依頼書 R04・R09・T06・T07・T12）。架空のデータだけ
 //   node scripts/airreach-api/unit-ai3.mjs
 import fs from 'node:fs';
 import path from 'node:path';
@@ -25,9 +25,9 @@ t('AIO：分母に概要なしを入れる（2/9）', s.mentioned === 2 && s.den
 t('AIO：出現率 22.2%', s.rate === 22.2, s.rate);
 t('AIO：失敗は分母に入れず別に数える', s.errors === 1 && s.ok === 9 && s.attempts === 10);
 t('AIO：概要が出た 5/9', s.shown === 5 && s.notShown === 4);
-// AI モード：回答なしは分母に入れない
-s = A.summarize([ok('google_ai_mode', 1), ok('google_ai_mode', 0), R('google_ai_mode', 'not_shown')], { brand: 'サンプル商店' }).aimode.t;
-t('AI モード：回答なしは分母に入れない（1/2）', s.mentioned === 1 && s.denominator === 2, s);
+// AI モード：2対象の方針（10/9）で主表示から外し、履歴の件数だけ残す
+{ const S2 = A.summarize([ok('google_ai_mode', 1), ok('google_ai_mode', 0), R('google_ai_mode', 'not_shown')], { brand: 'サンプル商店' });
+  t('AI モードは主表示に出さず、履歴として件数を残す（3回）', !S2.aimode && S2.history.aimode === 3 && A.MAIN.map((d) => d.key).join() === 'aio,chatgpt_search', S2); }
 // 分母0は N/A（0% にしない）
 s = A.summarize([R('google_aio', 'error'), R('google_aio', 'error')], {}).aio.t;
 t('全部失敗：分母0は N/A（null）で 0% にしない', s.denominator === 0 && s.rate === null && s.errors === 2, s);
@@ -118,6 +118,22 @@ t('API：試行番号と判定ルールの版', M.JUDGE_VERSION && /^judge\//.te
   t('判定の版が違えば条件の鍵も違う（混ぜない）', A.conditionKey(r1) !== A.conditionKey(Object.assign({}, r1, { judge_version: 'judge/2' })));
   const S = A.summarize([Object.assign({ status: 'ok', mentioned: 1, measured_at: '2026-10-01' }, r1), Object.assign({ status: 'ok', mentioned: 0, measured_at: '2026-10-02' }, r1, { judge_version: 'judge/2' })], {});
   t('判定の版が違う結果は1つにまとめない（others に残す）', S.aio.others === 1 && S.aio.t.attempts === 1, S.aio);
+}
+
+// ---- 反復観測の観測 ID：取り直し・後続の取得を二重に数えない（10/9） ----
+{
+  const c = { engine: 'google_aio', search: true, location: 'JP', model: 'm' };
+  const o = (obs, status, m, attempt, at) => ({ obs_id: obs, attempt, engine: 'google_aio', prompt: '渋谷 そば', trial: Number(obs.split('|').pop()), status, mentioned: m, measured_at: at, conditions: c });
+  const rows = [o('r1|google_aio|渋谷 そば|1', 'ok', 1, 1, '2026-10-09T01:00:00Z'), o('r1|google_aio|渋谷 そば|2', 'error', null, 1, '2026-10-09T01:01:00Z'), o('r1|google_aio|渋谷 そば|2', 'ok', 0, 2, '2026-10-09T01:05:00Z'), o('r1|google_aio|渋谷 そば|3', 'not_shown', null, 1, '2026-10-09T01:02:00Z'), o('r1|google_aio|渋谷 そば|3', 'not_shown', null, 1, '2026-10-09T01:02:30Z')];
+  const tt = A.tally(rows, A.MAIN[0], {});
+  t('同じ検索語の3回（観測 ID 3つ）：取り直し（失敗→成功）と後続の取得は1回に数える＝1/3・失敗0', tt.attempts === 3 && tt.mentioned === 1 && tt.denominator === 3 && tt.errors === 0 && tt.superseded === 2 && tt.trials === 3, tt);
+  const t2 = A.tally([o('x|1', 'ok', 1, 1, 'a'), o('x|1', 'error', null, 2, 'b')], A.MAIN[0], {});
+  t('取れた行のあとに失敗した取り直しがあっても、取れた行を使う', t2.mentioned === 1 && t2.errors === 0 && t2.attempts === 1, t2);
+  const t3 = A.tally([o('y|1', 'error', null, 1, 'a'), o('y|1', 'error', null, 2, 'b')], A.MAIN[0], {});
+  t('全部失敗なら失敗1回（分母に入れない）', t3.errors === 1 && t3.attempts === 1 && t3.denominator === 0, t3);
+  const t4 = A.tally([{ engine: 'google_aio', prompt: 'p', status: 'ok', mentioned: 1, conditions: c }, { engine: 'google_aio', prompt: 'p', status: 'ok', mentioned: 1, conditions: c }], A.MAIN[0], {});
+  t('観測 ID の無いこれまでの記録は、今までどおり1行1回', t4.attempts === 2 && t4.mentioned === 2);
+  t('現行の名称出現率のまま（AI による概要の分母に概要なしを含む）', tt.rate === 33.3, tt.rate);
 }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

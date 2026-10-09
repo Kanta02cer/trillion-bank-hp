@@ -2,7 +2,7 @@
  * 計測の前後比較と、営業用の PDF（依頼書 R10・T13）。
  *   保存した2回の計測（measurement_runs の summary）だけから作る。画面と PDF は同じデータから作り、データの指紋（SHA-256）を両方に出す。
  *   AI ごとに、条件（AI・検索の有無・地域・モデル）・質問の版・質問の顔ぶれが同じときだけ差を出す。違えば「比べられない」と理由を出す。
- *   主に見るのは Google AI Overviews（AIO）。3つの AI は合算しない。集計は airreach-ai3.js と同じ
+ *   主に見るのは AI による概要（AIO）、補助は検索ありの ChatGPT。合算しない。集計は airreach-ai3.js と同じ（2対象・観測 ID で重ねない）
  *
  *   2026-10-09 の見直し
  *     - 比べるのは、質問・主体（対象の名前）・判定の版・取得（AI・検索・モデル）・地域が同じ観測だけ。記録が無い（条件不明）・違うときは理由を出して保留
@@ -136,7 +136,7 @@
     return '<div class="acm-body">' + kindH + block(main, true) + rest.map(function (e) { return block(e, false); }).join('') + evid + impH +
       '<p class="acm-cond">' + esc(cmp.segment === 'branded' ? '指名の質問（名前を入れた質問）だけ' : cmp.segment === 'all' ? '一般と指名の質問をすべて' : '一般の質問（名前を入れていない質問）だけ。指名の質問は含めていません') + ' · 条件：' + esc(c.location === 'JP' || !c.location ? '日本（市区町村の指定なし）' : c.location) + ' · 質問の版 ' + esc(cmp.after.version || '—') +
       ' · 計測 ' + esc(cmp.before.measured_on) + '（' + esc(cmp.before.answers) + '件）→ ' + esc(cmp.after.measured_on) + '（' + esc(cmp.after.answers) + '件）</p>' +
-      '<p class="acm-note">同じ条件・同じ質問の計測どうしだけを比べています。3つの AI は合算しません。AI の答えは日や時間で変わり、一般の人が使う画面とは結果が違うことがあります。掲載や順位を保証するものではありません。' +
+      '<p class="acm-note">同じ条件・同じ質問の計測どうしだけを比べています。AI による概要（主）と ChatGPT（検索付き API での観測・補助）は合算しません。ほかの AI の記録は比べず、履歴として残しています。AI の答えは日や時間で変わり、一般の人が使う画面とは結果が違うことがあります。掲載や順位を保証するものではありません。' +
       (info.fp ? ' データの指紋：' + esc(info.fp.slice(0, 16)) : '') + '</p></div>';
   }
 

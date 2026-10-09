@@ -465,3 +465,7 @@ body:not(.has-job) [data-needs-job]{display:none}
 .ars-other-ai { margin: 4px 0 8px; font-size: 13px; color: var(--ars-ink-2); }
 .ars-other-ai summary { cursor: pointer; min-height: 32px; display: flex; align-items: center; }
 .ars-other-ai label { display: inline-flex; gap: 4px; margin: 4px 12px 4px 0; }
+
+/* 2対象の主表示：補足（主・補助）と、ほかの AI の履歴 */
+.ai3-sub { display: block; margin-top: 2px; font-size: 11px; color: var(--ars-muted); font-weight: 400; }
+.ai3-hist { margin: 8px 0 0; font-size: 12px; color: var(--ars-muted); }

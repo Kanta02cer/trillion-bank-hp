@@ -6,7 +6,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 let pass = 0, fail = 0;
 const t = (n, ok, got) => { if (ok) { pass++; console.log('PASS', n); } else { fail++; console.log('FAIL', n, got === undefined ? '' : JSON.stringify(got)); } };
 const M = await import(pathToFileURL(path.join(ROOT, 'api/hack2-measure.js')).href);
-const { enginePolicyError, normalizeEngines, measureEngines } = M;
+const { enginePolicyError, normalizeEngines, measureEngines, trialOf } = M;
 t('決まりなし：今までどおり（断らない）', enginePolicyError(undefined, ['perplexity']) === null);
 t('two-engine/1：AI による概要と検索ありの ChatGPT は通す', enginePolicyError('two-engine/1', normalizeEngines(['aio', 'chatgpt-search'])) === null);
 t('two-engine/1：推定（外部に聞かない）は通す', enginePolicyError('two-engine/1', ['jev']) === null);
@@ -29,6 +29,9 @@ t('競合との比較（AI の回答で比べる）の既定も2対象だけ', c
 t('Studio の既定は AI による概要と検索ありの ChatGPT だけ', checked.join() === 'google_aio,chatgpt_search', checked);
 t('ほかの AI は「ほかの AI」の中・既定で選ばない', /<details class="ars-other-ai">[\s\S]*value="gemini">[\s\S]*<\/details>/.test(html) && !/engine value="(gemini|perplexity|google_ai_mode|claude|chatgpt)" checked/.test(html));
 const js = fs.readFileSync(path.join(ROOT, 'assets/js/airreach-studio.js'), 'utf8');
-t('Studio は2対象だけのとき two-engine/1 を付ける', /policy:engines\.every\(function\(e\)\{return e==='google_aio'\|\|e==='chatgpt_search'\|\|e==='jev'\}\)\?'two-engine\/1':undefined/.test(js));
+t('Studio は2対象だけのとき two-engine/1 を付ける', /policy:engs\.every\(function\(e\)\{return e==='google_aio'\|\|e==='chatgpt_search'\|\|e==='jev'\}\)\?'two-engine\/1':undefined/.test(js));
+t('反復観測の何回目か：1〜20・数でなければ1', trialOf(3) === 3 && trialOf('2') === 2 && trialOf(0) === 1 && trialOf('x') === 1 && trialOf(99) === 20);
+const studioJs = fs.readFileSync(path.join(ROOT, 'assets/js/airreach-studio.js'), 'utf8');
+t('Studio は回数分の要求を分けて送り、観測 ID を付けて保存する', /trial:tr/.test(studioJs) && /r\.obs_id=obsOf\(r\)/.test(studioJs) && /obs_id:r\.obs_id\|\|undefined/.test(studioJs));
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
