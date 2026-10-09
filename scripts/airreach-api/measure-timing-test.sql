@@ -6,7 +6,7 @@ insert into public.staff_members (email, role, org_id, can_approve) values ('tb@
 insert into public.clients (id, name, org_id) values ('00000000-0000-0000-0000-0000000000a0', 'TBの顧客', null), ('00000000-0000-0000-0000-0000000000a1', 'もう1社', null);
 insert into public.client_members (client_id, email) values ('00000000-0000-0000-0000-0000000000a0', 'owner@c0.test'), ('00000000-0000-0000-0000-0000000000a1', 'owner@c1.test');
 insert into public.studio_workspaces (client_id, data, version) values ('00000000-0000-0000-0000-0000000000a0',
-  '{"studio":{"prompts":[{"text":"秘密の質問"}]},"orch":{"lastJob":{"confirm":{"entity":{"company":"株式会社サンプル","service":"美容室","at":"2026-09-01T00:00:00Z"}},"zipped":{"at":"2026-09-10T00:00:00Z","version":1,"faq":[{"q":"x"}]},"verified":{"ok":true,"at":"2026-09-28T01:00:00Z"},"files":{"faq.html":"<p>中身</p>"}}}}', 1);
+  '{"studio":{"prompts":[{"text":"秘密の質問"}]},"orch":{"lastJob":{"confirm":{"entity":{"company":"株式会社サンプル","service":"美容室","at":"2026-09-01T00:00:00Z"}},"zipped":{"at":"2026-09-10T00:00:00Z","version":"1.0.0","faq":[{"q":"x"}]},"published":{"at":"2026-09-27T01:00:00Z","version":"1.0.0","url":"https://sample.example/faq/"},"verified":{"ok":true,"state":"ok","rule":"verify/2026.10.09","version":"1.0.0","at":"2026-09-28T01:00:00Z","zipped_at":"2026-09-10T00:00:00Z","url":"https://sample.example/faq/","final_url":"https://sample.example/faq/","checks":[{"detail":"秘密の答え"}]},"files":{"faq.html":"<p>中身</p>"}}}}', 1);
 insert into public.measurement_runs (client_id, measured_on, summary, created_at) values
   ('00000000-0000-0000-0000-0000000000a0', '2026-09-20', '{"answers":[{"engine":"google_aio","status":"ok"}]}', '2026-09-20T01:00:00Z'),
   ('00000000-0000-0000-0000-0000000000a0', '2026-10-01', '{"by":[]}', '2026-10-01T01:00:00Z');
@@ -21,8 +21,9 @@ set local role authenticated;
 
 select pg_temp.as_user('owner@c0.test');
 select pg_temp.ok('お客様：自分の顧客の日付が読める', (select (j ->> 'entity_at') = '2026-09-01T00:00:00Z' and (j ->> 'zipped_at') = '2026-09-10T00:00:00Z' and (j ->> 'verified_at') = '2026-09-28T01:00:00Z' and (j ->> 'verified_ok')::boolean from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') j) x));
+select pg_temp.ok('公開と照合の記録（publish_job）を返す：日時・版・URL・判定の版', (select (j #>> '{publish_job,published,at}') = '2026-09-27T01:00:00Z' and (j #>> '{publish_job,published,version}') = '1.0.0' and (j #>> '{publish_job,verified,state}') = 'ok' and (j #>> '{publish_job,verified,rule}') = 'verify/2026.10.09' and (j #>> '{publish_job,verified,url}') = 'https://sample.example/faq/' and (j #>> '{publish_job,zipped,version}') = '1.0.0' from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') j) x));
 select pg_temp.ok('前回の計測は「回答の記録がある計測」だけ（要約だけの古い記録は数えない）', (select (public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') ->> 'last_run_at')::timestamptz = '2026-09-20T01:00:00Z'));
-select pg_temp.ok('返すのは日付と ok だけ（会社名・質問・ZIP の中身は返さない）', (select not (j::text ~ '株式会社サンプル|秘密の質問|中身|faq') and (select count(*) from jsonb_object_keys(j)) = 5 from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') j) x));
+select pg_temp.ok('返すのは日付・版・指紋・URL・状態だけ（会社名・質問・ZIP の中身・照合の詳細は返さない）', (select not (j::text ~ '株式会社サンプル|秘密の質問|秘密の答え|中身|"faq"|checks') and (select count(*) from jsonb_object_keys(j)) = 6 from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') j) x));
 select pg_temp.denied('お客様：ほかの顧客は読めない', $q$select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a1')$q$);
 select pg_temp.as_user('p1@p1.test');
 select pg_temp.denied('共同会社の人：担当でない顧客は読めない', $q$select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0')$q$);

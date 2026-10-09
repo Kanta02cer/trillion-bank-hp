@@ -451,3 +451,12 @@ body:not(.has-job) [data-needs-job]{display:none}
 .avf-list li.is-warn .avf-mark { border: 2px solid var(--ars-line-strong); color: var(--ars-ink-2); }
 .avf-next { padding: 12px 14px; border-radius: var(--ars-r-sm); background: var(--ars-canvas); color: var(--ars-ink-2); font-size: 13px; }
 .avf-next ol { margin: 6px 0 0; padding-left: 20px; }
+
+/* ④ 公開して確かめる：公開・収録の記録（airreach-publish.js） */
+.apb { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }
+.apb-h { margin: 8px 0 0; font-size: 14px; font-weight: 600; color: var(--ars-ink); }
+.apb-st { margin: 0; padding: 8px 12px; border-radius: var(--ars-r-sm); font-size: 13px; overflow-wrap: anywhere; }
+.apb-st.is-ok { background: var(--ars-soft); color: var(--ars-ink); }
+.apb-st.is-wait { background: #fffbeb; color: #78350f; }
+.apb-f { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.apb-f label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ars-ink-2); flex: 1 1 220px; min-width: 0; }
