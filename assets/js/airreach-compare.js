@@ -52,7 +52,7 @@
         if (a.status !== 'measured') reasons.push('後の計測でこの AI を測っていません');
       }
       if (!reasons.length) {
-        var kb = A.conditionKey(b.rows[0]), ka = A.conditionKey(a.rows[0]);
+        var kb = A.conditionKey(Object.assign({}, b.rows[0], { judge_version: '' })), ka = A.conditionKey(Object.assign({}, a.rows[0], { judge_version: '' }));
         if (kb !== ka) {
           var cb = b.cond, ca = a.cond;
           if (cb.location !== ca.location) reasons.push('地域が違います（' + cb.location + ' → ' + ca.location + '）');

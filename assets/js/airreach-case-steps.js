@@ -28,6 +28,15 @@
   }
 
   var VERIFY_RULE = /^verify\/2026\.10\.09/; // 公開照合の判定の版（これより前の確認は、全文・見える本文で照合していない）
+  // URL をそろえて比べる（airreach-ai3.js の normUrl と同じ決まり：記事を見分ける id などの問い合わせは残し、追跡用だけ外す）
+  var TRACK = /^(utm_[a-z_]+|fbclid|gclid|gbraid|wbraid|yclid|msclkid|mc_cid|mc_eid|_ga|_gl|srsltid|ref|ref_src|igshid)$/i;
+  function urlKey(u) {
+    var s0 = String(u || '').trim().replace(/#.*$/, ''), q = '', i = s0.indexOf('?');
+    if (i >= 0) { q = s0.slice(i + 1); s0 = s0.slice(0, i); }
+    var base = s0.toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '');
+    var keep = q.split('&').filter(function (kv) { var k = kv.split('=')[0]; return k && !TRACK.test(k); }).sort();
+    return base + (keep.length ? '?' + keep.join('&') : '');
+  }
   /** 記録（公開・確認・収録）が、いまのパッチ（ZIP）と同じ版か */
   function sameVersion(rec, zipped) {
     if (!rec || !zipped) return false;
@@ -56,10 +65,34 @@
     else if (vf.state === 'review') { out.verified.state = 'review'; out.verified.why = '要確認（見える形で入ったかを確かめきれていない）'; }
     else if (!vf.ok || vf.state !== 'ok') { out.verified.state = 'ng'; out.verified.why = '入っていない・違うところがある'; }
     else if (out.published.ok && Date.parse(vf.at) < Date.parse(pb.at)) out.verified.why = '確かめたのが公開より前。公開のあとに確かめ直す';
+    // 公開したページと、照合したページ（と転送された先）が同じか。転送は認めない（転送先を公開した URL として記録し直す）
+    else if (out.published.ok && urlKey(vf.url) !== urlKey(pb.url)) out.verified.why = '照合したページ（' + vf.url + '）が、公開したページ（' + pb.url + '）と違う';
+    else if (vf.final_url && urlKey(vf.final_url) !== urlKey(vf.url)) out.verified.why = '照合したページが別の URL（' + vf.final_url + '）に転送された。転送先を公開した URL として記録し直して確かめる';
+    else if (!out.published.ok && pb && pb.url && urlKey(vf.url) !== urlKey(pb.url)) out.verified.why = '照合したページが、公開の記録のページと違う';
     else out.verified = { ok: true, state: 'ok', at: vf.at, why: '' };
     if (ix && ix.at && sameVersion(ix, z)) out.indexed = { ok: true, at: ix.at, how: ix.how || '' };
     out.done = out.published.ok && out.verified.ok;
     return out;
+  }
+
+  /**
+   * ⑤ の判定：公開前の計測（base）と公開後の計測（afters のどれか）が、前後比較（airreach-compare.js）で比べられるか。
+   *   比較の部品が無い・回答ごとの記録が無い（一覧の軽いデータ）ときは「未確認」（済みにしない）
+   */
+  function compareState(base, afters, o) {
+    var C = root.AirReachCompare;
+    var full = function (r) { var x = r && r.summary; return !!(x && Array.isArray(x.answers) && x.answers.length); };
+    if (!C || !root.AirReachAI3 || !full(base) || !afters.some(full)) return { ok: false, unknown: true, text: '比べられるかは未確認（回答ごとの記録で確かめる）' };
+    var why = '';
+    for (var i = afters.length - 1; i >= 0; i--) {
+      if (!full(afters[i])) continue;
+      try {
+        var c = C.compare(base, afters[i], o), e = c.engines.filter(function (x) { return x.main; })[0];
+        if (e && e.comparable && c.kind && c.kind.kind === 'effect') return { ok: true, text: 'AI による概要 ' + (e.diff > 0 ? '+' : e.diff < 0 ? '−' : '±') + Math.abs(e.diff) + 'ポイント' };
+        why = why || (e && e.reasons.length ? e.reasons.join('／') : (c.kind && c.kind.why) || '');
+      } catch (x) { why = why || '比べられませんでした'; }
+    }
+    return { ok: false, text: '比較を保留（' + (why || '条件がそろわない') + '）' };
   }
 
   /**
@@ -104,6 +137,15 @@
     return KIND_LABEL[t.kind] + '：' + when + '（' + KIND_WHY[t.kind] + (t.kind === 'monthly' ? '・前回 ' + day(t.base.toISOString()) : t.kind === 'effect' ? '・確かめた日 ' + day(t.base.toISOString()) : '') + '）' +
       (t.state === 'late' ? ' · ' + (-t.days) + '日遅れ' : t.state === 'due' && t.kind !== 'baseline' ? ' · 時期です' : '');
   }
+  /**
+   * お客様の画面の計測の時期：DB の airreach_measure_timing の結果から、担当者側と同じ規則（publishState）で判定する。
+   *   publish_job が無い（古い関数）・記録が足りない・版や URL が合わないときは、効果を測る時期にしない
+   */
+  function customerTiming(d, now) {
+    d = d || {};
+    var ps = d.publish_job ? publishState(d.publish_job, now) : null, okNow = !!(ps && ps.done);
+    return timing({ entityAt: d.entity_at, verifiedAt: okNow ? ps.verified.at : null, verifiedOk: okNow, publishedAt: okNow ? ps.published.at : null, lastRunAt: d.last_run_at }, now);
+  }
   /** お客様向けの1行（遅れは出さない） */
   function timingCustomer(t) {
     if (!t) return '';
@@ -143,6 +185,12 @@
         detail: ps.done ? (after.length && base ? '公開後の計測 ' + after.length + '回' : !base ? '公開前の計測がない（時系列の比較だけ）' : '公開後にまだ測っていない') : (zipped && runs.length > 1 ? '公開を確かめるまでは、計測どうしは時系列の比較' : '—') }
     ];
     // ⑤は④（公開と照合）が済んでから。再計測しただけで④を済みにしない
+    // ⑤ は「公開後の計測がある」だけでは済みにしない。前後比較（airreach-compare.js）と同じ決まりで、公開前の計測と比べられる公開後の計測があるときだけ済み
+    var cmpState = null;
+    if (ps.done && base && after.length) cmpState = compareState(base, after, { brand: opts.brand || (ent && (ent.brand || ent.company)) || '', publish: { at: ps.published.at, ok: true, version: zipped && zipped.version } });
+    if (cmpState) {
+      steps[4].done = cmpState.ok; steps[4].detail = cmpState.ok ? '公開前と公開後を比べられる（' + cmpState.text + '）' : cmpState.text;
+    }
     var cur = -1;
     steps.forEach(function (s, i) { s.state = s.done ? 'done' : (cur < 0 ? (cur = i, 'current') : 'todo'); });
     var NEXT = [
@@ -153,6 +201,8 @@
         why: '公開した日時と版を記録し、公開ページを描画して、承認した質問と答えの全文・構造化データ・採用したファイルが ZIP と同じかを見ます。' + (ps.published.why && ps.published.ok === false && zipped ? '（' + ps.published.why + '）' : ''), href: S + '#verify', button: '確かめる' },
       { title: '公開後の計測をして、比べる', why: '公開前と同じ質問・地域・AI・判定の版で測り、「AI 計測の記録」で2回を選んで比べます。', href: opts.runsHref || '#', button: '比べる' }
     ];
+    if (cmpState && !cmpState.ok) NEXT[4] = cmpState.unknown ? { title: '公開前と公開後を比べられるか確かめる', why: cmpState.text + '。「AI 計測の記録」で2回を選ぶと、比べられるかと理由が出ます。', href: opts.runsHref || '#', button: '比べる' }
+      : { title: '比較を保留：条件をそろえて公開後に測り直す', why: cmpState.text + '。公開前と同じ質問・地域・AI・判定の版で測ります。', href: S + '#hack2', button: '計測に進む' };
     var next = cur >= 0 ? NEXT[cur] : { title: '次の改善を始める', why: '効果を確かめました。課題を見直して、次のパッチを作ります。', href: S + '#generator', button: '次の改善へ' };
     var lastRun = runs.length ? runs[runs.length - 1] : null;
     var tm = timing({ entityAt: ent && ent.at, verifiedAt: ps.verified.ok ? ps.verified.at : null, verifiedOk: ps.done, publishedAt: ps.published.ok ? ps.published.at : null, lastRunAt: lastRun ? (lastRun.created_at || lastRun.measured_on) : null }, opts.now);
@@ -176,7 +226,7 @@
       (res.publish && res.publish.zipped ? '<p class="acs-index">Google の収録（5段階とは別）　' + (res.publish.indexed.ok ? '確かめた ' + esc(day(res.publish.indexed.at)) + (res.publish.indexed.how ? '（' + esc(res.publish.indexed.how) + '）' : '') : '未確認') + '</p>' : '') + (res.timing !== undefined ? '<p class="acs-timing' + (res.timing && res.timing.state === 'late' ? ' is-late' : '') + '">計測の予定　' + esc(timingLine(res.timing)) + '</p>' : '') + '</section>';
   }
 
-  var api = { compute: compute, cardHtml: cardHtml, aioOf: aioOf, publishState: publishState, sameVersion: sameVersion, timing: timing, timingChip: timingChip, timingLine: timingLine, timingCustomer: timingCustomer, KIND_LABEL: KIND_LABEL };
+  var api = { compute: compute, customerTiming: customerTiming, cardHtml: cardHtml, aioOf: aioOf, publishState: publishState, sameVersion: sameVersion, urlKey: urlKey, compareState: compareState, timing: timing, timingChip: timingChip, timingLine: timingLine, timingCustomer: timingCustomer, KIND_LABEL: KIND_LABEL };
   root.AirReachCaseSteps = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -428,9 +428,8 @@
       var mt = root.querySelector('[data-mtiming]');
       if (mt && window.AirReachCaseSteps) sb.rpc('airreach_measure_timing', { p_client_id: c.id }).then(function (x) {
         if (x.error || !x.data) return;
-        // いまの版の公開を、見える形で確かめたときだけ「効果を測る」時期にする（DB の関数が古い形なら、公開の記録が無いものとして扱う）
-        var d = x.data, okNow = !!(d.verified_ok && d.verified_state === 'ok' && /^verify\/2026\.10\.09/.test(d.verified_rule || '') && d.published_at && d.zipped_version != null && d.verified_version === d.zipped_version && d.published_version === d.zipped_version);
-        var t = window.AirReachCaseSteps.timing({ entityAt: d.entity_at, verifiedAt: okNow ? d.verified_at : null, verifiedOk: okNow, publishedAt: okNow ? d.published_at : null, lastRunAt: d.last_run_at });
+        // 判定は担当者側と同じ規則（airreach-case-steps.js の customerTiming → publishState）。古い関数なら効果の時期を案内しない
+        var t = window.AirReachCaseSteps.customerTiming(x.data);
         var txt = window.AirReachCaseSteps.timingCustomer(t);
         if (txt) mt.innerHTML = '<section class="arc-card amt-cust"><h2 class="arc-h2">次の計測</h2><p>' + esc(txt) + '</p><p class="arc-note">担当者が、同じ質問・同じ地域で AI に聞いて、名前が出るかを測ります。結果は月次レポートでお知らせします。</p></section>';
       }, function () {});

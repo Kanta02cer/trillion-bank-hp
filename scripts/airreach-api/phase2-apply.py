@@ -428,7 +428,7 @@ def cmd_apply_measure_timing_publish():
     print('migration を適用しました: airreach_measure_timing_publish')
     fn = "'public.airreach_measure_timing(uuid)'"
     checks = [
-        ('関数が公開の記録を返す', f"select position('published_at' in pg_get_functiondef(to_regprocedure({fn}))) > 0 as ok"),
+        ('関数が公開と照合の記録（publish_job）を返す', f"select position('publish_job' in pg_get_functiondef(to_regprocedure({fn}))) > 0 as ok"),
         ('ログインした人だけが呼べる（anon は呼べない）', f"select has_function_privilege('authenticated', {fn}, 'execute') and not has_function_privilege('anon', {fn}, 'execute') as ok"),
     ]
     bad = 0
