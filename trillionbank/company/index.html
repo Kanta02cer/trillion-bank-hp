@@ -29,6 +29,12 @@ permalink: /trillionbank/company/
 }
 </script>
 
+<style>
+@media(max-width:700px){
+  body[data-site-refresh="company"] section .rv[style*="grid-template-columns:minmax(180px,280px)"]{grid-template-columns:1fr!important}
+  body[data-site-refresh="company"] section .rv[style*="grid-template-columns:minmax(180px,280px)"] img{width:min(220px,70vw)}
+}
+</style>
 </head>
 <body class="tb-refresh" data-site-refresh="company">{% include tb-refresh-header.html %}{% include tb-toriuru-guide.html %}
 <main id="main">
@@ -54,10 +60,15 @@ permalink: /trillionbank/company/
   <a class="rv" href="/trillionbank/business/pay-per-crawl/" style="text-decoration:none;color:inherit"><h3 style="font-weight:700;font-size:1.3rem;margin-bottom:6px">Pay per Crawl</h3><p style="font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;color:var(--muted);margin-bottom:8px">研究開発</p><p style="color:var(--muted);font-size:.88rem">AIコンテンツ利用を制御・記録・正規化</p></a>
 </div></div></section>
 
-<section class="sec tbr-scene tbr-character-left" style="padding-top:0" data-toriuru-scene data-pose="point-right" data-x="18" data-y="50" data-scale=".88"><div class="wrap"><div class="khead"><span class="no">03 — FOUNDER</span><h2 class="rv">代表</h2></div>
-<div class="rv" style="display:flex;gap:clamp(20px,3vw,36px);align-items:flex-start;max-width:44em">
-  <img src="{{ '/images/ceo-kanta.webp' | relative_url }}" alt="井上 幹太" width="120" height="120" loading="lazy" style="width:clamp(80px,12vw,120px);height:clamp(80px,12vw,120px);border-radius:50%;object-fit:cover;flex:none">
-  <div><p style="font-weight:700;font-size:1.2rem">井上 幹太（イノウエ カンタ）</p><p style="color:var(--muted);margin-top:8px">代表取締役。AI検索時代の情報流通を「測る・守る・正規化する」ことを掲げ、AirReach ConsultingおよびPay per Crawlの研究開発・事業化に取り組む。</p></div>
+<section class="sec tbr-scene tbr-scene--dense" data-toriuru-scene data-toriuru-hide="true"><div class="wrap">
+<div class="rv" style="display:grid;grid-template-columns:minmax(180px,280px) minmax(0,1fr);gap:clamp(28px,5vw,72px);align-items:start;max-width:900px">
+  <img src="{{ '/images/ceo-kanta.webp' | relative_url }}" alt="代表取締役 井上 幹太" width="560" height="560" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover">
+  <div>
+    <span class="sl" style="display:block;margin-bottom:14px">代表</span>
+    <h2 style="font-size:clamp(1.8rem,3vw,2.8rem);line-height:1.25;margin-bottom:16px">井上 幹太</h2>
+    <p style="font-weight:600;margin-bottom:12px">代表取締役</p>
+    <p style="color:var(--muted);max-width:38em">AI検索時代の情報流通を「測る・守る・正規化する」ことを掲げ、AirReach ConsultingおよびPay per Crawlの研究開発・事業化に取り組む。</p>
+  </div>
 </div>
 </div></section>
 
@@ -69,7 +80,6 @@ permalink: /trillionbank/company/
   <a class="btn btn-line" href="{{ '/trillionbank/contact/' | relative_url }}#form" data-event="contact_page_open" data-inquiry="company" data-cta="company_contact_form">お問い合わせフォームへ <span class="a" aria-hidden="true">→</span></a>
 </div>
 </div></section>
-</main>
 <section class="sec tbr-scene tbr-character-right" id="company-faq" aria-labelledby="company-faq-heading" data-toriuru-scene data-pose="explain" data-x="80" data-y="50" data-scale=".8">
   <div class="wrap">
     <p class="sl">FAQ</p>
@@ -90,5 +100,6 @@ permalink: /trillionbank/company/
     </div>
   </div>
 </section>
+</main>
 
-{% include tb-footer.html refresh_navigation=true %}</body></html>
+{% include tb-footer-safe.html refresh_navigation=true %}</body></html>
