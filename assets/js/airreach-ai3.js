@@ -24,7 +24,16 @@
   ];
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function pct(n, d) { return d ? Math.round(n / d * 1000) / 10 : null; }
-  function normUrl(u) { return String(u || '').trim().toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/[?#].*$/, '').replace(/\/+$/, ''); }
+  // URL をそろえる。記事を見分ける問い合わせ（article.php?id=111 の id など）は残し、追跡用（utm_* など）だけ外す。
+  // 以前は ? 以降をすべて外していたため、id=111 と id=222 を同じ記事として数えていた
+  var TRACK = /^(utm_[a-z_]+|fbclid|gclid|gbraid|wbraid|yclid|msclkid|mc_cid|mc_eid|_ga|_gl|srsltid|ref|ref_src|igshid)$/i;
+  function normUrl(u) {
+    var s0 = String(u || '').trim().replace(/#.*$/, ''), q = '', i = s0.indexOf('?');
+    if (i >= 0) { q = s0.slice(i + 1); s0 = s0.slice(0, i); }
+    var base = s0.toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '');
+    var keep = q.split('&').filter(function (kv) { var k = kv.split('=')[0]; return k && !TRACK.test(decodeURIComponent(k)); }).sort();
+    return base + (keep.length ? '?' + keep.join('&') : '');
+  }
 
   /** 行がどの主表示の AI か（ChatGPT は検索ありだけを主表示にする。検索なしは別の履歴） */
   function engineOf(r) {
@@ -35,10 +44,10 @@
     if (e === 'chatgpt' || e === 'openai' || /^chatgpt/.test(e)) return c.search === true && c.engine === 'chatgpt_search' ? 'chatgpt_search' : 'chatgpt_nosearch';
     return e || 'other';
   }
-  /** 同じ条件かを見る鍵：AI・検索の有無・地域・モデル（と、渡されれば質問の版） */
+  /** 同じ条件かを見る鍵：AI・検索の有無・地域・モデル・判定の版（と、渡されれば質問の版） */
   function conditionKey(r, version) {
     var c = r.conditions || {};
-    return [engineOf(r), c.search === false ? 'nosearch' : 'search', c.location || 'JP', c.model || r.model || '', version || ''].join('|');
+    return [engineOf(r), c.search === false ? 'nosearch' : 'search', c.location || 'JP', c.model || r.model || '', r.judge_version || '', version || ''].join('|');
   }
 
   // 「〇〇は確認できません」「〇〇という会社は見つかりません」のような否定は、名前が出ても言及に数えない
@@ -191,7 +200,7 @@
     Array.prototype.forEach.call(box.querySelectorAll('[data-ai3-seg]'), function (b) { b.addEventListener('click', function () { render(box, rows, Object.assign({}, opts, { segment: b.getAttribute('data-ai3-seg') })); }); });
   }
 
-  var api = { MAIN: MAIN, isBranded: isBranded, bySegment: bySegment, engineOf: engineOf, conditionKey: conditionKey, outcome: outcome, tally: tally, summarize: summarize, render: render };
+  var api = { MAIN: MAIN, normUrl: normUrl, isBranded: isBranded, bySegment: bySegment, engineOf: engineOf, conditionKey: conditionKey, outcome: outcome, tally: tally, summarize: summarize, render: render };
   root.AirReachAI3 = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

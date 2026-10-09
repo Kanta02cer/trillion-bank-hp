@@ -435,6 +435,11 @@ body:not(.has-job) [data-needs-job]{display:none}
 .avf-res { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: var(--ars-r-sm); border: 1px solid var(--ars-line); }
 .avf-res.is-ok { border-color: var(--ars-blue); background: var(--ars-soft); }
 .avf-res.is-ng { border-color: var(--ars-line-strong); background: var(--ars-canvas); }
+.avf-res.is-review { border-color: #d97706; background: #fffbeb; }
+.avf-list li.is-review .avf-mark { color: #b45309; }
+.avf-note { margin: 8px 0 0; font-size: 12px; color: var(--ars-muted); }
+.avf-form .avf-sub { margin-top: 10px; }
+.avf-form #verify-org-url { width: 100%; box-sizing: border-box; }
 .avf-res small { color: var(--ars-muted); overflow-wrap: anywhere; }
 .avf-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; }
 .avf-list li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--ars-line); }
@@ -446,6 +451,15 @@ body:not(.has-job) [data-needs-job]{display:none}
 .avf-list li.is-warn .avf-mark { border: 2px solid var(--ars-line-strong); color: var(--ars-ink-2); }
 .avf-next { padding: 12px 14px; border-radius: var(--ars-r-sm); background: var(--ars-canvas); color: var(--ars-ink-2); font-size: 13px; }
 .avf-next ol { margin: 6px 0 0; padding-left: 20px; }
+
+/* ④ 公開して確かめる：公開・収録の記録（airreach-publish.js） */
+.apb { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }
+.apb-h { margin: 8px 0 0; font-size: 14px; font-weight: 600; color: var(--ars-ink); }
+.apb-st { margin: 0; padding: 8px 12px; border-radius: var(--ars-r-sm); font-size: 13px; overflow-wrap: anywhere; }
+.apb-st.is-ok { background: var(--ars-soft); color: var(--ars-ink); }
+.apb-st.is-wait { background: #fffbeb; color: #78350f; }
+.apb-f { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.apb-f label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ars-ink-2); flex: 1 1 220px; min-width: 0; }
 
 /* 計測する AI：既定は2対象（AI による概要・検索ありの ChatGPT）。ほかの AI はたたむ */
 .ars-other-ai { margin: 4px 0 8px; font-size: 13px; color: var(--ars-ink-2); }

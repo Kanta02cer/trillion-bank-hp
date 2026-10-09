@@ -249,7 +249,7 @@
     var ai = c.ai || null, tr = c.traffic || {};
     var kpi = [];
     // 2026年10月から：Google の AI による概要に名前が出た回数（一般の質問）を一覧の先頭に
-    if (c.aio && c.aio.now) kpi.push('<tr><th>Google の AI による概要に名前が出た回数（名前を入れていない質問）</th><td>' + (c.aio.prev ? esc(c.aio.prev.x) + ' / ' + esc(c.aio.prev.n) + '回' : '<span class="arr-na">—</span>') + '</td><td>' + esc(c.aio.now.x) + ' / ' + esc(c.aio.now.n) + '回</td><td>' + (c.aio.comparable && c.aio.diff != null ? (c.aio.diff > 0 ? '+' : '') + esc(c.aio.diff) + 'pt' : '<span class="arr-na">' + (c.aio.prev ? '条件が違う' : '—') + '</span>') + '</td></tr>');
+    if (c.aio && c.aio.now) kpi.push('<tr><th>Google の AI による概要に名前が出た回数（名前を入れていない質問）</th><td>' + (c.aio.prev ? esc(c.aio.prev.x) + ' / ' + esc(c.aio.prev.n) + '回' : '<span class="arr-na">—</span>') + '</td><td>' + esc(c.aio.now.x) + ' / ' + esc(c.aio.now.n) + '回</td><td>' + (c.aio.comparable && c.aio.diff != null ? (c.aio.diff > 0 ? '+' : '') + esc(c.aio.diff) + 'pt' : '<span class="arr-na">' + (c.aio.prev ? '条件がそろわない' : '—') + '</span>') + '</td></tr>');
     kpi.push('<tr><th>ホームページの情報整備' + tag('judged') + '</th><td>' + v(prev && prev.overall, '点') + '</td><td>' + v(cur && cur.overall, '点') + '</td><td>' + d(site.overallDelta, '点') + '</td></tr>');
     if (ai) ai.providers.forEach(function (p) {
       kpi.push('<tr><th>AIの回答で公式サイトが出典になった割合（' + esc(prov(p.provider)) + '）' + tag('reference') + '</th><td>' + v(p.prevCiteRate, '%') + '</td><td>' + v(p.citeRate, '%') + '</td><td>' + d(p.citeDelta, 'ポイント') + '</td></tr>');

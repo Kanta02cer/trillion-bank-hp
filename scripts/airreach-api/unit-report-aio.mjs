@@ -14,8 +14,8 @@ let pass = 0, fail = 0;
 const t = (n, ok, got) => { if (ok) { pass++; console.log('PASS', n); } else { fail++; console.log('FAIL', n, got === undefined ? '' : JSON.stringify(got).slice(0, 300)); } };
 const cond = (x) => Object.assign({ engine: 'google_aio', search: true, location: 'JP', model: 'serpapi/x' }, x || {});
 const Q = ['渋谷でおすすめの美容室は？', '渋谷で縮毛矯正が上手い美容室は？', '渋谷駅近くのカラーは？', '渋谷の個室美容室は？', '渋谷で安いカットは？'];
-const ans = (pat, x) => Q.map((q, i) => ({ prompt: q, engine: 'google_aio', status: pat[i] === 's' ? 'not_shown' : pat[i] === 'e' ? 'error' : 'ok', mentioned: pat[i] === 'm' ? 1 : pat[i] === 'n' ? 0 : null, conditions: cond(x) }))
-  .concat([{ prompt: 'サンプル美容室 Hana の評判は？', engine: 'google_aio', status: 'ok', mentioned: 1, conditions: cond(x) }]);
+const ans = (pat, x) => Q.map((q, i) => ({ prompt: q, engine: 'google_aio', status: pat[i] === 's' ? 'not_shown' : pat[i] === 'e' ? 'error' : 'ok', mentioned: pat[i] === 'm' ? 1 : pat[i] === 'n' ? 0 : null, judge_version: 'judge/2026.10.08', brand: 'サンプル美容室 Hana', conditions: cond(x) }))
+  .concat([{ prompt: 'サンプル美容室 Hana の評判は？', engine: 'google_aio', status: 'ok', mentioned: 1, judge_version: 'judge/2026.10.08', brand: 'サンプル美容室 Hana', conditions: cond(x) }]);
 const run = (day, pat, x, ver) => ({ measured_on: day, created_at: day + 'T02:00:00Z', query_set_version: ver || 'v3', summary: { answers: ans(pat, x), by: [] } });
 const client = { id: 'c1', name: 'サンプル美容室 Hana' };
 let c = R.compileReport({ client, periodMonth: '2026-10-01', now: new Date('2026-10-28T00:00:00Z'), scans: [], runs: [run('2026-09-07', 'mnsne'), run('2026-10-28', 'mmsmn')], traffic: [], actions: [] });
@@ -32,5 +32,8 @@ c = R.compileReport({ client, periodMonth: '2026-10-01', now: new Date('2026-10-
 const h = C.aioHero(c);
 t('レポート：X / N 回・出現率・先月・数え方の注記', /<b>3<\/b> \/ 5回/.test(h) && /出現率 60%/.test(h) && /先月 1 \/ 4回（出現率 \+35ポイント）/.test(h) && /2026年10月から/.test(h), h);
 t('aio が無い古いレポートでは何も出さない', C.aioHero({}) === '' && C.aioHero({ aio: null }) === '');
+{ const o = (ps) => ps.map((r) => Object.assign({}, r, { summary: { answers: r.summary.answers.map((a) => { const b = Object.assign({}, a); delete b.judge_version; return b; }), by: [] } }));
+  const cc = R.compileReport({ client, periodMonth: '2026-10-01', now: new Date('2026-10-28T00:00:00Z'), scans: [], runs: o([run('2026-09-07', 'mnsne'), run('2026-10-28', 'mmsmn')]), traffic: [], actions: [] });
+  t('判定の版が記録されていない月どうしは差を出さない（理由を残す）', cc.aio && !cc.aio.comparable && cc.aio.diff === null && /判定の版/.test(cc.aio.reason), cc.aio); }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

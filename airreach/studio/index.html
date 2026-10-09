@@ -50,7 +50,7 @@ robots: "noindex, follow"
       <button data-panel="hack2"><span class="n">7</span>AI計測</button>
       <button data-panel="google"><span class="n">8</span>Google 連携</button>
       <button data-panel="timeseries"><span class="n">9</span>推移</button>
-      <button data-panel="verify"><span class="n">10</span>入れたか確かめる</button>
+      <button data-panel="verify"><span class="n">10</span>公開して確かめる</button>
     </aside>
 
     <section class="ars-main" id="ars-main" tabindex="-1">
@@ -318,19 +318,23 @@ robots: "noindex, follow"
       </div>
 
       <div class="ars-panel" data-panel-view="verify">
-        <div class="ars-title-row"><div><h2>④ 入れたか確かめる</h2><p class="ars-sub">パッチをサイトに入れたら、公開ページを読んで、ZIP と同じものが入っているかを確かめます。分かるのは「サイトに入ったか」までです（Google が読んだか・効果が出たかは別に確かめます）。</p></div></div>
+        <div class="ars-title-row"><div><h2>④ 公開して確かめる</h2><p class="ars-sub">お客様のサイトで公開したら、公開した日時を記録し、公開ページを読んで、承認した内容が見える形で入っているかを確かめます。分かるのは「サイトに入ったか」までです（Google の収録・AI の答えの変化は別に確かめます）。</p></div></div>
         <div class="ars-card avf">
+          <div id="publish-box"></div>
           <div class="avf-form">
             <label for="verify-url">よくある質問を載せたページの URL</label>
             <div class="ars-row"><input class="ars-input" id="verify-url" placeholder="https://example.jp/faq/" inputmode="url" autocomplete="off"><button type="button" class="ars-btn ars-btn-primary" id="verify-run">確かめる</button></div>
-            <p class="ars-gnote" id="verify-zip-note"></p>
+            <label for="verify-org-url" class="avf-sub">会社の情報を入れたページ（トップページなど・上と別のときだけ）</label>
+            <input class="ars-input" id="verify-org-url" placeholder="https://example.jp/" inputmode="url" autocomplete="off">
+                        <p class="ars-gnote" id="verify-zip-note"></p>
           </div>
           <div id="verify-result" aria-live="polite"></div>
+          <div id="indexed-box"></div>
           <div class="avf-next">
             <b>確かめたあと</b>
             <ol>
-              <li>Google が新しいページを読んだかは、Search Console の「URL 検査」で見ます（最後に読んだ日・よくある質問のデータを認識したか）。</li>
-              <li>Google が読んだら、導入前と同じ条件（同じ質問・地域・AI）で測り、ダッシュボードの「効果を比べる」で2回を選びます。</li>
+              <li>Google が新しいページを読んだかは、Search Console の「URL 検査」で見て、上の「Google の収録」に記録します。</li>
+              <li>公開前と同じ条件（同じ質問・地域・AI・判定の版）で測り、ダッシュボードの「効果を比べる」で、公開の前と後の2回を選びます。再計測の時期（公開を確かめてから14日後）は運用の目安で、Google の反映や AI の表示を保証するものではありません。</li>
             </ol>
           </div>
         </div>
@@ -448,6 +452,8 @@ robots: "noindex, follow"
 <script src="/assets/js/airreach-confirm.js" defer></script>
 <script src="/assets/js/airreach-orchestrator.js" defer></script>
 <script src="/assets/js/airreach-verify.js" defer></script>
+<script src="/assets/js/airreach-publish.js" defer></script>
+<script src="/assets/js/airreach-compare.js" defer></script>
 <script src="/assets/js/airreach-case-steps.js" defer></script>
 <script src="/assets/js/airreach-studio-steps.js" defer></script>
 <script src="/assets/js/airreach-orch-phase2.js" defer></script>
