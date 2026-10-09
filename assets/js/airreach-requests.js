@@ -41,6 +41,7 @@
   function nameCandidates(summary, opt) {
     opt = opt || {};
     var answers = summary && Array.isArray(summary.answers) ? summary.answers : [];
+    if (typeof window !== 'undefined' && window.AirReachAI3 && window.AirReachAI3.finalRows) answers = window.AirReachAI3.finalRows(answers);
     var brand = opt.brand || '';
     var comp = (opt.competitors || []).map(function (c) { return String(c.name || '').toLowerCase().replace(/\s+/g, ''); });
     var by = {};

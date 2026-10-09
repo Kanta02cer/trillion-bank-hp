@@ -106,7 +106,11 @@ export default async function handler(req, res) {
   const rows = [];
   const engineStatus = {};
 
-  const measured = await measureEngines({ brand, prompts, engines, competitors, pageText, pageUrl, pageTitle, date, location });
+  // trial：同じ検索語を何回目に聞いたか（反復観測。1回の要求は1回分。Studio が回数分の要求を分けて送る）
+  const trial = trialOf(body.trial);
+  // キャッシュの方針（AI による概要）：反復の計測では no_cache（同じ結果のキャッシュを別の観測として数えないため。費用は回数分）
+  const cache = body.cache === 'no_cache' ? 'no_cache' : 'allow_cache';
+  const measured = await measureEngines({ brand, prompts, engines, competitors, pageText, pageUrl, pageTitle, date, location, trial, cache });
   measured.rows.forEach((r) => rows.push(r));
   Object.assign(engineStatus, measured.engineStatus);
 
@@ -157,7 +161,7 @@ export default async function handler(req, res) {
  * 計測の本体（Studio の計測 API と定期計測の両方から使う）。AI ごとに並べて聞き、行と AI ごとの状態を返す
  *   prompts: [{ keyword, prompt }] / engines: normalizeEngines 済み / competitors: [{ name, url }]
  */
-export async function measureEngines({ brand, prompts, engines, competitors, pageText = '', pageUrl = null, pageTitle = null, date = new Date().toISOString().slice(0, 10), location = null }) {
+export async function measureEngines({ brand, prompts, engines, competitors, pageText = '', pageUrl = null, pageTitle = null, date = new Date().toISOString().slice(0, 10), location = null, trial = 1, cache = 'allow_cache' }) {
   const rows = [];
   const engineStatus = {};
   await Promise.all(engines.map(async (engine) => {
@@ -181,7 +185,7 @@ export async function measureEngines({ brand, prompts, engines, competitors, pag
         });
         engineStatus.jev = { ok: true, count: judged.length, evidenceClass: 'Estimated' };
       } else {
-        const live = await measureWithProvider(engine, brand, prompts, pageUrl, competitors, { location });
+        const live = await measureWithProvider(engine, brand, prompts, pageUrl, competitors, { location, trial, cache });
         live.rows.forEach((r) => {
           rows.push(Object.assign({ measurement_date: date, url: pageUrl || '' }, r));
         });
@@ -306,6 +310,8 @@ function normalizePrompts(raw) {
  * 計測する AI の決まり（2026-10-08 の方針・10/9 の受入）。policy が 'two-engine/1' のときは、AI による概要（google_aio）と
  * 検索ありの ChatGPT（chatgpt_search）と、外部に聞かない推定（jev）だけを許す。ほかの AI・知らない決まりは断る（代わりの AI に落とさない）
  */
+/** 反復観測の何回目か（1〜20。数でなければ1） */
+export function trialOf(v) { return Math.min(20, Math.max(1, parseInt(v, 10) || 1)); }
 export const TWO_ENGINE_POLICY = 'two-engine/1';
 export function enginePolicyError(policy, engines) {
   if (policy == null || policy === '') return null;
@@ -547,8 +553,8 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors,
   // Gemini は遅いと他の AI の結果まで待たせる（Studio は全部の AI を1回の要求で聞く）。Gemini だけ持ち時間を短くし、超えたら失敗として先に返す
   const deadline = Date.now() + (ENGINE_BUDGET_MS[engine] || 240000);
   const rows = await mapLimit(prompts, 2, async (p) => {
-    // trial：同じ計測の中で同じ質問を何回目に聞いたか（いまは1回ずつ）。judge_version：言及・引用を判定したルールの版
-    const base = { engine: engineLabel(engine), keyword: p.keyword || p.prompt, prompt: p.prompt, evidenceClass: 'Observed', trial: 1, judge_version: JUDGE_VERSION,
+    // trial：同じ計測の中で同じ検索語を何回目に聞いたか。prompt_raw：送った検索語の原文（AI による概要には、この文をそのまま検索語として送る）。judge_version：言及・引用を判定したルールの版
+    const base = { engine: engineLabel(engine), keyword: p.keyword || p.prompt, prompt: p.prompt, prompt_raw: p.prompt, evidenceClass: 'Observed', trial: trialOf(opts.trial), judge_version: JUDGE_VERSION,
       model: conditions.model, source: useGateway ? 'Vercel AI Gateway / ' + engineLabel(engine) : engineLabel(engine) + ' API', measured_at: measuredAt, conditions };
     let out;
     try {
@@ -560,9 +566,9 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors,
           catch (e) { if (/rate limit|回数の上限|429/i.test(String((e && e.message) || e))) throw e; got = null; }
           if (got && !got.answer) got = null;
         }
-        if (!got) got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt, location)), deadline);
+        if (!got) got = await withRateRetry(() => (useGateway ? callViaGateway(engine, gatewayKey, p.prompt) : callProvider(engine, directKey, p.prompt, location, { cache: opts.cache })), deadline);
         out = got && typeof got === 'object'
-          ? { answer: got.answer, citations: got.citations, searched: got.searched != null ? got.searched : engine === 'perplexity', fields: got.fields, shown: got.shown, location_used: got.location_used || null, model_used: got.model_used || null }
+          ? { answer: got.answer, citations: got.citations, searched: got.searched != null ? got.searched : engine === 'perplexity', fields: got.fields, shown: got.shown, location_used: got.location_used || null, model_used: got.model_used || null, fetch: got.fetch || null }
           : { answer: got, citations: null, searched: engine === 'perplexity' };
       }
     } catch (err) {
@@ -606,6 +612,8 @@ async function measureWithProvider(engine, brand, prompts, pageUrl, competitors,
       // 根拠の確認用に、回答の本文を残す（長すぎる分は切る）
       answer_text: String(out.answer || '').slice(0, 4000),
       citation_fields: out.fields || null,
+      // 取得の記録（取得元の検索 ID・日時・キャッシュの方針）。同じ取得元 ID の結果は、集計で別の観測にしない
+      fetch: out.fetch || null,
       ai_shown: out.shown == null ? null : !!out.shown
     });
   });
@@ -920,18 +928,34 @@ export function serpAnswer(part) {
   const refs = (p.references || []).map((r) => r && r.link).filter((u) => /^https?:\/\//i.test(String(u || '')));
   return { answer: serpBlocksText(p.text_blocks), citations: refs.filter((u, i, a) => a.indexOf(u) === i).slice(0, 20) };
 }
-export async function callSerpAio(key, prompt, location) {
-  const data = await serpGet({ engine: 'google', q: prompt, google_domain: 'google.co.jp', location: location || '' }, key);
+/**
+ * 取得の記録（取得元の検索 ID・作られた日時・こちらが頼んだ日時・キャッシュの方針）。
+ *   SerpApi の公式の説明（2026-10-09 確認）：同じ検索は1時間キャッシュされ、キャッシュの結果は無料で回数に数えない。no_cache=true でキャッシュを使わない。
+ *   キャッシュの結果が同じ検索 ID を返すかは公式に書かれていないので、ID が同じ・または作られた日時が頼んだ日時より前（60秒以上）なら、キャッシュとみなす
+ */
+export function serpFetchInfo(data, requestedAt, cachePolicy, followup) {
+  const m = (data && data.search_metadata) || {};
+  const created = m.created_at ? Date.parse(String(m.created_at).replace(' UTC', 'Z').replace(' ', 'T')) : NaN;
+  const req = Date.parse(requestedAt);
+  return { provider: 'serpapi', provider_id: m.id || null, provider_created_at: isNaN(created) ? null : new Date(created).toISOString(), requested_at: requestedAt,
+    cache_policy: cachePolicy, cache_hit: !isNaN(created) && !isNaN(req) && created < req - 60000, followup_id: followup || null };
+}
+export async function callSerpAio(key, prompt, location, opts = {}) {
+  const requestedAt = new Date().toISOString();
+  const cachePolicy = opts.noCache ? 'no_cache' : 'allow_cache';
+  const data = await serpGet(Object.assign({ engine: 'google', q: prompt, google_domain: 'google.co.jp', location: location || '' }, opts.noCache ? { no_cache: 'true' } : {}), key);
   const used = serpLocationUsed(data);
-  let aio = data.ai_overview || null;
-  // 後から読み込まれる形のときは、page_token でもう1回取る
+  let aio = data.ai_overview || null, followup = null;
+  // 後から読み込まれる形のときは、page_token でもう1回取る（後続の取得。同じ観測の一部として記録し、別の観測にしない）
   if (aio && aio.page_token && !(aio.text_blocks && aio.text_blocks.length)) {
     const d2 = await serpGet({ engine: 'google_ai_overview', page_token: aio.page_token }, key);
+    followup = (d2 && d2.search_metadata && d2.search_metadata.id) || 'page_token';
     aio = d2.ai_overview || aio;
   }
-  if (!aio || !(aio.text_blocks && aio.text_blocks.length)) return { answer: '', citations: [], searched: true, shown: false, fields: ['serpapi', 'aio_not_shown'], location_used: used };
+  const fetchInfo = serpFetchInfo(data, requestedAt, cachePolicy, followup);
+  if (!aio || !(aio.text_blocks && aio.text_blocks.length)) return { answer: '', citations: [], searched: true, shown: false, fields: ['serpapi', 'aio_not_shown'], location_used: used, fetch: fetchInfo };
   const a = serpAnswer(aio);
-  return { answer: a.answer, citations: a.citations, searched: true, shown: true, fields: ['serpapi', 'ai_overview'], location_used: used };
+  return { answer: a.answer, citations: a.citations, searched: true, shown: true, fields: ['serpapi', 'ai_overview'], location_used: used, fetch: fetchInfo };
 }
 export async function callSerpAiMode(key, prompt, location) {
   const data = await serpGet({ engine: 'google_ai_mode', q: prompt, location: location || '' }, key);
@@ -995,11 +1019,11 @@ export async function parseGeminiResponse(data, resolve) {
   return { answer, citations: list.length ? list : null, searched, fields: ['gemini'].concat(gm ? ['groundingMetadata'] : []) };
 }
 
-async function callProvider(engine, key, prompt, location) {
+async function callProvider(engine, key, prompt, location, popts = {}) {
   const system =
     'You are answering a Japanese business search question. Be concise. Prefer factual sources when known.';
   if (engine === 'gemini') return callGemini(key, prompt);
-  if (engine === 'google_aio') return callSerpAio(key, prompt, location);
+  if (engine === 'google_aio') return callSerpAio(key, prompt, location, { noCache: popts.cache === 'no_cache' });
   if (engine === 'google_ai_mode') return callSerpAiMode(key, prompt, location);
   if (engine === 'chatgpt_search') return callOpenAISearch(key, prompt, location);
   if (engine === 'chatgpt') {

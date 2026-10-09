@@ -530,7 +530,8 @@
    *   その月のいちばん新しい計測と、前の月のいちばん新しい計測を、airreach-ai3.js と同じ数え方で（概要が出なかった検索も分母に入れ、取得失敗は入れない）。
    *   前月との差は、条件（地域・モデル・質問の版・聞いた質問）が同じときだけ（airreach-compare.js）。部品が無い環境では null（レポートは今までどおり）
    */
-  function aioKpi(runs, m, pm, client) {
+  function aioKpi(runs, m, pm, client, key) {
+    key = key || 'aio';
     var A = root && root.AirReachAI3, CP = root && root.AirReachCompare;
     if (!A) return null;
     function lastIn(mon) {
@@ -541,16 +542,17 @@
     var brand = (client && client.name) || '';
     function pick(run) {
       if (!run) return null;
-      var t = A.summarize(run.summary.answers, { brand: brand, segment: 'general' }).aio;
+      var t = A.summarize(run.summary.answers, { brand: brand, segment: 'general' })[key];
+      if (!t) return null;
       return t.status === 'measured' ? { x: t.t.mentioned, n: t.t.denominator, rate: t.t.rate, attempts: t.t.attempts, errors: t.t.errors, notShown: t.t.notShown, measuredOn: run.measured_on, version: run.query_set_version || '' } : null;
     }
     var rn = lastIn(m), rp = lastIn(pm), now = pick(rn), prev = pick(rp);
     if (!now) return null;
     var comparable = false, diff = null, reason = '';
     if (prev && CP) {
-      try { var cmp = CP.compare(rp, rn, { brand: brand }); var e = cmp.engines[0]; comparable = !!e.comparable; diff = e.diff; reason = (e.reasons || []).join('／'); } catch (e2) { comparable = false; }
+      try { var cmp = CP.compare(rp, rn, { brand: brand }); var e = cmp.engines.filter(function (x) { return x.key === key; })[0] || cmp.engines[0]; comparable = !!e.comparable; diff = e.diff; reason = (e.reasons || []).join('／'); } catch (e2) { comparable = false; }
     }
-    return { rule: 'aio-general-v1', now: now, prev: prev, comparable: comparable, diff: comparable ? diff : null, reason: prev && !comparable ? (reason || '条件が違います') : '' };
+    return { rule: key === 'aio' ? 'aio-general-v1' : key + '-general-v1', now: now, prev: prev, comparable: comparable, diff: comparable ? diff : null, reason: prev && !comparable ? (reason || '条件が違います') : '' };
   }
 
   function compileReport(p) {
@@ -684,6 +686,8 @@
       site: site,
       ai: ai,
       aio: aioKpi(p.runs, m, pm, p.client),
+      // 補助：検索ありの ChatGPT（同じ数え方。回答が取れた数が分母。AI による概要とは合算しない）
+      chatgpt: aioKpi(p.runs, m, pm, p.client, 'chatgpt_search'),
       traffic: traffic,
       actions: actions,
       facts: facts,

@@ -23,9 +23,11 @@
     var na = '<span class="arv-na">未計測</span>';
     var delta = function (d, unit) { return d == null || d === 0 ? '' : '<em class="' + (d > 0 ? 'is-up' : 'is-down') + '">' + (d > 0 ? '▲' : '▼') + esc(Math.abs(d)) + esc(unit) + '</em>'; };
     var row = function (k, v, sub) { return '<div class="arc-cnum"><span class="arc-cnum-k">' + k + '</span><span class="arc-cnum-v">' + v + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>'; };
-    var judged = 0, cited = 0;
-    ((ai && ai.providers) || []).forEach(function (p) { if (p.judged > 0 && p.citeCount != null) { judged += p.judged; cited += p.citeCount; } });
-    var rate = judged ? Math.round(cited / judged * 1000) / 10 : null;
+    var aiRow = function (k, x, note) {
+      if (x === undefined) return row(k, '<span class="arv-na">この月のレポートでは出していません</span>');
+      if (!x || !x.now) return row(k, na);
+      return row(k, '<b>' + esc(x.now.x) + '</b><small> / ' + esc(x.now.n) + '回</small>', x.prev ? (x.comparable ? '先月 ' + esc(x.prev.x) + ' / ' + esc(x.prev.n) + '回' : '先月と条件がそろっていないため比べていません') : note);
+    };
     // 検索と訪問の数字は、対象期間（全期間・途中集計・期間不明）を必ず添える
     var traffic = function (k, rec, key, unit) {
       if (!rec || rec[key] == null) return row(k, na);
@@ -34,9 +36,10 @@
     };
     return '<section class="arc-card arc-cnums-card"><h2 class="arc-h2">' + esc(ymJa(r.period_month)) + 'の数字</h2><div class="arc-cnums">' +
       row('ホームページの情報整備', cur && cur.overall != null ? '<b>' + esc(cur.overall) + '</b><small>点</small>' + delta(site.overallDelta, '点') : na) +
-      // 2026年10月から：Google の AI による概要に名前が出た回数を主に（compiled.aio が無い古いレポートは出典の割合のまま）
-      (c.aio && c.aio.now ? row('Google の AI による概要に名前が出た', '<b>' + esc(c.aio.now.x) + '</b><small> / ' + esc(c.aio.now.n) + '回</small>', c.aio.prev ? (c.aio.comparable ? '先月 ' + esc(c.aio.prev.x) + ' / ' + esc(c.aio.prev.n) + '回' : '先月と条件がそろっていないため比べていません') : '名前を入れていない質問・概要が出なかった検索も回数に入れています') : '') +
-      row('AI の回答でサイトが出典になった', rate != null ? '<b>' + esc(rate) + '</b><small>%</small>' : na, rate != null ? esc(cited) + '/' + esc(judged) + '回答・出典を判定できた回答の合計' : '') +
+      // AI の数字は2対象を別々に（2026-10-09）：Google の AI による概要（主）と ChatGPT（検索付き API での観測・補助）。いつも2つの枠を出し、
+      // 無い月は「未計測」（この形で集計する前のレポートは「この月のレポートでは出していません」）。複数の AI を合わせた割合は出さない
+      aiRow('Google の AI による概要に名前が出た', c.aio, '名前を入れていない質問・概要が出なかった検索も回数に入れています') +
+      aiRow('ChatGPT の回答に名前が出た（補助）', c.chatgpt, '検索付き API での観測・回答が取れた数が分母') +
       traffic('検索からのクリック', tr.gsc, 'clicks', '回') +
       traffic('問い合わせ・予約', tr.ga4, 'conversions', '件') + '</div>' +
       '<p class="arc-note">測っていない数字は「未計測」と書きます（0 ではありません）。</p>' +

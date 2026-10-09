@@ -97,15 +97,23 @@
    *   前月と条件が違えば差を出さない。compiled.aio が無い（それより前に作ったレポート）ときは空
    */
   function aioHero(c, opt) {
-    var a = c && c.aio;
-    if (!a || !a.now) return '';
-    opt = opt || {};
-    var n = a.now, p = a.prev;
-    var cmp = p ? (a.comparable ? '先月 ' + esc(p.x) + ' / ' + esc(p.n) + '回' + (a.diff != null ? '（出現率 ' + (a.diff > 0 ? '+' : a.diff < 0 ? '−' : '±') + esc(Math.abs(a.diff)) + 'ポイント）' : '') : '先月と条件がそろっていない（違う・記録が無い）ため、比べていません') : '先月の計測はありません';
-    return '<div class="arr-aio' + (opt.compact ? ' is-compact' : '') + '"><span class="arr-aio-k">Google の AI による概要に、お店・会社の名前が出た回数</span>' +
-      '<span class="arr-aio-v"><b>' + esc(n.x) + '</b> / ' + esc(n.n) + '回' + (n.rate != null ? '<em>出現率 ' + esc(n.rate) + '%</em>' : '') + '</span>' +
-      '<span class="arr-aio-s">' + cmp + '</span>' +
-      (opt.compact ? '' : '<small class="arr-aio-n">' + esc(n.measuredOn || '') + ' の計測・名前を入れていない質問だけ。AI による概要が出なかった検索も回数に入れ、取得できなかった検索は入れていません。2026年10月から、この数え方の数字を主に示しています。</small>') + '</div>';
+    c = c || {}; opt = opt || {};
+    var a = c.aio && c.aio.now ? c.aio : null, g = c.chatgpt && c.chatgpt.now ? c.chatgpt : null;
+    if (!a && !g) return '';
+    var cmpText = function (x) {
+      var p = x.prev;
+      return p ? (x.comparable ? '先月 ' + esc(p.x) + ' / ' + esc(p.n) + '回' + (x.diff != null ? '（出現率 ' + (x.diff > 0 ? '+' : x.diff < 0 ? '−' : '±') + esc(Math.abs(x.diff)) + 'ポイント）' : '') : '先月と条件がそろっていない（違う・記録が無い）ため、比べていません') : '先月の計測はありません';
+    };
+    // 1つの枠：AI の名前・X / N・出現率・先月との比較・注記。測っていない AI は「未計測」の枠（AI による概要を測っていない月でも2つの枠を出す）
+    var box = function (k, sub, x, big, note) {
+      return '<div class="arr-aio' + (opt.compact ? ' is-compact' : '') + (big ? '' : ' is-sub') + '"><span class="arr-aio-k">' + k + '<small> · ' + sub + '</small></span>' +
+        (x ? '<span class="arr-aio-v"><b>' + esc(x.now.x) + '</b> / ' + esc(x.now.n) + '回' + (x.now.rate != null ? '<em>出現率 ' + esc(x.now.rate) + '%</em>' : '') + '</span><span class="arr-aio-s">' + cmpText(x) + '</span>'
+          : '<span class="arr-aio-v"><span class="arv-na">未計測</span></span>') +
+        (opt.compact || !x ? '' : '<small class="arr-aio-n">' + note + '</small>') + '</div>';
+    };
+    return box('Google の AI による概要に、お店・会社の名前が出た回数', '主', a, true,
+        esc((a && a.now.measuredOn) || '') + ' の計測・名前を入れていない質問だけ。AI による概要が出なかった検索も回数に入れ、取得できなかった検索は入れていません。2026年10月から、この数え方の数字を主に示しています。') +
+      (g || a ? box('ChatGPT の回答に名前が出た回数', '検索付き API での観測（補助）', g, false, '回答が取れた数が分母です。AI による概要とは合算しません。') : '');
   }
   function tiles(c) {
     c = c || {};
@@ -119,7 +127,10 @@
     var monthly = ai && ai.basis === 'monthly';
     var t2 = '<div class="arv-tile"><div class="arv-tile-h">AIの回答で引用された割合' + (monthly ? '<small class="arv-tile-basis">今月の合計</small>' : '') + '</div>';
     if (ai && ai.providers && ai.providers.length) {
-      t2 += '<div class="arv-ai">' + ai.providers.map(function (p) {
+      var MAINP = ['google_aio', 'chatgpt_search'];
+      var mainP = ai.providers.filter(function (p) { return MAINP.indexOf(p.provider) >= 0; }).sort(function (x, y) { return MAINP.indexOf(x.provider) - MAINP.indexOf(y.provider); });
+      var histP = ai.providers.filter(function (p) { return MAINP.indexOf(p.provider) < 0; });
+      var provRow = function (p) {
         var s = series(p.provider);
         // 判定できないとき「—」だけだと理由が分からないので一言添える（ChatGPT は検索しないので出典を判定しない）
         var why = p.citeRate != null ? '' : (p.provider === 'openai' ? '検索しない AI のため出典は判定しません' : '出典を判定できた回答がありません');
@@ -129,7 +140,9 @@
         return '<div class="arv-ai-row"><span class="arv-key" style="background:' + s.color + '"></span><span class="arv-ai-name">' + esc(s.label) + '</span>' +
           '<span class="arv-ai-val">' + (p.citeRate == null ? '—' : esc(p.citeRate) + '%') + '</span>' + (why ? '<small class="arv-ai-why">' + esc(why) + '</small>' : deltaHtml(p.citeDelta, 'ポイント')) +
           ((nd || aside) ? '<small class="arv-ai-nd">' + esc(nd) + (nd && aside ? '（' + esc(aside) + '）' : esc(aside)) + '</small>' : '') + '</div>';
-      }).join('') + '</div>';
+      };
+      t2 += '<div class="arv-ai">' + (mainP.length ? mainP.map(provRow).join('') : '<div class="arv-ai-row"><span class="arv-na">AI による概要・ChatGPT は未計測</span></div>') + '</div>' +
+        (histP.length ? '<details class="arv-ai-hist"><summary>ほかの AI（履歴・' + histP.length + '）</summary><div class="arv-ai">' + histP.map(provRow).join('') + '</div></details>' : '');
     } else t2 += '<div class="arv-big"><span class="arv-na">未計測</span></div>';
     t2 += '<div class="arv-tile-f">' + (monthly ? '今月の計測 ' + esc(ai.runs) + '回（' + esc(md(ai.firstOn)) + (ai.runs > 1 ? '〜' + esc(md(ai.lastOn)) : '') + '）の合計' + (ai.excludedOld ? '（判定方法を変える前の ' + esc(ai.excludedOld) + '回は除く）' : '') + '。引用された回答 ÷ 出典の有無を判定できた回答。最新の計測は ' + esc(md(ai.latest && ai.latest.measuredOn)) :
       'AIに同じ質問をして、公式サイトが出典に入った回答の割合') + '</div></div>';

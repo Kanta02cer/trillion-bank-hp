@@ -27,7 +27,7 @@ t('AIO が主の指標・最初', c.engines[0].key === 'aio' && aio.main);
 t('AIO：前 1/4（概要なしは分母・失敗は外）', aio.before.mentioned === 1 && aio.before.denominator === 4 && aio.before.errors === 1, aio.before);
 t('AIO：後 3/5', aio.after.mentioned === 3 && aio.after.denominator === 5, aio.after);
 t('AIO：差 +35ポイント（25%→60%）', aio.comparable && aio.diff === 35, aio);
-t('AI モード・ChatGPT も同じ条件なら差を出す', c.engines.every((e) => e.comparable), c.engines.map((e) => [e.key, e.reasons]));
+t('ChatGPT も同じ条件なら差を出す（2対象）', c.engines.every((e) => e.comparable), c.engines.map((e) => [e.key, e.reasons]));
 
 // 地域が違う
 const afterLoc = run('r3', '2026-10-01', 'v3', [answers('google_aio', 'mmsmn', { location: 'Shibuya,Tokyo,Japan' }), answers('google_ai_mode', 'mnnnm'), answers('chatgpt_search', 'nnnmn')]);
@@ -51,7 +51,7 @@ t('分母0の計測とは差を出さない（0% と比べない）', !c.engines
 // 検索なしの ChatGPT は主の ChatGPT（検索あり）と混ぜない
 const nos = run('r8', '2026-10-01', 'v3', [answers('google_aio', 'mmsmn'), answers('google_ai_mode', 'mnnnm'), answers('openai', 'mmmmm', { engine: 'chatgpt', search: false, model: 'openai/gpt-4o-mini' })]);
 c = C.compare(before, nos, {});
-t('検索なしの ChatGPT は検索ありと比べない', !c.engines[2].comparable && /後の計測でこの AI を測っていません/.test(c.engines[2].reasons.join()));
+t('検索なしの ChatGPT は検索ありと比べない', !c.engines[1].comparable && /後の計測でこの AI を測っていません/.test(c.engines[1].reasons.join()));
 // 指紋：同じデータなら同じ・違えば違う
 const f1 = await C.fingerprint(before, after), f2 = await C.fingerprint(before, after), f3 = await C.fingerprint(before, afterLoc);
 t('データの指紋：同じデータは同じ・違うデータは違う', /^[0-9a-f]{64}$/.test(f1) && f1 === f2 && f1 !== f3);
@@ -69,7 +69,7 @@ t('質問ごとの根拠：AIO の5問それぞれに前後の結果', qa.length
 const imps = [{ title: 'よくある質問のページを作る', how: '料金・予約を質問と答えで' }, { title: '会社の情報を構造化データに', how: '' }, { title: '店名を統一', how: '' }, { title: '4つ目', how: '' }];
 const info = { fp: f1, improvements: imps, improvementsSource: 'サイトの診断（最新）から' };
 const b2 = C.bodyHtml(c, info), p2 = C.printHtml(c, Object.assign({ clientName: 'サンプルそば' }, info));
-t('PDF：質問ごとの結果の表（概要なし・取得失敗も）', /質問ごとの結果（Google AI Overviews）/.test(p2) && /概要なし/.test(p2) && /取得失敗/.test(p2) && (p2.match(/<tr><td>/g) || []).length === 5);
+t('PDF：質問ごとの結果の表（概要なし・取得失敗も）', /質問ごとの結果（AI による概要）/.test(p2) && /概要なし/.test(p2) && /取得失敗/.test(p2) && (p2.match(/<tr><td>/g) || []).length === 5);
 t('PDF：優先して直すこと3点だけ・材料が別だと明記', /優先して直すこと（3点）/.test(p2) && p2.includes('よくある質問のページを作る') && !p2.includes('4つ目') && /AI の計測の結果とは別の材料/.test(p2));
 t('画面と PDF は同じ本文（根拠と3点を含めても）', p2.includes(b2));
 // 一般の質問だけを比べる（指名の質問は別）
@@ -110,5 +110,10 @@ const bb = C.bodyHtml(c, { fp: fpp }), pp = C.printHtml(c, { fp: fpp, clientName
 t('正常例：AIO +35ポイント・施策の前後・画面の本文と PDF が一致', c.engines[0].comparable && c.engines[0].diff === 35 && c.kind.kind === 'effect' && pp.includes(bb), c.engines[0].reasons);
 t('指紋に公開の記録も入る（公開の記録が違えば指紋も違う）', fpp !== fpn && /^[0-9a-f]{64}$/.test(fpp));
 t('印刷：比較を保留・時系列の表示が PDF にも出る', /比較を保留/.test(C.printHtml(C.compare(before, afterLoc, {}), {})) && /時系列の比較/.test(C.printHtml(C.compare(before, afterLoc, {}), {})) && /acm-kind/.test(C.printHtml(c, {})));
+
+// ---- 2対象（10/9）：比較・PDF は AI による概要と ChatGPT の2枠。AI モードは履歴として残すが比べない ----
+c = C.compare(before, after, { brand: 'サンプルそば' });
+t('比べる AI は AI による概要（主）と ChatGPT の2つだけ', c.engines.map((e) => e.key).join() === 'aio,chatgpt_search' && c.engines[0].label === 'AI による概要', c.engines.map((e) => e.key));
+t('PDF の注記：2つは合算しない・ほかの AI は履歴として残す', /AI による概要（主）と ChatGPT（検索付き API での観測・補助）は合算しません/.test(C.printHtml(c, {})) && /履歴として残しています/.test(C.printHtml(c, {})));
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

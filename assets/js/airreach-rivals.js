@@ -10,7 +10,8 @@
   function hostOf(u) { try { return new URL(/^https?:\/\//i.test(u) ? u : 'https://' + u).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) { return ''; } }
   function under(h, base) { return !!base && !!h && (h === base || h.slice(-base.length - 1) === '.' + base); }
   function normName(t) { return String(t || '').toLowerCase().replace(/[\s　・･]+/g, ''); }
-  var ENGINES = [['aio', 'AI による概要'], ['aimode', 'AI モード'], ['chatgpt_search', 'ChatGPT']];
+  // 2対象（AI による概要が主・ChatGPT は補助）。AI モードなどの過去の記録は消さないが、比較のタブには出さない
+  var ENGINES = [['aio', 'AI による概要'], ['chatgpt_search', 'ChatGPT']];
   var SRC = [['official', 'お店の公式サイト'], ['portal', '口コミ・予約・まとめ'], ['sns', 'SNS'], ['other', 'そのほか']];
 
   function latestRun(runs) {
@@ -27,7 +28,7 @@
   }
 
   /**
-   * opts: { runs, brand, selfUrl, competitors: [{ name, url }], engine: 'aio'|'aimode'|'chatgpt_search' }
+   * opts: { runs, brand, selfUrl, competitors: [{ name, url }], engine: 'aio'|'chatgpt_search' }
    */
   function compute(opts) {
     opts = opts || {};
@@ -36,7 +37,8 @@
     if (!run || !A) { out.reason = run ? '' : 'まだ計測がありません'; return out; }
     var comps = (opts.competitors || []).filter(function (c) { return c && c.name; });
     if (!comps.length) { out.reason = '比べるお店が登録されていません'; return out; }
-    var rows = A.bySegment(run.summary.answers, 'general', opts.brand).filter(function (r) { return A.engineOf(r) === out.engine; });
+    // 観測 ID・取得元 ID で重ねない（取り直し・キャッシュを別の回答として数えない。airreach-ai3.js の finalRows）
+    var rows = A.bySegment(A.finalRows ? A.finalRows(run.summary.answers) : run.summary.answers, 'general', opts.brand).filter(function (r) { return A.engineOf(r) === out.engine; });
     if (!rows.length) { out.reason = 'この AI の一般の質問の回答がありません'; return out; }
     var selfHost = hostOf(opts.selfUrl);
     var shops = [{ name: opts.brand || '自分', self: true, host: selfHost }].concat(comps.map(function (c) { return { name: c.name, self: false, host: hostOf(c.url) }; }));
