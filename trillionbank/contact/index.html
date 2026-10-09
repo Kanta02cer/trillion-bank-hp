@@ -5,6 +5,7 @@ permalink: /trillionbank/contact/
 ---
 <!DOCTYPE html>
 <html lang="ja"><head><meta charset="UTF-8">{% include tb-head.html %}
+{% include tb-refresh-head.html %}
 <script type="application/ld+json">
 [
   {
@@ -39,9 +40,9 @@ permalink: /trillionbank/contact/
   .aud-item.sec-line{border-top-color:var(--border)}
   .faq-section{margin-top:64px;padding-top:44px;border-top:1px solid var(--border)}
   .faq-section h3{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;color:var(--blue-600);margin-bottom:22px}
-  .faq-list{list-style:none;display:flex;flex-direction:column;gap:12px}
-  .faq-list li{font-size:.92rem;padding-left:22px;position:relative;line-height:1.7}
-  .faq-list li::before{content:"→";position:absolute;left:0;color:var(--blue-600);font-family:var(--mono)}
+  .faq-list{list-style:none;display:flex;flex-direction:column;gap:0;border-top:1px solid var(--border)}
+  .faq-list li{font-size:1rem;padding:18px 0;position:relative;line-height:1.75;border-bottom:1px solid var(--border)}
+  .faq-list li::before{content:"";display:none}
   @media(max-width:760px){
     .contact-form-head{grid-template-columns:1fr;align-items:start}
     .contact-choice,.form-direct{align-items:flex-start}
@@ -63,11 +64,11 @@ permalink: /trillionbank/contact/
 </script>
 
 </head>
-<body>{% include tb-header.html %}
+<body class="tb-refresh" data-site-refresh="contact">{% include tb-refresh-header.html %}{% include tb-toriuru-guide.html %}
 <main id="main">
-<section class="phero"><div class="wrap"><div class="crumb"><a href="/">HOME</a> ／ お問い合わせ</div><span class="ey">CONTACT</span><h1>お問い合わせ</h1><p>お問い合わせは専用フォームで受け付けています。<br>AirReach Consultingの詳細説明、販売代理店の共同提案、Pay per CrawlのPoCなどはオンライン商談もご利用ください。</p></div></section>
+<section class="phero tbr-scene tbr-character-right" data-toriuru-scene data-pose="neutral" data-x="82" data-y="48" data-scale=".82"><div class="wrap"><div class="crumb"><a href="/">HOME</a> ／ お問い合わせ</div><span class="ey">CONTACT</span><h1>お問い合わせ</h1><p>お問い合わせは専用フォームで受け付けています。<br>AirReach Consultingの詳細説明、販売代理店の共同提案、Pay per CrawlのPoCなどはオンライン商談もご利用ください。</p></div></section>
 
-<section class="sec"><div class="wrap">
+<section class="sec tbr-scene tbr-scene--dense" data-toriuru-scene data-toriuru-hide="true"><div class="wrap">
 <div class="contact-choice rv" aria-label="お問い合わせ方法">
   <a class="btn btn-primary" href="{{ site.data.contact.form_url }}" target="_blank" rel="noopener noreferrer" data-event="contact_form_direct_open" data-inquiry="general" data-cta="contact_page_form_choice">フォームで問い合わせる <span class="a" aria-hidden="true">→</span></a>
   <a class="btn btn-line" href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="contact_page_meeting_choice">商談を予約する <span class="a" aria-hidden="true">→</span></a>
@@ -77,7 +78,7 @@ permalink: /trillionbank/contact/
 <div class="contact-form rv" id="form">
   <div class="contact-form-head">
     <div>
-      <div class="tag">FORM ── 推奨窓口</div>
+      <div class="tag">お問い合わせフォーム</div>
       <h2>お問い合わせフォーム</h2>
       <p>ご相談内容に応じて、担当者より順次ご返信いたします。フォームはformrunの専用ページで開きます。</p>
     </div>
@@ -94,7 +95,7 @@ permalink: /trillionbank/contact/
 <div class="aud contact-lower">
   <!-- 資料送付・取材など -->
   <div class="aud-item sec-line contact-mail" id="email">
-    <div class="tag">DIRECT ── 資料送付・取材など</div>
+    <div class="tag">資料送付・取材など</div>
     <h3>資料送付・取材・その他のご連絡</h3>
     <p>添付資料の共有、取材・登壇のご依頼、採用に関するご連絡もフォームで受け付けています。個別の連絡手段をご希望の場合は、フォーム送信時にその旨をご記載ください。担当者よりご案内します。</p>
     <a class="btn btn-line" href="{{ site.data.contact.form_url }}" target="_blank" rel="noopener noreferrer" data-event="contact_form_direct_open" data-inquiry="direct" data-cta="contact_page_direct_form">formrunフォームを開く <span class="a" aria-hidden="true">→</span></a>
@@ -103,7 +104,7 @@ permalink: /trillionbank/contact/
 
   <!-- 商談予約 -->
   <div class="aud-item">
-    <div class="tag">MEETING ── 売上につながるご相談</div>
+    <div class="tag">商談予約</div>
     <h3>サービス導入・商談のご予約</h3>
     <p>AirReach Consultingの詳細説明（事業会社向け）、共同提案のご相談（販売代理店向け）、Pay per Crawl / AI Access GatewayのPoCについて、30分のオンライン面談でご説明します。</p>
     <a class="btn btn-primary" href="/trillionbank/meeting/" aria-label="商談を予約する（事前フォームへ進みます）" data-event="meeting_form_open" data-service="general" data-cta="contact_page_meeting">商談を予約する <span class="a" aria-hidden="true">→</span></a>
@@ -125,5 +126,5 @@ permalink: /trillionbank/contact/
       <p class="hint" style="margin-top:18px;color:var(--muted);font-size:.86rem;line-height:1.8">他社商材の代理販売をTrillion Bank側へ依頼するご相談はお受けしていません。当社サービスの販売代理店検討は歓迎します。</p>
     </div>
 </div></section>
-</main>{% include tb-footer.html %}
+</main>{% include tb-footer-safe.html refresh_navigation=true %}
 </body></html>
