@@ -95,9 +95,10 @@
   /**
    * job：Studio の分析。page：{ url, status, html }。llms：{ url, status, text }（無ければ null）。
    * rendered：{ text, complete, method }（ページを描画して読んだ見える文字。無ければ null＝描画で確かめていない）
+   * extras：[{ url, status, html }]（会社の情報をトップページなど別のページに入れたときの、そのページ。無ければ []）
    * 戻り値：{ checks: [{ key, label, state, detail }], state: ok|review|ng, ok }
    */
-  function judge(job, page, llms, rendered) {
+  function judge(job, page, llms, rendered, extras) {
     var want = adopted(job), checks = [];
     if (!page || page.status !== 200 || !page.html) {
       checks.push({ key: 'page', label: 'ページを読めた', state: 'ng', detail: page && page.status ? 'ページを読めませんでした（' + page.status + '）。URL を確かめてください' : 'ページを読めませんでした' });
@@ -139,14 +140,21 @@
         detail: lack.length || diff.length ? (lack.length ? lack.length + '問がデータにありません' : '') + (lack.length && diff.length ? '・' : '') + (diff.length ? diff.length + '問は答えが承認と違います（' + diff.map(function (x) { return '「' + x.q + '」'; }).join('・') + '）' : '')
           : (faqPages.length > 1 ? 'FAQPage が ' + faqPages.length + 'つあります（1つにまとめてください）' : '採用したパッチと同じ ' + want.faq.length + '問') });
     }
-    // 3. 会社・お店の情報のデータ：採用したときだけ。名前が違う（主体の不一致）は不合格
-    var orgs = ld.items.filter(function (x) { return types(x).some(function (t) { return ORG.test(t); }); });
+    // 3. 会社・お店の情報のデータ：採用したときだけ。名前が違う（主体の不一致）は不合格。
+    //    このページに無いときは、別に確かめたページ（extras：トップページなど）で探す。どこでも確かめられなければ「要確認」（合格にしない）
+    var isOrg = function (x) { return types(x).some(function (t) { return ORG.test(t); }); };
+    var orgs = ld.items.filter(isOrg), orgFrom = page.url || '';
+    var ex = (extras || []).filter(Boolean), exOk = ex.filter(function (e) { return e.status === 200 && e.html; });
+    if (!orgs.length) exOk.some(function (e) { var o = jsonLd(e.html).items.filter(isOrg); if (o.length) { orgs = o; orgFrom = e.url || ''; } return o.length > 0; });
+    var exBad = ex.filter(function (e) { return !(e.status === 200 && e.html); });
     var match = function (o) { return want.org && (norm(o.name) === norm(want.org) || [].concat(o.alternateName || []).some(function (a) { return norm(a) === norm(want.org); })); };
     if (!want.org) checks.push({ key: 'org', label: '会社・お店の情報のデータ', state: 'skip', detail: '採用したパッチに入れていません' });
-    else if (!orgs.length) checks.push({ key: 'org', label: '会社・お店の情報のデータ', state: 'warn', detail: 'このページにはありません（トップページに入れる手順のときは、トップページの URL でも確かめてください）' });
+    else if (!orgs.length) checks.push({ key: 'org', label: '会社・お店の情報のデータ', state: 'review',
+      detail: (exBad.length ? '会社の情報を入れたページを読めませんでした（' + exBad.map(function (e) { return e.url + (e.status ? '・' + e.status : ''); }).join('、') + '）。' : ex.length ? '確かめたページのどれにもありません。' : 'このページにはありません。') +
+        '入れたページ（トップページなど）の URL を「会社の情報を入れたページ」に入れて確かめるまで、要確認です' });
     else if (!orgs.some(match)) checks.push({ key: 'org', label: '会社・お店の情報のデータ', state: 'ng', detail: '名前が採用したパッチと違います（ページ：' + orgs.map(function (o) { return o.name || '（なし）'; }).join('・') + '／パッチ：' + want.org + '）。別の会社・お店として読まれます' });
     else if (orgs.length > 1) checks.push({ key: 'org', label: '会社・お店の情報のデータ', state: 'warn', detail: orgs.length + 'つあります。テーマやプラグインと二重になっていないか確かめてください（手順書の 2-2）' });
-    else checks.push({ key: 'org', label: '会社・お店の情報のデータ', state: 'ok', detail: '名前：' + orgs[0].name });
+    else checks.push({ key: 'org', label: '会社・お店の情報のデータ', state: 'ok', detail: '名前：' + orgs[0].name + (orgFrom && orgFrom !== page.url ? '（' + orgFrom + ' で確かめた）' : '') });
     // 4. 記事（Article・NewsArticle など）：採用したときだけ。見出し・著者・発行者
     if (want.articles.length) {
       var pageArts = ld.items.filter(function (x) { return types(x).some(function (t) { return ARTICLE.test(t); }); });
@@ -213,16 +221,22 @@
    *   証跡：確かめた日時・URL（最後の URL）・採用したパッチの版と記録日時・ページの HTML の SHA-256・描画で確かめたか
    *   パッチの版や ZIP が変わったら、前の確認は使わない（airreach-case-steps.js が版と日時で見分ける）
    */
-  function run(job, pageUrl) {
+  function run(job, pageUrl, opts) {
+    opts = opts || {};
     var origin = ''; try { origin = new URL(pageUrl).origin; } catch (e) {}
-    return Promise.all([fetchDoc(pageUrl), origin ? fetchDoc(origin + '/llms.txt').catch(function () { return null; }) : Promise.resolve(null)]).then(function (rs) {
+    // 会社の情報を別のページ（トップページなど）に入れたときは、そのページも読む
+    var orgUrl = opts.orgUrl && opts.orgUrl !== pageUrl ? opts.orgUrl : '';
+    return Promise.all([fetchDoc(pageUrl), origin ? fetchDoc(origin + '/llms.txt').catch(function () { return null; }) : Promise.resolve(null),
+      orgUrl ? fetchDoc(orgUrl).catch(function () { return { url: orgUrl, status: 0, body: '' }; }) : Promise.resolve(null)]).then(function (rs) {
       var html = rs[0].status === 200 ? rs[0].body : '';
-      return Promise.all([html ? renderVisible(html, rs[0].finalUrl || pageUrl) : Promise.resolve(null), sha256(html)]).then(function (x) {
-        var res = judge(job, { url: pageUrl, status: rs[0].status, html: rs[0].body }, rs[1] ? { url: rs[1].url, status: rs[1].status, text: rs[1].body } : null, x[0]);
+      var extras = rs[2] ? [{ url: orgUrl, status: rs[2].status, html: rs[2].status === 200 ? rs[2].body : '', finalUrl: rs[2].finalUrl || orgUrl }] : [];
+      return Promise.all([html ? renderVisible(html, rs[0].finalUrl || pageUrl) : Promise.resolve(null), sha256(html), extras.length ? sha256(extras[0].html) : Promise.resolve('')]).then(function (x) {
+        var res = judge(job, { url: pageUrl, status: rs[0].status, html: rs[0].body }, rs[1] ? { url: rs[1].url, status: rs[1].status, text: rs[1].body } : null, x[0], extras);
         var mf = parse((job.files || {})['MANIFEST.json']) || {}, z = job.zipped && !job.zipped.draft ? job.zipped : null;
         job.verified = { at: new Date().toISOString(), url: pageUrl, final_url: rs[0].finalUrl || pageUrl, ok: res.ok, state: res.state,
           version: z ? (z.version || '') : (mf.package_version || ''), zipped_at: z ? z.at : null, zip_manifest_sha256: z ? (z.manifest_sha256 || '') : '',
           html_sha256: x[1], rendered: x[0] ? { method: x[0].method, complete: !!x[0].complete, stylesheets: x[0].stylesheets, failed: x[0].failedStylesheets } : null,
+          extra_pages: extras.map(function (e) { return { url: e.url, final_url: e.finalUrl, status: e.status, html_sha256: x[2] }; }),
           rule: 'verify/2026.10.09', checks: res.checks };
         return res;
       });
@@ -250,14 +264,17 @@
       var job = jobNow();
       if (note) note.textContent = !job ? '先に「サイトを調べる」と「③ パッチを作る」を行ってください。' : (job.zipped && !job.zipped.draft ? 'パッチ v' + (job.zipped.version || '') + '（' + day(job.zipped.at) + ' に作成）と比べます。' : 'まだ正式なパッチ（ZIP）を作っていません。いまの承認の内容と比べます。');
       if (job && !input.value) input.value = (job.verified && job.verified.url) || job.url || '';
+      var orgIn = document.getElementById('verify-org-url');
+      if (orgIn && !orgIn.value && job && job.verified && job.verified.extra_pages && job.verified.extra_pages[0]) orgIn.value = job.verified.extra_pages[0].url;
       out.innerHTML = resultHtml(job && job.verified);
     }
     btn.addEventListener('click', function () {
-      var job = jobNow(), url = input.value.trim();
+      var job = jobNow(), url = input.value.trim(), orgIn = document.getElementById('verify-org-url'), orgUrl = orgIn ? orgIn.value.trim() : '';
+      if (orgUrl && !/^https?:\/\//i.test(orgUrl)) { out.innerHTML = '<p class="ars-note is-err">会社の情報を入れたページも、https:// から始まる URL を入れてください。</p>'; return; }
       if (!job) { out.innerHTML = '<p class="ars-note is-err">先に「サイトを調べる」を行ってください。</p>'; return; }
       if (!/^https?:\/\//i.test(url)) { out.innerHTML = '<p class="ars-note is-err">https:// から始まる URL を入れてください。</p>'; return; }
       btn.disabled = true; btn.textContent = '確かめています…';
-      run(job, url).then(function () {
+      run(job, url, { orgUrl: orgUrl }).then(function () {
         root.__orchLastJob = job;
         try { localStorage.setItem('airreach_studio_orch_v1', JSON.stringify({ lastJob: job })); } catch (e) {}
         try { if (root.AirReachStudioSteps) root.AirReachStudioSteps.refresh(); } catch (e) {}

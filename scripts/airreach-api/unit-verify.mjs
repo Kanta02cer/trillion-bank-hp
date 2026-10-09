@@ -109,5 +109,23 @@ t('記事：データが無ければ不合格', !r.ok && state(r, 'article') ===
 t('ZIP の記録（job.zipped.articles）があればそれと比べる', V.adopted({ files: {}, zipped: { at: 'x', version: '2', draft: false, faq: [], articles: [{ type: 'Article', headline: 'h' }] } }).articles.length === 1);
 t('結果の表示：要確認と「描画では確かめていない」', /要確認/.test(V.resultHtml({ state: 'review', ok: false, at: '2026-10-12T05:00:00Z', url: 'u', checks: [] })) && /描画では確かめていない/.test(V.resultHtml({ state: 'review', ok: false, at: '2026-10-12T05:00:00Z', url: 'u', checks: [] })));
 t('静的に見える文字に、隠す指定の要素の中身を入れない（入れ子・閉じタグの省略に強い）', !/秘密/.test(V.visibleText('<div><p hidden>秘密<b>も</b></p><p>見える</p></div>')) && /見える/.test(V.visibleText('<div><p hidden>秘密<b>も</b></p><p>見える</p></div>')) && /あと/.test(V.visibleText('<div aria-hidden="true"><span>秘密</div><p>あと</p>')));
+
+// ---- レビュー（10/9）：採用した会社データが確かめたページに無ければ合格にしない ----
+{
+  const og3 = { '@context': 'https://schema.org', '@type': 'Organization', name: '株式会社サンプル' };
+  const jobO = { url: 'https://s.example/faq/', files: { 'schema/organization.jsonld': JSON.stringify(og3), 'MANIFEST.json': '{}' } };
+  const pg3 = { url: 'https://s.example/faq/', status: 200, html: '<html><body><p>本文</p></body></html>' };
+  const R3 = { text: '本文', complete: true };
+  let x = V.judge(jobO, pg3, null, R3);
+  t('FAQ なし・会社データだけ採用・このページに無い：要確認で合格にしない（修正前は ok）', !x.ok && x.state === 'review' && state(x, 'org') === 'review' && /要確認/.test(x.checks.find((c) => c.key === 'org').detail), x);
+  x = V.judge(jobO, pg3, null, R3, [{ url: 'https://s.example/', status: 200, html: ld(og3) }]);
+  t('会社の情報を入れたページ（トップページ）で確かめた：合格・どこで確かめたか', x.ok && state(x, 'org') === 'ok' && /https:\/\/s\.example\/ で確かめた/.test(x.checks.find((c) => c.key === 'org').detail), x.checks);
+  x = V.judge(jobO, pg3, null, R3, [{ url: 'https://s.example/', status: 200, html: ld(Object.assign({}, og3, { name: '別の会社' })) }]);
+  t('入れたページの会社の名前が違う：不合格（主体の不一致）', !x.ok && state(x, 'org') === 'ng');
+  x = V.judge(jobO, pg3, null, R3, [{ url: 'https://s.example/', status: 404, html: '' }]);
+  t('入れたページを読めない：要確認（読めなかった URL と状態）', !x.ok && x.state === 'review' && /読めませんでした（https:\/\/s\.example\/・404）/.test(x.checks.find((c) => c.key === 'org').detail), x.checks);
+  x = V.judge(jobO, Object.assign({}, pg3, { html: '<html><head>' + ld(og3) + '</head><body><p>本文</p></body></html>' }), null, R3);
+  t('FAQ なし・会社データがこのページにある：合格', x.ok && state(x, 'org') === 'ok');
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
