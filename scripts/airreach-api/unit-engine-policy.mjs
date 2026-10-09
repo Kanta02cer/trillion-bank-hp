@@ -49,5 +49,6 @@ t('Studio は回数分の要求を分けて送り、観測 ID を付けて保存
   t('作られた日時が頼んだ日時のすぐ後なら、新しい取得', serpFetchInfo({ search_metadata: { id: 'Y', created_at: '2026-10-09 01:00:05 UTC' } }, '2026-10-09T01:00:00Z', 'no_cache', null).cache_hit === false);
 }
 t('Studio：反復のときは cache: no_cache を送る・1問×1回でも取り直しを選べば通信の失敗で止めない', /cache:REP>1\?'no_cache':undefined/.test(studioJs) && /&&!retryOnce\(\)\)throw res1\.perr/.test(studioJs));
+t('Studio は保存する回答に取得の記録（決まった項目だけ）を残す', /fetch:fetchRecord\(r\.fetch\)/.test(studioJs) && /\['provider','provider_id','provider_created_at','requested_at','cache_policy','followup_id'\]/.test(studioJs));
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
