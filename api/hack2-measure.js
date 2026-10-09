@@ -73,6 +73,9 @@ export default async function handler(req, res) {
   }
 
   const engines = normalizeEngines(body.engines);
+  // 2対象の計測（two-engine/1）：AI による概要と検索ありの ChatGPT だけに聞く。ほかの AI が混ざっていたら、どの AI にも聞かない（費用を発生させない）
+  const enginePolicy = enginePolicyError(body.policy, engines);
+  if (enginePolicy) return json(res, 400, enginePolicy);
   // 地域（任意）。SerpApi の地域名（例: Shibuya,Tokyo,Japan）。形が違えば計測しない（黙って日本全体に変えない）
   const location = normalizeLocation(body.location);
   if (location === false) return json(res, 400, { error: 'location must look like "City,Prefecture,Japan" (letters, spaces, commas; max 80)' });
@@ -299,6 +302,18 @@ function normalizePrompts(raw) {
     .slice(0, MAX_PROMPTS);
 }
 
+/**
+ * 計測する AI の決まり（2026-10-08 の方針・10/9 の受入）。policy が 'two-engine/1' のときは、AI による概要（google_aio）と
+ * 検索ありの ChatGPT（chatgpt_search）と、外部に聞かない推定（jev）だけを許す。ほかの AI・知らない決まりは断る（代わりの AI に落とさない）
+ */
+export const TWO_ENGINE_POLICY = 'two-engine/1';
+export function enginePolicyError(policy, engines) {
+  if (policy == null || policy === '') return null;
+  if (policy !== TWO_ENGINE_POLICY) return { error: '計測の決まり（policy）が分かりません: ' + String(policy).slice(0, 40), code: 'engine_policy_unknown' };
+  const extra = (engines || []).filter((e) => ['google_aio', 'chatgpt_search', 'jev'].indexOf(e) === -1);
+  if (extra.length) return { error: '2対象の計測（AI による概要・検索ありの ChatGPT）以外の AI には聞きません（' + extra.join(', ') + '）', code: 'engine_not_allowed', engines: extra };
+  return null;
+}
 function normalizeEngines(raw) {
   const list = Array.isArray(raw) && raw.length ? raw : ['jev'];
   const out = [];

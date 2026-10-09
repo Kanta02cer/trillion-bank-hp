@@ -344,7 +344,7 @@ robots: "noindex, follow"
             <div class="ars-grid">
               <div class="ars-card ars-c5"><h3>競合を追加</h3><div class="ars-form"><div class="ars-field"><label for="comp-name">競合の名前</label><input id="comp-name" class="ars-input" autocomplete="off" placeholder="例: ○○株式会社／サービス名"><p class="ars-gnote">AIの回答に出てくる呼び方で入れます（AI計測で競合と比べるときに使います）。</p></div><div class="ars-field"><label for="comp-url">競合URL</label><input id="comp-url" class="ars-input" type="url" inputmode="url" autocomplete="off" placeholder="https://example.jp/"></div><div class="ars-field"><label for="comp-note">強い点</label><textarea id="comp-note" class="ars-textarea"></textarea></div><button id="add-competitor" class="ars-btn ars-btn-primary" type="button">追加</button></div></div>
               <div class="ars-card ars-c7"><h3>競合リスト</h3><div id="competitor-list" class="ars-files"></div></div>
-              <div class="ars-card ars-c12 ars-aicmp"><h3>AIの回答で比べる</h3><p class="ars-gnote" style="margin:0 0 10px">同じ質問をAIに聞き、回答に自社と競合のどちらの名前が出たか、どちらのサイトが出典になったかを比べます。競合比較はこの結果で判断します。</p><div class="ars-row" style="align-items:center;flex-wrap:wrap;gap:12px"><label><input type="checkbox" data-cmp-engine value="perplexity" checked> Perplexity（検索あり）</label><label><input type="checkbox" data-cmp-engine value="chatgpt" checked> ChatGPT（検索なし・名前だけ）</label><label><input type="checkbox" data-cmp-engine value="claude"> Claude（検索あり・出典URLまで）</label><button id="run-ai-compare" class="ars-btn ars-btn-primary" type="button">AIの回答で比べる</button></div><div id="ai-compare-status" class="ars-note" style="margin-top:10px" hidden></div><div id="ai-compare-result" style="margin-top:12px"></div></div>
+              <div class="ars-card ars-c12 ars-aicmp"><h3>AIの回答で比べる</h3><p class="ars-gnote" style="margin:0 0 10px">同じ質問をAIに聞き、回答に自社と競合のどちらの名前が出たか、どちらのサイトが出典になったかを比べます。競合比較はこの結果で判断します。</p><div class="ars-row" style="align-items:center;flex-wrap:wrap;gap:12px"><label><input type="checkbox" data-cmp-engine value="google_aio" checked> Google の AI による概要（主）</label><label><input type="checkbox" data-cmp-engine value="chatgpt_search" checked> ChatGPT（検索あり・補助）</label><details class="ars-other-ai"><summary>ほかの AI（初期の計測対象ではありません・費用がかかります）</summary><label><input type="checkbox" data-cmp-engine value="perplexity"> Perplexity（検索あり）</label><label><input type="checkbox" data-cmp-engine value="chatgpt"> ChatGPT（検索なし・名前だけ）</label><label><input type="checkbox" data-cmp-engine value="claude"> Claude（検索あり・出典URLまで）</label></details><button id="run-ai-compare" class="ars-btn ars-btn-primary" type="button">AIの回答で比べる</button></div><div id="ai-compare-status" class="ars-note" style="margin-top:10px" hidden></div><div id="ai-compare-result" style="margin-top:12px"></div></div>
               <div class="ars-card ars-c12"><h3>参考：サイトの形式の点検</h3><p class="ars-gnote" style="margin:0 0 6px">自社と競合（最大5件）のトップページを、無料診断と同じ基準で点検します。<b>AIの回答に出るかどうかとは別物</b>で、点数が高いほどAIに引用されるという裏付けはありません。業種によっては当てはまらない項目もあります。</p><ul class="ars-gnote ars-cmp-legend"><li><b>ページの骨格</b>：ページのタイトル、大見出し、説明文、本文の量など</li><li><b>会社・サービス情報</b>：運営者・サービスを機械が読める形（構造化データ）で書いているか、問い合わせの案内</li><li><b>よくある質問</b>：FAQ（3問以上・画面に見える欄・構造化データ）</li><li><b>見つけやすさ</b>：llms.txt・robots.txt・サイトマップの案内などのファイル</li><li><b>総合</b>：4つの重み付き平均（骨格30%・会社情報25%・FAQ20%・見つけやすさ25%）</li></ul><div class="ars-row" style="align-items:center;flex-wrap:wrap;gap:10px"><label class="ars-consent-row" style="margin:0"><input id="compare-proxy" type="checkbox"> <span>診断のための取得に同意（直接取得できない場合、公開ページを取得サーバー経由で読み込みます）</span></label><label class="ars-consent-row" style="margin:0"><input id="compare-asis" type="checkbox"> <span>入力したページのまま診断する（個別ページどうしで比べるとき）</span></label><button id="run-compare" class="ars-btn ars-btn-secondary" type="button">形式を点検して並べる</button></div><div id="compare-status" class="ars-note" style="margin-top:10px" hidden></div><div id="compare-result" style="margin-top:12px"></div></div>
             </div>
           
@@ -357,15 +357,21 @@ robots: "noindex, follow"
             <div class="ars-card ars-prompts-card" id="hack2-prompts"><!-- 計測する質問（airreach-studio.js の renderPrompts） --></div>
             <div id="hack2-status" class="ars-note">まだ計測していません。AIを選んで「計測実行」を押します。</div>
             <div class="ars-row" style="margin:12px 0;flex-wrap:wrap;gap:10px">
-              <label><input type="checkbox" data-hack2-engine value="jev"> 推定（Jev・実際のAIには聞かない）</label>
-              <label><input type="checkbox" data-hack2-engine value="chatgpt"> ChatGPT（検索なし・言及率のみ）</label>
-              <label><input type="checkbox" data-hack2-engine value="chatgpt_search"> ChatGPT（検索あり・出典まで）</label>
-              <label><input type="checkbox" data-hack2-engine value="claude"> Claude（検索あり）</label>
-              <label><input type="checkbox" data-hack2-engine value="perplexity" checked> Perplexity（検索あり）</label>
-              <label><input type="checkbox" data-hack2-engine value="gemini" checked> Gemini（Google 検索あり・出典まで）</label>
-              <label><input type="checkbox" data-hack2-engine value="google_aio" checked> Google AI による概要</label>
-              <label><input type="checkbox" data-hack2-engine value="google_ai_mode" checked> Google AI モード</label>
+              <label><input type="checkbox" data-hack2-engine value="google_aio" checked> Google の AI による概要（主）</label>
+              <label><input type="checkbox" data-hack2-engine value="chatgpt_search" checked> ChatGPT（検索あり・補助）</label>
             </div>
+            <details class="ars-other-ai">
+              <summary>ほかの AI（初期の計測対象ではありません。過去の履歴と比べるときだけ・費用がかかります）</summary>
+              <p class="ars-gnote">ほかの AI を選ぶと、2対象だけに絞る決まりを付けずに計測します。AI による概要と ChatGPT とは合算しません。</p>
+              <div class="ars-row" style="margin:8px 0;flex-wrap:wrap;gap:10px">
+                <label><input type="checkbox" data-hack2-engine value="jev"> 推定（Jev・実際のAIには聞かない）</label>
+                <label><input type="checkbox" data-hack2-engine value="google_ai_mode"> Google の AI モード</label>
+                <label><input type="checkbox" data-hack2-engine value="gemini"> Gemini</label>
+                <label><input type="checkbox" data-hack2-engine value="perplexity"> Perplexity</label>
+                <label><input type="checkbox" data-hack2-engine value="claude"> Claude（検索あり）</label>
+                <label><input type="checkbox" data-hack2-engine value="chatgpt"> ChatGPT（検索なし）</label>
+              </div>
+            </details>
             <div class="ars-model-grid" id="hack2-models"></div>
             <div id="ai3-summary"><!-- 3つの AI の主表示（airreach-ai3.js） --></div>
             <div id="ai-breakdown"><!-- 質問ごと・言及の順位・引用元の分類（airreach-ai-breakdown.js） --></div>

@@ -460,3 +460,8 @@ body:not(.has-job) [data-needs-job]{display:none}
 .apb-st.is-wait { background: #fffbeb; color: #78350f; }
 .apb-f { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
 .apb-f label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ars-ink-2); flex: 1 1 220px; min-width: 0; }
+
+/* 計測する AI：既定は2対象（AI による概要・検索ありの ChatGPT）。ほかの AI はたたむ */
+.ars-other-ai { margin: 4px 0 8px; font-size: 13px; color: var(--ars-ink-2); }
+.ars-other-ai summary { cursor: pointer; min-height: 32px; display: flex; align-items: center; }
+.ars-other-ai label { display: inline-flex; gap: 4px; margin: 4px 12px 4px 0; }
