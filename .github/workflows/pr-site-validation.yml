@@ -10,6 +10,7 @@ on:
       - '_data/**'
       - 'assets/**'
       - 'images/**'
+      - 'trillionbank/assets/**'
       - '_config.yml'
       - 'Gemfile'
       - 'Gemfile.lock'
@@ -19,6 +20,7 @@ on:
       - 'knowledge.json'
       - 'site-structure.json'
       - 'scripts/site_smoke.mjs'
+      - 'scripts/site_refresh_smoke.mjs'
       - '.github/workflows/pr-site-validation.yml'
       - '.github/workflows/production-smoke.yml'
   workflow_dispatch:
@@ -106,6 +108,7 @@ jobs:
       - name: Run responsive browser smoke tests
         run: |
           mkdir -p artifacts/site-smoke
+          mkdir -p artifacts/site-refresh-smoke
           python3 -m http.server 4000 --directory _site > /tmp/trillion-bank-site.log 2>&1 &
           server_pid=$!
           trap 'kill $server_pid || true' EXIT
@@ -116,7 +119,19 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:4000/ >/dev/null
+
+          set +e
           node scripts/site_smoke.mjs
+          site_smoke_status=$?
+          node scripts/site_refresh_smoke.mjs
+          site_refresh_smoke_status=$?
+          set -e
+
+          echo "Baseline smoke status: $site_smoke_status"
+          echo "Site refresh smoke status: $site_refresh_smoke_status"
+          if [ "$site_smoke_status" -ne 0 ] || [ "$site_refresh_smoke_status" -ne 0 ]; then
+            exit 1
+          fi
 
       - name: Publish validation summary to pull request
         if: always() && github.event_name == 'pull_request'
@@ -125,26 +140,48 @@ jobs:
           script: |
             const fs = require('fs');
             const marker = '<!-- tb-site-smoke -->';
-            const reportPath = 'artifacts/site-smoke/report.json';
+            const reportDefinitions = [
+              {
+                label: 'Baseline',
+                path: 'artifacts/site-smoke/report.json',
+                countLabel: 'responsive route/viewport checks',
+              },
+              {
+                label: 'Site refresh',
+                path: 'artifacts/site-refresh-smoke/report.json',
+                countLabel: 'refresh cases',
+              },
+            ];
             let body;
 
-            if (!fs.existsSync(reportPath)) {
-              body = `${marker}\n### Site validation could not produce a report\n\nThe build or browser setup failed before the report was written. Review the workflow log.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const missingReports = reportDefinitions.filter(({ path }) => !fs.existsSync(path));
+            if (missingReports.length > 0) {
+              const missingList = missingReports.map(({ label, path }) => `- **${label}:** \`${path}\``).join('\n');
+              body = `${marker}\n### Site validation could not produce all reports\n\nThe build or browser setup failed before every report was written. Missing:\n${missingList}\n\nReview the workflow log.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             } else {
-              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
-              const passed = report.issueCount === 0;
+              const reports = reportDefinitions.map((definition) => ({
+                ...definition,
+                report: JSON.parse(fs.readFileSync(definition.path, 'utf8')),
+              }));
+              const passed = reports.every(({ report }) => report.issueCount === 0);
               const heading = passed ? 'Site validation passed' : 'Site validation found blocking issues';
-              const summary = passed
-                ? `Jekyll build and ${report.results.length} responsive route/viewport checks passed.`
-                : `${report.issueCount} issue(s) were found across ${report.results.length} responsive route/viewport checks.`;
-              const findings = report.issues.slice(0, 40).map((issue) => {
-                const detail = String(issue.detail || '').replace(/`/g, "'").replace(/\s+/g, ' ').trim();
-                return `- **${issue.viewport}** \`${issue.route}\` — ${issue.type}: ${detail}`;
+              const checkSummaries = reports.map(({ label, countLabel, report }) => {
+                const count = Array.isArray(report.results) ? report.results.length : report.resultCount;
+                return `${label}: ${count} ${countLabel}, ${report.issueCount} issue(s)`;
               });
-              const truncated = report.issues.length > findings.length
-                ? `\n- …and ${report.issues.length - findings.length} more issue(s). See the uploaded report artifact.`
+              const summary = passed
+                ? `Jekyll build and both browser suites passed (${checkSummaries.join('; ')}).`
+                : `One or both browser suites found blocking issues (${checkSummaries.join('; ')}).`;
+              const allIssues = reports.flatMap(({ label, report }) => (report.issues || []).map((issue) => ({ label, issue })));
+              const findings = allIssues.slice(0, 40).map(({ label, issue }) => {
+                const detail = String(issue.detail || '').replace(/`/g, "'").replace(/\s+/g, ' ').trim();
+                const mode = issue.mode ? ` / ${issue.mode}` : '';
+                return `- **${label} / ${issue.viewport || 'unknown'}${mode}** \`${issue.route || 'unknown'}\` — ${issue.type}: ${detail}`;
+              });
+              const truncated = allIssues.length > findings.length
+                ? `\n- …and ${allIssues.length - findings.length} more issue(s). See the uploaded report artifacts.`
                 : '';
-              body = `${marker}\n### ${heading}\n\n${summary}\n\n${findings.length ? findings.join('\n') + truncated : 'No blocking findings.'}\n\nScreenshots and the JSON report are attached to the workflow run artifact.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+              body = `${marker}\n### ${heading}\n\n${summary}\n\n${findings.length ? findings.join('\n') + truncated : 'No blocking findings.'}\n\nScreenshots and both JSON reports are attached to the workflow run artifacts.\n\nRun: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             }
 
             const { owner, repo } = context.repo;
@@ -169,6 +206,15 @@ jobs:
         with:
           name: site-smoke-${{ github.event.pull_request.number || github.run_number }}
           path: artifacts/site-smoke
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload site refresh browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-refresh-smoke-${{ github.event.pull_request.number || github.run_number }}
+          path: artifacts/site-refresh-smoke
           if-no-files-found: ignore
           retention-days: 14
 

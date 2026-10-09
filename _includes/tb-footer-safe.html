@@ -4,7 +4,7 @@
     <div class="top">
       <div><a class="brand" href="/" aria-label="Trillion Bank ホーム"><img src="{{ '/images/hero/tb-logo-hero.webp' | relative_url }}" alt="TRILLION BANK" width="2048" height="201" style="display:block;width:min(200px,60vw);height:auto;filter:invert(1) grayscale(1) brightness(3)"></a><p class="addr">{{ facts.company.legal_name }}<br>〒{{ facts.company.address.postal_code }} {{ facts.company.address.region }}{{ facts.company.address.locality }}{{ facts.company.address.street }}<br>{{ facts.company.bank_disclaimer }}</p></div>
       <div class="fcol"><h5>BUSINESS</h5><a href="/trillionbank/business/hack2/">AirReach Consulting</a><a href="/trillionbank/business/pay-per-crawl/">Adctor</a></div>
-      <div class="fcol"><h5>INSIGHTS</h5><a href="/trillionbank/insights/">実務解説</a><a href="/trillionbank/company/">会社概要</a><a href="/trillionbank/media/">お知らせ</a></div>
+      {% if include.refresh_navigation %}<div class="fcol"><h5>COMPANY</h5><a href="/trillionbank/mission/">企業理念</a><a href="/trillionbank/company/">企業概要</a><a href="/trillionbank/insights/">コラム</a></div>{% else %}<div class="fcol"><h5>INSIGHTS</h5><a href="/trillionbank/insights/">実務解説</a><a href="/trillionbank/company/">会社概要</a><a href="/trillionbank/media/">お知らせ</a></div>{% endif %}
       <div class="fcol"><h5>CONTACT</h5><a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="footer_meeting">商談を予約する</a><a href="/trillionbank/contact/#form">お問い合わせ</a></div>
     </div>
     <div class="bottom"><span>© 2026 Trillion Bank Co., Ltd.</span><span><a href="/trillionbank/privacy/">プライバシーポリシー</a> ／ <a href="/trillionbank/terms/">利用規約</a> ／ <a href="/trillionbank/security/">情報セキュリティ</a></span></div>

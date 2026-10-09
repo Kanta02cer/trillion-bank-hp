@@ -7,6 +7,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 <head>
 <meta charset="UTF-8">
 {% include tb-head.html %}
+{% include tb-refresh-head.html %}
 <style>
   /* ── HERO — axis-style: text top, logo anchored to bottom edge ── */
   .hero{position:relative;background:#fff;color:var(--ink);height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:visible;padding:calc(var(--hdr) + 40px) 0 0}
@@ -101,22 +102,6 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   .mcard-body .ms{font-size:.78rem;color:var(--muted)}
 
   /* glow rails — shared styles/markup now provided by tb.css + tb-footer */
-
-  /* ── MASCOT — floating chibi with 3D perspective ── */
-  .mascot{position:fixed;bottom:24px;right:24px;width:clamp(80px,10vw,120px);z-index:50;pointer-events:auto;opacity:0;transition:opacity .6s;perspective:400px;cursor:pointer}
-  .mascot:hover img{animation-play-state:paused;filter:drop-shadow(0 10px 24px rgba(37,99,235,.3)) drop-shadow(0 4px 8px rgba(0,0,0,.12))}
-  .mascot.show{opacity:1}
-  .mascot img{width:100%;height:auto;image-rendering:high-quality;animation:mascot3D 6s ease-in-out infinite;filter:drop-shadow(0 10px 20px rgba(37,99,235,.18)) drop-shadow(0 4px 8px rgba(0,0,0,.08));transform-style:preserve-3d}
-  @keyframes mascot3D{
-    0%{transform:translateY(0) rotateY(0deg) rotateX(0deg) scale(1)}
-    15%{transform:translateY(-8px) rotateY(8deg) rotateX(-3deg) scale(1.02)}
-    30%{transform:translateY(-14px) rotateY(0deg) rotateX(2deg) scale(1.04)}
-    50%{transform:translateY(-10px) rotateY(-8deg) rotateX(-2deg) scale(1.02)}
-    70%{transform:translateY(-16px) rotateY(4deg) rotateX(3deg) scale(1.03)}
-    85%{transform:translateY(-6px) rotateY(-3deg) rotateX(-1deg) scale(1.01)}
-    100%{transform:translateY(0) rotateY(0deg) rotateX(0deg) scale(1)}
-  }
-  @media(max-width:640px){.mascot{width:64px;bottom:16px;right:16px}}
 
   /* ── PAGE TRANSITIONS — smooth fade between pages ── */
   body{opacity:1;transition:opacity .3s ease}
@@ -227,20 +212,16 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 }
 </script>
 </head>
-<body>
-{% include tb-header.html %}
-
-<!-- MASCOT — floating chibi character -->
-<a class="mascot" id="mascot" href="{{ '/trillionbank/ceo/' | relative_url }}" aria-label="代表紹介 — 井上幹太">
-  <img src="{{ '/images/hero/tb-mascot.webp' | relative_url }}" alt="井上幹太" width="640" height="640" loading="lazy">
-</a>
+<body class="tb-refresh" data-site-refresh="home">
+{% include tb-refresh-header.html %}
+{% include tb-toriuru-guide.html %}
 
 <main id="main">
 
 <!-- HERO -->
-<section class="hero">
+<section class="hero tbr-scene tbr-character-right" data-toriuru-scene data-pose="neutral" data-x="84" data-y="50" data-scale="1">
   <div class="wrap">
-    <h1 class="hi" style="--d:.4s"><span class="hg">AI革命で、トリリオンの課題を担う。</span></h1>
+    <h1 class="hi" style="--d:.4s"><span class="hg">AI革命で、<span class="tbr-nowrap">トリリオン</span>の課題を担う。</span></h1>
     <p class="hero-sub hi" style="--d:.7s">AI検索で選ばれる企業を増やし、AIに使われた情報を価値へ変える。<br class="bd">測る（AI集客マーケティング）と、証跡化する（AI情報利用管理）の2事業です。</p>
     <div class="hero-links hi" style="--d:1s">
       <a href="/airreach/" data-event="airreach_open" data-cta="hero_airreach">無料で30秒診断する →</a>
@@ -258,7 +239,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 </section>
 
 <!-- CONCEPT — A? / A! -->
-<section class="sec concept-sec">
+<section class="sec concept-sec tbr-scene tbr-character-right" data-toriuru-scene data-pose="point-left" data-x="80" data-y="52" data-scale=".92">
   <div class="wrap">
     <div class="concept-row rv">
       <div class="concept-mark">A?</div>
@@ -278,7 +259,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 </section>
 
 <!-- PROBLEM -->
-<section class="sec">
+<section class="sec tbr-scene tbr-character-left" data-toriuru-scene data-pose="point-right" data-x="18" data-y="50" data-scale=".9">
   <div class="wrap">
     <p class="sl rv">PROBLEM</p>
     <h2 class="bh rv">AI検索が重要なのは分かる。<br>でも、判断材料がない</h2>
@@ -291,7 +272,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 </section>
 
 <!-- BUSINESS -->
-<section class="sec" id="business">
+<section class="sec tbr-scene tbr-character-right" id="business" data-toriuru-scene data-pose="point-left" data-x="79" data-y="50" data-scale=".92">
   <div class="wrap">
     <p class="sl rv">BUSINESS</p>
     <h2 class="bh rv">2つの事業で、<span class="gt">見つかり、証跡を残す</span></h2>
@@ -321,7 +302,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 </section>
 
 <!-- ARCHITECTURE -->
-<section class="sec">
+<section class="sec tbr-scene tbr-character-right" data-toriuru-scene data-pose="explain" data-x="77" data-y="50" data-scale=".9">
   <div class="wrap">
     <p class="sl rv">ARCHITECTURE</p>
     <h2 class="bh rv">測る → 守る → 記録する → 正規化する</h2>
@@ -335,7 +316,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 </section>
 
 <!-- USE CASES -->
-<section class="sec">
+<section class="sec tbr-scene tbr-character-left" data-toriuru-scene data-pose="point-right" data-x="18" data-y="50" data-scale=".86">
   <div class="wrap">
     <p class="sl rv">USE CASES</p>
     <h2 class="bh rv">誰の、どんな課題に</h2>
@@ -365,7 +346,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 </section>
 
 <!-- WHY -->
-<section class="sec">
+<section class="sec tbr-scene tbr-character-right" data-toriuru-scene data-pose="neutral" data-x="80" data-y="50" data-scale=".84">
   <div class="wrap">
     <p class="sl rv">WHY TRILLION BANK</p>
     <h2 class="bh rv">私たちの立ち位置</h2>
@@ -379,7 +360,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 
 
 <!-- MEDIA -->
-<section class="sec">
+<section class="sec tbr-scene tbr-scene--dense" data-toriuru-scene data-pose="neutral" data-x="80" data-y="50" data-scale=".82" data-toriuru-hide="true">
   <div class="wrap">
     <p class="sl rv">MEDIA</p>
     <h2 class="bh rv">メディア掲載</h2>
@@ -404,23 +385,23 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   </div>
 </section>
 
-<!-- COMPANY & NEWS -->
-<section class="sec">
+<!-- COMPANY & COLUMN -->
+<section class="sec tbr-scene tbr-scene--dense" data-toriuru-scene data-pose="neutral" data-x="80" data-y="50" data-scale=".82" data-toriuru-hide="true">
   <div class="wrap">
-    <p class="sl rv">COMPANY & NEWS</p>
-    <h2 class="bh rv">会社とお知らせ</h2>
+    <p class="sl rv">企業概要・コラム</p>
+    <h2 class="bh rv">企業概要とコラム</h2>
     {% assign posts = site.tbnews | sort: 'date' | reverse %}
     <div class="nlist rv">
       {% for p in posts limit:4 %}
       <a class="nitem" href="{{ p.url }}"><span class="date">{{ p.date | date:'%Y.%m.%d' }}</span><span class="ncat">{{ p.category }}</span><span class="nt">{{ p.title }}</span><span class="go">→</span></a>
       {% endfor %}
     </div>
-    <div style="margin-top:28px;display:flex;gap:18px;flex-wrap:wrap"><a class="btn btn-line" href="/trillionbank/media/">お知らせ一覧 →</a><a class="btn btn-line" href="/trillionbank/company/">会社概要 →</a></div>
+    <div style="margin-top:28px;display:flex;gap:18px;flex-wrap:wrap"><a class="btn btn-line" href="/trillionbank/insights/">コラム一覧 →</a><a class="btn btn-line" href="/trillionbank/company/">企業概要 →</a></div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="sec" id="faq" aria-labelledby="home-faq-heading">
+<section class="sec tbr-scene tbr-character-right" id="faq" aria-labelledby="home-faq-heading" data-toriuru-scene data-pose="explain" data-x="80" data-y="50" data-scale=".82">
   <div class="wrap">
     <p class="sl rv">FAQ</p>
     <h2 class="bh rv" id="home-faq-heading">よくある質問</h2>
@@ -459,7 +440,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 </section>
 
 <!-- CONTACT -->
-<section class="sec">
+<section class="sec tbr-scene tbr-character-right" data-toriuru-scene data-pose="neutral" data-x="80" data-y="50" data-scale=".82">
   <div class="wrap">
     <p class="sl rv">CONTACT</p>
     <h2 class="bh rv">まずは、ご相談ください。</h2>
@@ -473,7 +454,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 </section>
 
 </main>
-{% include tb-footer.html %}
+{% include tb-footer.html refresh_navigation=true %}
 <script>
 (function(){
   /* tabs - kept for sub pages */
@@ -485,15 +466,6 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
     })});
   });
 
-  /* mascot — show after scrolling past hero (rails handled by tb-footer) */
-  var mascot=document.getElementById('mascot');
-  var heroH=window.innerHeight;
-  function onScroll(){
-    var y=window.scrollY;
-    mascot.classList.toggle('show',y>heroH*.3);
-  }
-  window.addEventListener('scroll',onScroll,{passive:true});
-  onScroll();
 })();
 </script>
 </body>
