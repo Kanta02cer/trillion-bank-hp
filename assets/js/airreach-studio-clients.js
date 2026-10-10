@@ -10,7 +10,8 @@
  */
 (function () {
   'use strict';
-  var WORK_KEYS = ['airreach_studio_v1', 'airreach_studio_orch_v1'];
+  // 3つ目：媒体の記事向けのレビュー用パッチ（airreach-review-package.js）。顧客ごとに切り替え・DB の data.review に同期
+  var WORK_KEYS = ['airreach_studio_v1', 'airreach_studio_orch_v1', 'airreach_studio_review_v1'];
   var CUR_KEY = 'airreach_studio_ws_current_v1';
   var WS_PREFIX = 'airreach_studio_ws_v1:';
   var CLIENT_KEY = 'airreach_studio_client_v1';
@@ -312,11 +313,12 @@
   var sync = { on: false, version: 0, sig: '', saving: false, timer: 0, conflict: null, email: '' };
   function localStrings() { return WORK_KEYS.map(get); }
   function sigOf(strs) { var t = strs.map(function (x) { return x == null ? '' : x; }).join('\u0001'), h = 5381; for (var i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return t.length + ':' + h; }
-  function hasWork(strs) { var st = {}; try { st = JSON.parse(strs[0] || '{}') || {}; } catch (e) {} return !!((st.keywords || []).length || Object.keys(st.generated || {}).length || (st.hack2 || []).length || (st.profile && st.profile.url)); }
+  function hasWork(strs) { var st = {}; try { st = JSON.parse(strs[0] || '{}') || {}; } catch (e) {} return !!((st.keywords || []).length || Object.keys(st.generated || {}).length || (st.hack2 || []).length || (st.profile && st.profile.url) || !!strs[2]); }
   function payload(strs) {
     var data = { studio: null, orch: null };
     try { data.studio = JSON.parse(strs[0] || 'null'); } catch (e) {}
     try { data.orch = JSON.parse(strs[1] || 'null'); } catch (e) {}
+    try { var rv = JSON.parse(strs[2] || 'null'); if (rv) data.review = rv; } catch (e) {}
     // 大きすぎるときは分析の途中経過（orch）を外す（作業の本体は studio に入っている）
     if (JSON.stringify(data).length > MAX_BYTES) data.orch = null;
     return data;
@@ -338,7 +340,7 @@
   function adopt(server, backupLocal) {
     if (backupLocal) set(BACKUP_PREFIX + client.id, JSON.stringify({ at: new Date().toISOString(), work: localStrings() }));
     var d = server.data || {};
-    var strs = [d.studio == null ? null : JSON.stringify(d.studio), d.orch == null ? null : JSON.stringify(d.orch)];
+    var strs = [d.studio == null ? null : JSON.stringify(d.studio), d.orch == null ? null : JSON.stringify(d.orch), d.review == null ? null : JSON.stringify(d.review)];
     sync.on = false; // 開き直すまで保存しない
     try { sessionStorage.setItem(ADOPT_KEY, JSON.stringify({ clientId: client.id, strs: strs, version: server.version, sig: sigOf(strs), backup: !!backupLocal })); } catch (e) { syncStatus('最新の作業を読み込めませんでした（作業が大きすぎます）', 'warn'); return; }
     location.reload();
@@ -663,5 +665,5 @@
     })();
   }
 
-  window.AirReachStudioClients = { current: function () { return client; }, swapError: function () { return swapError; }, onMeasured: onMeasured, savedRun: savedRun, ensureSite: ensureSite, measuredThisMonth: measuredThisMonth, autoGscSync: autoGscSync };
+  window.AirReachStudioClients = { current: function () { return client; }, email: function () { return sync.email || ''; }, swapError: function () { return swapError; }, onMeasured: onMeasured, savedRun: savedRun, ensureSite: ensureSite, measuredThisMonth: measuredThisMonth, autoGscSync: autoGscSync };
 })();

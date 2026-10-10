@@ -268,7 +268,7 @@
         soft(sb.from('measurement_runs').select('client_id,measured_on').gte('measured_on', mon)),
         soft(sb.from('traffic_snapshots').select('client_id,source').eq('period_month', mon)),
         // 案件の5段階（airreach-case-steps.js）の材料：分析の確定・ZIP・確かめた結果と、計測の要約（ZIP の中身や回答の本文は読まない）
-        sb.from('studio_workspaces').select('client_id,confirm:data->orch->lastJob->confirm,zipped:data->orch->lastJob->zipped,verified:data->orch->lastJob->verified,url:data->orch->lastJob->>url').then(function (x) { return x.error ? null : (x.data || []); }, function () { return null; }),
+        sb.from('studio_workspaces').select('client_id,confirm:data->orch->lastJob->confirm,zipped:data->orch->lastJob->zipped,verified:data->orch->lastJob->verified,url:data->orch->lastJob->>url,review:data->review').then(function (x) { return x.error ? null : (x.data || []); }, function () { return null; }),
         soft(sb.from('measurement_runs').select('client_id,measured_on,created_at,ai3:summary->ai3').order('created_at', { ascending: false }).limit(400))
       ]).then(function (rs) {
         var reps = q(rs[0]) || [];
@@ -287,7 +287,8 @@
         if (w && w.data) job = w.data.orch && w.data.orch.lastJob; // 全体を返す環境（テスト）
         else if (w && (w.confirm || w.zipped || w.url)) job = { url: w.url, confirm: w.confirm, zipped: w.zipped, verified: w.verified, files: {} };
         var runs = (extra.allRuns || []).filter(function (x) { return x.client_id === c.id; }).map(function (x) { return x.summary ? x : { client_id: x.client_id, measured_on: x.measured_on, created_at: x.created_at, summary: { ai3: x.ai3 } }; });
-        try { return window.AirReachCaseSteps.compute({ workspace: { orch: { lastJob: job } }, runs: runs, studioHref: '', runsHref: '' }); } catch (e) { return null; }
+        var review = w ? (w.data ? w.data.review : w.review) || null : null;
+        try { return window.AirReachCaseSteps.compute({ workspace: { orch: { lastJob: job }, review: review }, runs: runs, studioHref: '', runsHref: '' }); } catch (e) { return null; }
       }
       if (extra) {
         var today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
@@ -1321,7 +1322,7 @@
     var soft = function (p) { return p.then(function (x) { return x.error ? [] : (x.data || []); }, function () { return []; }); };
     return Promise.all([
       sb.from('clients').select('*').order('name'),
-      sb.from('studio_workspaces').select('client_id,confirm:data->orch->lastJob->confirm,zipped:data->orch->lastJob->zipped,verified:data->orch->lastJob->verified,url:data->orch->lastJob->>url').then(function (x) { return x.error ? null : (x.data || []); }, function () { return null; }),
+      sb.from('studio_workspaces').select('client_id,confirm:data->orch->lastJob->confirm,zipped:data->orch->lastJob->zipped,verified:data->orch->lastJob->verified,url:data->orch->lastJob->>url,review:data->review').then(function (x) { return x.error ? null : (x.data || []); }, function () { return null; }),
       soft(sb.from('measurement_runs').select('client_id,measured_on,created_at,ai3:summary->ai3').order('created_at', { ascending: false }).limit(400)),
       soft(sb.from('client_sites').select('client_id,url')),
       soft(sb.from('measurement_runs').select('client_id,created_at,answers:summary->answers').order('created_at', { ascending: false }).limit(10))
@@ -1332,7 +1333,8 @@
         var w = wss.filter(function (x) { return x.client_id === c.id; })[0];
         var job = w && w.data ? (w.data.orch && w.data.orch.lastJob) : (w ? { url: w.url, confirm: w.confirm, zipped: w.zipped, verified: w.verified, files: {} } : null);
         var rr = runs.filter(function (x) { return x.client_id === c.id; }).map(function (x) { return x.summary ? x : { client_id: x.client_id, measured_on: x.measured_on, created_at: x.created_at, summary: { ai3: x.ai3 } }; });
-        var cs = null; try { cs = CS.compute({ workspace: { orch: { lastJob: job } }, runs: rr, studioHref: '', runsHref: '' }); } catch (e) { cs = null; }
+        var rvw = w ? (w.data ? w.data.review : w.review) || null : null;
+        var cs = null; try { cs = CS.compute({ workspace: { orch: { lastJob: job }, review: rvw }, runs: rr, studioHref: '', runsHref: '' }); } catch (e) { cs = null; }
         var site = sites.filter(function (x) { return x.client_id === c.id; })[0];
         return { c: c, tm: cs && cs.timing, studio: (window.AirReachNav ? window.AirReachNav.studioBase({ id: c.id, name: c.name, site: site && site.url, industry: c.industry_id }) : '/airreach/studio/') + '#hack2' };
       });
