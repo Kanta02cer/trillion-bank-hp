@@ -243,6 +243,73 @@
     });
   }
 
+  // ---- 媒体の記事向けのレビュー用パッチ（airreach-review-package.js）の照合 ----------------------
+  //   通常のパッチ（judge）とは別。媒体のサイトの llms.txt・ページ直下の会社の情報は求めない。見るのは
+  //   ① 会社説明の全文（見出し・段落ごと）が見える形であるか ② この記事の記事データが1つだけで、about に会社名があるか
+  function strictKey(u) {
+    var s = String(u || '').trim().replace(/#.*$/, ''), m = /^(https?):\/\/([^/?#]+)([^?#]*)(\?[^#]*)?$/i.exec(s);
+    return m ? m[2].toLowerCase() + (m[3] || '').replace(/\/+$/, '') + (m[4] || '') : s.toLowerCase();
+  }
+  function idOf(x) { var v = x && (x.url || x.mainEntityOfPage || x['@id']); if (v && typeof v === 'object') v = v['@id'] || v.url; return v ? String(v) : ''; }
+  function aboutNames(x) {
+    var ab = x && x.about; ab = Array.isArray(ab) ? ab : ab ? [ab] : [];
+    return ab.filter(function (a) { return a && types(a).some(function (t) { return ORG.test(t) || /Organization|Corporation/.test(t); }); }).map(function (a) { return String(a.name || ''); });
+  }
+  /**
+   * item：取り込んだ記事（target_url・company・content_blocks・article{type,headline}・changeset）
+   * page：{ url, status, html }。rendered：描画して読んだ見える文字（無ければ null＝要確認）
+   */
+  function judgeArticle(item, page, rendered) {
+    var checks = [];
+    if (!page || page.status !== 200) {
+      checks.push({ key: 'page', label: 'ページを開けるか', state: 'ng', detail: '開けませんでした（' + ((page && page.status) || '通信できない') + '）' });
+      return { checks: checks, state: 'ng', ok: false };
+    }
+    var html = page.html || '', st = splitText(html), statVis = norm(st.visible), hid = norm(st.hidden);
+    var drawn = rendered && rendered.text != null ? norm(rendered.text) : null, full = !!(rendered && rendered.complete);
+    // 1. 会社説明の全文：描画したなら描画で見えた文字、描画していなければ HTML の見える部分（その場合は要確認止まり）
+    var miss = [], hidden = [];
+    (item.content_blocks || []).forEach(function (b) {
+      var k = norm(b), seen = drawn != null ? drawn.indexOf(k) >= 0 : statVis.indexOf(k) >= 0;
+      if (seen) return;
+      if (hid.indexOf(k) >= 0 || statVis.indexOf(k) >= 0) hidden.push(b); else miss.push(b);
+    });
+    if (miss.length || hidden.length) checks.push({ key: 'content', label: '会社説明（全文）', state: 'ng', detail: (miss.length ? miss.length + 'か所がページに無いか、文が違います：「' + miss[0].slice(0, 40) + '…」' : '') + (hidden.length ? (miss.length ? '・' : '') + hidden.length + 'か所が見えない（非表示の）ところにあります' : '') });
+    else if (!full) checks.push({ key: 'content', label: '会社説明（全文）', state: 'review', detail: 'HTML にはありますが、描画して見えるかを確かめきれていません' });
+    else checks.push({ key: 'content', label: '会社説明（全文）', state: 'ok', detail: (item.content_blocks || []).length + 'か所すべて、見える形であります' });
+    // 2. この記事の記事データ（URL が同じもの。URL が書かれていないものは見出しが同じなら同じ記事とみなす）
+    var ld = jsonLd(html), want = item.article || {}, target = strictKey(item.target_url);
+    var arts = ld.items.filter(function (x) { return types(x).some(function (t) { return ARTICLE.test(t); }); });
+    var mine = arts.filter(function (x) { var id = idOf(x); return id ? strictKey(id) === target : norm(x.headline || x.name) === norm(want.headline); });
+    var op = item.changeset && item.changeset.structured_data && item.changeset.structured_data.operation;
+    if (!mine.length) checks.push({ key: 'article', label: '記事データ（Article・NewsArticle）', state: 'ng', detail: 'この記事の記事データがありません' });
+    else if (mine.length > 1) checks.push({ key: 'article', label: '記事データ（Article・NewsArticle）', state: 'ng', detail: 'この記事の記事データが ' + mine.length + 'つあります（' + mine.map(function (x) { return types(x).join('・'); }).join('／') + '）。元のものと二重になっていないか確かめ、1つにまとめてください' });
+    else {
+      var a = mine[0], probs = [];
+      // 新設（add_if_no_article）は、元の記事データを更新した場合も合格にする（種類は記事の種類なら可）。置き換えは同じ種類
+      if (op !== 'add_if_no_article' && types(a).indexOf(want.type) < 0) probs.push('種類が違います（' + types(a).join('・') + '／パッチ：' + want.type + '）');
+      if (want.headline && norm(a.headline || a.name) !== norm(want.headline)) probs.push('見出しが違います');
+      var names = aboutNames(a);
+      if (names.map(norm).indexOf(norm(item.company)) < 0) probs.push(names.length ? 'about の会社が違います（' + names.join('・') + '／パッチ：' + item.company + '）' : 'about に会社（' + item.company + '）がありません');
+      checks.push({ key: 'article', label: '記事データ（Article・NewsArticle）', state: probs.length ? 'ng' : 'ok', detail: probs.length ? probs.join('・') : types(a).join('・') + '・about に ' + item.company + (op === 'add_if_no_article' ? '（新設・既存の更新のどちらでも可）' : '') });
+    }
+    if (ld.broken) checks.push({ key: 'ld_broken', label: '読めない構造化データ', state: 'ng', detail: ld.broken + 'つのデータが JSON として読めません' });
+    checks.push({ key: 'not_required', label: '媒体の記事では求めないもの', state: 'skip', detail: 'llms.txt・ページ直下の会社の情報（媒体のサイトのため）' });
+    var s2 = checks.some(function (c) { return c.state === 'ng'; }) ? 'ng' : checks.some(function (c) { return c.state === 'review'; }) ? 'review' : 'ok';
+    return { checks: checks, state: s2, ok: s2 === 'ok' };
+  }
+  /** 媒体の記事を読み、描画して照合する。戻り値 { res, meta{ at, url, final_url, html_sha256, rendered } } */
+  function runArticle(item, pageUrl) {
+    return fetchDoc(pageUrl).then(function (d) {
+      var html = d.status === 200 ? d.body : '';
+      return Promise.all([html ? renderVisible(html, d.finalUrl || pageUrl) : Promise.resolve(null), sha256(html)]).then(function (x) {
+        var res = judgeArticle(item, { url: pageUrl, status: d.status, html: d.body }, x[0]);
+        return { res: res, meta: { at: new Date().toISOString(), url: pageUrl, final_url: d.finalUrl || pageUrl, html_sha256: x[1],
+          rendered: x[0] ? { method: x[0].method, complete: !!x[0].complete, stylesheets: x[0].stylesheets, failed: x[0].failedStylesheets } : null } };
+      });
+    });
+  }
+
   // ---- Studio の「④ 入れたか確かめる」の画面 -------------------------------------------------
   var LABEL = { ok: '入っている', warn: '確かめてください', review: '要確認', ng: '入っていない・違う', skip: '対象外' };
   function esc(x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -287,7 +354,7 @@
   }
   if (typeof document !== 'undefined') { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountStudio); else mountStudio(); }
 
-  var api = { judge: judge, run: run, adopted: adopted, jsonLd: jsonLd, visibleText: visibleText, splitText: splitText, renderVisible: renderVisible, resultHtml: resultHtml };
+  var api = { judge: judge, run: run, judgeArticle: judgeArticle, runArticle: runArticle, strictKey: strictKey, adopted: adopted, jsonLd: jsonLd, visibleText: visibleText, splitText: splitText, renderVisible: renderVisible, resultHtml: resultHtml };
   root.AirReachVerify = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

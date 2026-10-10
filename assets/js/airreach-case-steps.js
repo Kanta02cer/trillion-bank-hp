@@ -164,6 +164,16 @@
     var runs = (opts.runs || []).filter(hasAnswers).slice().sort(function (a, b) { return runTime(a) - runTime(b); });
     var zipped = job && job.zipped && !job.zipped.draft ? job.zipped : null;
     var ps = publishState(job, opts.now);
+    // 媒体の記事向けのレビュー用パッチ（airreach-review-package.js）を承認して正式版にしたときは、③④をそちらで判定する。
+    //   ④ は今回の反映の対象に選んだ記事が全部「公開・照合済み」のときだけ済み。公開した日時は対象の記事の最後の公開
+    var RP = root.AirReachReviewPkg, rv = ws.review && ws.review.pkg && RP ? RP.state(ws.review.pkg, opts.now) : null;
+    if (rv && rv.official) {
+      var pk = rv.pkg;
+      zipped = { version: pk.version, at: pk.approved.at, review: true };
+      ps = { zipped: zipped, review: rv, published: rv.done ? { ok: true, at: rv.published.at } : { ok: false, why: rv.why },
+        verified: rv.done ? { ok: true, state: 'ok', at: rv.published.at } : { ok: false, state: '', why: rv.why }, indexed: { ok: false }, done: rv.done };
+      if (!ent) ent = { at: pk.approved.at, company: pk.company, service: '媒体の記事（' + pk.items.length + '）' };
+    }
     // 導入前・導入後は「公開した日時」で分ける（ZIP を作った日時では分けない）。公開の記録が無いうちは、すべて導入前の候補
     var pubT = ps.published.ok ? Date.parse(ps.published.at) : null;
     var after = pubT != null ? runs.filter(function (r) { return runTime(r) > pubT; }) : [];
@@ -177,9 +187,9 @@
       { key: 'baseline', label: '導入前を測る', done: !!base,
         detail: base ? (function () { var a = aioOf(base); return day(base.created_at || base.measured_on) + (a && a.n ? '：AI による概要 ' + a.x + ' / ' + a.n + '回' : '：計測あり'); })() : 'まだ測っていない' },
       { key: 'patch', label: 'パッチを作る', done: !!zipped,
-        detail: zipped ? 'ZIP v' + (zipped.version || '?') + '（' + day(zipped.at) + '）' : (fc.pending_approval ? '承認待ち ' + fc.pending_approval + '問' : (job ? 'まだ ZIP を作っていない' : '—')) },
+        detail: zipped && zipped.review ? 'レビュー用パッチ ' + zipped.version + '（承認 ' + day(zipped.at) + '）' : zipped ? 'ZIP v' + (zipped.version || '?') + '（' + day(zipped.at) + '）' : (fc.pending_approval ? '承認待ち ' + fc.pending_approval + '問' : (job ? 'まだ ZIP を作っていない' : '—')) },
       { key: 'verify', label: '公開して確かめる', done: ps.done,
-        detail: !zipped ? '—' : ps.done ? '公開 ' + day(ps.published.at) + '・確かめた ' + day(ps.verified.at) + '（見える形で入っている）'
+        detail: !zipped ? '—' : ps.review ? (ps.done ? '今回の対象 ' + ps.review.round.length + '記事すべて公開・照合済み（最後の公開 ' + day(ps.published.at) + '）' : ps.review.why) : ps.done ? '公開 ' + day(ps.published.at) + '・確かめた ' + day(ps.verified.at) + '（見える形で入っている）'
           : (ps.published.ok ? '公開 ' + day(ps.published.at) + '・' + ps.verified.why : ps.published.why + (job && job.verified && job.verified.at ? '・' + ps.verified.why : '')) },
       { key: 'compare', label: '効果を比べる', done: ps.done && after.length > 0 && !!base,
         detail: ps.done ? (after.length && base ? '公開後の計測 ' + after.length + '回' : !base ? '公開前の計測がない（時系列の比較だけ）' : '公開後にまだ測っていない') : (zipped && runs.length > 1 ? '公開を確かめるまでは、計測どうしは時系列の比較' : '—') }
