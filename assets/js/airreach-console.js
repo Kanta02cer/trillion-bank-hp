@@ -405,15 +405,15 @@
     return Promise.all([
       sb.from('clients').select('id,name').eq('id', id).maybeSingle(),
       sb.from('reports').select('id,period_month,published_at,conclusions,next_actions,client_decisions,compiled').eq('client_id', id).eq('status', 'published').order('period_month', { ascending: false }),
-      sb.from('client_sites').select('url').eq('client_id', id)
+      sb.from('client_sites').select('url,host').eq('client_id', id)
     ]).then(function (rs) {
       var c = q(rs[0]); var reps = q(rs[1]) || [], sites = rs[2].data || [];
       if (!c) throw new Error('この顧客は表示できません');
       var C = window.AirReachCharts, top = reps[0], body = '';
       if (top && C) {
         // 最新の公開レポート：結論 → 数字（小さく・内訳は開く）→ ご判断いただきたいこと → 次にやること → 依頼の入口
-        body += clientLatest(top) + clientNumbers(top) + window.AirReachClientHome.competitor(top.compiled, { href: '/airreach/app/report/?id=' + top.id, linkText: 'レポートで詳しく見る', note: ymJa(top.period_month) + 'のレポートの数字です。' }) + window.AirReachClientHome.decision(top, { reply: true }) + nextCard(top, true) + '<div data-mtiming></div>' + reqEntry();
-      } else body += '<div data-mtiming></div>' + reqEntry();
+        body += clientLatest(top) + clientNumbers(top) + '<div data-gcust></div>' + window.AirReachClientHome.competitor(top.compiled, { href: '/airreach/app/report/?id=' + top.id, linkText: 'レポートで詳しく見る', note: ymJa(top.period_month) + 'のレポートの数字です。' }) + window.AirReachClientHome.decision(top, { reply: true }) + nextCard(top, true) + '<div data-mtiming></div>' + reqEntry();
+      } else body += '<div data-gcust></div><div data-mtiming></div>' + reqEntry();
       body += '<section class="arc-card"><h2 class="arc-h2">これまでのレポート</h2><ul class="arc-list arc-replist">' +
         (reps.length ? reps.map(function (r) { return '<li><a href="/airreach/app/report/?id=' + r.id + '">' + esc(ymJa(r.period_month)) + ' のレポート</a>' + (r.published_at ? '<span class="arc-sub">公開 ' + esc(day(r.published_at)) + '</span>' : '') + '</li>'; }).join('') : '<li class="arc-empty">公開済みのレポートはまだありません。</li>') +
         '</ul></section>' +
@@ -424,6 +424,9 @@
       // 見られる顧客が1社だけなら「戻る」は出さない（一覧に戻っても、この画面に戻されるため）
       shell(c.name, body, (me.client_ids || []).length > 1 ? '#/' : '', { client: { id: c.id, name: c.name } });
       var pr = mountRequests(c.id, sites, false, c.name);
+      // お客様が自分で Google とつないで、検索と予約の数字を取り込む（airreach-google-customer.js。保存はサーバーが行う）
+      var gc = root.querySelector('[data-gcust]');
+      if (gc && window.AirReachGoogleCustomer) { var gr = googleRet; googleRet = ''; window.AirReachGoogleCustomer.mount(gc, { sb: sb, client: { id: c.id, name: c.name }, sites: sites, ret: gr, onMsg: msg }); }
       // 次の計測の時期（担当者が測る。遅れは出さない）。DB の airreach_measure_timing が無ければ何も出さない
       var mt = root.querySelector('[data-mtiming]');
       if (mt && window.AirReachCaseSteps) sb.rpc('airreach_measure_timing', { p_client_id: c.id }).then(function (x) {
