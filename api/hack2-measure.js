@@ -60,6 +60,11 @@ export default async function handler(req, res) {
     return json(res, 400, { error: 'Invalid JSON body' });
   }
 
+  // 残り回数の確認（費用はかからない・検索の回数にも数えない）。計測の前に、本番の鍵の契約と残りを確かめるためのもの。AI には聞かない
+  if (body.action === 'quota') {
+    return json(res, 200, { action: 'quota', serpapi: await serpQuota(process.env.SERPAPI_API_KEY || process.env.SERPAPI_KEY) });
+  }
+
   const brand = String(body.brand || '').trim();
   if (!brand) return json(res, 400, { error: 'brand is required' });
 
@@ -894,6 +899,38 @@ export async function callGemini(key, prompt, model = process.env.AIRREACH_GEMIN
   const out = await parseGeminiResponse(data, resolveRedirect);
   return Object.assign(out, { model_used: model });
 }
+// ---- SerpApi：契約と残り回数（Account API）--------------------------------------------------------
+// SerpApi の公式の説明（2026-10-09 確認）：Account API は無料で、月の検索回数に数えない。
+// 返すのは決まった項目だけ。鍵・メールアドレス・アカウント ID は返さない（応答にも記録にも出さない）
+const SERP_ACCOUNT = 'https://serpapi.com/account.json';
+const num = (v) => (typeof v === 'number' && isFinite(v) ? v : null);
+export function serpQuotaView(data, checkedAt = new Date().toISOString()) {
+  const d = data && typeof data === 'object' ? data : {};
+  return {
+    configured: true, ok: true, checked_at: checkedAt,
+    plan_name: typeof d.plan_name === 'string' ? d.plan_name.slice(0, 80) : null,
+    plan_monthly_price: num(d.plan_monthly_price),
+    searches_per_month: num(d.searches_per_month),
+    plan_searches_left: num(d.plan_searches_left),
+    extra_credits: num(d.extra_credits),
+    total_searches_left: num(d.total_searches_left),
+    this_month_usage: num(d.this_month_usage)
+  };
+}
+export async function serpQuota(key, fetchImpl = globalThis.fetch, now = () => new Date().toISOString()) {
+  const k = String(key || '').trim();
+  if (!k) return { configured: false, ok: false, checked_at: now(), error: 'SerpApi の鍵が計測サーバーに設定されていません。' };
+  try {
+    const res = await fetchImpl(SERP_ACCOUNT + '?' + new URLSearchParams({ api_key: k }).toString(), { signal: AbortSignal.timeout(15000) });
+    const data = await res.json().catch(() => ({}));
+    // SerpApi のエラー文に鍵が入ることは無いはずだが、念のため本文は返さず状態だけ返す
+    if (!res.ok || !data || data.error) return { configured: true, ok: false, checked_at: now(), status: res.status, error: 'SerpApi が契約の情報を返しませんでした（' + res.status + '）。鍵が無効か、SerpApi 側の不調です。' };
+    return serpQuotaView(data, now());
+  } catch (e) {
+    return { configured: true, ok: false, checked_at: now(), error: 'SerpApi に届きませんでした（時間切れ・通信の失敗）。' };
+  }
+}
+
 // ---- SerpApi：Google の AI による概要（AI Overviews）と AI モード（AI Mode）--------------------------
 // 日本の Google（google.co.jp・日本語・日本）で取る。答えの本文は text_blocks の snippet、出典は references[].link。
 // AI による概要は、検索結果の中に出ないこともある（出ない質問は shown=false。回答が無いので言及・引用とも判定せず「表示なし」として別に数える）
