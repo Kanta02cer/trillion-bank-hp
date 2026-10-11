@@ -24,7 +24,7 @@
     var box = q('ars-case-banner');
     if (!box || !window.AirReachCaseSteps) return;
     var job = window.__orchLastJob || (read('airreach_studio_orch_v1') || {}).lastJob || null;
-    var res = window.AirReachCaseSteps.compute({ workspace: { orch: { lastJob: job } }, runs: localRuns(), studioHref: '', runsHref: dashHref('runs') });
+    var res = window.AirReachCaseSteps.compute({ workspace: { orch: { lastJob: job }, review: read('airreach_studio_review_v1') }, runs: localRuns(), studioHref: '', runsHref: dashHref('runs') });
     var steps = res.steps.map(function (s, i) {
       return '<li class="acs-step is-' + s.state + '"' + (s.state === 'current' ? ' aria-current="step"' : '') + '><span class="acs-dot" aria-hidden="true">' + (s.state === 'done' ? '✓' : i + 1) + '</span><span><b>' + esc(s.label) + '</b><small>' + esc(s.detail) + '</small></span></li>';
     }).join('');

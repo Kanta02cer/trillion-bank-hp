@@ -1196,7 +1196,8 @@
     return 'airreach-' + host + '-' + d + '-v' + (mf.package_version || '1.0.0') + '.zip';
   }
   function downloadZip(filename, files, paths) {
-    return finalizePackage(files, paths).then(function (clean) { saveZip(filename, clean); });
+    // ZIP に入れた中身（MANIFEST.json はファイル一覧を書き足したもの）を返す。正式版の指紋はこの MANIFEST.json から取る
+    return finalizePackage(files, paths).then(function (clean) { saveZip(filename, clean); return clean; });
   }
   function saveZip(filename, clean) {
     if (window.AirReachPackageSchema && window.AirReachPackageSchema.validatePackageFiles) {
@@ -2077,7 +2078,7 @@
         try { localStorage.setItem('airreach_zip_set', set); } catch (e) {}
         var paths = set === 'all' ? null : (window.AirReachPackageSchema && window.AirReachPackageSchema.MINIMAL_FILES) || null;
         downloadZip(packageFilename(job), job.files, paths)
-          .then(function () {
+          .then(function (clean) {
             // 案件の段階（airreach-case-steps.js）が「パッチを作った」と分かるように、作った日時と版を分析に残す
             var mf = {}; try { mf = JSON.parse(job.files['MANIFEST.json'] || '{}'); } catch (e2) {}
             var ok = window.AirReachPackageSchema ? window.AirReachPackageSchema.validatePackageFiles(job.files).publishable : false;
@@ -2090,7 +2091,7 @@
               // 採用した記事のデータ（Article・NewsArticle など）と、MANIFEST の指紋（版が変わったら前の公開確認を使わないため）
               articles: (window.AirReachVerify && window.AirReachVerify.adopted ? window.AirReachVerify.adopted({ files: job.files }).articles : []), manifest_sha256: '' };
             var zrec = job.zipped;
-            if (window.AirReachPackageSchema && window.AirReachPackageSchema.sha256Hex) window.AirReachPackageSchema.sha256Hex(String(job.files['MANIFEST.json'] || '')).then(function (h) { if (job.zipped === zrec) { zrec.manifest_sha256 = h; persistJob(job); } }).catch(function () {});
+            if (window.AirReachPackageSchema && window.AirReachPackageSchema.sha256Hex) window.AirReachPackageSchema.sha256Hex(String((clean && clean['MANIFEST.json']) || job.files['MANIFEST.json'] || '')).then(function (h) { if (job.zipped === zrec) { zrec.manifest_sha256 = h; persistJob(job); } }).catch(function () {});
             persistJob(job);
             try { if (window.AirReachStudioSteps) window.AirReachStudioSteps.refresh(); } catch (e3) {}
           })
