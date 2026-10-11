@@ -197,10 +197,27 @@
     item.indexed = Object.assign({ at: new Date(t).toISOString(), how: String(how || ''), url: item.target_url, recorded_at: new Date(n).toISOString() }, stampOf(pkg, item));
     return { ok: true };
   }
-  /** 照合の結果（AirReachVerify.judgeArticle）を記事の記録にする */
+  /**
+   * 照合を始めたときの識別（顧客・版・全体と記事の MANIFEST の指紋・対象の URL・会社）。
+   *   応答が返ったときに recordVerify へ渡し、途中で版や顧客が変わっていたら結果を保存しない
+   */
+  function ticket(pkg, key, workspace) {
+    var item = itemOf(pkg, key); if (!pkg || !item) return null;
+    return { workspace: String(workspace || ''), version: pkg.version, manifest_sha256: pkg.manifest_sha256, item_manifest_sha256: item.manifest_sha256,
+      target_url: item.target_url, company: pkg.company, approved_at: (pkg.approved && pkg.approved.at) || '' };
+  }
+  function sameTicket(t, pkg, key, workspace) {
+    var now = ticket(pkg, key, workspace);
+    return !!(t && now) && ['workspace', 'version', 'manifest_sha256', 'item_manifest_sha256', 'target_url', 'company', 'approved_at'].every(function (k) { return t[k] === now[k]; });
+  }
+  /**
+   * 照合の結果（AirReachVerify.judgeArticle）を記事の記録にする。meta.ticket（照合を始めたときの ticket）が必須で、
+   * いまのパッケージ・顧客（meta.workspace）と違えば保存しない（照合の途中で取り込み直し・承認し直し・顧客の切り替えがあった）
+   */
   function recordVerify(pkg, key, res, meta) {
     var item = itemOf(pkg, key); if (!item) return { ok: false, error: '記事が見つかりません' };
     meta = meta || {};
+    if (!sameTicket(meta.ticket, pkg, key, meta.workspace)) return { ok: false, stale: true, error: '照合の途中で、版・承認・顧客のどれかが変わりました。この結果は使いません。いまの版でもう一度確かめてください' };
     item.verified = Object.assign({ at: (meta.at || new Date().toISOString()), url: meta.url || '', final_url: meta.final_url || meta.url || '', ok: !!res.ok, state: res.state,
       html_sha256: meta.html_sha256 || '', rendered: meta.rendered || null, rule: RULE, checks: res.checks }, stampOf(pkg, item));
     return { ok: true };
@@ -256,6 +273,11 @@
   function save(pkg) { try { localStorage.setItem(KEY, JSON.stringify({ v: 1, pkg: pkg })); } catch (e) { return false; } return true; }
 
   // ---- Studio の ④ の画面（#review-box） ----
+  /** いま開いている顧客（Studio の顧客の切り替え）。分からなければ '' */
+  function workspaceId() {
+    try { var c = root.AirReachStudioClients && root.AirReachStudioClients.current && root.AirReachStudioClients.current(); if (c && c.id) return String(c.id); } catch (e) {}
+    try { return localStorage.getItem('airreach_studio_ws_current_v1') || ''; } catch (e) { return ''; }
+  }
   function esc(x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function day(iso) { var t = Date.parse(iso); if (isNaN(t)) return ''; var d = new Date(t + 9 * 3600000); return d.getUTCFullYear() + '/' + (d.getUTCMonth() + 1) + '/' + d.getUTCDate() + ' ' + ('0' + d.getUTCHours()).slice(-2) + ':' + ('0' + d.getUTCMinutes()).slice(-2); }
   function fromLocal(v) { if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v || '')) return null; var t = Date.parse(v + ':00+09:00'); return isNaN(t) ? null : new Date(t).toISOString(); }
@@ -271,7 +293,8 @@
       var h = '<h3 class="arv-h">媒体の記事向けのレビュー用パッチ</h3>' +
         '<p class="ars-gnote">送付済みのレビュー用パッチ（ZIP）を、作り直さずに取り込みます。MANIFEST の指紋を確かめ、担当者が承認してから正式版にします。公開・照合・収録は記事ごとに記録します。</p>' +
         '<div class="ars-row arv-imp"><label class="ars-btn" for="review-file">ZIP を取り込む</label><input type="file" id="review-file" accept=".zip,application/zip" class="arv-file"></div>';
-      if (msg) h += '<p class="ars-note' + (msgBad ? ' is-err' : '') + '" role="status">' + msg + '</p>';
+      // メッセージは文字だけ（ZIP の媒体名・エラー文などを HTML として扱わない）。改行は1行ずつ esc してから <br> でつなぐ
+      if (msg) h += '<p class="ars-note' + (msgBad ? ' is-err' : '') + '" role="status">' + String(msg).split('\n').map(esc).join('<br>') + '</p>';
       if (pkg) {
         h += '<div class="arv-sum"><b>' + esc(pkg.company) + '・' + pkg.items.length + '記事</b><small>版 ' + esc(pkg.version) + ' · MANIFEST の指紋 ' + esc(pkg.manifest_sha256.slice(0, 12)) + ' · 取り込み ' + esc(day(pkg.imported_at)) + '</small>' +
           '<span class="arv-badge ' + (S.official ? 'is-ok' : 'is-wait') + '">' + (S.official ? '承認済み（正式版）' + esc(day(pkg.approved.at)) + (pkg.approved.by ? '・' + esc(pkg.approved.by) : '') : '未承認（正式版ではありません）') + '</span></div>';
@@ -308,7 +331,7 @@
         var file = f.files && f.files[0]; if (!file) return;
         msg = '確かめています…'; msgBad = false;
         file.arrayBuffer().then(function (buf) { return importZip(buf); }).then(function (r) {
-          if (!r.ok) { msg = '取り込みませんでした：' + r.errors.map(esc).join('<br>'); msgBad = true; draw(); return; }
+          if (!r.ok) { msg = '取り込みませんでした：\n' + r.errors.join('\n'); msgBad = true; draw(); return; }
           var old = load();
           put(r.pkg, '取り込みました（未承認）。MANIFEST の指紋はすべて一致しました。内容を確かめて承認してください。' + (old && old.manifest_sha256 !== r.pkg.manifest_sha256 ? '前の版の承認・公開・照合の記録は、この版には使いません。' : ''));
         });
@@ -328,24 +351,27 @@
         var key = sec.getAttribute('data-item');
         sec.querySelector('[data-pub-save]').addEventListener('click', function () {
           var pkg = load(), r = recordPublish(pkg, key, fromLocal(sec.querySelector('[data-pub-at]').value), sec.querySelector('[data-pub-url]').value.trim());
-          if (!r.ok) { msg = esc(r.error); msgBad = true; draw(); return; }
+          if (!r.ok) { msg = r.error; msgBad = true; draw(); return; }
           put(pkg, '公開を記録しました。続けて「確かめる」で照合してください。');
         });
         sec.querySelector('[data-ix-save]').addEventListener('click', function () {
           var pkg = load(), r = recordIndexed(pkg, key, fromLocal(sec.querySelector('[data-ix-at]').value), sec.querySelector('[data-ix-how]').value);
-          if (!r.ok) { msg = esc(r.error); msgBad = true; draw(); return; }
+          if (!r.ok) { msg = r.error; msgBad = true; draw(); return; }
           put(pkg, 'Google の収録を記録しました。');
         });
         var run = sec.querySelector('[data-ver-run]');
         run.addEventListener('click', function () {
-          var V = root.AirReachVerify, url = sec.querySelector('[data-ver-url]').value.trim(), it = itemOf(load(), key);
+          var V = root.AirReachVerify, url = sec.querySelector('[data-ver-url]').value.trim(), pkg0 = load(), it = itemOf(pkg0, key);
           if (!V || !V.runArticle) return;
           if (!/^https?:\/\//i.test(url)) { msg = 'https:// から始まる URL を入れてください。'; msgBad = true; draw(); return; }
+          // 始めたときの顧客・版・指紋・対象を控え、応答時に違えば保存しない（旧版の結果を新版に付けない）
+          var t0 = ticket(pkg0, key, workspaceId());
           run.disabled = true; run.textContent = '確かめています…';
           V.runArticle(it, url).then(function (x) {
-            var pkg = load(); recordVerify(pkg, key, x.res, x.meta);
+            var pkg = load(), w = workspaceId(), meta = Object.assign({}, x.meta, { ticket: t0, workspace: w }), r = recordVerify(pkg, key, x.res, meta);
+            if (!r.ok) { msg = it.publisher + '：' + r.error; msgBad = true; draw(); return; }
             put(pkg, it.publisher + '：' + (x.res.ok ? '見える形で入っています。' : x.res.state === 'review' ? '要確認です。' : '入っていない・違うところがあります。'), !x.res.ok);
-          }).catch(function (e) { msg = '確かめられませんでした：' + esc((e && e.message) || e); msgBad = true; draw(); });
+          }).catch(function (e) { msg = '確かめられませんでした：' + ((e && e.message) || e); msgBad = true; draw(); });
         });
       });
     }
@@ -354,7 +380,7 @@
   if (typeof document !== 'undefined') { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountStudio); else mountStudio(); }
 
   var api = { KEY: KEY, RULE: RULE, readZip: readZip, importZip: importZip, blocksOf: blocksOf, official: official, approve: approve, setRound: setRound,
-    recordPublish: recordPublish, recordIndexed: recordIndexed, recordVerify: recordVerify, itemState: itemState, state: state, itemOf: itemOf, urlKey: urlKey, load: load, save: save };
+    recordPublish: recordPublish, recordIndexed: recordIndexed, recordVerify: recordVerify, ticket: ticket, itemState: itemState, state: state, itemOf: itemOf, urlKey: urlKey, load: load, save: save };
   root.AirReachReviewPkg = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

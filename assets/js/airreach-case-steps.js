@@ -166,13 +166,18 @@
     var ps = publishState(job, opts.now);
     // 媒体の記事向けのレビュー用パッチ（airreach-review-package.js）を承認して正式版にしたときは、③④をそちらで判定する。
     //   ④ は今回の反映の対象に選んだ記事が全部「公開・照合済み」のときだけ済み。公開した日時は対象の記事の最後の公開
+    //   いま扱う施策：レビュー用パッチを、通常のパッチ（ZIP）を作ったあとに取り込んだなら、承認前でもレビュー用パッチが今の施策。
+    //   未承認のうちは③④を済みにしない（前の通常パッチの公開・照合で済みにしない。通常パッチの記録は消さずに残す）
     var RP = root.AirReachReviewPkg, rv = ws.review && ws.review.pkg && RP ? RP.state(ws.review.pkg, opts.now) : null;
-    if (rv && rv.official) {
+    var normalAt = zipped ? Date.parse(zipped.at) : NaN, importedAt = rv ? Date.parse(rv.pkg.imported_at) : NaN;
+    var reviewCurrent = !!rv && (isNaN(normalAt) || isNaN(importedAt) || importedAt >= normalAt);
+    var reviewPending = reviewCurrent && !rv.official;
+    if (reviewCurrent) {
       var pk = rv.pkg;
-      zipped = { version: pk.version, at: pk.approved.at, review: true };
+      zipped = rv.official ? { version: pk.version, at: pk.approved.at, review: true } : null;
       ps = { zipped: zipped, review: rv, published: rv.done ? { ok: true, at: rv.published.at } : { ok: false, why: rv.why },
-        verified: rv.done ? { ok: true, state: 'ok', at: rv.published.at } : { ok: false, state: '', why: rv.why }, indexed: { ok: false }, done: rv.done };
-      if (!ent) ent = { at: pk.approved.at, company: pk.company, service: '媒体の記事（' + pk.items.length + '）' };
+        verified: rv.done ? { ok: true, state: 'ok', at: rv.published.at } : { ok: false, state: '', why: rv.why }, indexed: { ok: false }, done: !!(rv.official && rv.done) };
+      if (!ent && rv.official) ent = { at: pk.approved.at, company: pk.company, service: '媒体の記事（' + pk.items.length + '）' };
     }
     // 導入前・導入後は「公開した日時」で分ける（ZIP を作った日時では分けない）。公開の記録が無いうちは、すべて導入前の候補
     var pubT = ps.published.ok ? Date.parse(ps.published.at) : null;
@@ -187,9 +192,9 @@
       { key: 'baseline', label: '導入前を測る', done: !!base,
         detail: base ? (function () { var a = aioOf(base); return day(base.created_at || base.measured_on) + (a && a.n ? '：AI による概要 ' + a.x + ' / ' + a.n + '回' : '：計測あり'); })() : 'まだ測っていない' },
       { key: 'patch', label: 'パッチを作る', done: !!zipped,
-        detail: zipped && zipped.review ? 'レビュー用パッチ ' + zipped.version + '（承認 ' + day(zipped.at) + '）' : zipped ? 'ZIP v' + (zipped.version || '?') + '（' + day(zipped.at) + '）' : (fc.pending_approval ? '承認待ち ' + fc.pending_approval + '問' : (job ? 'まだ ZIP を作っていない' : '—')) },
+        detail: reviewPending ? 'レビュー用パッチ ' + rv.pkg.version + ' を取り込み済み・未承認（正式版ではありません）' : zipped && zipped.review ? 'レビュー用パッチ ' + zipped.version + '（承認 ' + day(zipped.at) + '）' : zipped ? 'ZIP v' + (zipped.version || '?') + '（' + day(zipped.at) + '）' : (fc.pending_approval ? '承認待ち ' + fc.pending_approval + '問' : (job ? 'まだ ZIP を作っていない' : '—')) },
       { key: 'verify', label: '公開して確かめる', done: ps.done,
-        detail: !zipped ? '—' : ps.review ? (ps.done ? '今回の対象 ' + ps.review.round.length + '記事すべて公開・照合済み（最後の公開 ' + day(ps.published.at) + '）' : ps.review.why) : ps.done ? '公開 ' + day(ps.published.at) + '・確かめた ' + day(ps.verified.at) + '（見える形で入っている）'
+        detail: !zipped ? (reviewPending ? 'レビュー用パッチの承認待ち' : '—') : ps.review ? (ps.done ? '今回の対象 ' + ps.review.round.length + '記事すべて公開・照合済み（最後の公開 ' + day(ps.published.at) + '）' : ps.review.why) : ps.done ? '公開 ' + day(ps.published.at) + '・確かめた ' + day(ps.verified.at) + '（見える形で入っている）'
           : (ps.published.ok ? '公開 ' + day(ps.published.at) + '・' + ps.verified.why : ps.published.why + (job && job.verified && job.verified.at ? '・' + ps.verified.why : '')) },
       { key: 'compare', label: '効果を比べる', done: ps.done && after.length > 0 && !!base,
         detail: ps.done ? (after.length && base ? '公開後の計測 ' + after.length + '回' : !base ? '公開前の計測がない（時系列の比較だけ）' : '公開後にまだ測っていない') : (zipped && runs.length > 1 ? '公開を確かめるまでは、計測どうしは時系列の比較' : '—') }
@@ -211,6 +216,7 @@
         why: '公開した日時と版を記録し、公開ページを描画して、承認した質問と答えの全文・構造化データ・採用したファイルが ZIP と同じかを見ます。' + (ps.published.why && ps.published.ok === false && zipped ? '（' + ps.published.why + '）' : ''), href: S + '#verify', button: '確かめる' },
       { title: '公開後の計測をして、比べる', why: '公開前と同じ質問・地域・AI・判定の版で測り、「AI 計測の記録」で2回を選んで比べます。', href: opts.runsHref || '#', button: '比べる' }
     ];
+    if (reviewPending) NEXT[2] = { title: '取り込んだレビュー用パッチを確かめて承認する', why: '承認するまでは正式版ではありません。前の通常パッチの公開・照合では、この施策を済みにしません。', href: S + '#verify', button: '承認に進む' };
     if (cmpState && !cmpState.ok) NEXT[4] = cmpState.unknown ? { title: '公開前と公開後を比べられるか確かめる', why: cmpState.text + '。「AI 計測の記録」で2回を選ぶと、比べられるかと理由が出ます。', href: opts.runsHref || '#', button: '比べる' }
       : { title: '比較を保留：条件をそろえて公開後に測り直す', why: cmpState.text + '。公開前と同じ質問・地域・AI・判定の版で測ります。', href: S + '#hack2', button: '計測に進む' };
     var next = cur >= 0 ? NEXT[cur] : { title: '次の改善を始める', why: '効果を確かめました。課題を見直して、次のパッチを作ります。', href: S + '#generator', button: '次の改善へ' };

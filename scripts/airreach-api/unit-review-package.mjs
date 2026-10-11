@@ -26,6 +26,7 @@ const P1 = '架空の代表は、ブランド「サンプルプラス」を運�
 const P2 = '会社の公式情報では、店舗の運営と加盟店の経営指導が事業として案内されています。';
 const content = (m) => `<section id="airreach-company-summary"><h2>${m.publisher}の記事に登場する会社</h2><p>${P1}</p><p>${P2}</p></section>`;
 const article = (m) => ({ '@context': 'https://schema.org', '@type': m.type, '@id': m.url + '#article', url: m.url, mainEntityOfPage: m.url, headline: m.headline,
+  description: m.publisher + 'の記事に登場する' + CO + 'の代表を紹介する記事（架空）', datePublished: '2026-10-01', author: { '@type': 'Person', name: '架空の記者' }, publisher: { '@type': 'Organization', name: m.publisher },
   about: [{ '@type': 'Person', name: '架空の代表' }, { '@type': 'Organization', name: CO, url: 'https://sample-shoji.example/' }] });
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
 const enc = (s) => Buffer.from(typeof s === 'string' ? s : JSON.stringify(s, null, 2), 'utf8');
@@ -99,7 +100,10 @@ for (const [u, why] of [['https://www.news.example/article.php?id=500', 'www'], 
 t('公開の記録：対象の記事', R.recordPublish(pkg, '01_news', '2026-10-15T01:00:00Z', MEDIA[0].url, now).ok);
 const good0 = page(MEDIA[0], content(MEDIA[0]), ld(article(MEDIA[0])));
 let res = V.judgeArticle(pkg.items[0], good0, RD(good0));
-R.recordVerify(pkg, '01_news', res, { at: '2026-10-15T02:00:00Z', url: MEDIA[0].url, final_url: MEDIA[0].url });
+const tk0 = R.ticket(pkg, '01_news', 'client-a');
+t('照合の結果：始めたときの識別（ticket）が無ければ保存しない', R.recordVerify(pkg, '01_news', res, { at: '2026-10-15T02:00:00Z', url: MEDIA[0].url }).stale === true && !pkg.items[0].verified);
+t('照合の結果：途中で顧客が変わったら保存しない', R.recordVerify(pkg, '01_news', res, { at: '2026-10-15T02:00:00Z', url: MEDIA[0].url, ticket: tk0, workspace: 'client-b' }).stale === true && !pkg.items[0].verified);
+t('照合の結果：同じ顧客・同じ版なら保存する', R.recordVerify(pkg, '01_news', res, { at: '2026-10-15T02:00:00Z', url: MEDIA[0].url, final_url: MEDIA[0].url, ticket: tk0, workspace: 'client-a' }).ok && pkg.items[0].verified.ok);
 R.setRound(pkg, ['01_news']);
 t('1記事だけを今回の対象にして、その記事が公開・照合済みなら④は済み', R.state(pkg, now).done, R.state(pkg, now));
 R.setRound(pkg, ['01_news', '02_interview']);
@@ -114,6 +118,15 @@ t('前の判定方法の記録は使わない', !R.itemState(p4, p4.items[0], no
 // 新しい版を取り込んだら、前の版の記録・承認は使わない
 const r2 = await R.importZip(zip(buildFiles({ before: (f) => { const m = JSON.parse(f['01_news/MANIFEST.json']); m.package_version = 'sample-review/2026.10.10.2'; f['01_news/MANIFEST.json'] = enc(m); for (const d of ['02_interview', '03_review']) { const x = JSON.parse(f[d + '/MANIFEST.json']); x.package_version = 'sample-review/2026.10.10.2'; f[d + '/MANIFEST.json'] = enc(x); } } })));
 const pkgNew = Object.assign({}, r2.pkg, { approved: pkg.approved, round: ['01_news'], items: r2.pkg.items.map((x, i) => Object.assign({}, x, { published: pkg.items[i].published, verified: pkg.items[i].verified })) });
+// 照合の途中で新しい版を取り込み・承認・公開記録 → 旧版で始めた照合の結果は新しい版に保存しない
+{
+  const nx = JSON.parse(JSON.stringify(r2.pkg)); R.approve(nx, 'staff@sample.test', new Date('2026-10-16T00:00:00Z')); R.setRound(nx, ['01_news']);
+  R.recordPublish(nx, '01_news', '2026-10-16T01:00:00Z', MEDIA[0].url, now);
+  const late = R.recordVerify(nx, '01_news', res, { at: '2026-10-16T02:00:00Z', url: MEDIA[0].url, ticket: tk0, workspace: 'client-a' });
+  t('照合の途中で版が変わった：旧版の結果を新版に記録しない（④も済まない）', late.stale === true && !nx.items[0].verified && !R.state(nx, now).done, late);
+  const same = JSON.parse(JSON.stringify(pkg)); const tkA = R.ticket(same, '01_news', 'client-a'); R.approve(same, 'staff@sample.test', new Date('2026-10-13T00:00:00Z'));
+  t('照合の途中で承認し直した：結果を保存しない', R.recordVerify(same, '01_news', res, { ticket: tkA, workspace: 'client-a' }).stale === true);
+}
 t('別の版：前の承認・公開・照合の記録を新しい版の合格にしない', r2.ok && !R.official(pkgNew) && !R.state(pkgNew, now).done && !R.itemState(Object.assign({}, pkgNew, { approved: Object.assign({}, pkg.approved, { version: pkgNew.version, manifest_sha256: pkgNew.manifest_sha256 }) }), pkgNew.items[0], now).published.ok, r2.errors);
 
 // ---- 3. 照合（judgeArticle） ----
@@ -136,17 +149,34 @@ res = J(i0, page(m0, C0, ld(Object.assign({}, A0, { about: [{ '@type': 'Organiza
 t('会社違い：記事データの about の会社が別 → 不合格', !res.ok && st(res, 'article') === 'ng' && /about の会社が違います/.test(res.checks.find((c) => c.key === 'article').detail));
 res = J(i0, page(m0, C0, ld(Object.assign({}, A0, { about: undefined }))));
 t('about に会社が無い → 不合格', !res.ok && /about に会社/.test(res.checks.find((c) => c.key === 'article').detail));
-const orig = { '@context': 'https://schema.org', '@type': 'NewsArticle', headline: m0.headline, author: { '@type': 'Person', name: '記者' } };
+const orig = { '@context': 'https://schema.org', '@type': 'NewsArticle', headline: m0.headline, datePublished: A0.datePublished, author: A0.author, publisher: A0.publisher };
 res = J(i0, page(m0, C0, ld(orig) + ld(A0)));
 t('重複：元の NewsArticle と新しい NewsArticle が二重 → 不合格', !res.ok && /2つあります/.test(res.checks.find((c) => c.key === 'article').detail), res.checks);
 res = J(i0, page(m0, C0, ld(A0) + ld(A0)));
 t('重複：同じ記事データを2回貼った → 不合格', !res.ok && /2つあります/.test(res.checks.find((c) => c.key === 'article').detail));
-res = J(i0, page(m0, C0, ld(Object.assign({}, orig, { '@type': 'Article', about: A0.about }))));
+res = J(i0, page(m0, C0, ld(Object.assign({}, orig, { '@type': 'Article', about: A0.about, description: A0.description }))));
 t('GNA 相当（無ければ新設）：既存の Article を更新して about を足した → 合格', res.ok && /新設・既存の更新のどちらでも可/.test(res.checks.find((c) => c.key === 'article').detail), res.checks);
 res = J(i0, page(m0, C0, ld({ '@context': 'https://schema.org', '@graph': [Object.assign({}, A0, { '@context': undefined })] })));
 t('@graph の中の記事データも読む', res.ok, res.checks);
 res = J(i0, page(m0, C0, ld(orig)));
 t('既存のままで about を足していない → 不合格（新設・更新したことにしない）', !res.ok && /about に会社/.test(res.checks.find((c) => c.key === 'article').detail));
+// 承認した記事データの項目（変えた項目＝要約・about、残す項目＝著者・発行者・発行日）
+for (const [k, v, re] of [['author', { '@type': 'Person', name: '別の記者' }, /著者が承認と違います/], ['publisher', { '@type': 'Organization', name: '別の発行者' }, /発行者が承認と違います/],
+  ['description', '別の要約', /要約（description）が承認と違います/], ['datePublished', '2000-01-01', /発行日が承認と違います/], ['author', undefined, /著者が承認と違います（ページ：なし/]]) {
+  res = J(i0, page(m0, C0, ld(Object.assign({}, A0, { [k]: v }))));
+  t('承認した記事データの ' + k + ' が違う・無い → 不合格', !res.ok && st(res, 'adopted') === 'ng' && re.test(res.checks.find((c) => c.key === 'adopted').detail), res.checks.find((c) => c.key === 'adopted'));
+}
+res = J(i0, page(m0, C0, ld(Object.assign({}, A0, { about: A0.about.filter((x) => x['@type'] !== 'Person') }))));
+t('承認した about の人物が無い → 不合格', !res.ok && /about に 人物「架空の代表」がありません/.test(res.checks.find((c) => c.key === 'adopted').detail));
+{
+  const reordered = Object.fromEntries(Object.entries(A0).reverse());
+  reordered.datePublished = '2026-10-01T09:00:00+09:00'; reordered.author = [{ name: '架空の記者', url: 'https://news.example/staff/' }]; reordered.keywords = '媒体が足した項目';
+  reordered.about = [{ '@type': 'Corporation', name: CO }, { '@type': 'Person', name: '架空の代表', jobTitle: '代表' }];
+  res = J(i0, page(m0, C0, ld(reordered)));
+  t('キーの順・媒体が足した項目・同じ日の時刻つき・Corporation は問わない → 合格', res.ok && st(res, 'adopted') === 'ok', res.checks);
+}
+res = J(Object.assign({}, i0, { article_jsonld: undefined }), good0);
+t('承認した記事データが保存されていない古い記録 → 合格にしない（要確認）', !res.ok && st(res, 'adopted') === 'review');
 const i1 = pkg.items[1], m1 = MEDIA[1];
 res = J(i1, page(m1, content(m1), ld(Object.assign({}, article(m1), { '@type': 'NewsArticle' }))));
 t('置き換え（replace_existing_article）で種類が違う → 不合格', !res.ok && /種類が違います/.test(res.checks.find((c) => c.key === 'article').detail));
@@ -165,6 +195,22 @@ t('5段階：対象のうち1記事が未完了なら④は済まない', cs.ste
 const pkU = JSON.parse(JSON.stringify(pkg)); pkU.approved = null; pkU.round = ['01_news'];
 cs = K.compute({ workspace: { review: { v: 1, pkg: pkU } }, runs: [], now });
 t('5段階：未承認のレビュー用パッチは③にも数えない', !cs.steps[2].done && !cs.steps[3].done);
+// 過去の通常パッチが公開・照合済みのまま、新しいレビュー用パッチを取り込んだ（未承認）
+{
+  const z = { version: 'normal/1', at: '2026-10-10T00:00:00Z', draft: false, manifest_sha256: 'normal-hash' };
+  const normalJob = { url: MEDIA[0].url, files: {}, confirm: { entity: { at: z.at, company: CO, service: 'サンプル' } }, zipped: z,
+    published: { at: '2026-10-11T00:00:00Z', url: MEDIA[0].url, version: z.version, zipped_at: z.at, manifest_sha256: z.manifest_sha256 },
+    verified: { at: '2026-10-11T01:00:00Z', url: MEDIA[0].url, final_url: MEDIA[0].url, ok: true, state: 'ok', rule: 'verify/2026.10.09', version: z.version, zipped_at: z.at, zip_manifest_sha256: z.manifest_sha256 } };
+  t('（前提）通常パッチは公開・照合済み', K.publishState(normalJob, now).done);
+  cs = K.compute({ workspace: { orch: { lastJob: normalJob }, review: { v: 1, pkg: pkU } }, runs: [], now });
+  t('通常パッチが済みでも、あとで取り込んだ未承認のレビュー用パッチなら③④は済みにしない', !cs.steps[2].done && !cs.steps[3].done && /未承認/.test(cs.steps[2].detail) , cs.steps.map((s) => [s.key, s.done, s.detail]).concat([cs.next.title]));
+  t('通常パッチの記録は消さない', normalJob.verified.ok && normalJob.published.at === '2026-10-11T00:00:00Z');
+  cs = K.compute({ workspace: { orch: { lastJob: normalJob }, review: { v: 1, pkg: pk } }, runs: [], now });
+  t('承認したレビュー用パッチ（通常パッチより後）：レビュー用パッチで判定', cs.steps[2].done && /レビュー用パッチ/.test(cs.steps[2].detail) && !cs.steps[3].done && /架空レビュー/.test(cs.steps[3].detail));
+  const newer = JSON.parse(JSON.stringify(normalJob)); newer.zipped.at = '2026-10-19T00:00:00Z'; newer.published.zipped_at = newer.verified.zipped_at = newer.zipped.at; newer.published.at = '2026-10-19T01:00:00Z'; newer.verified.at = '2026-10-19T02:00:00Z';
+  cs = K.compute({ workspace: { orch: { lastJob: newer }, review: { v: 1, pkg: pkU } }, runs: [], now });
+  t('レビュー用パッチより後に通常パッチを作ったなら、通常パッチで判定', cs.steps[2].done && /ZIP v/.test(cs.steps[2].detail) && cs.steps[3].done, cs.steps.map((s) => [s.key, s.done, s.detail]));
+}
 
 // ---- 5. Studio の ZIP の指紋は、ZIP に入れた MANIFEST.json から取る（作るときに一覧を書き足したもの） ----
 const orch = fs.readFileSync(path.join(ROOT, 'assets/js/airreach-orchestrator.js'), 'utf8');

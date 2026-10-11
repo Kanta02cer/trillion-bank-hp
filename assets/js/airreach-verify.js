@@ -255,8 +255,34 @@
     var ab = x && x.about; ab = Array.isArray(ab) ? ab : ab ? [ab] : [];
     return ab.filter(function (a) { return a && types(a).some(function (t) { return ORG.test(t) || /Organization|Corporation/.test(t); }); }).map(function (a) { return String(a.name || ''); });
   }
+  // 承認した記事データ（ARTICLE.jsonld）と、公開ページの記事データを意味で比べる。キーの順・媒体が足した別の項目は問わない
+  function dayOf(v) { var s = String(v == null ? '' : v).trim(), m = /^(\d{4}-\d{2}-\d{2})/.exec(s); return m ? m[1] : s; }
+  function listOf(x) { return Array.isArray(x) ? x : x ? [x] : []; }
+  function namesKey(x) { return listOf(x).map(function (a) { return norm(typeof a === 'string' ? a : (a && a.name) || ''); }).filter(Boolean).sort().join('・'); }
+  function kindOf(a) { var t = types(a); return t.some(function (y) { return y === 'Person'; }) ? 'person' : t.some(function (y) { return ORG.test(y) || /Organization|Corporation/.test(y); }) ? 'org' : t.some(function (y) { return y === 'Brand'; }) ? 'brand' : (t[0] || 'thing'); }
+  var KIND = { person: '人物', org: '会社', brand: 'ブランド' };
+  function adoptedArticle(item) {
+    var j = parse(item && item.article_jsonld);
+    return j ? flat(j).filter(function (x) { return types(x).some(function (t) { return ARTICLE.test(t); }); })[0] || null : null;
+  }
+  /** 承認した記事データの項目のうち、ページの記事データ a と違うもの（[文…]） */
+  function adoptedDiffs(want, a) {
+    var out = [];
+    function cmp(key, label, f) { if (want[key] == null || want[key] === '') return; var w = f(want[key]), g = f(a[key]); if (w !== g) out.push(label + 'が承認と違います（ページ：' + (g || 'なし') + '／承認：' + w + '）'); }
+    cmp('author', '著者', namesKey);
+    cmp('publisher', '発行者', namesKey);
+    cmp('description', '要約（description）', norm);
+    cmp('abstract', '要約（abstract）', norm);
+    cmp('datePublished', '発行日', dayOf);
+    var have = listOf(a.about).filter(function (x) { return x && typeof x === 'object'; }).map(function (x) { return kindOf(x) + ':' + norm(x.name || ''); });
+    listOf(want.about).forEach(function (x) {
+      if (!x || typeof x !== 'object' || !x.name) return;
+      if (have.indexOf(kindOf(x) + ':' + norm(x.name)) < 0) out.push('about に ' + (KIND[kindOf(x)] || kindOf(x)) + '「' + x.name + '」がありません');
+    });
+    return out;
+  }
   /**
-   * item：取り込んだ記事（target_url・company・content_blocks・article{type,headline}・changeset）
+   * item：取り込んだ記事（target_url・company・content_blocks・article{type,headline}・article_jsonld・changeset）
    * page：{ url, status, html }。rendered：描画して読んだ見える文字（無ければ null＝要確認）
    */
   function judgeArticle(item, page, rendered) {
@@ -292,6 +318,13 @@
       var names = aboutNames(a);
       if (names.map(norm).indexOf(norm(item.company)) < 0) probs.push(names.length ? 'about の会社が違います（' + names.join('・') + '／パッチ：' + item.company + '）' : 'about に会社（' + item.company + '）がありません');
       checks.push({ key: 'article', label: '記事データ（Article・NewsArticle）', state: probs.length ? 'ng' : 'ok', detail: probs.length ? probs.join('・') : types(a).join('・') + '・about に ' + item.company + (op === 'add_if_no_article' ? '（新設・既存の更新のどちらでも可）' : '') });
+      // 3. 承認した記事データの、変えた項目（要約・about）と残す項目（著者・発行者・発行日）
+      var wantLd = adoptedArticle(item);
+      if (!wantLd) checks.push({ key: 'adopted', label: '承認した記事データの項目', state: 'review', detail: '承認した記事データ（ARTICLE.jsonld）が保存されていないため、著者・発行者・要約・発行日を比べられません。取り込み直してください' });
+      else {
+        var diffs = adoptedDiffs(wantLd, a);
+        checks.push({ key: 'adopted', label: '承認した記事データの項目（著者・発行者・要約・発行日・about）', state: diffs.length ? 'ng' : 'ok', detail: diffs.length ? diffs.join('・') : '承認した内容と同じです' });
+      }
     }
     if (ld.broken) checks.push({ key: 'ld_broken', label: '読めない構造化データ', state: 'ng', detail: ld.broken + 'つのデータが JSON として読めません' });
     checks.push({ key: 'not_required', label: '媒体の記事では求めないもの', state: 'skip', detail: 'llms.txt・ページ直下の会社の情報（媒体のサイトのため）' });
