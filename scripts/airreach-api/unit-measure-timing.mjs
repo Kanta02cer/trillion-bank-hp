@@ -62,5 +62,36 @@ t('公開の記録が無ければ「効果を測る」時期にしない（毎�
   t('公開の記録が無い：どちらも効果の時期にしない', ct.kind === 'monthly' && staff === false);
   t('古い DB の関数（publish_job なし）：効果の時期を案内しない', CS.customerTiming({ entity_at: '2026-09-01T00:00:00Z', last_run_at: '2026-09-20T01:00:00Z', verified_ok: true, verified_at: '2026-09-28T00:00:00Z' }, now).kind === 'monthly');
 }
+// お客様の「次の計測」：媒体の記事向けのレビュー用パッチ（DB の airreach_measure_timing が返す review）
+{
+  const RP = require('../../assets/js/airreach-review-package.js');
+  const U = 'https://news.example/article.php?id=500', U2 = 'https://review.example/reports/500/';
+  const stamp = { version: 'r/1', manifest_sha256: 'pkg-hash' };
+  const it = (key, url, done) => Object.assign({ key, target_url: url, manifest_sha256: key + '-hash' }, done ? {
+    published: Object.assign({ at: '2026-09-27T01:00:00Z', url }, stamp, { item_manifest_sha256: key + '-hash' }),
+    verified: Object.assign({ at: '2026-09-28T01:00:00Z', url, final_url: url, ok: true, state: 'ok', rule: RP.RULE }, stamp, { item_manifest_sha256: key + '-hash' }) } : {});
+  const pkg = (o) => Object.assign({ version: 'r/1', manifest_sha256: 'pkg-hash', imported_at: '2026-09-25T00:00:00Z', approved: { at: '2026-09-26T00:00:00Z', version: 'r/1', manifest_sha256: 'pkg-hash' },
+    round: ['01_news'], items: [it('01_news', U, true), it('03_review', U2, false)] }, o || {});
+  const base = { entity_at: '2026-09-01T00:00:00Z', last_run_at: '2026-09-20T01:00:00Z', publish_job: { zipped: null, published: null, verified: null } };
+  let ct = CS.customerTiming(Object.assign({}, base, { review: pkg() }), now);
+  t('レビュー用パッチ：今回の対象が全部公開・照合済み → 効果の時期（公開 9/27 から14日）', ct.kind === 'effect' && /10\/11/.test(CS.timingCustomer(ct)), [ct, CS.timingCustomer(ct)]);
+  ct = CS.customerTiming(Object.assign({}, base, { review: pkg({ round: ['01_news', '03_review'] }) }), now);
+  t('レビュー用パッチ：対象の1記事が未完了 → 効果の時期にしない', ct.kind === 'monthly', ct);
+  ct = CS.customerTiming(Object.assign({}, base, { review: pkg({ approved: null }) }), now);
+  t('レビュー用パッチ：未承認 → 効果の時期にしない', ct.kind === 'monthly', ct);
+  const normalDone = { zipped: { at: '2026-09-10T00:00:00Z', version: '1.0.0', draft: false, manifest_sha256: 'n' },
+    published: { at: '2026-09-27T01:00:00Z', url: 'https://sample.example/faq/', version: '1.0.0', zipped_at: '2026-09-10T00:00:00Z', manifest_sha256: 'n' },
+    verified: { at: '2026-09-28T01:00:00Z', ok: true, state: 'ok', rule: 'verify/2026.10.09', version: '1.0.0', zipped_at: '2026-09-10T00:00:00Z', zip_manifest_sha256: 'n', url: 'https://sample.example/faq/', final_url: 'https://sample.example/faq/' } };
+  t('（前提）通常パッチだけなら効果の時期', CS.customerTiming(Object.assign({}, base, { publish_job: normalDone }), now).kind === 'effect');
+  ct = CS.customerTiming(Object.assign({}, base, { publish_job: normalDone, review: pkg({ approved: null }) }), now);
+  t('通常パッチが済みでも、あとで取り込んだ未承認のレビュー用パッチなら効果の時期にしない', ct.kind === 'monthly', ct);
+  ct = CS.customerTiming(Object.assign({}, base, { publish_job: Object.assign({}, normalDone, { zipped: Object.assign({}, normalDone.zipped, { at: '2026-09-30T00:00:00Z' }) }), review: pkg({ approved: null }) }), now);
+  t('レビュー用パッチより後に通常パッチを作ったなら、通常パッチで判定（担当者の5段階と同じ規則）', CS.reviewCurrent(pkg({ approved: null }), { at: '2026-09-30T00:00:00Z' }, now) === null && CS.reviewCurrent(pkg({ approved: null }), { at: '2026-09-20T00:00:00Z' }, now) !== null, ct);
+  ct = CS.customerTiming(Object.assign({}, base, { entity_at: null, review: pkg() }), now);
+  t('会社・サービスの確定が無くても、承認したレビュー用パッチがあれば時期を出す', ct && ct.kind === 'effect', ct);
+  // 担当者の5段階（compute）と同じ判定
+  const st = CS.compute({ workspace: { review: { v: 1, pkg: pkg() } }, runs: [], now });
+  t('担当者の5段階と同じ：④ 済み', st.steps[3].done && st.timing && st.timing.kind === CS.customerTiming(Object.assign({}, base, { last_run_at: null, review: pkg() }), now).kind, [st.steps[3], st.timing]);
+}
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
