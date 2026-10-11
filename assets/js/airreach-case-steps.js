@@ -141,9 +141,28 @@
    * お客様の画面の計測の時期：DB の airreach_measure_timing の結果から、担当者側と同じ規則（publishState）で判定する。
    *   publish_job が無い（古い関数）・記録が足りない・版や URL が合わないときは、効果を測る時期にしない
    */
+  /**
+   * いま扱う施策が媒体の記事向けのレビュー用パッチか（担当者の5段階とお客様の「次の計測」で同じ規則）。
+   *   通常のパッチ（ZIP）を作ったあとに取り込んだなら、承認前でもレビュー用パッチが今の施策。
+   *   戻り値：null（レビュー用パッチが無い・通常パッチの方が新しい）か { rv: AirReachReviewPkg.state, official, done, publishedAt }
+   */
+  function reviewCurrent(reviewPkg, normalZipped, now) {
+    var RP = root.AirReachReviewPkg;
+    if (!reviewPkg || !RP) return null;
+    var rv = RP.state(reviewPkg, now), normalAt = normalZipped ? Date.parse(normalZipped.at) : NaN, importedAt = Date.parse(reviewPkg.imported_at);
+    if (!(isNaN(normalAt) || isNaN(importedAt) || importedAt >= normalAt)) return null;
+    return { rv: rv, official: !!rv.official, done: !!(rv.official && rv.done), publishedAt: rv.official && rv.done ? rv.published.at : null };
+  }
   function customerTiming(d, now) {
     d = d || {};
-    var ps = d.publish_job ? publishState(d.publish_job, now) : null, okNow = !!(ps && ps.done);
+    var pj = d.publish_job, normalZipped = pj && pj.zipped && !pj.zipped.draft ? pj.zipped : null;
+    // レビュー用パッチが今の施策なら、そちらの公開・照合（今回の対象の記事が全部済み）で判定する。未承認のうちは効果の時期にしない
+    var rc = reviewCurrent(d.review, normalZipped, now);
+    if (rc) {
+      var entAt = d.entity_at || (rc.official && d.review.approved ? d.review.approved.at : null);
+      return timing({ entityAt: entAt, verifiedAt: rc.publishedAt, verifiedOk: rc.done, publishedAt: rc.publishedAt, lastRunAt: d.last_run_at }, now);
+    }
+    var ps = pj ? publishState(pj, now) : null, okNow = !!(ps && ps.done);
     return timing({ entityAt: d.entity_at, verifiedAt: okNow ? ps.verified.at : null, verifiedOk: okNow, publishedAt: okNow ? ps.published.at : null, lastRunAt: d.last_run_at }, now);
   }
   /** お客様向けの1行（遅れは出さない） */
@@ -168,11 +187,9 @@
     //   ④ は今回の反映の対象に選んだ記事が全部「公開・照合済み」のときだけ済み。公開した日時は対象の記事の最後の公開
     //   いま扱う施策：レビュー用パッチを、通常のパッチ（ZIP）を作ったあとに取り込んだなら、承認前でもレビュー用パッチが今の施策。
     //   未承認のうちは③④を済みにしない（前の通常パッチの公開・照合で済みにしない。通常パッチの記録は消さずに残す）
-    var RP = root.AirReachReviewPkg, rv = ws.review && ws.review.pkg && RP ? RP.state(ws.review.pkg, opts.now) : null;
-    var normalAt = zipped ? Date.parse(zipped.at) : NaN, importedAt = rv ? Date.parse(rv.pkg.imported_at) : NaN;
-    var reviewCurrent = !!rv && (isNaN(normalAt) || isNaN(importedAt) || importedAt >= normalAt);
-    var reviewPending = reviewCurrent && !rv.official;
-    if (reviewCurrent) {
+    var rc = reviewCurrent(ws.review && ws.review.pkg, zipped, opts.now), rv = rc ? rc.rv : null;
+    var reviewPending = !!rc && !rc.official;
+    if (rc) {
       var pk = rv.pkg;
       zipped = rv.official ? { version: pk.version, at: pk.approved.at, review: true } : null;
       ps = { zipped: zipped, review: rv, published: rv.done ? { ok: true, at: rv.published.at } : { ok: false, why: rv.why },
@@ -242,7 +259,7 @@
       (res.publish && res.publish.zipped ? '<p class="acs-index">Google の収録（5段階とは別）　' + (res.publish.indexed.ok ? '確かめた ' + esc(day(res.publish.indexed.at)) + (res.publish.indexed.how ? '（' + esc(res.publish.indexed.how) + '）' : '') : '未確認') + '</p>' : '') + (res.timing !== undefined ? '<p class="acs-timing' + (res.timing && res.timing.state === 'late' ? ' is-late' : '') + '">計測の予定　' + esc(timingLine(res.timing)) + '</p>' : '') + '</section>';
   }
 
-  var api = { compute: compute, customerTiming: customerTiming, cardHtml: cardHtml, aioOf: aioOf, publishState: publishState, sameVersion: sameVersion, urlKey: urlKey, compareState: compareState, timing: timing, timingChip: timingChip, timingLine: timingLine, timingCustomer: timingCustomer, KIND_LABEL: KIND_LABEL };
+  var api = { compute: compute, customerTiming: customerTiming, reviewCurrent: reviewCurrent, cardHtml: cardHtml, aioOf: aioOf, publishState: publishState, sameVersion: sameVersion, urlKey: urlKey, compareState: compareState, timing: timing, timingChip: timingChip, timingLine: timingLine, timingCustomer: timingCustomer, KIND_LABEL: KIND_LABEL };
   root.AirReachCaseSteps = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
