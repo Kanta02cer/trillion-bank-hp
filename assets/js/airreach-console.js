@@ -1006,7 +1006,7 @@
         overview += '<section class="arc-card arc-numcard"><div class="arv-home-head"><h2 class="arc-h2">' + esc(ymJa(month)) + 'の数字</h2><span class="arc-sub">登録された材料からその場で集計</span></div>' +
           compactNumbers(live, month) +
           '<details class="arc-more" data-fold="nums"' + (openFolds.nums ? ' open' : '') + '><summary>数字の内訳を開く（AI 別の割合・分子と分母・対象期間）</summary>' + C.tiles(live) + '</details></section>' +
-          (window.AirReachClientHome ? window.AirReachClientHome.competitor(live, { staff: true, href: studioH + '#hack2', linkText: 'Studio で回答を見る', registerHref: '#arq',
+          (window.AirReachClientHome ? window.AirReachClientHome.competitor(live, { staff: true, href: studioH + '#hack2', linkText: 'Studio で回答を見る', registerHref: studioH + '#competitors',
             note: '今月の AI 計測からその場で集計しています（月次レポートの数字は、下書きを作った時点のもの）。質問ごと・AI ごとの詳しい比較は月次レポートに出ます。' }) : '') +
           '<div class="arc-dash-2">' + monthSteps(plan) + dashTodos(R.todoList(live), live, studioH) + '</div>' +
           '<div id="arc-rq"></div>' +
