@@ -469,3 +469,22 @@ body:not(.has-job) [data-needs-job]{display:none}
 /* 2対象の主表示：補足（主・補助）と、ほかの AI の履歴 */
 .ai3-sub { display: block; margin-top: 2px; font-size: 11px; color: var(--ars-muted); font-weight: 400; }
 .ai3-hist { margin: 8px 0 0; font-size: 12px; color: var(--ars-muted); }
+
+/* ④ 媒体の記事向けのレビュー用パッチ（airreach-review-package.js） */
+.arv{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.arv-h{margin:0;font-size:1rem}
+.arv-imp{align-items:center}.arv-imp .ars-btn{cursor:pointer}
+.arv-file{font-size:.85rem;max-width:100%}
+.arv-sum{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.arv-sum small{color:#64748b}
+.arv-badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.arv-badge.is-ok{background:#ecfdf5;color:#047857}.arv-badge.is-wait{background:#fff7ed;color:#9a3412}
+.arv-t{width:100%;border-collapse:collapse;font-size:.85rem}.arv-t th,.arv-t td{border-top:1px solid #e2e8f0;padding:6px 8px;text-align:left;vertical-align:top}
+.arv-t details p{margin:4px 0;color:#334155}
+.arv-url{word-break:break-all;color:#475569;font-size:.85rem;margin:0}
+.arv-chk{display:flex;gap:8px;align-items:center;min-height:36px}
+.arv-round{border:1px solid #e2e8f0;border-radius:10px;padding:8px 12px;display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center}.arv-round legend{font-weight:700;padding:0 4px}
+.arv-total{margin:0;padding:8px 12px;border-radius:8px;font-weight:700}
+.arv-total.is-ok{background:#ecfdf5;color:#065f46}.arv-total.is-wait{background:#fffbeb;color:#78350f}
+.arv-item{border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.arv-item h4{margin:0;font-size:.95rem}.arv-item h4 small{color:#64748b;font-weight:400;margin-left:6px}
+.arv-st{margin:0;font-size:.88rem}.arv-st.is-ok{color:#047857}.arv-st.is-ng{color:#b91c1c}.arv-st.is-wait{color:#92400e}
