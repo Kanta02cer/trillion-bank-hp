@@ -240,7 +240,7 @@ jsonld: |
 }
 </style>
 
-<!-- Breadcrumb -->
+{% comment %} Breadcrumb {% endcomment %}
 <nav class="corp-breadcrumb" aria-label="パンくずリスト">
   <a href="{{ '/' | relative_url }}">Top</a>
   <span class="corp-breadcrumb__sep">/</span>
@@ -249,14 +249,14 @@ jsonld: |
 
 <div class="tl-wrap">
 
-  <!-- ヘッダー -->
+  {% comment %} ヘッダー {% endcomment %}
   <div class="tl-header">
     <p class="tl-header__kicker">Legal Notice</p>
     <h1>特定商取引法に基づく表記</h1>
     <p class="tl-header__date">最終更新日：2026年9月6日</p>
   </div>
 
-  <!-- 目次 -->
+  {% comment %} 目次 {% endcomment %}
   <nav class="tl-toc" aria-label="目次">
     <p class="tl-toc__title">Contents</p>
     <ol>
@@ -268,7 +268,7 @@ jsonld: |
     </ol>
   </nav>
 
-  <!-- 1. 事業者情報 -->
+  {% comment %} 1. 事業者情報 {% endcomment %}
   <section id="company" class="tl-section">
     <div class="tl-section__badge">01 — 事業者情報</div>
     <h2>事業者情報（共通）</h2>
@@ -298,7 +298,7 @@ jsonld: |
     </table>
   </section>
 
-  <!-- 2. AI検索計測・運用支援（AirReach Consulting） -->
+  {% comment %} 2. AI検索計測・運用支援（AirReach Consulting） {% endcomment %}
   <section id="svc-hackii" class="tl-section tl-section--highlight">
     <div class="tl-section__badge">02 — ★ 重要：契約条件あり</div>
     <h2>AI検索計測・運用支援サービス（AirReach Consulting）</h2>
@@ -360,7 +360,7 @@ jsonld: |
     </div>
   </section>
 
-  <!-- 3. Web・システム開発 -->
+  {% comment %} 3. Web・システム開発 {% endcomment %}
   <section id="svc-web" class="tl-section">
     <div class="tl-section__badge">03</div>
     <h2>Web・システム開発サービス</h2>
@@ -394,7 +394,7 @@ jsonld: |
     </table>
   </section>
 
-  <!-- 4. AI・DX戦略コンサルティング -->
+  {% comment %} 4. AI・DX戦略コンサルティング {% endcomment %}
   <section id="svc-dx" class="tl-section">
     <div class="tl-section__badge">04</div>
     <h2>AI・DX戦略コンサルティングサービス</h2>
@@ -428,7 +428,7 @@ jsonld: |
     </table>
   </section>
 
-  <!-- 5. 共通注意事項 -->
+  {% comment %} 5. 共通注意事項 {% endcomment %}
   <section id="common" class="tl-section">
     <div class="tl-section__badge">05</div>
     <h2>共通注意事項</h2>
@@ -440,7 +440,7 @@ jsonld: |
     </ul>
   </section>
 
-  <!-- フッターリンク -->
+  {% comment %} フッターリンク {% endcomment %}
   <div class="tl-footer-links">
     <a href="{{ '/privacy.html' | relative_url }}" class="tl-link--gold">プライバシーポリシー</a>
     <a href="{{ '/terms.html' | relative_url }}" class="tl-link--gold">利用規約</a>

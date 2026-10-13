@@ -2,11 +2,11 @@
 <html lang="ja">
 <head>
   <meta name="tb-api-base" content="https://trillion-bank-hp.vercel.app">
-  <!-- Google AdSense -->
+  {% comment %} Google AdSense {% endcomment %}
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1344710796174131"
      crossorigin="anonymous"></script>
 
-  <!-- Google tag (gtag.js) -->
+  {% comment %} Google tag (gtag.js) {% endcomment %}
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -15,11 +15,11 @@
     gtag('config', 'G-0XHQPCC4CF');
   </script>
 
-  <!-- ╔══════════════════════════════════════════════════════════════╗ -->
-  <!-- ║  トリリオンバンク AI流入トラッキング v1.0                              ║ -->
-  <!-- ║  AI検索エンジン（ChatGPT/Perplexity/Claude等）からの           ║ -->
-  <!-- ║  流入を検出・GA4カスタムイベントとして計測する                   ║ -->
-  <!-- ╚══════════════════════════════════════════════════════════════╝ -->
+  {% comment %} ╔══════════════════════════════════════════════════════════════╗ {% endcomment %}
+  {% comment %} ║  トリリオンバンク AI流入トラッキング v1.0                              ║ {% endcomment %}
+  {% comment %} ║  AI検索エンジン（ChatGPT/Perplexity/Claude等）からの           ║ {% endcomment %}
+  {% comment %} ║  流入を検出・GA4カスタムイベントとして計測する                   ║ {% endcomment %}
+  {% comment %} ╚══════════════════════════════════════════════════════════════╝ {% endcomment %}
   <script>
   (function() {
     'use strict';
@@ -231,7 +231,7 @@
     };
   })();
   </script>
-  <!-- ── / AI流入トラッキング ────────────────────────────────────── -->
+  {% comment %} ── / AI流入トラッキング ────────────────────────────────────── {% endcomment %}
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -241,7 +241,7 @@
   {%- assign _desc = page.excerpt_text | default: page.description | default: '株式会社Trillion Bank（通称：トリリオンバンク）はAI検索計測・AEO/GEO/SEO実装支援サービス「AirReach Consulting」を提供するITカンパニーです。' | replace: '株式会社トリリオンバンク', '株式会社Trillion Bank' -%}
   <meta name="description" content="{{ _desc | truncate: 160 | strip_html }}">
 
-  <!-- OGP -->
+  {% comment %} OGP {% endcomment %}
   <meta property="og:title" content="{% if page.meta_title %}{{ _meta_title }}{% else %}{{ _page_title }} | 株式会社Trillion Bank{% endif %}">
   <meta property="og:description" content="{{ _desc | truncate: 160 | strip_html }}">
   <meta property="og:type" content="{% if page.layout == 'news-post' %}article{% elsif page.og_type %}{{ page.og_type }}{% else %}website{% endif %}">
@@ -269,15 +269,15 @@
   <meta name="twitter:description" content="{{ _desc | truncate: 160 | strip_html }}">
   <meta name="twitter:image" content="{{ page.og_image | default: '/images/hero/tb-logo-color.webp' | absolute_url }}">
 
-  <!-- Google Search Console Verification -->
+  {% comment %} Google Search Console Verification {% endcomment %}
   <meta name="google-site-verification" content="wK5rfEt3YDcySWA0IjUfbspUnfZu9cdcFoENQSiaYOs">
 
-  <!-- Canonical + hreflang -->
+  {% comment %} Canonical + hreflang {% endcomment %}
   <link rel="canonical" href="{% if page.canonical %}{{ page.canonical }}{% else %}{{ page.url | absolute_url }}{% endif %}">
   <link rel="alternate" hreflang="ja" href="{% if page.canonical %}{{ page.canonical }}{% else %}{{ page.url | absolute_url }}{% endif %}">
   <link rel="alternate" hreflang="x-default" href="{% if page.canonical %}{{ page.canonical }}{% else %}{{ page.url | absolute_url }}{% endif %}">
 
-  <!-- AI / LLM Optimization — トリリオンバンクAIパッチ v2.0 -->
+  {% comment %} AI / LLM Optimization — トリリオンバンクAIパッチ v2.0 {% endcomment %}
   <link rel="llms-txt" href="{{ '/llms.txt' | absolute_url }}">
   <link rel="llms-full" href="{{ '/llms-full.txt' | absolute_url }}">
   <link rel="ai-patch" type="application/json" href="{{ '/ai-patch.json' | absolute_url }}">
@@ -289,22 +289,22 @@
   <meta name="revisit-after" content="3 days">
   <meta name="rating" content="general">
 
-  <!-- Fonts (async to avoid render-blocking) -->
+  {% comment %} Fonts (async to avoid render-blocking) {% endcomment %}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet"></noscript>
 
-  <!-- CSS -->
+  {% comment %} CSS {% endcomment %}
   <link rel="stylesheet" href="{{ '/assets/css/corp.css' | relative_url }}?v=5">
 
-  <!-- Favicon -->
+  {% comment %} Favicon {% endcomment %}
   <link rel="icon" type="image/png" sizes="32x32" href="{{ '/favicon.png' | relative_url }}">
   <link rel="apple-touch-icon" sizes="192x192" href="{{ '/favicon-192.png' | relative_url }}">
   <link rel="apple-touch-icon" sizes="144x144" href="{{ '/favicon-144.png' | relative_url }}">
 
   {% unless page.schema_graph %}
-  <!-- JSON-LD: WebSite -->
+  {% comment %} JSON-LD: WebSite {% endcomment %}
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -321,7 +321,7 @@
   }
   </script>
 
-  <!-- JSON-LD: Organization -->
+  {% comment %} JSON-LD: Organization {% endcomment %}
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -392,7 +392,7 @@
 
   {% if page.jsonld %}{{ page.jsonld }}{% endif %}
 
-  <!-- JSON-LD: WebPage + Speakable -->
+  {% comment %} JSON-LD: WebPage + Speakable {% endcomment %}
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -412,7 +412,7 @@
   }
   </script>
 
-  <!-- JSON-LD: LocalBusiness（地域検索・AI Overview 地域クエリ対応） -->
+  {% comment %} JSON-LD: LocalBusiness（地域検索・AI Overview 地域クエリ対応） {% endcomment %}
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -468,7 +468,7 @@
   }
   </script>
 
-  <!-- JSON-LD: BreadcrumbList（AIサイト階層理解支援） -->
+  {% comment %} JSON-LD: BreadcrumbList（AIサイト階層理解支援） {% endcomment %}
   {% unless page.url == '/' or page.url == '' %}
   <script type="application/ld+json">
   {
@@ -482,7 +482,7 @@
   </script>
   {% endunless %}
 
-  <!-- JSON-LD: SiteNavigationElement（AIナビゲーション理解） -->
+  {% comment %} JSON-LD: SiteNavigationElement（AIナビゲーション理解） {% endcomment %}
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -502,7 +502,7 @@
   </script>
 
   {% endunless %}
-  <!-- Page Transition CSS -->
+  {% comment %} Page Transition CSS {% endcomment %}
   <style>
   #corp-pt {
     position: fixed; inset: 0;
@@ -541,7 +541,7 @@
   }
   </style>
 
-  <!-- Custom Cursor CSS -->
+  {% comment %} Custom Cursor CSS {% endcomment %}
   <style>
   .corp-cursor-dot,
   .corp-cursor-ring {
@@ -579,7 +579,7 @@
 </head>
 <body class="corp-page">
 
-  <!-- Page Transition Overlay -->
+  {% comment %} Page Transition Overlay {% endcomment %}
   <div id="corp-pt" aria-hidden="true">
     <div id="corp-pt-bg"></div>
     <div id="corp-pt-bar"></div>
@@ -588,7 +588,7 @@
     </div>
   </div>
 
-  <!-- Custom cursor -->
+  {% comment %} Custom cursor {% endcomment %}
   <div class="corp-cursor-dot" id="corpCursorDot" aria-hidden="true"></div>
   <div class="corp-cursor-ring" id="corpCursorRing" aria-hidden="true"></div>
 
@@ -600,7 +600,7 @@
 
   {% include corp-footer.html %}
 
-  <!-- Page Transition JS -->
+  {% comment %} Page Transition JS {% endcomment %}
   <script>
   (function() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -738,7 +738,7 @@
   })();
   </script>
 
-  <!-- Custom Cursor JS -->
+  {% comment %} Custom Cursor JS {% endcomment %}
   <script>
   (function(){
     var dot  = document.getElementById('corpCursorDot');

@@ -61,7 +61,7 @@ permalink: /trillionbank/meeting/
 <section class="sec"><div class="wrap">
 <div class="meet-grid">
 
-  <!-- 左：フォーム -->
+  {% comment %} 左：フォーム {% endcomment %}
   <div class="rv">
     <div id="formArea">
       <div class="seg" role="group" aria-label="ご相談の対象を選択">
@@ -117,7 +117,7 @@ permalink: /trillionbank/meeting/
       <p class="skip-line"><a class="btn btn-line" href="{{ site.data.contact.meeting_url }}" target="_blank" rel="noopener" data-event="meeting_booking_click" data-service="general">フォームを飛ばして日時だけ選ぶ <span class="a" aria-hidden="true">→</span></a></p>
     </div>
 
-    <!-- 成功パネル -->
+    {% comment %} 成功パネル {% endcomment %}
     <div class="panel" id="successPanel" hidden>
       <span class="ey">THANK YOU</span>
       <h2>送信ありがとうございます。<br>続けて、ご希望の日時をお選びください。</h2>
@@ -126,7 +126,7 @@ permalink: /trillionbank/meeting/
     </div>
   </div>
 
-  <!-- 右：面談でお伝えすること -->
+  {% comment %} 右：面談でお伝えすること {% endcomment %}
   <aside class="rv">
     <h2 class="aside-t">面談でお伝えすること</h2>
     <ul class="tell-list">

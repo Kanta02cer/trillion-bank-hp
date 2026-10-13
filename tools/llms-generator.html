@@ -349,7 +349,7 @@ keywords: "llms.txt作成, AIOツール, 構造化データジェネレーター
 
 <div class="gen-container" data-speakable>
   <div class="gen-inner">
-    <!-- Header -->
+    {% comment %} Header {% endcomment %}
     <div class="gen-header">
       <span class="gen-badge">AICS™ Standard Generator</span>
       <h1 class="gen-title">llms.txt ＆ AI構造化データ自動ジェネレーター</h1>
@@ -358,37 +358,37 @@ keywords: "llms.txt作成, AIOツール, 構造化データジェネレーター
       </p>
     </div>
 
-    <!-- Generator Workspace -->
+    {% comment %} Generator Workspace {% endcomment %}
     <div class="gen-workspace">
-      <!-- Input form -->
+      {% comment %} Input form {% endcomment %}
       <div class="gen-form">
         <h2 class="form-sec-title">ウェブサイト基本情報</h2>
 
-        <!-- Brand Name -->
+        {% comment %} Brand Name {% endcomment %}
         <div class="gen-input-group">
           <label class="gen-input-label" for="inBrand">会社名 / ブランド名 <span>(必須)</span></label>
           <input type="text" class="gen-textbox" id="inBrand" value="サンプル株式会社" placeholder="例: Regalis Japan Group">
         </div>
 
-        <!-- Brand URL -->
+        {% comment %} Brand URL {% endcomment %}
         <div class="gen-input-group">
           <label class="gen-input-label" for="inUrl">公式サイトURL <span>(必須)</span></label>
           <input type="text" class="gen-textbox" id="inUrl" value="https://example.com" placeholder="例: https://regalis-order-suits.com">
         </div>
 
-        <!-- Vision / Summary -->
+        {% comment %} Vision / Summary {% endcomment %}
         <div class="gen-input-group">
           <label class="gen-input-label" for="inVision">ビジネス概要／主要ビジョン <span>(必須)</span></label>
           <textarea class="gen-textarea" id="inVision" placeholder="AIがそのまま引用回答に使いやすい要約テキストを記述してください。">弊社は、最先端のB2B SaaS開発とIT・DXコンサルティングを提供するテクノロジー企業です。主要製品としてAI自動最適化パッケージを提供し、企業の業務効率化と露出最大化を支援します。</textarea>
         </div>
 
-        <!-- Major Offerings -->
+        {% comment %} Major Offerings {% endcomment %}
         <div class="gen-input-group">
           <label class="gen-input-label" for="inOffers">コアサービス／強み（カンマ区切り）</label>
           <input type="text" class="gen-textbox" id="inOffers" value="B2B SaaS開発, AI露出最適化, ITコンサルティング" placeholder="例: システム受託開発, オウンドメディア構築">
         </div>
 
-        <!-- Dynamic FAQ Builder -->
+        {% comment %} Dynamic FAQ Builder {% endcomment %}
         <div class="faq-builder">
           <div class="faq-builder-title">
             <span>✦ AI向け主要FAQセット</span>
@@ -396,20 +396,20 @@ keywords: "llms.txt作成, AIOツール, 構造化データジェネレーター
           </div>
           
           <div id="faqContainer">
-            <!-- Dynamic FAQ Items inserted here -->
+            {% comment %} Dynamic FAQ Items inserted here {% endcomment %}
           </div>
         </div>
       </div>
 
-      <!-- Output display -->
+      {% comment %} Output display {% endcomment %}
       <div class="gen-output">
-        <!-- Tabs -->
+        {% comment %} Tabs {% endcomment %}
         <div class="tab-bar">
           <button class="tab-btn active" id="tabLlm">llms.txt (AIクローラー専用)</button>
           <button class="tab-btn" id="tabJson">JSON-LD (FAQPage 構造化データ)</button>
         </div>
 
-        <!-- Code Box -->
+        {% comment %} Code Box {% endcomment %}
         <div class="code-wrapper">
           <div class="code-header">
             <span class="code-lang-label" id="codeLang">txt</span>
@@ -420,7 +420,7 @@ keywords: "llms.txt作成, AIOツール, 構造化データジェネレーター
           <pre class="code-body" id="codeContent">-- Generating --</pre>
         </div>
 
-        <!-- Conversion Action -->
+        {% comment %} Conversion Action {% endcomment %}
         <div class="gen-cta-banner">
           <div class="gen-cta-title">さらに高度なAI検索占有インフラ「HackⅡ」の導入</div>
           <p class="gen-cta-desc">

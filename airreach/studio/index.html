@@ -54,7 +54,7 @@ robots: "noindex, follow"
     </aside>
 
     <section class="ars-main" id="ars-main" tabindex="-1">
-      <div id="ars-case-banner"><!-- 案件の5段階と次にやること（airreach-studio-steps.js） --></div>
+      <div id="ars-case-banner">{% comment %} 案件の5段階と次にやること（airreach-studio-steps.js） {% endcomment %}</div>
       <div class="ars-panel is-active" data-panel-view="start">
         <div class="ars-title-row"><div><h2>対象サイト</h2><p class="ars-sub">分析するサイトと条件を入れて「サイト全体を分析する」を押します。分析は数十秒〜1分ほどで終わります。</p></div></div><div class="ars-subtabs" role="tablist" aria-label="サイトを調べる"><button type="button" role="tab" data-goto="start" aria-selected="true">条件を入れて調べる</button><button type="button" role="tab" data-goto="result" aria-selected="false">調べた結果を見る</button></div>
     <section class="ars-card ars-orch-launch" aria-labelledby="orch-launch-title">
@@ -136,7 +136,7 @@ robots: "noindex, follow"
         <div class="ars-title-row"><div><h2>① 結果と確定</h2><p class="ars-sub">「サイトを調べる」の結果です。点数と、直すところ、まず対策する言葉が分かります。</p></div></div><div class="ars-subtabs" role="tablist" aria-label="サイトを調べる"><button type="button" role="tab" data-goto="start" aria-selected="false">条件を入れて調べる</button><button type="button" role="tab" data-goto="result" aria-selected="true">調べた結果を見る</button></div>
         <div class="ars-empty-job ars-note">まだ分析していません。「サイトを調べる」で調べると、ここに結論と数字が出ます。</div>
         <section class="ars-orch-result" id="orch-result" hidden>
-      <div id="orch-entity"><!-- ① 会社・サービスの確定（airreach-confirm.js） --></div>
+      <div id="orch-entity">{% comment %} ① 会社・サービスの確定（airreach-confirm.js） {% endcomment %}</div>
       <p class="orch-metric-legend">数字の見方：①対策に使う言葉の数　②月間の検索回数（Keyword Planner を取り込んだときだけ）　③公開ページの準備度（100点・AI掲載率ではない）　④いま着手すべき改善の件数</p>
       <div class="orch-four">
         <div class="orch-four-card">
@@ -232,7 +232,7 @@ robots: "noindex, follow"
           <div id="gap-next" class="gap-next" hidden><p>見つからない項目は、「③ 承認と ZIP」で、よくある質問とお店の情報の下書きにできます。</p><button type="button" class="ars-btn ars-btn-primary" data-go-panel="generator">直す材料を作る →</button></div>
           <details class="gap-fix"><summary>AI の判定が違うとき（書いてあるのに「見つからない」になっている など）</summary>
             <p class="ars-note">サイトに書いてある項目にチェックを入れて「もう一度確かめる」を押すと、AI にそのことを伝えて確かめ直します。</p>
-            <div id="gap-checks" class="gap-checks"><!-- 業種ごとに airreach-studio.js の renderGapChecks() が描く --></div>
+            <div id="gap-checks" class="gap-checks">{% comment %} 業種ごとに airreach-studio.js の renderGapChecks() が描く {% endcomment %}</div>
           </details>
         </div>
         <details class="ars-card gap-faq"><summary><b>よくある質問の候補を出す</b><span>今サイトにある質問と比べて、足りない質問を出します</span></summary>
@@ -246,7 +246,7 @@ robots: "noindex, follow"
         <div data-needs-job>
       <div class="ars-card orch-pack-card">
         <h3>下書き一式</h3>
-        <div id="orch-confirm"><!-- 会社・サービスの確定と FAQ の承認（airreach-confirm.js） --></div>
+        <div id="orch-confirm">{% comment %} 会社・サービスの確定と FAQ の承認（airreach-confirm.js） {% endcomment %}</div>
         <fieldset class="orch-zip-set"><legend>ZIP に入れるファイル</legend>
           <label><input type="radio" name="orch-zip-set" value="minimal" checked> 設置に必要なものだけ（最小）<small>README・WordPress の手順・よくある質問・構造化データ・llms.txt・MANIFEST</small></label>
           <label><input type="radio" name="orch-zip-set" value="all"> すべて<small>キーワード・質問・作業の一覧（CSV）、AI への指示、確認表も入れる</small></label>
@@ -355,7 +355,7 @@ robots: "noindex, follow"
         <div class="ars-title-row"><div><h2>AI計測</h2><p class="ars-sub">登録した質問を実際のAIに聞き、自社と競合の名前・サイトが回答に出るかを測ります。</p></div><button id="run-hack2-measure" class="ars-btn ars-btn-primary" type="button">計測実行</button></div>
             <div class="ars-field ars-hack2-brand"><label for="hack2-brand">計測するお店・会社の名前（必須）</label><input class="ars-input" id="hack2-brand" placeholder="例：更科堀井" autocomplete="off"><small class="ars-hack2-help">AI の回答にこの名前が出るかを数えます。「サイトを調べる」の「お店・会社の名前」と同じです。</small></div>
             <div class="ars-field ars-hack2-loc"><label for="hack2-location">地域（任意）</label><input class="ars-input" id="hack2-location" list="hack2-location-list" placeholder="空欄＝日本全体" autocomplete="off" inputmode="latin"><datalist id="hack2-location-list"><option value="Tokyo,Japan">東京都</option><option value="Shibuya,Tokyo,Japan">渋谷区</option><option value="Shinjuku,Tokyo,Japan">新宿区</option><option value="Minato,Tokyo,Japan">港区</option><option value="Yokohama,Kanagawa,Japan">横浜市</option><option value="Saitama,Saitama,Japan">さいたま市</option><option value="Osaka,Osaka,Japan">大阪市</option><option value="Nagoya,Aichi,Japan">名古屋市</option><option value="Fukuoka,Fukuoka,Japan">福岡市</option><option value="Sapporo,Hokkaido,Japan">札幌市</option></datalist><small class="ars-hack2-help">Google の AI と ChatGPT（検索あり）に、この地域から検索した形で聞きます。英字で「市区町村,都道府県,Japan」。結果には実際に使われた地域を残します。</small></div>
-            <div class="ars-card ars-prompts-card" id="hack2-prompts"><!-- 計測する質問（airreach-studio.js の renderPrompts） --></div>
+            <div class="ars-card ars-prompts-card" id="hack2-prompts">{% comment %} 計測する質問（airreach-studio.js の renderPrompts） {% endcomment %}</div>
             <div id="hack2-status" class="ars-note">まだ計測していません。AIを選んで「計測実行」を押します。</div>
             <div class="ars-row" style="margin:12px 0;flex-wrap:wrap;gap:10px">
               <label><input type="checkbox" data-hack2-engine value="google_aio" checked> Google の AI による概要（主）</label>
@@ -379,9 +379,9 @@ robots: "noindex, follow"
               </div>
             </details>
             <div class="ars-model-grid" id="hack2-models"></div>
-            <div id="ai3-summary"><!-- 3つの AI の主表示（airreach-ai3.js） --></div>
-            <div id="ai-breakdown"><!-- 質問ごと・言及の順位・引用元の分類（airreach-ai-breakdown.js） --></div>
-            <section class="ars-card" id="hack2-history" style="margin-top:16px" hidden><!-- これまでの記録（airreach-studio-clients.js の renderRunHistory） --></section>
+            <div id="ai3-summary">{% comment %} 3つの AI の主表示（airreach-ai3.js） {% endcomment %}</div>
+            <div id="ai-breakdown">{% comment %} 質問ごと・言及の順位・引用元の分類（airreach-ai-breakdown.js） {% endcomment %}</div>
+            <section class="ars-card" id="hack2-history" style="margin-top:16px" hidden>{% comment %} これまでの記録（airreach-studio-clients.js の renderRunHistory） {% endcomment %}</section>
             <details class="ars-dev" style="margin-top:16px"><summary>社内向け：計測のルールと、計測結果（JSON）の取り込み</summary><div class="ars-grid" style="margin-top:12px"><div class="ars-card ars-c6"><h3>JSON取込</h3><textarea id="hack2-json" class="ars-code" style="min-height:200px"></textarea><button id="import-hack2" class="ars-btn ars-btn-primary" type="button" style="margin-top:10px">取込</button></div><div class="ars-card ars-c6"><h3>ルール</h3><ul class="ars-list"><li><strong>準備度 ≠ 引用率</strong></li><li><strong>0% ≠ 失敗</strong></li><li><strong>同一条件で再計測</strong></li><li><strong>Jevは推定</strong>：ページ本文から「引用されそうか」を推定した値で、実際のAIの回答ではない。引用率には含めない</li><li>ChatGPTは検索なし（gpt-4o-mini）で、店名・サービス名が回答に出た割合（言及率）だけを測る。引用は測らない</li><li>回答ごとに「社名への言及」「AI が返した出典に自社サイトがあるか」「回答の本文の URL に自社サイトがあるか」を分けて記録する。引用は出典の一覧があればそれで、無ければ本文の URL で判定し、どちらも無ければ判定できない（0%にしない）</li><li>Claude・ChatGPT（検索あり）は検索して回答させ、返ってきた出典で判定。Perplexity は直接の API キー（PERPLEXITY_API_KEY）があれば出典の一覧で、AI Gateway 経由では本文で判定</li><li>Google の AI による概要が検索結果に出なかった質問と、エラーになった質問は、割合の分母に入れず件数だけ出す</li><li>GitHub Pages上でも計測APIはVercelへ接続します</li></ul></div></div></details>
           
       </div>
@@ -435,7 +435,7 @@ robots: "noindex, follow"
     </section>
   </div>
 </main>
-<!-- 顧客ごとの作業場所の入れ替えは、ほかのスクリプトが保存場所を読む前に行う（defer なし） -->
+{% comment %} 顧客ごとの作業場所の入れ替えは、ほかのスクリプトが保存場所を読む前に行う（defer なし） {% endcomment %}
 <script src="/assets/js/airreach-nav.js"></script>
 <script src="/assets/js/airreach-staff.js"></script>
 <script src="/assets/js/airreach-report.js"></script>

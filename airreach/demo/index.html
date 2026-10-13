@@ -48,7 +48,7 @@ body.arc-app .arc-bar{top:33px}
     <p class="ard-foot">このページはデモです。表示している店名・数字・AI の回答・URL はすべて架空で、順位・AI での掲載・問い合わせ・売上を保証するものではありません。</p>
   </div></div>
 </main>
-<!-- 本番のログイン・データベース・AI・Google には接続しない。描画と集計は本番と同じ部品を使う -->
+{% comment %} 本番のログイン・データベース・AI・Google には接続しない。描画と集計は本番と同じ部品を使う {% endcomment %}
 <script src="{{ '/assets/js/airreach-display.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/airreach-report.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/airreach-schema-gaps.js' | relative_url }}"></script>

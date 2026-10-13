@@ -172,7 +172,7 @@ a{color:var(--lp-blue);text-decoration:none}
 </head>
 <body>
 
-<!-- ─── STICKY NAV ─── -->
+{% comment %} ─── STICKY NAV ─── {% endcomment %}
 <nav class="lp-nav" aria-label="LP Navigation">
   <a href="{{ '/' | relative_url }}" aria-label="トリリオンバンク トップへ">
     <img src="{{ '/images/hero/tb-logo-color.webp' | relative_url }}" alt="TRILLION BANK" width="160" height="40">
@@ -180,10 +180,10 @@ a{color:var(--lp-blue);text-decoration:none}
   <a class="lp-nav-cta" href="#lp-form-section" data-event="lp_nav_cta" data-service="founding-monitor">今すぐ申し込む</a>
 </nav>
 
-<!-- ─── MAIN CONTENT ─── -->
+{% comment %} ─── MAIN CONTENT ─── {% endcomment %}
 <main id="main" class="lp-main">
 
-<!-- ─── HERO ─── -->
+{% comment %} ─── HERO ─── {% endcomment %}
 <section class="lp-hero">
   <div class="lp-wrap">
     <span class="lp-badge">Founding Monitor 先行受付中</span>
@@ -198,7 +198,7 @@ a{color:var(--lp-blue);text-decoration:none}
   </div>
 </section>
 
-<!-- ─── PROBLEM ─── -->
+{% comment %} ─── PROBLEM ─── {% endcomment %}
 <section class="lp-sec">
   <div class="lp-wrap">
     <p class="lp-label">PROBLEM</p>
@@ -245,7 +245,7 @@ a{color:var(--lp-blue);text-decoration:none}
   </div>
 </section>
 
-<!-- ─── MID CTA ─── -->
+{% comment %} ─── MID CTA ─── {% endcomment %}
 <section class="lp-sec lp-sec--alt" style="padding-top:0;padding-bottom:0">
   <div class="lp-wrap" style="padding:clamp(32px,5vw,48px) 20px">
     <div class="lp-cta-box">
@@ -256,7 +256,7 @@ a{color:var(--lp-blue);text-decoration:none}
   </div>
 </section>
 
-<!-- ─── WHAT WE MEASURE ─── -->
+{% comment %} ─── WHAT WE MEASURE ─── {% endcomment %}
 <section class="lp-sec">
   <div class="lp-wrap lp-center">
     <p class="lp-label">WHAT WE MEASURE</p>
@@ -298,7 +298,7 @@ a{color:var(--lp-blue);text-decoration:none}
   </div>
 </section>
 
-<!-- ─── DASHBOARD PREVIEW ─── -->
+{% comment %} ─── DASHBOARD PREVIEW ─── {% endcomment %}
 <section class="lp-sec lp-sec--alt">
   <div class="lp-wrap lp-center">
     <p class="lp-label">DASHBOARD</p>
@@ -306,14 +306,14 @@ a{color:var(--lp-blue);text-decoration:none}
     <p class="lp-sub">引用率・言及率・SOV・競合比較・週次推移を、エンジン別に整理してレポート（CSV・画面共有）でお渡しします。※下記の画面は開発中のダッシュボードのイメージです。</p>
 
     <div class="lp-screen">
-      <!-- TODO: 公開許可済みのAirReach Consulting実画面に差し替え -->
+      {% comment %} TODO: 公開許可済みのAirReach Consulting実画面に差し替え {% endcomment %}
       <img src="{{ '/images/lp/hack2/founding-monitor/09_dashboard_mockup_1400x900.webp' | relative_url }}" alt="AirReach Consultingダッシュボードのイメージ。引用率・言及率・SOV・競合比較・週次推移をエンジン別に表示" width="1400" height="900" loading="lazy" decoding="async">
     </div>
     <p style="margin-top:14px;font-size:.76rem;color:var(--lp-muted)">※ 画面は提供内容を説明するイメージです。実際の表示・数値は計測条件により異なります。</p>
   </div>
 </section>
 
-<!-- ─── FOUNDING MONITOR PROGRAM ─── -->
+{% comment %} ─── FOUNDING MONITOR PROGRAM ─── {% endcomment %}
 <section class="lp-sec" id="program">
   <div class="lp-wrap">
     <p class="lp-label">FOUNDING MONITOR</p>
@@ -344,7 +344,7 @@ a{color:var(--lp-blue);text-decoration:none}
   </div>
 </section>
 
-<!-- ─── FLOW ─── -->
+{% comment %} ─── FLOW ─── {% endcomment %}
 <section class="lp-sec lp-sec--alt">
   <div class="lp-wrap lp-center">
     <p class="lp-label">FLOW</p>
@@ -391,7 +391,7 @@ a{color:var(--lp-blue);text-decoration:none}
   </div>
 </section>
 
-<!-- ─── USE CASES ─── -->
+{% comment %} ─── USE CASES ─── {% endcomment %}
 <section class="lp-sec">
   <div class="lp-wrap">
     <p class="lp-label">USE CASES</p>
@@ -418,7 +418,7 @@ a{color:var(--lp-blue);text-decoration:none}
   </div>
 </section>
 
-<!-- ─── FAQ ─── -->
+{% comment %} ─── FAQ ─── {% endcomment %}
 <section class="lp-sec lp-sec--alt">
   <div class="lp-wrap">
     <p class="lp-label">FAQ</p>
@@ -453,7 +453,7 @@ a{color:var(--lp-blue);text-decoration:none}
   </div>
 </section>
 
-<!-- ─── FORM ─── -->
+{% comment %} ─── FORM ─── {% endcomment %}
 <section class="lp-sec" id="lp-form-section">
   <div class="lp-wrap">
     <div class="lp-center" style="margin-bottom:32px">
@@ -463,7 +463,7 @@ a{color:var(--lp-blue);text-decoration:none}
     </div>
 
     <form class="lp-form" id="lpForm" novalidate>
-      <!-- hidden fields -->
+      {% comment %} hidden fields {% endcomment %}
       <input type="hidden" name="program" value="founding-monitor">
       <input type="hidden" name="utm_source" id="fUtmSource">
       <input type="hidden" name="utm_medium" id="fUtmMedium">
@@ -472,7 +472,7 @@ a{color:var(--lp-blue);text-decoration:none}
       <input type="hidden" name="domain" id="fDomain">
       <input type="hidden" name="submitted_at" id="fTimestamp">
 
-      <!-- honeypot -->
+      {% comment %} honeypot {% endcomment %}
       <div style="position:absolute;left:-9999px" aria-hidden="true">
         <label for="fax_number">Fax</label>
         <input type="text" name="fax_number" id="fax_number" tabindex="-1" autocomplete="off">
@@ -546,7 +546,7 @@ a{color:var(--lp-blue);text-decoration:none}
   </div>
 </section>
 
-<!-- ─── COMPLETION (shown after submit) ─── -->
+{% comment %} ─── COMPLETION (shown after submit) ─── {% endcomment %}
 <section class="lp-complete" id="lpComplete">
   <div class="lp-wrap">
     <div class="lp-check-circle" aria-hidden="true">&#x2713;</div>
@@ -559,7 +559,7 @@ a{color:var(--lp-blue);text-decoration:none}
   </div>
 </section>
 
-<!-- ─── COMPANY ─── -->
+{% comment %} ─── COMPANY ─── {% endcomment %}
 <section class="lp-sec lp-sec--alt" style="padding-bottom:24px">
   <div class="lp-wrap lp-center">
     <p class="lp-label">COMPANY</p>
@@ -574,12 +574,12 @@ a{color:var(--lp-blue);text-decoration:none}
 
 </main>
 
-<!-- ─── MOBILE FIXED CTA ─── -->
+{% comment %} ─── MOBILE FIXED CTA ─── {% endcomment %}
 <div class="lp-mobile-cta" id="mobileCta">
   <a href="#lp-form-section" data-event="lp_mobile_cta" data-service="founding-monitor">URLを入力して申し込む</a>
 </div>
 
-<!-- ─── FAQ Schema ─── -->
+{% comment %} ─── FAQ Schema ─── {% endcomment %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

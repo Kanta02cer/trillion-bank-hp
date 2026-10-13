@@ -1,17 +1,17 @@
 <header class="corp-header" id="corp-header">
   <div class="corp-header__inner" style="display: flex; align-items: center; justify-content: space-between; height: 100%;">
-    <!-- Logo -->
+    {% comment %} Logo {% endcomment %}
     <a href="{{ '/' | relative_url }}" class="corp-header__logo" aria-label="トリリオンバンク ホームへ" style="flex-shrink: 0; margin-right: 32px;">
       <img class="corp-header__mark" src="{{ '/images/hero/tb-logo-symbol.webp' | relative_url }}" alt="" width="414" height="318">
       <img class="corp-header__wordmark-img" src="{{ '/images/hero/tb-logo-hero.webp' | relative_url }}" alt="TRILLION BANK" width="2048" height="201">
     </a>
 
-    <!-- Desktop Nav -->
+    {% comment %} Desktop Nav {% endcomment %}
     <nav aria-label="Corporate Navigation" class="corp-nav-wrapper">
       <ul class="corp-nav">
         <li class="corp-nav__item-mega">
           <a href="#business" class="corp-nav__link">事業概要</a>
-          <!-- Mega Menu Panel -->
+          {% comment %} Mega Menu Panel {% endcomment %}
           <div class="corp-mega-panel">
             <div class="corp-mega-panel__inner">
               <div class="corp-mega-panel__col">
@@ -58,14 +58,14 @@
       <a href="{{ '/trillionbank/meeting/' | relative_url }}" class="corp-nav__cta corp-nav__cta--diagnosis" aria-label="商談を予約する（30分）" data-event="meeting_form_open" data-service="general" data-cta="corp_header">商談を予約する（30分）</a>
     </div>
 
-    <!-- Hamburger (mobile) -->
+    {% comment %} Hamburger (mobile) {% endcomment %}
     <button class="corp-hamburger" id="corp-hamburger" aria-label="メニューを開く" aria-expanded="false" aria-controls="corp-mobile-nav">
       <span></span><span></span><span></span>
     </button>
   </div>
 </header>
 
-<!-- Mobile Nav Overlay -->
+{% comment %} Mobile Nav Overlay {% endcomment %}
 <nav id="corp-mobile-nav" class="corp-mobile-nav" aria-label="モバイルナビゲーション">
   <a href="{{ '/' | relative_url }}">トップ</a>
   <a href="{{ '/trillionbank/business/hack2/' | relative_url }}">AirReach Consulting / AI Recommendation Intelligence</a>
