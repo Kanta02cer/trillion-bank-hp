@@ -28,7 +28,9 @@
   var PACKAGE_FORMAT = 'airreach-package/2';
   var ALWAYS_FILES = ['README.md', 'MANIFEST.json', 'INSTALL_WORDPRESS.md'];
   var MINIMAL_FILES = ALWAYS_FILES.concat(['content/faq.md', 'schema/organization.jsonld', 'schema/service.jsonld', 'schema/faq.jsonld', 'public/llms.txt', 'validation/VALIDATION.md']);
-  var GENERATOR_VERSION = 'airreach-studio/2026.10.08';
+  var GENERATOR_VERSION = 'airreach-studio/2026.10.13';
+  // ページごとのデータ（手順・製品と価格）：承認したものがあるときだけ入る。設置に使うので、最小の ZIP にも入れる
+  var PAGE_SCHEMA_FILE = /^schema\/pages\/(howto|product)-[a-z0-9]+\.jsonld$/i;
 
   // 入れてはいけないもの（依頼書 R08）：鍵・認証情報、不要なファイル、危険なパス、実行できるファイル
   var SECRET_PATTERNS = [
@@ -220,7 +222,7 @@
   function selectFiles(files, paths) {
     var out = {};
     var want = ALWAYS_FILES.concat(paths || []);
-    Object.keys(files || {}).forEach(function (k) { if (k !== '_validation' && want.indexOf(k) >= 0) out[k] = files[k]; });
+    Object.keys(files || {}).forEach(function (k) { if (k !== '_validation' && (want.indexOf(k) >= 0 || PAGE_SCHEMA_FILE.test(k))) out[k] = files[k]; });
     return out;
   }
 
@@ -247,7 +249,7 @@
       }
     }
     Object.keys(map).forEach(function (k) {
-      if (REQUIRED_FILES.indexOf(k) === -1 && ALWAYS_FILES.indexOf(k) === -1) extra.push(k);
+      if (REQUIRED_FILES.indexOf(k) === -1 && ALWAYS_FILES.indexOf(k) === -1 && !PAGE_SCHEMA_FILE.test(k)) extra.push(k);
     });
     var errors = [];
     // MANIFEST.files（入れたファイルの一覧）があれば、一覧と実際のファイルが同じかを見る（中身のハッシュは verifyManifestHashes）
@@ -275,6 +277,17 @@
     } else if (faqCount === 0 && map['schema/faq.jsonld'] === '') {
       errors.push('schema/faq.jsonld must be omitted when there is no confirmed FAQ');
     }
+    // ページごとのデータ：MANIFEST の一覧（page_schemas）と入っているファイルが同じで、型が合い、空でない
+    var pageList = Array.isArray(mf.page_schemas) ? mf.page_schemas : [];
+    var pagePaths = pageList.map(function (x) { return x.path; }).filter(function (p) { return PAGE_SCHEMA_FILE.test(p); });
+    Object.keys(map).forEach(function (k) { if (PAGE_SCHEMA_FILE.test(k) && pagePaths.indexOf(k) === -1) errors.push(k + ' は MANIFEST.page_schemas に無いファイルです（承認していないデータを入れない）'); });
+    if (!partial || pagePaths.some(function (p) { return p in map; })) pagePaths.forEach(function (p) {
+      var ld = parseJsonMaybe(map[p]);
+      if (!ld) { errors.push(p + ' が入っていないか、JSON として読めません'); return; }
+      var t = ld['@type'];
+      if (/howto-/.test(p) && !(t === 'HowTo' && Array.isArray(ld.step) && ld.step.length >= 2)) errors.push(p + ' は手順が2つ以上の HowTo ではありません');
+      if (/product-/.test(p) && !(t === 'Product' || (t === 'ItemList' && Array.isArray(ld.itemListElement) && ld.itemListElement.length))) errors.push(p + ' は Product ではありません');
+    });
     // 文章のファイルに、作り途中の値（undefined・null・NaN）を残さない
     Object.keys(map).forEach(function (k) {
       var v = map[k];
@@ -294,6 +307,7 @@
     var gate = [];
     if (mf.entity_confirmed === false) gate.push('会社・ブランド・サービスが未確定です（担当者が確定するまで公開に使えません）');
     if (mf.faq_counts && mf.faq_counts.pending_approval > 0) gate.push('承認待ちの FAQ が ' + mf.faq_counts.pending_approval + ' 問あります');
+    if (mf.page_schema_counts && mf.page_schema_counts.pending > 0) gate.push('承認待ちのページごとのデータ（手順・価格）が ' + mf.page_schema_counts.pending + ' 件あります');
     var structureOk = errors.length === 0 && missing.length === 0;
     return {
       ok: structureOk,
@@ -316,6 +330,7 @@
     safetyCheck: safetyCheck,
     ALWAYS_FILES: ALWAYS_FILES,
     MINIMAL_FILES: MINIMAL_FILES,
+    PAGE_SCHEMA_FILE: PAGE_SCHEMA_FILE,
     sha256Hex: sha256Hex,
     verifyManifestHashes: verifyManifestHashes,
     selectFiles: selectFiles,
