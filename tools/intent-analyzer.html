@@ -321,7 +321,7 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
 
 <div class="analyzer-container" data-speakable>
   <div class="analyzer-inner">
-    <!-- Header -->
+    {% comment %} Header {% endcomment %}
     <div class="analyzer-header">
       <span class="analyzer-badge">AICS™ Competitor Gap Analyzer</span>
       <h1 class="analyzer-title">AICS™ 競合露出ギャップ分析</h1>
@@ -331,16 +331,16 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
       </p>
     </div>
 
-    <!-- Form Panel -->
+    {% comment %} Form Panel {% endcomment %}
     <div class="analyzer-form" id="inputForm">
       <div class="form-grid">
-        <!-- Self URL -->
+        {% comment %} Self URL {% endcomment %}
         <div>
           <label class="input-label" for="inSelfUrl">分析対象サイトURL (自社)</label>
           <input type="text" class="input-box" id="inSelfUrl" value="mybrand.com" placeholder="例: yourbrand.com">
         </div>
 
-        <!-- Competitor URL -->
+        {% comment %} Competitor URL {% endcomment %}
         <div>
           <label class="input-label" for="inCompUrl">比較対象サイトURL (競合)</label>
           <input type="text" class="input-box" id="inCompUrl" value="competitor-saas.com" placeholder="例: competitor.com">
@@ -352,7 +352,7 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
       </button>
     </div>
 
-    <!-- Sweeping Radar Panel -->
+    {% comment %} Sweeping Radar Panel {% endcomment %}
     <div class="radar-panel" id="radarPanel">
       <div class="radar-svg-container">
         <svg width="160" height="160" viewBox="0 0 160 160">
@@ -362,7 +362,7 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
           <line x1="80" y1="5" x2="80" y2="155" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
           <line x1="5" y1="80" x2="155" y2="80" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
           
-          <!-- Radar sweeper line -->
+          {% comment %} Radar sweeper line {% endcomment %}
           <g class="radar-sweep">
             <line x1="80" y1="80" x2="80" y2="5" stroke="url(#radarGradient)" stroke-width="2.5" />
           </g>
@@ -379,14 +379,14 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
       <div class="radar-status" id="radarStatus">準備完了...</div>
     </div>
 
-    <!-- Result Display Panel -->
+    {% comment %} Result Display Panel {% endcomment %}
     <div class="result-panel" id="resultPanel">
       <div class="result-header">
         <h2 style="font-family:'Noto Serif JP',serif; font-size:1.5rem; color:#FFFFFF; margin-bottom:8px;">スキャン分析完了</h2>
         <p style="font-size:0.85rem; color:rgba(255,255,255,0.4);" id="resultTitleDesc">mybrand.com vs competitor-saas.com</p>
       </div>
 
-      <!-- Matrix Table -->
+      {% comment %} Matrix Table {% endcomment %}
       <table class="matrix-table">
         <thead>
           <tr>
@@ -396,7 +396,7 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
           </tr>
         </thead>
         <tbody>
-          <!-- llms.txt -->
+          {% comment %} llms.txt {% endcomment %}
           <tr>
             <td class="matrix-td">
               <span class="cell-title">llms.txt クローラー適合設定</span>
@@ -410,7 +410,7 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
             </td>
           </tr>
 
-          <!-- FAQ Page JSON-LD -->
+          {% comment %} FAQ Page JSON-LD {% endcomment %}
           <tr>
             <td class="matrix-td">
               <span class="cell-title">FAQPage 構造化マークアップ</span>
@@ -424,7 +424,7 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
             </td>
           </tr>
 
-          <!-- Crawl Index Rate -->
+          {% comment %} Crawl Index Rate {% endcomment %}
           <tr>
             <td class="matrix-td">
               <span class="cell-title">AI検索クローラー巡回頻度 (インデックス鮮度)</span>
@@ -438,7 +438,7 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
             </td>
           </tr>
 
-          <!-- Entity Authority -->
+          {% comment %} Entity Authority {% endcomment %}
           <tr>
             <td class="matrix-td">
               <span class="cell-title">被引用エンティティ関連度</span>
@@ -452,7 +452,7 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
             </td>
           </tr>
 
-          <!-- AICS status badge -->
+          {% comment %} AICS status badge {% endcomment %}
           <tr>
             <td class="matrix-td">
               <span class="cell-title">AICS™ 適合認定ステータス</span>
@@ -468,7 +468,7 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
         </tbody>
       </table>
 
-      <!-- Result Conversions CTA -->
+      {% comment %} Result Conversions CTA {% endcomment %}
       <div class="result-cta">
         <div class="cta-title">競合との対策ギャップを修復し、AI露出を奪還しましょう</div>
         <p class="cta-desc">
@@ -487,7 +487,7 @@ keywords: "競合ギャップ分析, AI検索競合比較, AIO分析, llms.txt�
   </div>
 </div>
 
-<!-- GSAP Animation Engine -->
+{% comment %} GSAP Animation Engine {% endcomment %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {

@@ -273,7 +273,7 @@ keywords: "AI検索露出センサー, SERPセンサー, AIO分析, LLMクロー
 
 <div class="sensor-container" data-speakable>
   <div class="sensor-inner">
-    <!-- Header -->
+    {% comment %} Header {% endcomment %}
     <div class="sensor-header">
       <span class="sensor-badge">Live AI Exposure Analytics</span>
       <h1 class="sensor-title">AICS™ AI検索露出センサー (AI SERP Sensor)</h1>
@@ -282,9 +282,9 @@ keywords: "AI検索露出センサー, SERPセンサー, AIO分析, LLMクロー
       </p>
     </div>
 
-    <!-- KPIs Top -->
+    {% comment %} KPIs Top {% endcomment %}
     <div class="kpi-grid">
-      <!-- Overall index -->
+      {% comment %} Overall index {% endcomment %}
       <div class="kpi-card">
         <div class="kpi-label">国内 AIO 全体適合露出指数</div>
         <div class="kpi-val-row">
@@ -294,7 +294,7 @@ keywords: "AI検索露出センサー, SERPセンサー, AIO分析, LLMクロー
         <div class="kpi-desc">国内検証済みドメインの対クローラー適合性およびAI被引用率に基づく統合インデックス。</div>
       </div>
 
-      <!-- Crawler frequency -->
+      {% comment %} Crawler frequency {% endcomment %}
       <div class="kpi-card">
         <div class="kpi-label">LLMクローラー平均巡回回数 (24h)</div>
         <div class="kpi-val-row">
@@ -304,7 +304,7 @@ keywords: "AI検索露出センサー, SERPセンサー, AIO分析, LLMクロー
         <div class="kpi-desc">国内のAICS適合対象サーバーに対するAIインデクサーの平均毎秒リクエスト強度。</div>
       </div>
 
-      <!-- Total Certified domains -->
+      {% comment %} Total Certified domains {% endcomment %}
       <div class="kpi-card">
         <div class="kpi-label">AICS™ 認証済み適合ドメイン総数</div>
         <div class="kpi-val-row">
@@ -315,7 +315,7 @@ keywords: "AI検索露出センサー, SERPセンサー, AIO分析, LLMクロー
       </div>
     </div>
 
-    <!-- Chart Panel -->
+    {% comment %} Chart Panel {% endcomment %}
     <div class="chart-panel">
       <div class="chart-header-row">
         <h2 class="chart-legend-title">
@@ -324,13 +324,13 @@ keywords: "AI検索露出センサー, SERPセンサー, AIO分析, LLMクロー
         <span class="sensor-live-label">✦ Realtime Live Feed</span>
       </div>
 
-      <!-- Chart JS Canvas -->
+      {% comment %} Chart JS Canvas {% endcomment %}
       <div class="chart-canvas-container">
         <canvas id="liveSensorChart"></canvas>
       </div>
     </div>
 
-    <!-- CTA bottom -->
+    {% comment %} CTA bottom {% endcomment %}
     <div class="sensor-cta-bar">
       <div class="sensor-cta-title">自社サイトのAI露出トレンドは適正化されていますか？</div>
       <p class="sensor-cta-desc">
@@ -348,7 +348,7 @@ keywords: "AI検索露出センサー, SERPセンサー, AIO分析, LLMクロー
   </div>
 </div>
 
-<!-- ChartJS & GSAP Dynamic CDN -->
+{% comment %} ChartJS & GSAP Dynamic CDN {% endcomment %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script>

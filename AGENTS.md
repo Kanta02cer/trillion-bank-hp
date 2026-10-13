@@ -92,6 +92,14 @@ Adctor is a separate research and PoC program for AI-content access, licensing, 
 - Respect `prefers-reduced-motion`.
 - Avoid layout shift by specifying image dimensions.
 
+### Markup rules
+
+- Do not write HTML comments (`<!-- -->`) in layouts, includes, or pages; they are published as-is. Use `{% comment %} ... {% endcomment %}` for notes.
+- Do not add new inline `style=""` attributes. Put the rule in the page's stylesheet under a project-prefixed class (`tb-`, `ars-`, `orch-`, `ocf-`).
+- Do not introduce template-style class names (`hero-section`, `feature-card`, `card-container`, `section-title`) or utility-framework classes. Follow the prefix already used in the file you are editing.
+- Prefer `section`, `article`, `nav`, `figure`, `details` / `summary` over wrapper-only `div` / `span`.
+- `python3 scripts/markup_check.py <built _site dir or URL list>` reports the counts; the numbers must not go up in a pull request.
+
 ## Required workflow
 
 1. Audit before editing. List affected routes, templates, data, schemas, redirects, and risks.

@@ -308,7 +308,7 @@ keywords: "AICSシミュレーター, AIO, LLMO, 機会損失計算, 投資対�
 
 <div class="roi-container" data-speakable>
   <div class="roi-inner">
-    <!-- Header Block -->
+    {% comment %} Header Block {% endcomment %}
     <div class="roi-header">
       <span class="roi-badge">ROI & OMISSION COST CALCULATOR</span>
       <h1 class="roi-title">AICS™ 投資対効果 ＆ 機会損失シミュレーター</h1>
@@ -318,13 +318,13 @@ keywords: "AICSシミュレーター, AIO, LLMO, 機会損失計算, 投資対�
       </p>
     </div>
 
-    <!-- Main Simulator Grid -->
+    {% comment %} Main Simulator Grid {% endcomment %}
     <div class="roi-grid">
-      <!-- Controls -->
+      {% comment %} Controls {% endcomment %}
       <div class="control-panel">
         <h2 class="panel-title">シミュレーター入力パラメーター</h2>
 
-        <!-- Monthly Traffic -->
+        {% comment %} Monthly Traffic {% endcomment %}
         <div class="control-group">
           <div class="control-label-row">
             <span class="control-label">月間サイト訪問者数 (PV)</span>
@@ -338,7 +338,7 @@ keywords: "AICSシミュレーター, AIO, LLMO, 機会損失計算, 投資対�
           </div>
         </div>
 
-        <!-- CVR -->
+        {% comment %} CVR {% endcomment %}
         <div class="control-group">
           <div class="control-label-row">
             <span class="control-label">現在の成約・問い合わせ率 (CVR)</span>
@@ -352,7 +352,7 @@ keywords: "AICSシミュレーター, AIO, LLMO, 機会損失計算, 投資対�
           </div>
         </div>
 
-        <!-- Average customer LTV -->
+        {% comment %} Average customer LTV {% endcomment %}
         <div class="control-group">
           <div class="control-label-row">
             <span class="control-label">平均顧客成約単価／LTV (利益ベース)</span>
@@ -366,7 +366,7 @@ keywords: "AICSシミュレーター, AIO, LLMO, 機会損失計算, 投資対�
           </div>
         </div>
 
-        <!-- Target Share -->
+        {% comment %} Target Share {% endcomment %}
         <div class="control-group">
           <div class="control-label-row">
             <span class="control-label">AICS™ 目標AI露出獲得シェア率</span>
@@ -381,17 +381,17 @@ keywords: "AICSシミュレーター, AIO, LLMO, 機会損失計算, 投資対�
         </div>
       </div>
 
-      <!-- Displays -->
+      {% comment %} Displays {% endcomment %}
       <div class="display-panel">
         <div>
-          <!-- Current Leads info -->
+          {% comment %} Current Leads info {% endcomment %}
           <div class="result-card">
             <div class="result-label">現在の想定月間成約数</div>
             <div style="font-size: 1.5rem; font-weight: 600; color: #FFFFFF;" id="outCurrentLeads">200 <span style="font-size: 0.9rem; color: rgba(255,255,255,0.4)">件/月</span></div>
             <div class="result-desc">現在のPVとCVRから算出される平均月間成約・リード獲得数です。</div>
           </div>
 
-          <!-- Opportunity loss -->
+          {% comment %} Opportunity loss {% endcomment %}
           <div class="result-card" style="border-color: rgba(248, 113, 113, 0.15);">
             <div class="result-label" style="color: #FCA5A5;">年間AI検索機会損失金額 (推定値)</div>
             <div class="val-loss">
@@ -401,7 +401,7 @@ keywords: "AICSシミュレーター, AIO, LLMO, 機会損失計算, 投資対�
           </div>
         </div>
 
-        <!-- AICS optimization ROI -->
+        {% comment %} AICS optimization ROI {% endcomment %}
         <div class="result-card" style="border-top: 1px solid rgba(184, 159, 93, 0.15); padding-top: 24px; border-bottom: none;">
           <div class="result-label" style="color: var(--gold-primary);">AICS™ 導入による回復・新規獲得予測利益</div>
           <div class="val-profit">
@@ -414,7 +414,7 @@ keywords: "AICSシミュレーター, AIO, LLMO, 機会損失計算, 投資対�
       </div>
     </div>
 
-    <!-- Bottom CTA -->
+    {% comment %} Bottom CTA {% endcomment %}
     <div class="roi-cta-bar">
       <div class="roi-cta-title">機会損失を止め、AI検索エンジンでの露出を回復しませんか？</div>
       <p class="roi-cta-desc">
@@ -432,7 +432,7 @@ keywords: "AICSシミュレーター, AIO, LLMO, 機会損失計算, 投資対�
   </div>
 </div>
 
-<!-- GSAP Animation Engine -->
+{% comment %} GSAP Animation Engine {% endcomment %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
