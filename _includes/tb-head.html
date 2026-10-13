@@ -1,4 +1,4 @@
-{% unless page.no_analytics %}<!-- Google tag (gtag.js) -->
+{% unless page.no_analytics %}{% comment %} Google tag (gtag.js) {% endcomment %}
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0XHQPCC4CF"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -47,7 +47,7 @@
 <link rel="alternate" hreflang="x-default" href="{{ page.url | absolute_url }}">
 <link rel="sitemap" type="application/xml" href="{{ '/sitemap-index.xml' | absolute_url }}">
 
-<!-- AI / LLM discovery -->
+{% comment %} AI / LLM discovery {% endcomment %}
 <meta name="ai-summary" content="{{ page.ai_summary | default: tb_page_desc | escape }}">
 <link rel="alternate" type="application/atom+xml" title="Trillion Bank Insights" href="{{ '/feed.xml' | absolute_url }}">
 <link rel="llms-txt" href="{{ '/llms.txt' | absolute_url }}">
