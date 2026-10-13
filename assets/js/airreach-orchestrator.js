@@ -817,6 +817,12 @@
       name: service,
       provider: { '@type': 'Organization', name: company, url: job.url }
     };
+    // ページごとのデータ（手順・製品と価格・サービスの価格。airreach-page-schema.js）。人が承認し、ページの本文と照らしたものだけを入れる
+    var PS = window.AirReachPageSchema;
+    var pg = PS && cf ? PS.files(cf.pages || [], { url: job.url, industry: job.industry || '', brand: brand, company: company, service: service })
+      : { files: {}, list: [], offers: [], counts: { total: 0, approved: 0, pending: 0, rejected: 0 } };
+    if (svc && pg.offers.length) svc.offers = pg.offers;
+    var pageFileN = Object.keys(pg.files).length;
     // 検索や AI が読む形には、サイトの記載から答えを作った質問だけを入れる（確認が必要な下書きは入れない）
     var faqLd = {
       '@context': 'https://schema.org',
@@ -906,6 +912,9 @@
       entity: ent ? { company: company, brand: brand, service: service, url: ent.url || job.url, confirmed_at: ent.at } : null,
       // 版：確定・承認を変えるたびに増える。画面・CSV・ZIP の版が同じかをこの数で確かめる
       version: cf ? (cf.rev || 0) : null,
+      // ページごとのデータ：承認して入れたものの一覧（入れる先の URL・ファイル・承認と照合の日時）と件数
+      page_schemas: pg.list,
+      page_schema_counts: pg.counts,
       faq_items: faqItems.map(function (f) { return { q: f.q, status: f.status, approval: f.approval || (f.status === 'site' && cf ? 'pending' : ''), in_schema: !!f.inSchema, source_url: (f.source && f.source.url) || '', fetched_at: job.completed_at || job.finished_at || '' }; }),
       compression: c
     };
@@ -938,8 +947,9 @@
       '- schema/*.jsonld — Organization / Service / FAQ drafts',
       '- public/llms.txt — machine-readable site index draft',
       '- content/faq.md — FAQ draft',
-      '- validation/VALIDATION.md — checklist before publish'
-    ].join('\n');
+      '- validation/VALIDATION.md — checklist before publish',
+      pageFileN ? '- schema/pages/*.jsonld — per-page HowTo / Product data approved by staff. Install each file only on the page listed in MANIFEST.page_schemas[].url. Do not change steps or prices; they must match the visible page text.' : null
+    ].filter(function (l) { return l !== null; }).join('\n');
 
     var readme = [
       '# サイトに足す文章とデータ（下書き）',
@@ -949,6 +959,7 @@
       ent ? '会社・ブランド・サービスは担当者が確定済みです（' + ent.at.slice(0, 10) + '）：' + company + (company !== brand ? '／' + brand : '') + '・' + service
         : '**会社・ブランド・サービスはまだ確定していません。** 名前やサービスはサイトから推定した値です。確定するまでは公開に使わないでください。',
       cf && pendingN ? 'サイトの記載から作った答えのうち ' + pendingN + ' 問は、まだ承認されていません（設置用のデータには入れていません）。' : null,
+      pg.counts.pending ? 'ページごとのデータ（手順・価格）のうち ' + pg.counts.pending + ' 件は、まだ承認されていません（設置用のデータには入れていません）。' : null,
       '',
       'AirReach が作った**下書き**です。このファイルを開いただけでは、どこにも公開されません。',
       'お店・会社の方が内容を確かめ、ホームページを作った人（制作会社など）にサイトへ入れてもらいます。',
@@ -962,10 +973,17 @@
       '   - organization.jsonld：トップページに入れる、お店・会社の情報（電話・郵便番号はサイトに書かれていた値だけを入れています）',
       schemaN ? '   - faq.jsonld：よくある質問のページに入れる。' + (cf ? '**担当者が承認した答えだけ**' : '**サイトの記載から作った答えだけ**') + 'を入れています（' + schemaN + '問）。手順2で書き足した質問は、載せたあとに追加してください'
         : '   - faq.jsonld：**入れていません**（' + (cf && siteN ? '承認した答えが0問のため' : 'サイトの記載から作れた答えが0問のため') + '。空のデータは置かないでください）。手順2で答えを確かめて載せたあとに作ります',
-      '   - service.jsonld：サービスの説明（飲食店はありません）',
+      '   - service.jsonld：サービスの説明（飲食店はありません）' + (pg.offers.length ? '。**担当者が承認した価格**（' + pg.offers.length + '件）を入れています。料金を変えたら、このデータも直してください' : ''),
+      pageFileN ? '   - schema/pages フォルダ：ページごとのデータ（' + pageFileN + '件）。**そのページに書いてある手順・品名と価格**を、担当者が承認したものだけ入れています。入れる先のページは下の表のとおりです' : null,
       '5. **AI 向けの案内ファイルを置く**：public/llms.txt を、サイトの一番上の階層に llms.txt という名前で置きます（制作会社に依頼）。',
       '6. **公開前の確認**：validation/VALIDATION.md の項目を確かめます。',
       '',
+      pg.list.length ? '## ページごとのデータを入れる先' : null,
+      pg.list.length ? '' : null,
+      pg.list.length ? '| ファイル | 種類 | 入れるページ |\n|---|---|---|\n' + pg.list.map(function (x) { return '| ' + x.path + ' | ' + ((PS.TYPES || {})[x.type] || x.type) + '（' + x.schema_type + '・' + x.count + '件） | ' + x.url + ' |'; }).join('\n') : null,
+      pg.list.length ? '' : null,
+      pg.list.length ? 'ページの手順や料金を変えたときは、このデータも同じ内容に直してください（古い価格のまま残さない）。' : null,
+      pg.list.length ? '' : null,
       '## 守ること',
       '',
       '- 料金・実績・お客様の声・順位などを、推測で書き足さない',
@@ -1043,6 +1061,8 @@
         : '1. この ZIP に schema/faq.jsonld は入っていません（承認した答えが0問のため）。この手順は飛ばします。',
       '2. トップページにも同じ方法で schema/organization.jsonld を貼ります。**テーマや SEO のプラグインがすでに会社・お店の情報を出している場合は、二重にしない**でください（ページのソースを開き「Organization」や「LocalBusiness」で検索して確かめます）。',
       '3. 貼る内容は、ページに実際に書いてある内容と同じにします。ページに無い答えや情報は足しません。',
+      pageFileN ? '4. schema/pages フォルダのファイルは、README.md の「ページごとのデータを入れる先」の表のページに、それぞれ同じ方法（カスタム HTML ブロック）で貼ります。1つのファイルは1つのページにだけ入れます。' : null,
+      pg.offers.length ? (pageFileN ? '5' : '4') + '. schema/service.jsonld（価格つき）は、サービスや料金を説明しているページに貼ります。料金を変えたら、このデータも直します。' : null,
       '',
       '## 3. AI 向けの案内ファイル（llms.txt）',
       '',
@@ -1059,7 +1079,7 @@
       '',
       '- 足した「カスタム HTML」ブロックを消し、ページを更新します。',
       '- サーバーに置いた llms.txt を消します。'
-    ].join('\n');
+    ].filter(function (l) { return l !== null; }).join('\n');
 
     var files = {
       'README.md': readme,
@@ -1083,6 +1103,7 @@
     if (isFood) {
       delete files['schema/service.jsonld'];
     }
+    Object.keys(pg.files).forEach(function (k) { files[k] = pg.files[k]; });
     // 確定した FAQ が0件なら、空の FAQ の JSON-LD は出さない（設置用に空のデータを置かせない）
     if (!schemaN) delete files['schema/faq.jsonld'];
     if (window.AirReachPackageSchema && window.AirReachPackageSchema.validatePackageFiles) {
@@ -2090,6 +2111,8 @@
             job.zipped = { at: new Date().toISOString(), version: mf.package_version || '', draft: !ok, selection: paths ? 'minimal' : 'all',
               faq: (fl.mainEntity || []).map(function (x) { return { q: String(x.name || ''), a: String((x.acceptedAnswer && x.acceptedAnswer.text) || '') }; }),
               llms: String(job.files['public/llms.txt'] || '').slice(0, 20000), org_name: String(og.name || ''),
+              // ページごとのデータ（手順・製品と価格・サービスの価格）：渡したときの一覧と中身
+              pages: (mf.page_schemas || []).map(function (x) { return Object.assign({}, x, { ld: String(job.files[x.path] || '').slice(0, 20000) }); }),
               // 採用した記事のデータ（Article・NewsArticle など）と、MANIFEST の指紋（版が変わったら前の公開確認を使わないため）
               articles: (window.AirReachVerify && window.AirReachVerify.adopted ? window.AirReachVerify.adopted({ files: job.files }).articles : []), manifest_sha256: '' };
             var zrec = job.zipped;

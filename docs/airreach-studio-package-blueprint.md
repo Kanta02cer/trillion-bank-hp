@@ -43,7 +43,10 @@ airreach-implementation/
 ├── schema/
 │   ├── organization.jsonld   # Organization 下書き
 │   ├── service.jsonld        # Service 下書き
-│   └── faq.jsonld            # FAQPage 下書き
+│   ├── faq.jsonld            # FAQPage 下書き
+│   └── pages/                # ページごとのデータ（承認したものがあるときだけ）
+│       ├── howto-<id>.jsonld     # HowTo（手順）。入れる先のページは MANIFEST.page_schemas[].url
+│       └── product-<id>.jsonld   # Product / Offer（製品・価格。複数は ItemList）
 ├── public/
 │   ├── llms.txt              # 機械可読インデックス（要約）
 │   └── llms-full.txt         # FAQ付き拡張版
@@ -421,6 +424,7 @@ PR本文には人間向けチェックリストと「自動マージ・本番Dep
 |----------|------|
 | `assets/js/airreach-package-schema.js` | 必須パス・CSV列・バリデーション（設計図の実行契約） |
 | `assets/js/airreach-orchestrator.js` | ジョブ・ZIP生成・表描画 |
+| `assets/js/airreach-page-schema.js` | ページごとのデータ（手順・製品と価格・サービスの価格）：候補の取り出し・本文との照合・JSON-LD・公開ページの判定 |
 | `assets/js/airreach-orch-phase2.js` | Planner / HackⅡ / Draft PR / 公開前チェック |
 | `scripts/validate_studio_package.js` | パッケージ構造のCLI検証 |
 | `assets/js/airreach-studio.js` | Expert View・measurements |
@@ -436,3 +440,4 @@ PR本文には人間向けチェックリストと「自動マージ・本番Dep
 2a. 言葉の文字列から計算した検索数（旧 hash 推定）を volume・画面・共有結果・計算式に出さない
 3. GitHub PATを `localStorage` やリポジトリに保存しない
 4. `deployment_run.auto_deploy` を `true` にする機能は追加しない
+5. ページごとのデータ（`schema/pages/`・`service.jsonld` の `offers`）は、ページを読んで見える本文と照らし、担当者が承認したものだけを入れる。`MANIFEST.page_schemas` に無いファイルは検査で不合格にする。税・在庫・評価など、ページから確かめていない項目は足さない
