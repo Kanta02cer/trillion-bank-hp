@@ -50,19 +50,6 @@ permalink: /trillionbank/contact/
   }
 </style>
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "@id": "https://trillion-bank.jp/trillionbank/contact/#faq",
-  "mainEntity": [
-    {"@type":"Question","name":"中小・未着手企業でも相談できますか？","acceptedAnswer":{"@type":"Answer","text":"はい。AI検索対策の現状確認から相談できます。お問い合わせフォームを優先して受け付けています。"}},
-    {"@type":"Question","name":"販売代理店の相談はできますか？","acceptedAnswer":{"@type":"Answer","text":"Trillion Bankサービスの販売代理店・共同提案の検討は歓迎します。他社商材の代理販売依頼はお受けしていません。"}},
-    {"@type":"Question","name":"どの窓口を使えばよいですか？","acceptedAnswer":{"@type":"Answer","text":"通常のお問い合わせはフォーム、詳細説明が必要な場合は商談予約をご利用ください。"}}
-  ]
-}
-</script>
-
 </head>
 <body class="tb-refresh" data-site-refresh="contact">{% include tb-refresh-header.html %}{% include tb-toriuru-guide.html %}
 <main id="main">
@@ -93,7 +80,7 @@ permalink: /trillionbank/contact/
 </div>
 
 <div class="aud contact-lower">
-  <!-- 資料送付・取材など -->
+  {% comment %} 資料送付・取材など {% endcomment %}
   <div class="aud-item sec-line contact-mail" id="email">
     <div class="tag">資料送付・取材など</div>
     <h3>資料送付・取材・その他のご連絡</h3>
@@ -102,17 +89,17 @@ permalink: /trillionbank/contact/
     <div class="sub">{{ site.data.contact.response_note }}</div>
   </div>
 
-  <!-- 商談予約 -->
+  {% comment %} 商談予約 {% endcomment %}
   <div class="aud-item">
     <div class="tag">商談予約</div>
     <h3>サービス導入・商談のご予約</h3>
-    <p>AirReach Consultingの詳細説明（事業会社向け）、共同提案のご相談（販売代理店向け）、Pay per Crawl / AI Access GatewayのPoCについて、30分のオンライン面談でご説明します。</p>
+    <p>AirReach Consultingの詳細説明（事業会社向け）、共同提案のご相談（販売代理店向け）、Adctor / Pay per CrawlのPoCについて、30分のオンライン面談でご説明します。</p>
     <a class="btn btn-primary" href="/trillionbank/meeting/" aria-label="商談を予約する（事前フォームへ進みます）" data-event="meeting_form_open" data-service="general" data-cta="contact_page_meeting">商談を予約する <span class="a" aria-hidden="true">→</span></a>
     <div class="sub">1分の事前フォームのあと、カレンダーで日時をお選びいただけます。</div>
   </div>
 </div>
 
-<!-- よくある相談 -->
+{% comment %} よくある相談 {% endcomment %}
     <div class="faq-section">
       <h3>よくあるご相談</h3>
       <ul class="faq-list">
@@ -126,5 +113,5 @@ permalink: /trillionbank/contact/
       <p class="hint" style="margin-top:18px;color:var(--muted);font-size:.86rem;line-height:1.8">他社商材の代理販売をTrillion Bank側へ依頼するご相談はお受けしていません。当社サービスの販売代理店検討は歓迎します。</p>
     </div>
 </div></section>
-</main>{% include tb-footer-safe.html refresh_navigation=true %}
+</main>{% include tb-footer.html refresh_navigation=true %}
 </body></html>

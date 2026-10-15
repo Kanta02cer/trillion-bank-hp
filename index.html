@@ -23,6 +23,10 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   .hero-links a:hover{opacity:.7}
   .hero-links .sep{color:var(--border);user-select:none}
   .hero-note{margin-top:14px;font-size:.78rem;color:var(--muted);max-width:38em;text-align:center}
+  @media(max-width:600px){
+    .hero-links{justify-content:flex-start;gap:12px 20px}
+    .hero-links .sep{display:none}
+  }
   /* bottom logo — full-width text logo anchored at bottom */
   .hero-bottom{position:relative;z-index:1;margin-top:auto;line-height:0;padding:0}
   .hero-bottom img{width:100%;height:auto;display:block}
@@ -218,7 +222,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 
 <main id="main">
 
-<!-- HERO -->
+{% comment %} HERO {% endcomment %}
 <section class="hero tbr-scene tbr-character-right" data-toriuru-scene data-pose="neutral" data-x="84" data-y="50" data-scale="1">
   <div class="wrap">
     <h1 class="hi" style="--d:.4s"><span class="hg">AI革命で、<span class="tbr-nowrap">トリリオン</span>の課題を担う。</span></h1>
@@ -238,7 +242,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   </div>
 </section>
 
-<!-- CONCEPT — A? / A! -->
+{% comment %} CONCEPT — A? / A! {% endcomment %}
 <section class="sec concept-sec tbr-scene tbr-character-right" data-toriuru-scene data-pose="point-left" data-x="80" data-y="52" data-scale=".92">
   <div class="wrap">
     <div class="concept-row rv">
@@ -258,7 +262,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   </div>
 </section>
 
-<!-- PROBLEM -->
+{% comment %} PROBLEM {% endcomment %}
 <section class="sec tbr-scene tbr-character-left" data-toriuru-scene data-pose="point-right" data-x="18" data-y="50" data-scale=".9">
   <div class="wrap">
     <p class="sl rv">PROBLEM</p>
@@ -271,7 +275,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   </div>
 </section>
 
-<!-- BUSINESS -->
+{% comment %} BUSINESS {% endcomment %}
 <section class="sec tbr-scene tbr-character-right" id="business" data-toriuru-scene data-pose="point-left" data-x="79" data-y="50" data-scale=".92">
   <div class="wrap">
     <p class="sl rv">BUSINESS</p>
@@ -301,7 +305,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   </div>
 </section>
 
-<!-- ARCHITECTURE -->
+{% comment %} ARCHITECTURE {% endcomment %}
 <section class="sec tbr-scene tbr-character-right" data-toriuru-scene data-pose="explain" data-x="77" data-y="50" data-scale=".9">
   <div class="wrap">
     <p class="sl rv">ARCHITECTURE</p>
@@ -315,7 +319,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   </div>
 </section>
 
-<!-- USE CASES -->
+{% comment %} USE CASES {% endcomment %}
 <section class="sec tbr-scene tbr-character-left" data-toriuru-scene data-pose="point-right" data-x="18" data-y="50" data-scale=".86">
   <div class="wrap">
     <p class="sl rv">USE CASES</p>
@@ -345,7 +349,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   </div>
 </section>
 
-<!-- WHY -->
+{% comment %} WHY {% endcomment %}
 <section class="sec tbr-scene tbr-character-right" data-toriuru-scene data-pose="neutral" data-x="80" data-y="50" data-scale=".84">
   <div class="wrap">
     <p class="sl rv">WHY TRILLION BANK</p>
@@ -359,7 +363,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
 </section>
 
 
-<!-- MEDIA -->
+{% comment %} MEDIA {% endcomment %}
 <section class="sec tbr-scene tbr-scene--dense" data-toriuru-scene data-pose="neutral" data-x="80" data-y="50" data-scale=".82" data-toriuru-hide="true">
   <div class="wrap">
     <p class="sl rv">MEDIA</p>
@@ -385,7 +389,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   </div>
 </section>
 
-<!-- COMPANY & COLUMN -->
+{% comment %} COMPANY & COLUMN {% endcomment %}
 <section class="sec tbr-scene tbr-scene--dense" data-toriuru-scene data-pose="neutral" data-x="80" data-y="50" data-scale=".82" data-toriuru-hide="true">
   <div class="wrap">
     <p class="sl rv">企業概要・コラム</p>
@@ -400,7 +404,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   </div>
 </section>
 
-<!-- FAQ -->
+{% comment %} FAQ {% endcomment %}
 <section class="sec tbr-scene tbr-character-right" id="faq" aria-labelledby="home-faq-heading" data-toriuru-scene data-pose="explain" data-x="80" data-y="50" data-scale=".82">
   <div class="wrap">
     <p class="sl rv">FAQ</p>
@@ -439,7 +443,7 @@ tbdesc: AirReach Tools / AirReach ConsultingでAI検索での見つかり方を�
   </div>
 </section>
 
-<!-- CONTACT -->
+{% comment %} CONTACT {% endcomment %}
 <section class="sec tbr-scene tbr-character-right" data-toriuru-scene data-pose="neutral" data-x="80" data-y="50" data-scale=".82">
   <div class="wrap">
     <p class="sl rv">CONTACT</p>

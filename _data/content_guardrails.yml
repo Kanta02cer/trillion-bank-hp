@@ -219,6 +219,7 @@ public_roots:
   - "_tbnews/2026-09-16-llmo-company-selection.md"
   - "_includes/tb-head.html"
   - "_includes/tb-header.html"
+  - "_includes/tb-refresh-header.html"
   - "_includes/tb-footer.html"
   - "_includes/tb-footer-safe.html"
   - "_layouts/tb-article-authority.html"

@@ -302,10 +302,69 @@ body.tb-refresh header.tbh {
   backdrop-filter: blur(14px);
 }
 
+body.tb-refresh header.tbh:focus-within {
+  transition-duration: 0s;
+}
+
 body.tb-refresh .tbh .links > a.tbh-login,
 body.tb-refresh .tbh .mega-panel,
 body.tb-refresh .tbh .mega-panel a {
   border-radius: 2px;
+}
+
+/* JavaScript upgrades the always-available simple link fallback. */
+body.tb-refresh .tbh .links[inert] {
+  display: none;
+}
+
+body.tb-refresh .tb-refresh-fallback-nav {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: clamp(12px, 2vw, 22px);
+  min-width: 0;
+  margin-left: auto;
+  overflow-x: auto;
+  color: var(--tbr-ink);
+  font-size: .78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+body.tb-refresh .tbh.tb-nav-enhanced .tb-refresh-fallback-nav {
+  display: none;
+}
+
+body.tb-refresh .tbh.tb-nav-enhanced .mega:hover .mega-panel,
+body.tb-refresh .tbh.tb-nav-enhanced .mega:focus-within .mega-panel {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+}
+
+body.tb-refresh .tbh.tb-nav-enhanced .mega-t[aria-expanded="true"] + .mega-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+@media (max-width: 960px) {
+  body.tb-refresh .tbh.tb-nav-enhanced .mega-panel,
+  body.tb-refresh .tbh.tb-nav-enhanced .mega:hover .mega-panel,
+  body.tb-refresh .tbh.tb-nav-enhanced .mega:focus-within .mega-panel {
+    display: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  body.tb-refresh .tbh.tb-nav-enhanced .mega-t[aria-expanded="true"] + .mega-panel {
+    display: block;
+  }
+
+  body.tb-refresh .tbh:not(.tb-nav-enhanced) .burger {
+    display: none;
+  }
 }
 
 body.tb-refresh footer.tbf {
@@ -343,6 +402,10 @@ body.tb-refresh .tbf .bottom {
   aspect-ratio: 1;
   pointer-events: none;
   background: url("/trillionbank/assets/images/toriuru/toriuru-neutral.webp") center / contain no-repeat;
+}
+
+.toriuru-guide.is-unavailable {
+  display: none !important;
 }
 
 .toriuru-guide__stage {
@@ -631,6 +694,13 @@ body.tb-refresh .tbf .bottom {
   body.tb-refresh .hero.tbr-scene .wrap {
     padding-top: 40px;
   }
+
+  .toriuru-guide__toggle {
+    top: auto;
+    right: auto;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: max(16px, env(safe-area-inset-left));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -667,10 +737,39 @@ body.tb-refresh .home-faq details[open] summary::after { content:"−"; }
 body.tb-refresh .ins-cluster,
 body.tb-refresh .ins-item { border-bottom:1px solid var(--tbr-line) !important; }
 body.tb-refresh .ins-item:hover { color:var(--tbr-blue); }
+.tb-company-business-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(24px,3vw,40px); }
+.tb-company-founder { display:grid; grid-template-columns:minmax(180px,280px) minmax(0,1fr); gap:clamp(28px,5vw,72px); align-items:start; max-width:900px; }
+.tb-company-founder__portrait { display:block; width:100%; height:auto; aspect-ratio:1; object-fit:cover; }
+.tb-company-founder__label { display:block; margin-bottom:14px; }
+.tb-company-founder__name { font-size:clamp(1.8rem,3vw,2.8rem); line-height:1.25; margin-bottom:16px; }
+.tb-company-founder__role { font-weight:600; margin-bottom:12px; }
+.tb-company-founder__bio { color:var(--muted); max-width:38em; }
+@media (max-width:700px) {
+  .tb-company-business-grid,
+  .tb-company-founder { grid-template-columns:1fr; }
+  .tb-company-founder__portrait { width:min(220px,70vw); }
+}
 @media (max-width:900px){
   .toriuru-guide.is-enhanced .toriuru-guide__stage { display:none; }
   .toriuru-guide.is-enhanced .toriuru-guide__static { display:block; }
   .toriuru-guide__toggle { display:none !important; }
-  body.tb-refresh .hero { padding-top:calc(var(--hdr) + 28px); }
+  .toriuru-guide__static {
+    top:calc(var(--hdr) + 12px);
+    right:max(20px,var(--tbr-gutter));
+    width:clamp(84px,24vw,116px);
+  }
+  body.tb-refresh main > .hero.tbr-scene,
+  body.tb-refresh main > .phero.tbr-scene {
+    padding-top:calc(var(--hdr) + clamp(128px,34vw,160px)) !important;
+  }
   body.tb-refresh .hero-bottom { margin-top:24px; }
+}
+
+@media (max-height:620px) and (min-width:521px) and (max-width:900px){
+  .toriuru-guide__static,
+  .toriuru-guide.is-enhanced .toriuru-guide__static { display:none !important; }
+  body.tb-refresh main > .hero.tbr-scene,
+  body.tb-refresh main > .phero.tbr-scene {
+    padding-top:calc(var(--hdr) + 48px) !important;
+  }
 }

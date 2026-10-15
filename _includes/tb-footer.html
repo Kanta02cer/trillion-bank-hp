@@ -46,22 +46,29 @@
   var h=document.getElementById('tbh'),last=0;
   var rails=document.getElementById('glowRails');
   var railGate=Math.min(innerHeight*.3,280);
-  addEventListener('scroll',function(){var y=scrollY;h.classList.toggle('solid',y>8);if(y>last&&y>140){h.classList.add('hide')}else{h.classList.remove('hide')}last=y;
+  var refreshNavigation=document.body.classList.contains('tb-refresh');
+  addEventListener('scroll',function(){var y=scrollY;h.classList.toggle('solid',y>8);var keepVisible=refreshNavigation&&(h.classList.contains('open')||h.contains(document.activeElement)||h.querySelector('[aria-expanded="true"]'));if(!keepVisible&&y>last&&y>140){h.classList.add('hide')}else{h.classList.remove('hide')}last=y;
     if(rails)rails.classList.toggle('active',y>railGate);},{passive:true});
-  var b=document.getElementById('tbBurger');
-  if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});
-  document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});
-  // mega menu keyboard toggle
-  document.querySelectorAll('.mega-t').forEach(function(btn){
-    var panel=document.getElementById(btn.getAttribute('aria-controls'));
-    if(!panel)return;
-    btn.addEventListener('click',function(){var open=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',!open)});
-    btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();btn.click();if(btn.getAttribute('aria-expanded')==='true'){var first=panel.querySelector('a');if(first)first.focus()}}
-      if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
-    panel.addEventListener('keydown',function(e){if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
-  });
+  if(refreshNavigation)h.addEventListener('focusin',function(){h.classList.remove('hide')});
+  // Refreshed corporate pages load their scoped disclosure-navigation controller.
+  // Preserve this legacy behavior unchanged for AirReach and older corporate pages.
+  if(!refreshNavigation){
+    var b=document.getElementById('tbBurger');
+    if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+    document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});
+    // mega menu keyboard toggle
+    document.querySelectorAll('.mega-t').forEach(function(btn){
+      var panel=document.getElementById(btn.getAttribute('aria-controls'));
+      if(!panel)return;
+      btn.addEventListener('click',function(){var open=btn.getAttribute('aria-expanded')==='true';btn.setAttribute('aria-expanded',!open)});
+      btn.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();btn.click();if(btn.getAttribute('aria-expanded')==='true'){var first=panel.querySelector('a');if(first)first.focus()}}
+        if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+      panel.addEventListener('keydown',function(e){if(e.key==='Escape'){btn.setAttribute('aria-expanded','false');btn.focus()}});
+    });
+  }
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
   document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(i%3)*70+'ms';io.observe(el)});
+  {% unless include.disable_tracking %}
   // GA4 tracking for CTAs
   document.querySelectorAll('[data-event]').forEach(function(el){
     el.addEventListener('click', function(){
@@ -148,6 +155,7 @@
       });
     });
   })();
+  {% endunless %}
   // tabs (WAI-ARIA Tabs pattern: arrow key navigation + roving tabindex)
   document.querySelectorAll('[data-tabs]').forEach(function(g){
     var tabs=g.querySelectorAll('[role="tab"]'),panels=g.querySelectorAll('[role="tabpanel"]');

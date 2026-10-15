@@ -405,6 +405,7 @@ exclude:
   - Gemfile.lock
   - .git
   - .gitignore
+  - _site
   - .github
   - .agents
   - .claude
@@ -431,6 +432,8 @@ exclude:
   - hack2-edge
   - skill-collector
   - screenshots
+  - artifacts
+  - evidence
   - PROMPT_SITE_REDESIGN_2026_08.md
   - ai-patch.json
   - ai-patch
