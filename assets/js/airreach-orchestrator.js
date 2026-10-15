@@ -100,6 +100,17 @@
     return '関連候補（優先度は低め）';
   }
 
+  // ページの材料から作った言葉の理由（どこから取ったか）
+  var SEED_FROM = { title: 'ページの題名', description: 'ページの説明文', structured: '構造化データ', menu: 'メニュー・小見出し', body: '本文', input: '入力', region: '地域', condition: '条件' };
+  function whySeed(k) {
+    var from = SEED_FROM[k.source] || '';
+    return { '指名': '会社名で探す人の言葉' + (from ? '（会社名は' + from + 'から）' : ''),
+      'サービス': 'サービス名で探す人の言葉' + (from ? '（' + from + 'から）' : ''),
+      '地域': 'サービス名と地域の組み合わせ',
+      '条件': 'サービス名と条件（説明文・題名にある条件）の組み合わせ',
+      '扱っているもの': 'サイトのメニュー・小見出しにある、扱っているもの' }[k.group] || '関連候補';
+  }
+
   // 画面に出す優先度の言い方（データの値 P0/P1/P2 はそのまま）
   function prioLabel(p) { return { P0: '必須', P1: '推奨', P2: '任意' }[p || 'P2'] || p; }
   function pathOf(u) {
@@ -354,11 +365,32 @@
     return '';
   }
 
+  // ページの題名・説明文・メニュー・構造化データから、言葉の材料を取り出す（airreach-keyword-seed.js）。飲食店は別の作り方
+  function seedFromDiagnose(diagnose, url, industry, hint) {
+    var S = window.AirReachKeywordSeed;
+    if (!S || !diagnose || !diagnose.page || industry === 'restaurant') return null;
+    var page = diagnose.page, src = page.kwSrc || {};
+    var orgs = ((page.ld && page.ld.blocks) || []).filter(function (b) {
+      return (b.types || []).some(function (t) { return /Organization|LocalBusiness|Agent|Store|School|Clinic|Corporation|MedicalBusiness|EducationalOrganization/.test(String(t)); });
+    }).map(function (b) { return b.fields && b.fields.name; }).filter(Boolean);
+    try {
+      return S.analyze({
+        title: page.title, ogTitle: page.ogTitle, ogSiteName: src.ogSiteName, metaDesc: page.metaDesc,
+        topics: page.topics || [], ldName: src.ldName, ldOrgNames: orgs, ldAddress: src.ldAddress || [], text: src.text || '',
+        url: url, industry: industry, hint: hint || {}
+      });
+    } catch (e) { return null; }
+  }
+
   function profileFromDiagnose(diagnose, url, hint) {
     hint = hint || {};
     var page = (diagnose && diagnose.page) || {};
     var brand = hint.brand || '';
     var service = validService(hint.service);
+    // 題名のキャッチコピー（「目元が変われば、第一印象が武器になる」など）を会社名・サービス名にしないよう、材料を先に見る
+    var seed = hint.industry === 'restaurant' ? null : seedFromDiagnose(diagnose, url, hint.industry || '', {});
+    if (!brand && seed && seed.brand && seed.brand.value) brand = seed.brand.value;
+    if (!service && seed && seed.services && seed.services[0]) service = validService(seed.services[0].value);
     if (!brand) brand = serviceFromText(page.title) || hostOf(url);
     if (!service) {
       service = serviceFromTitle(page.title, brand) || validService(serviceFromText(page.h1)) || serviceFromText(page.title) || hostOf(url).split('.')[0];
@@ -404,6 +436,23 @@
     seeds = seeds.slice(0, 7).concat(topicSeeds, seeds.slice(7));
     if (loc) {
       seeds = seeds.concat(opts.industry === 'media' ? [s + ' ' + loc, loc + ' ' + s] : [s + ' ' + loc, loc + ' ' + s, s + ' ' + loc + ' おすすめ']);
+    }
+    // ページから取り出した材料（会社名・サービス・地域・条件・扱っているもの）があれば、それで言葉を作る。
+    // 題名のキャッチコピーやメニューの案内には決まった言葉を付けない。足りなくても、関係の薄い言葉で埋めない
+    var seedGroups = null;
+    var seedRank = { region: 0 };
+    if (opts.seed && window.AirReachKeywordSeed) {
+      seedGroups = {};
+      var fromSeed = window.AirReachKeywordSeed.keywords(opts.seed, opts.industry, limit);
+      if (loc) fromSeed.unshift({ text: (opts.seed.services && opts.seed.services[0] ? opts.seed.services[0].value : s) + ' ' + loc, group: '地域', source: 'input' });
+      seeds = [];
+      topicSeeds = [];
+      fromSeed.forEach(function (k) {
+        if (seedGroups[k.text]) return;
+        seedGroups[k.text] = k;
+        seeds.push(k.text);
+        topicSeeds.push(k.text);
+      });
     }
 
     // Real GSC queries — only keep those that belong to this entity (avoid other-client CSV mix)
@@ -464,7 +513,22 @@
         related: fromGsc ? (gsc.related || []) : [],
         prompts: []
       };
-      row.why = whyForKeyword(row);
+      if (seedGroups && seedGroups[text] && !fromGsc) {
+        var sg = seedGroups[text];
+        row.seed_group = sg.group;
+        row.seed_from = sg.source || '';
+        // 優先度は言葉の種類で決める：地域・主なサービスの比べる言葉が先、会社名・条件は次、メニューの単語は後
+        var mainSvc = opts.seed.services && opts.seed.services[0] ? normKw(opts.seed.services[0].value) : '';
+        if (sg.group === '地域') { seedRank.region++; row.priority = seedRank.region <= 4 ? 'P0' : 'P1'; }
+        else if (sg.group === 'サービス') row.priority = (mainSvc && normKw(text).indexOf(mainSvc) === 0 && /おすすめ|比較|料金|費用|口コミ/.test(text)) ? 'P0' : 'P1';
+        else if (sg.group === '指名' || sg.group === '条件') row.priority = 'P1';
+        else row.priority = /料金|口コミ/.test(text) ? 'P1' : 'P2';
+        row.gap = row.priority === 'P0' ? '大' : row.priority === 'P1' ? '中' : '小';
+        row.strength = row.priority === 'P0' ? '弱い' : '普通';
+        row.why = whySeed(sg);
+      } else {
+        row.why = whyForKeyword(row);
+      }
       out.push(row);
     });
 
@@ -478,7 +542,7 @@
     };
     var modifiers = PAD[opts.industry] || PAD.other;
     var mi = 0;
-    while (out.length < limit && mi < modifiers.length * 3) {
+    while (!seedGroups && out.length < limit && mi < modifiers.length * 3) {
       var mod = modifiers[mi % modifiers.length];
       mi++;
       var text2 = s + ' ' + mod + (loc && mi > modifiers.length ? ' ' + loc : '');
@@ -1476,7 +1540,13 @@
       // 飲食店のサービス名は業態（焼肉・そば など）。入力が無ければサイトから読んだ業態を使う
       service: (isFood && kwa.genre && kwa.genre.value && !(input.profile && input.profile.serviceTyped)) ? kwa.genre.value : ((input.profile && input.profile.service) || ''),
       audience: (input.profile && input.profile.audience) || '',
-      summary: (input.profile && input.profile.summary) || ''
+      summary: (input.profile && input.profile.summary) || '',
+      industry: job.industry
+    });
+    // 言葉の材料（入力した会社名・サービス名を優先する）
+    job.keyword_seed = isFood ? null : seedFromDiagnose(diagnose, job.url, job.industry, {
+      brand: (input.profile && input.profile.brand) || '',
+      service: (input.profile && input.profile.service) || ''
     });
     if (isFood && kwa.area && kwa.area.value) job.region = kwa.area.value;
     if (q('orch-service') && job.profile.service && !q('orch-service').value) {
@@ -1503,7 +1573,8 @@
       industry: job.industry,
       topics: (diagnose && diagnose.page && diagnose.page.topics) || [],
       brand: job.profile.brand,
-      url: job.url || job.profile.url
+      url: job.url || job.profile.url,
+      seed: job.keyword_seed
     });
     if (keywords._skippedForeign) {
       job.keyword_skip_note = '他社ブランド語を ' + keywords._skippedForeign + ' 件除外しました';
@@ -2168,6 +2239,7 @@
     buildDraftFromDiagnose: buildDraftFromDiagnose,
     downloadDraftZip: downloadDraftZip,
     _buildKeywords: buildKeywords,
+    _seedFromDiagnose: seedFromDiagnose,
     _promptsForKeyword: promptsForKeyword,
     _groupGsc: function (measurements) { return groupGsc(gscMapFromMeasurements(measurements)); },
     _lookupGsc: lookupGsc
