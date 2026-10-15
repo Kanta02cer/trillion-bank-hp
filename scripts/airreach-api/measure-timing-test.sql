@@ -1,4 +1,4 @@
--- 計測の時期の関数（20261009140000_airreach_measure_timing・20261009150000 publish・20261011120000 review）のテスト。ローカル Postgres で実行する。本番 DB では実行しない
+-- 計測の時期の関数（20261009140000_airreach_measure_timing・20261009150000 publish・20261011120000 review・20261015120000 plan）のテスト。ローカル Postgres で実行する。本番 DB では実行しない
 \set QUIET on
 begin;
 insert into public.partner_orgs (id, name) values ('00000000-0000-0000-0000-0000000000f1', '共同会社1');
@@ -25,7 +25,7 @@ select pg_temp.as_user('owner@c0.test');
 select pg_temp.ok('お客様：自分の顧客の日付が読める', (select (j ->> 'entity_at') = '2026-09-01T00:00:00Z' and (j ->> 'zipped_at') = '2026-09-10T00:00:00Z' and (j ->> 'verified_at') = '2026-09-28T01:00:00Z' and (j ->> 'verified_ok')::boolean from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') j) x));
 select pg_temp.ok('公開と照合の記録（publish_job）を返す：日時・版・URL・判定の版', (select (j #>> '{publish_job,published,at}') = '2026-09-27T01:00:00Z' and (j #>> '{publish_job,published,version}') = '1.0.0' and (j #>> '{publish_job,verified,state}') = 'ok' and (j #>> '{publish_job,verified,rule}') = 'verify/2026.10.09' and (j #>> '{publish_job,verified,url}') = 'https://sample.example/faq/' and (j #>> '{publish_job,zipped,version}') = '1.0.0' from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') j) x));
 select pg_temp.ok('前回の計測は「回答の記録がある計測」だけ（要約だけの古い記録は数えない）', (select (public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') ->> 'last_run_at')::timestamptz = '2026-09-20T01:00:00Z'));
-select pg_temp.ok('返すのは日付・版・指紋・URL・状態だけ（会社名・質問・ZIP の中身・照合の詳細は返さない）', (select not (j::text ~ '株式会社サンプル|秘密の質問|秘密の答え|中身|"faq"|checks') and (select count(*) from jsonb_object_keys(j)) = 7 and j -> 'review' = 'null'::jsonb from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') j) x));
+select pg_temp.ok('返すのは日付・版・指紋・URL・状態だけ（会社名・質問・ZIP の中身・照合の詳細は返さない）', (select not (j::text ~ '株式会社サンプル|秘密の質問|秘密の答え|中身|"faq"|checks') and (select count(*) from jsonb_object_keys(j)) = 8 and j -> 'review' = 'null'::jsonb from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') j) x));
 select pg_temp.denied('お客様：ほかの顧客は読めない', $q$select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a1')$q$);
 select pg_temp.as_user('owner@c1.test');
 select pg_temp.ok('レビュー用パッチ：版・指紋・取り込み/承認の日時・今回の対象を返す', (select (j #>> '{review,version}') = 'r/1' and (j #>> '{review,manifest_sha256}') = 'pkg-hash' and (j #>> '{review,imported_at}') = '2026-09-25T00:00:00Z' and (j #>> '{review,approved,at}') = '2026-09-26T00:00:00Z' and (j #> '{review,round}') = '["01_news"]'::jsonb from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a1') j) x));
@@ -40,5 +40,12 @@ select pg_temp.as_user('nobody@x.test');
 select pg_temp.denied('登録していない人は読めない', $q$select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0')$q$);
 reset role;
 select pg_temp.ok('anon は呼べない', not has_function_privilege('anon', 'public.airreach_measure_timing(uuid)', 'execute'));
+-- 20261015120000：お客様ごとの計測の回数（月2回のときだけ {"perMonth":2}。AI・回数・質問は返さない）。社内の人として読む（書き換えは管理者のまま）
+select pg_temp.as_user('tb@tb.test');
+select pg_temp.ok('計測の回数：未設定なら null', (select j -> 'measure_plan' = 'null'::jsonb from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') j) x));
+update public.studio_workspaces set data = jsonb_set(data, '{studio,measurePlan}', '{"perMonth":2,"repeats":3,"engines":["google_aio","chatgpt_search"],"setAt":"2026-10-15T00:00:00Z"}'::jsonb) where client_id = '00000000-0000-0000-0000-0000000000a0';
+select pg_temp.ok('計測の回数：月2回なら {"perMonth":2} だけを返す', (select j -> 'measure_plan' = '{"perMonth":2}'::jsonb and not (j::text ~ 'repeats|engines|google_aio|setAt') from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') j) x));
+update public.studio_workspaces set data = jsonb_set(data, '{studio,measurePlan}', '{"perMonth":1}'::jsonb) where client_id = '00000000-0000-0000-0000-0000000000a0';
+select pg_temp.ok('計測の回数：月1回なら null（今までどおり30日）', (select j -> 'measure_plan' = 'null'::jsonb from (select public.airreach_measure_timing('00000000-0000-0000-0000-0000000000a0') j) x));
 select 'ALL PASSED' as result;
 rollback;

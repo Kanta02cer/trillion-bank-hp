@@ -106,23 +106,41 @@
    *   戻り値：{ kind: baseline|effect|monthly, due: Date, state: later|soon|due|late, days }（会社・サービスが未確定なら null）
    */
   var DAY = 86400000, EFFECT_DAYS = 14, MONTHLY_DAYS = 30, LATE_DAYS = 3;
+  /**
+   * お客様ごとの計測の条件（契約）。Studio の作業データ（studio.measurePlan）に保存する。
+   *   perMonth: 月の計測回数（1 か 2）。2 なら前回から15日、1 なら30日で次の時期
+   *   repeats: 1つの質問を聞く回数（1 か 3）／ engines: 測る AI（Studio の計測の初期値）
+   *   未設定・おかしな値は、今までどおり（月1回・1回・AI は Studio の初期値）
+   */
+  var PLAN_ENGINES = ['google_aio', 'chatgpt_search', 'google_ai_mode', 'gemini', 'perplexity', 'claude', 'chatgpt'];
+  function measurePlan(p) {
+    p = p && typeof p === 'object' ? p : {};
+    var perMonth = Number(p.perMonth) === 2 ? 2 : 1;
+    var repeats = Number(p.repeats) === 3 ? 3 : 1;
+    var engines = Array.isArray(p.engines) ? p.engines.filter(function (e, i, a) { return PLAN_ENGINES.indexOf(e) >= 0 && a.indexOf(e) === i; }) : [];
+    return { perMonth: perMonth, repeats: repeats, engines: engines, intervalDays: perMonth === 2 ? 15 : MONTHLY_DAYS, set: !!(p.perMonth || p.repeats || engines.length) };
+  }
   function jstDay0(t) { var d = new Date(t + 9 * 3600000); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); }
   function timing(d, now) {
     d = d || {}; now = now || new Date();
     var ent = Date.parse(d.entityAt || ''), ver = Date.parse(d.verifiedAt || ''), pubT = Date.parse(d.publishedAt || ''), last = Date.parse(d.lastRunAt || '');
     if (!isNaN(pubT) && (isNaN(ver) || pubT > ver)) ver = pubT;
     if (isNaN(ent)) return null;
-    var kind, due;
+    var kind, due, every = measurePlan(d.plan).intervalDays;
     if (d.verifiedOk && !isNaN(ver) && !(last > ver)) { kind = 'effect'; due = ver + EFFECT_DAYS * DAY; }
     else if (isNaN(last)) { kind = 'baseline'; due = ent; }
-    else { kind = 'monthly'; due = last + MONTHLY_DAYS * DAY; }
+    else { kind = 'monthly'; due = last + every * DAY; }
     // 日付（日本時間の日）で数える。期日の当日〜3日後は「時期」、それより後は「遅れ」
     var days = Math.round((jstDay0(due) - jstDay0(now.getTime())) / DAY);
     var state = days < -LATE_DAYS ? 'late' : days <= 0 ? 'due' : days <= 7 ? 'soon' : 'later';
-    return { kind: kind, due: new Date(due), state: state, days: days, base: kind === 'effect' ? new Date(ver) : kind === 'monthly' ? new Date(last) : new Date(ent) };
+    return { kind: kind, due: new Date(due), state: state, days: days, every: every, base: kind === 'effect' ? new Date(ver) : kind === 'monthly' ? new Date(last) : new Date(ent) };
   }
   var KIND_LABEL = { baseline: '導入前の計測', effect: '効果を測る計測', monthly: '毎月の計測' };
   var KIND_WHY = { baseline: '会社・サービスを確定したので、導入前を測ります', effect: 'パッチの公開を確かめてから14日後。運用の目安で、Google の再クロール・収録・AI による概要への表示を保証するものではありません', monthly: '前回の計測から30日' };
+  function whyOf(t) {
+    if (t.kind === 'monthly' && t.every && t.every !== MONTHLY_DAYS) return '前回の計測から' + t.every + '日（月2回の契約）';
+    return KIND_WHY[t.kind];
+  }
   /** 担当者向けの短い言葉（一覧の印など） */
   function timingChip(t) {
     if (!t) return null;
@@ -134,7 +152,7 @@
   function timingLine(t) {
     if (!t) return '会社・サービスを確定すると、計測の時期が決まります。';
     var when = t.kind === 'baseline' ? 'すぐ' : day(t.due.toISOString());
-    return KIND_LABEL[t.kind] + '：' + when + '（' + KIND_WHY[t.kind] + (t.kind === 'monthly' ? '・前回 ' + day(t.base.toISOString()) : t.kind === 'effect' ? '・確かめた日 ' + day(t.base.toISOString()) : '') + '）' +
+    return KIND_LABEL[t.kind] + '：' + when + '（' + whyOf(t) + (t.kind === 'monthly' ? '・前回 ' + day(t.base.toISOString()) : t.kind === 'effect' ? '・確かめた日 ' + day(t.base.toISOString()) : '') + '）' +
       (t.state === 'late' ? ' · ' + (-t.days) + '日遅れ' : t.state === 'due' && t.kind !== 'baseline' ? ' · 時期です' : '');
   }
   /**
@@ -160,15 +178,15 @@
     var rc = reviewCurrent(d.review, normalZipped, now);
     if (rc) {
       var entAt = d.entity_at || (rc.official && d.review.approved ? d.review.approved.at : null);
-      return timing({ entityAt: entAt, verifiedAt: rc.publishedAt, verifiedOk: rc.done, publishedAt: rc.publishedAt, lastRunAt: d.last_run_at }, now);
+      return timing({ entityAt: entAt, verifiedAt: rc.publishedAt, verifiedOk: rc.done, publishedAt: rc.publishedAt, lastRunAt: d.last_run_at, plan: d.measure_plan }, now);
     }
     var ps = pj ? publishState(pj, now) : null, okNow = !!(ps && ps.done);
-    return timing({ entityAt: d.entity_at, verifiedAt: okNow ? ps.verified.at : null, verifiedOk: okNow, publishedAt: okNow ? ps.published.at : null, lastRunAt: d.last_run_at }, now);
+    return timing({ entityAt: d.entity_at, verifiedAt: okNow ? ps.verified.at : null, verifiedOk: okNow, publishedAt: okNow ? ps.published.at : null, lastRunAt: d.last_run_at, plan: d.measure_plan }, now);
   }
   /** お客様向けの1行（遅れは出さない） */
   function timingCustomer(t) {
     if (!t) return '';
-    var why = { baseline: 'いまの状態（導入前）を測ります。', effect: 'ページに入れた改善の効果を測ります。', monthly: '毎月の計測です。' }[t.kind];
+    var why = { baseline: 'いまの状態（導入前）を測ります。', effect: 'ページに入れた改善の効果を測ります。', monthly: t.every && t.every !== MONTHLY_DAYS ? '月2回の計測です。' : '毎月の計測です。' }[t.kind];
     return (t.state === 'due' || t.state === 'late' ? '次の計測は、近日中に行います。' : '次の計測は ' + day(t.due.toISOString()) + ' ごろの予定です。') + why;
   }
 
@@ -238,10 +256,11 @@
       : { title: '比較を保留：条件をそろえて公開後に測り直す', why: cmpState.text + '。公開前と同じ質問・地域・AI・判定の版で測ります。', href: S + '#hack2', button: '計測に進む' };
     var next = cur >= 0 ? NEXT[cur] : { title: '次の改善を始める', why: '効果を確かめました。課題を見直して、次のパッチを作ります。', href: S + '#generator', button: '次の改善へ' };
     var lastRun = runs.length ? runs[runs.length - 1] : null;
-    var tm = timing({ entityAt: ent && ent.at, verifiedAt: ps.verified.ok ? ps.verified.at : null, verifiedOk: ps.done, publishedAt: ps.published.ok ? ps.published.at : null, lastRunAt: lastRun ? (lastRun.created_at || lastRun.measured_on) : null }, opts.now);
+    var tm = timing({ entityAt: ent && ent.at, verifiedAt: ps.verified.ok ? ps.verified.at : null, verifiedOk: ps.done, publishedAt: ps.published.ok ? ps.published.at : null, lastRunAt: lastRun ? (lastRun.created_at || lastRun.measured_on) : null, plan: ws.studio && ws.studio.measurePlan }, opts.now);
     // 効果・毎月の計測の時期が来ていれば、次にやることを計測にする（導入前の計測は②の段階としてすでに出ている）
     if (tm && tm.kind !== 'baseline' && (tm.state === 'due' || tm.state === 'late')) {
-      next = { title: (tm.kind === 'effect' ? '効果を測る' : '毎月の計測をする') + (tm.state === 'late' ? '（' + (-tm.days) + '日遅れ）' : ''), why: timingLine(tm) + '。導入前と同じ質問・地域・AI で測ります。', href: S + '#hack2', button: '計測に進む', timing: true };
+      var pl = measurePlan(ws.studio && ws.studio.measurePlan);
+      next = { title: (tm.kind === 'effect' ? '効果を測る' : '毎月の計測をする') + (tm.state === 'late' ? '（' + (-tm.days) + '日遅れ）' : ''), why: timingLine(tm) + '。導入前と同じ質問・地域・AI で測ります' + (pl.repeats === 3 ? '（契約の条件：1つの質問を3回）' : '') + '。', href: S + '#hack2', button: '計測に進む', timing: true };
     }
     return { steps: steps, current: cur, next: next, timing: tm, publish: ps };
   }
@@ -259,7 +278,7 @@
       (res.publish && res.publish.zipped ? '<p class="acs-index">Google の収録（5段階とは別）　' + (res.publish.indexed.ok ? '確かめた ' + esc(day(res.publish.indexed.at)) + (res.publish.indexed.how ? '（' + esc(res.publish.indexed.how) + '）' : '') : '未確認') + '</p>' : '') + (res.timing !== undefined ? '<p class="acs-timing' + (res.timing && res.timing.state === 'late' ? ' is-late' : '') + '">計測の予定　' + esc(timingLine(res.timing)) + '</p>' : '') + '</section>';
   }
 
-  var api = { compute: compute, customerTiming: customerTiming, reviewCurrent: reviewCurrent, cardHtml: cardHtml, aioOf: aioOf, publishState: publishState, sameVersion: sameVersion, urlKey: urlKey, compareState: compareState, timing: timing, timingChip: timingChip, timingLine: timingLine, timingCustomer: timingCustomer, KIND_LABEL: KIND_LABEL };
+  var api = { compute: compute, measurePlan: measurePlan, customerTiming: customerTiming, reviewCurrent: reviewCurrent, cardHtml: cardHtml, aioOf: aioOf, publishState: publishState, sameVersion: sameVersion, urlKey: urlKey, compareState: compareState, timing: timing, timingChip: timingChip, timingLine: timingLine, timingCustomer: timingCustomer, KIND_LABEL: KIND_LABEL };
   root.AirReachCaseSteps = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
