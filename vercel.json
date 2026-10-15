@@ -1,6 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
+  "framework": "jekyll",
+  "buildCommand": "bash scripts/jekyll_build.sh",
+  "outputDirectory": "_site",
   "git": {
     "deploymentEnabled": {
       "main": false,
