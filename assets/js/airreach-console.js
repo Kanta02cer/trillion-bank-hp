@@ -268,7 +268,7 @@
         soft(sb.from('measurement_runs').select('client_id,measured_on').gte('measured_on', mon)),
         soft(sb.from('traffic_snapshots').select('client_id,source').eq('period_month', mon)),
         // 案件の5段階（airreach-case-steps.js）の材料：分析の確定・ZIP・確かめた結果と、計測の要約（ZIP の中身や回答の本文は読まない）
-        sb.from('studio_workspaces').select('client_id,confirm:data->orch->lastJob->confirm,zipped:data->orch->lastJob->zipped,verified:data->orch->lastJob->verified,url:data->orch->lastJob->>url,review:data->review').then(function (x) { return x.error ? null : (x.data || []); }, function () { return null; }),
+        sb.from('studio_workspaces').select('client_id,confirm:data->orch->lastJob->confirm,zipped:data->orch->lastJob->zipped,verified:data->orch->lastJob->verified,url:data->orch->lastJob->>url,review:data->review,plan:data->studio->measurePlan').then(function (x) { return x.error ? null : (x.data || []); }, function () { return null; }),
         soft(sb.from('measurement_runs').select('client_id,measured_on,created_at,ai3:summary->ai3').order('created_at', { ascending: false }).limit(400))
       ]).then(function (rs) {
         var reps = q(rs[0]) || [];
@@ -288,7 +288,8 @@
         else if (w && (w.confirm || w.zipped || w.url)) job = { url: w.url, confirm: w.confirm, zipped: w.zipped, verified: w.verified, files: {} };
         var runs = (extra.allRuns || []).filter(function (x) { return x.client_id === c.id; }).map(function (x) { return x.summary ? x : { client_id: x.client_id, measured_on: x.measured_on, created_at: x.created_at, summary: { ai3: x.ai3 } }; });
         var review = w ? (w.data ? w.data.review : w.review) || null : null;
-        try { return window.AirReachCaseSteps.compute({ workspace: { orch: { lastJob: job }, review: review }, runs: runs, studioHref: '', runsHref: '' }); } catch (e) { return null; }
+        var plan = w ? (w.data ? (w.data.studio && w.data.studio.measurePlan) : w.plan) || null : null;
+        try { return window.AirReachCaseSteps.compute({ workspace: { orch: { lastJob: job }, review: review, studio: { measurePlan: plan } }, runs: runs, studioHref: '', runsHref: '' }); } catch (e) { return null; }
       }
       if (extra) {
         var today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
@@ -1325,7 +1326,7 @@
     var soft = function (p) { return p.then(function (x) { return x.error ? [] : (x.data || []); }, function () { return []; }); };
     return Promise.all([
       sb.from('clients').select('*').order('name'),
-      sb.from('studio_workspaces').select('client_id,confirm:data->orch->lastJob->confirm,zipped:data->orch->lastJob->zipped,verified:data->orch->lastJob->verified,url:data->orch->lastJob->>url,review:data->review').then(function (x) { return x.error ? null : (x.data || []); }, function () { return null; }),
+      sb.from('studio_workspaces').select('client_id,confirm:data->orch->lastJob->confirm,zipped:data->orch->lastJob->zipped,verified:data->orch->lastJob->verified,url:data->orch->lastJob->>url,review:data->review,plan:data->studio->measurePlan').then(function (x) { return x.error ? null : (x.data || []); }, function () { return null; }),
       soft(sb.from('measurement_runs').select('client_id,measured_on,created_at,ai3:summary->ai3').order('created_at', { ascending: false }).limit(400)),
       soft(sb.from('client_sites').select('client_id,url')),
       soft(sb.from('measurement_runs').select('client_id,created_at,answers:summary->answers').order('created_at', { ascending: false }).limit(10))
@@ -1337,7 +1338,8 @@
         var job = w && w.data ? (w.data.orch && w.data.orch.lastJob) : (w ? { url: w.url, confirm: w.confirm, zipped: w.zipped, verified: w.verified, files: {} } : null);
         var rr = runs.filter(function (x) { return x.client_id === c.id; }).map(function (x) { return x.summary ? x : { client_id: x.client_id, measured_on: x.measured_on, created_at: x.created_at, summary: { ai3: x.ai3 } }; });
         var rvw = w ? (w.data ? w.data.review : w.review) || null : null;
-        var cs = null; try { cs = CS.compute({ workspace: { orch: { lastJob: job }, review: rvw }, runs: rr, studioHref: '', runsHref: '' }); } catch (e) { cs = null; }
+        var plan = w ? (w.data ? (w.data.studio && w.data.studio.measurePlan) : w.plan) || null : null;
+        var cs = null; try { cs = CS.compute({ workspace: { orch: { lastJob: job }, review: rvw, studio: { measurePlan: plan } }, runs: rr, studioHref: '', runsHref: '' }); } catch (e) { cs = null; }
         var site = sites.filter(function (x) { return x.client_id === c.id; })[0];
         return { c: c, tm: cs && cs.timing, studio: (window.AirReachNav ? window.AirReachNav.studioBase({ id: c.id, name: c.name, site: site && site.url, industry: c.industry_id }) : '/airreach/studio/') + '#hack2' };
       });
@@ -1348,7 +1350,7 @@
       var ST = { late: ['遅れ', 'is-bad'], due: ['時期', 'is-warn'], soon: ['7日以内', ''] }; // 「これから」は見出しで分かるので印を付けない
       var ans = []; (rs[4] || []).forEach(function (r) { ans = ans.concat(r.answers || (r.summary && r.summary.answers) || []); });
       var est = V.engineStatus(ans);
-      var body = '<section class="arc-card"><p class="arc-note">自動では測りません。時期が来た案件を担当者が Studio で測ります。時期の決まり：①会社・サービスを確定したらすぐ（導入前）②パッチを入れたと確かめた日から14日後（効果）③それ以外は前回の計測から30日後（毎月）。期日から3日過ぎたら「遅れ」。お客様のホームには「次の計測は ◯/◯ ごろの予定です」と出ます。</p>' +
+      var body = '<section class="arc-card"><p class="arc-note">自動では測りません。時期が来た案件を担当者が Studio で測ります。時期の決まり：①会社・サービスを確定したらすぐ（導入前）②パッチを入れたと確かめた日から14日後（効果）③それ以外は前回の計測から30日後（毎月。月2回の契約のお客様は15日後）。期日から3日過ぎたら「遅れ」。お客様のホームには「次の計測は ◯/◯ ごろの予定です」と出ます。</p>' +
         '<div class="amt-sum">' + [['late', '遅れ'], ['due', '時期が来た'], ['soon', '7日以内']].map(function (x) { var n = cnt(x[0]); return '<div class="amt-sum-i is-' + x[0] + (n ? '' : ' is-zero') + '"><span>' + x[1] + '</span><b>' + n + '</b><small>件</small></div>'; }).join('') + '</div></section>' +
         G.map(function (g) {
           var rr = rows.filter(function (r) { return (r.tm ? r.tm.state : 'none') === g[0]; });

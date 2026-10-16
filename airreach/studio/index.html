@@ -357,6 +357,7 @@ robots: "noindex, follow"
             <div class="ars-field ars-hack2-loc"><label for="hack2-location">地域（任意）</label><input class="ars-input" id="hack2-location" list="hack2-location-list" placeholder="空欄＝日本全体" autocomplete="off" inputmode="latin"><datalist id="hack2-location-list"><option value="Tokyo,Japan">東京都</option><option value="Shibuya,Tokyo,Japan">渋谷区</option><option value="Shinjuku,Tokyo,Japan">新宿区</option><option value="Minato,Tokyo,Japan">港区</option><option value="Yokohama,Kanagawa,Japan">横浜市</option><option value="Saitama,Saitama,Japan">さいたま市</option><option value="Osaka,Osaka,Japan">大阪市</option><option value="Nagoya,Aichi,Japan">名古屋市</option><option value="Fukuoka,Fukuoka,Japan">福岡市</option><option value="Sapporo,Hokkaido,Japan">札幌市</option></datalist><small class="ars-hack2-help">Google の AI と ChatGPT（検索あり）に、この地域から検索した形で聞きます。英字で「市区町村,都道府県,Japan」。結果には実際に使われた地域を残します。</small></div>
             <div class="ars-card ars-prompts-card" id="hack2-prompts">{% comment %} 計測する質問（airreach-studio.js の renderPrompts） {% endcomment %}</div>
             <div id="hack2-status" class="ars-note">まだ計測していません。AIを選んで「計測実行」を押します。</div>
+            <div class="ars-card" id="hack2-plan" style="margin:10px 0">{% comment %} お客様ごとの計測の条件（airreach-measure-plan.js） {% endcomment %}</div>
             <div class="ars-row" style="margin:12px 0;flex-wrap:wrap;gap:10px">
               <label><input type="checkbox" data-hack2-engine value="google_aio" checked> Google の AI による概要（主）</label>
               <label><input type="checkbox" data-hack2-engine value="chatgpt_search" checked> ChatGPT（検索あり・補助）</label>
@@ -465,6 +466,7 @@ robots: "noindex, follow"
 <script src="/assets/js/airreach-compare.js" defer></script>
 <script src="/assets/js/airreach-case-steps.js" defer></script>
 <script src="/assets/js/airreach-studio-steps.js" defer></script>
+<script src="/assets/js/airreach-measure-plan.js" defer></script>
 <script src="/assets/js/airreach-orch-phase2.js" defer></script>
 </body>
 </html>
