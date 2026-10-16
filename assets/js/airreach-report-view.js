@@ -20,6 +20,8 @@
   }
   function v(x, unit) { return x == null || x === '' ? '<span class="arr-na">未計測</span>' : esc(x) + (unit || ''); }
   // lowerIsBetter: 平均掲載順位のように、数字が下がるほど良い指標
+  // 割合：測ったのに出せないときは理由（測定不能・判定なし）、測っていないときは「未計測」。0% とは書かない
+  function rate(x, na) { return x == null && na ? '<span class="arr-na">' + esc(na) + '</span>' : v(x, '%'); }
   function d(x, unit, lowerIsBetter) {
     if (x == null) return '<span class="arr-na">—</span>';
     var good = lowerIsBetter ? x < 0 : x > 0, bad = lowerIsBetter ? x > 0 : x < 0;
@@ -119,7 +121,7 @@
     var t = ai && ai.types;
     if (!t) return '';
     var row = function (label, x) {
-      return '<tr><th>' + label + '</th><td>' + esc(x.answers) + '</td><td>' + (x.citeRate == null ? '<span class="arr-na">—</span>' : esc(x.citeRate) + '%') + ' <small class="arr-na">（' + esc(x.cite) + ' ÷ ' + esc(x.citeJudged) + '）</small></td><td>' + (x.mentionRate == null ? '<span class="arr-na">—</span>' : esc(x.mentionRate) + '%') + ' <small class="arr-na">（' + esc(x.mention) + ' ÷ ' + esc(x.answers) + '）</small></td><td>' +
+      return '<tr><th>' + label + '</th><td>' + esc(x.answers) + '</td><td>' + (x.citeRate == null ? '<span class="arr-na">' + esc(x.citeNa || '—') + '</span>' : esc(x.citeRate) + '%') + ' <small class="arr-na">（' + esc(x.cite) + ' ÷ ' + esc(x.citeJudged) + '）</small></td><td>' + (x.mentionRate == null ? '<span class="arr-na">' + esc(x.mentionNa || '—') + '</span>' : esc(x.mentionRate) + '%') + ' <small class="arr-na">（' + esc(x.mention) + ' ÷ ' + esc(x.answers) + '）</small></td><td>' +
         ([x.undetermined ? '判定できない ' + x.undetermined : '', x.notShown ? '表示なし ' + x.notShown : '', x.errors ? 'エラー ' + x.errors : ''].filter(Boolean).join('・') || '0') + '</td></tr>';
     };
     return '<h3 class="arr-h3">一般質問・指名質問ごと（すべての AI の合計）</h3><table class="arr-table"><thead><tr><th></th><th>回答の数</th><th>公式サイトが出典</th><th>店名・社名が出た</th><th>割合に入れなかった回答</th></tr></thead><tbody>' +
@@ -129,7 +131,7 @@
   function latestHtml(ai) {
     var lt = ai && ai.latest;
     if (!lt || ai.basis !== 'monthly' || ai.runs < 2) return '';
-    return '<p class="arr-sub">最新の計測（' + esc(lt.measuredOn) + '）だけの結果：' + lt.providers.map(function (p) { return esc(prov(p.provider)) + ' ' + (p.citeRate == null ? '—' : esc(p.citeRate) + '%'); }).join('、') + '</p>';
+    return '<p class="arr-sub">最新の計測（' + esc(lt.measuredOn) + '）だけの結果：' + lt.providers.map(function (p) { return esc(prov(p.provider)) + ' ' + (p.citeRate == null ? (p.answers === 0 ? '測定不能' : '—') : esc(p.citeRate) + '%'); }).join('、') + '</p>';
   }
   // 回答ごとの根拠（質問・AI・計測日時・判定・出典）。印刷では開いた状態で出す
   function answerRecordsHtml(ai) {
@@ -241,6 +243,28 @@
   }
 
   // 計測の記録の model に入っている取得の手段（serpapi/… など）は出さない。AI の名前は prov() で出している
+  // 計測の条件（AI ごと）：どの AI・モデルで、いつ、検索ありで、何回聞いて、有効な回答が何件あったか
+  function conditionsHtml(ai) {
+    var cs = ai && ai.conditions;
+    if (!cs || !cs.length) return '';
+    var SEARCH = { yes: 'あり', no: 'なし', mixed: 'あり・なしが混在' };
+    var when = function (x) {
+      var R = window.AirReachReport, f = R && R.jstTime ? R.jstTime : function (t) { return String(t).slice(0, 16); };
+      if (!x.from) return ai.firstOn ? esc(ai.firstOn) + (ai.lastOn && ai.lastOn !== ai.firstOn ? '〜' + esc(ai.lastOn) : '') : '—';
+      var a = f(x.from), b = f(x.to);
+      return esc(a) + (b && b !== a ? '〜' + esc(a.slice(0, 10) === b.slice(0, 10) ? b.slice(11) : b) : '');
+    };
+    return '<h3 class="arr-h3">計測の条件</h3><table class="arr-table"><thead><tr><th>AI</th><th>モデル</th><th>計測した日時（日本時間）</th><th>検索</th><th>1つの質問を聞いた回数</th><th>有効な回答<br><small>回答が取れた数 ÷ 聞いた数</small></th><th>出典を判定できた回答</th></tr></thead><tbody>' +
+      cs.map(function (x) {
+        var models = (x.models || []).map(modelName).filter(Boolean);
+        var bad = x.asked && !x.answers;
+        return '<tr><td>' + esc(prov(x.provider)) + '</td><td>' + (models.length ? esc(models.join('、')) : /^google_/.test(x.provider) ? 'Google 検索の結果' : '<span class="arr-na">—</span>') + '</td><td>' + when(x) + '</td><td>' +
+          (x.search ? esc(SEARCH[x.search]) : '<span class="arr-na">記録なし</span>') + (x.locations && x.locations.length ? '<br><small class="arr-na">地域 ' + esc(x.locations.join('、')) + '</small>' : '') + '</td><td>' + (x.repeats ? esc(x.repeats) + '回' : '<span class="arr-na">記録なし</span>') + '</td><td>' +
+          (bad ? '<span class="arr-na">0件（測定不能）</span>' : esc(x.answers == null ? '—' : x.answers) + '件') + ' <small class="arr-na">（' + esc(x.answers || 0) + ' ÷ ' + esc(x.asked) + '）</small></td><td>' + esc(x.judged == null ? '—' : x.judged) + '件</td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<p class="arr-note">有効な回答が0件の AI は、割合を 0% とせず「測定不能」と書いています（取得の失敗や、AI の回答が表示されなかったため、数えられる回答がありませんでした）。</p>';
+  }
+
   function modelName(m) { m = String(m || ''); return /^serpapi\//i.test(m) ? '' : m; }
 
   function render(r) {
@@ -249,11 +273,11 @@
     var ai = c.ai || null, tr = c.traffic || {};
     var kpi = [];
     // 2026年10月から：Google の AI による概要に名前が出た回数（一般の質問）を一覧の先頭に
-    if (c.aio && c.aio.now) kpi.push('<tr><th>Google の AI による概要に名前が出た回数（名前を入れていない質問）</th><td>' + (c.aio.prev ? esc(c.aio.prev.x) + ' / ' + esc(c.aio.prev.n) + '回' : '<span class="arr-na">—</span>') + '</td><td>' + esc(c.aio.now.x) + ' / ' + esc(c.aio.now.n) + '回</td><td>' + (c.aio.comparable && c.aio.diff != null ? (c.aio.diff > 0 ? '+' : '') + esc(c.aio.diff) + 'pt' : '<span class="arr-na">' + (c.aio.prev ? '条件がそろわない' : '—') + '</span>') + '</td></tr>');
+    if (c.aio && c.aio.now) kpi.push('<tr><th>Google の AI による概要に名前が出た回数（名前を入れていない質問）</th><td>' + (c.aio.prev ? esc(c.aio.prev.x) + ' / ' + esc(c.aio.prev.n) + '回' : '<span class="arr-na">—</span>') + '</td><td>' + (c.aio.now.unmeasurable ? '<span class="arr-na">' + esc(c.aio.now.unmeasurable) + '</span>' : esc(c.aio.now.x) + ' / ' + esc(c.aio.now.n) + '回') + '</td><td>' + (c.aio.comparable && c.aio.diff != null ? (c.aio.diff > 0 ? '+' : '') + esc(c.aio.diff) + 'pt' : '<span class="arr-na">' + (c.aio.prev ? '条件がそろわない' : '—') + '</span>') + '</td></tr>');
     kpi.push('<tr><th>ホームページの情報整備' + tag('judged') + '</th><td>' + v(prev && prev.overall, '点') + '</td><td>' + v(cur && cur.overall, '点') + '</td><td>' + d(site.overallDelta, '点') + '</td></tr>');
     if (ai) ai.providers.forEach(function (p) {
-      kpi.push('<tr><th>AIの回答で公式サイトが出典になった割合（' + esc(prov(p.provider)) + '）' + tag('reference') + '</th><td>' + v(p.prevCiteRate, '%') + '</td><td>' + v(p.citeRate, '%') + '</td><td>' + d(p.citeDelta, 'ポイント') + '</td></tr>');
-      kpi.push('<tr><th>AIの回答に店名・社名が出た割合（' + esc(prov(p.provider)) + '）' + tag('reference') + '</th><td>' + v(p.prevMentionRate, '%') + '</td><td>' + v(p.mentionRate, '%') + '</td><td>' + d(p.mentionDelta, 'ポイント') + '</td></tr>');
+      kpi.push('<tr><th>AIの回答で公式サイトが出典になった割合（' + esc(prov(p.provider)) + '）' + tag('reference') + '</th><td>' + v(p.prevCiteRate, '%') + '</td><td>' + rate(p.citeRate, p.citeNa) + '</td><td>' + d(p.citeDelta, 'ポイント') + '</td></tr>');
+      kpi.push('<tr><th>AIの回答に店名・社名が出た割合（' + esc(prov(p.provider)) + '）' + tag('reference') + '</th><td>' + v(p.prevMentionRate, '%') + '</td><td>' + rate(p.mentionRate, p.mentionNa) + '</td><td>' + d(p.mentionDelta, 'ポイント') + '</td></tr>');
       if (p.sov != null || p.prevSov != null) kpi.push('<tr><th>競合と比べて、AIの回答に名前が出た割合（' + esc(prov(p.provider)) + '）' + tag('reference') + '</th><td>' + v(p.prevSov, '%') + '</td><td>' + v(p.sov, '%') + '</td><td>' + d(p.sovDelta, 'ポイント') + '</td></tr>');
     });
     else kpi.push('<tr><th>AIの引用率・言及率</th><td colspan="3"><span class="arr-na">未計測</span></td></tr>');
@@ -299,11 +323,12 @@
       '<section><h2 class="arr-h2">AI回答の計測' + tag(ai ? 'reference' : 'unknown') + '</h2>' +
       (ai ? '<p class="arr-sub">' + (ai.basis === 'monthly' ? '今月の計測 ' + esc(ai.runs) + '回（' + esc(ai.firstOn) + (ai.runs > 1 ? '〜' + esc(ai.lastOn) : '') + '）の合計' + (ai.excludedOld ? '（判定方法を変える前の計測 ' + esc(ai.excludedOld) + '回は含めていません）' : '') : '計測日 ' + esc(ai.measuredOn)) + '・質問の版 ' + esc((ai.versions && ai.versions.length ? ai.versions : [ai.querySetVersion || '—']).join('、')) + (ai.comparable ? '' : '（前月と条件が異なる、または前月の計測なしのため、差は出していません）') + '</p>' +
         C.aiCompare(c) +
+        conditionsHtml(ai) +
         '<table class="arr-table"><thead><tr><th>AI</th><th>回答の数</th><th>公式サイトが出典になった割合<br><small>出典になった回答 ÷ 判定できた回答</small></th><th>店名・社名が出た割合<br><small>名前が出た回答 ÷ 回答</small></th><th>割合に入れなかった回答</th></tr></thead><tbody>' +
         ai.providers.map(function (p) {
           var nd = function (n, dd) { return n != null && dd ? '<small class="arr-na">（' + esc(n) + ' ÷ ' + esc(dd) + '）</small>' : ''; };
           var aside = [p.undetermined ? '出典が取れず判定できない ' + p.undetermined : '', p.notShown ? 'AI の回答が表示されなかった ' + p.notShown : '', p.errors ? 'エラー ' + p.errors : ''].filter(Boolean).join('<br>');
-          return '<tr><td>' + esc(prov(p.provider)) + (modelName(p.model) ? ' <small class="arr-na">' + esc(modelName(p.model)) + '</small>' : '') + '</td><td>' + v(p.answers) + (p.runs > 1 ? '<small class="arr-na">（' + esc(p.runs) + '回の計測）</small>' : '') + '</td><td>' + v(p.citeRate, '%') + nd(p.citeCount, p.judged) + '</td><td>' + v(p.mentionRate, '%') + nd(p.mentionCount, p.answers) + '</td><td>' + (aside || '0') + '</td></tr>';
+          return '<tr><td>' + esc(prov(p.provider)) + (modelName(p.model) ? ' <small class="arr-na">' + esc(modelName(p.model)) + '</small>' : '') + '</td><td>' + v(p.answers) + (p.runs > 1 ? '<small class="arr-na">（' + esc(p.runs) + '回の計測）</small>' : '') + '</td><td>' + rate(p.citeRate, p.citeNa) + nd(p.citeCount, p.judged) + '</td><td>' + rate(p.mentionRate, p.mentionNa) + nd(p.mentionCount, p.answers) + '</td><td>' + (aside || '0') + '</td></tr>';
         }).join('') +
         '</tbody></table>' +
         typesHtml(ai) +

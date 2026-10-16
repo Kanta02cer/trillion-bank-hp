@@ -107,7 +107,8 @@
     // 1つの枠：AI の名前・X / N・出現率・先月との比較・注記。測っていない AI は「未計測」の枠（AI による概要を測っていない月でも2つの枠を出す）
     var box = function (k, sub, x, big, note) {
       return '<div class="arr-aio' + (opt.compact ? ' is-compact' : '') + (big ? '' : ' is-sub') + '"><span class="arr-aio-k">' + k + '<small> · ' + sub + '</small></span>' +
-        (x ? '<span class="arr-aio-v"><b>' + esc(x.now.x) + '</b> / ' + esc(x.now.n) + '回' + (x.now.rate != null ? '<em>出現率 ' + esc(x.now.rate) + '%</em>' : '') + '</span><span class="arr-aio-s">' + cmpText(x) + '</span>'
+        (x && x.now.unmeasurable ? '<span class="arr-aio-v"><span class="arv-na">' + esc(x.now.unmeasurable) + '</span></span>'
+          : x ? '<span class="arr-aio-v"><b>' + esc(x.now.x) + '</b> / ' + esc(x.now.n) + '回' + (x.now.rate != null ? '<em>出現率 ' + esc(x.now.rate) + '%</em>' : '') + '</span><span class="arr-aio-s">' + cmpText(x) + '</span>'
           : '<span class="arr-aio-v"><span class="arv-na">未計測</span></span>') +
         (opt.compact || !x ? '' : '<small class="arr-aio-n">' + note + '</small>') + '</div>';
     };
@@ -133,12 +134,12 @@
       var provRow = function (p) {
         var s = series(p.provider);
         // 判定できないとき「—」だけだと理由が分からないので一言添える（ChatGPT は検索しないので出典を判定しない）
-        var why = p.citeRate != null ? '' : (p.provider === 'openai' ? '検索しない AI のため出典は判定しません' : '出典を判定できた回答がありません');
+        var why = p.citeRate != null ? '' : (p.citeNa || (p.provider === 'openai' ? '検索しない AI のため出典は判定しません' : '出典を判定できた回答がありません'));
         // 分子／分母（引用された回答の数／出典の有無を判定できた回答の数）と、割合に入れなかった回答の数
         var nd = p.judged != null && p.citeCount != null && p.judged > 0 ? p.citeCount + '/' + p.judged + '回答' : '';
         var aside = [p.undetermined ? '判定できない ' + p.undetermined : '', p.notShown ? 'AI の回答なし ' + p.notShown : '', p.errors ? 'エラー ' + p.errors : ''].filter(Boolean).join('・');
         return '<div class="arv-ai-row"><span class="arv-key" style="background:' + s.color + '"></span><span class="arv-ai-name">' + esc(s.label) + '</span>' +
-          '<span class="arv-ai-val">' + (p.citeRate == null ? '—' : esc(p.citeRate) + '%') + '</span>' + (why ? '<small class="arv-ai-why">' + esc(why) + '</small>' : deltaHtml(p.citeDelta, 'ポイント')) +
+          '<span class="arv-ai-val">' + (p.citeRate == null ? (p.citeNa && !/^判定なし/.test(p.citeNa) ? '測定不能' : '—') : esc(p.citeRate) + '%') + '</span>' + (why ? '<small class="arv-ai-why">' + esc(why) + '</small>' : deltaHtml(p.citeDelta, 'ポイント')) +
           ((nd || aside) ? '<small class="arv-ai-nd">' + esc(nd) + (nd && aside ? '（' + esc(aside) + '）' : esc(aside)) + '</small>' : '') + '</div>';
       };
       t2 += '<div class="arv-ai">' + (mainP.length ? mainP.map(provRow).join('') : '<div class="arv-ai-row"><span class="arv-na">AI による概要・ChatGPT は未計測</span></div>') + '</div>' +
@@ -177,12 +178,12 @@
     return span + 'で ' + (d > 0 ? '+' : '') + d + unit + (d > 0 ? ' 増えました' : ' 減りました');
   }
   /** 月ごとの棒。棒の上に値、測っていない月は「未計測」。今月（最後）だけ濃くする */
-  function monthBars(months, vals, unit, max, partialLast) {
+  function monthBars(months, vals, unit, max, partialLast, naLabels) {
     var mx = max || Math.max.apply(null, vals.filter(function (v) { return v != null; }).concat([1]));
     var n = months.length;
     return '<div class="arv-bars" role="list">' + months.map(function (m, i) {
       var v = vals[i], last = i === n - 1;
-      if (v == null) return '<div class="arv-bar is-na" role="listitem"><span class="arv-bar-v">未計測</span><span class="arv-bar-fill" style="height:3px"></span><span class="arv-bar-m">' + esc(ymShort(m)) + '</span></div>';
+      if (v == null) return '<div class="arv-bar is-na" role="listitem"><span class="arv-bar-v">' + esc((naLabels && naLabels[i]) || '未計測') + '</span><span class="arv-bar-fill" style="height:3px"></span><span class="arv-bar-m">' + esc(ymShort(m)) + '</span></div>';
       var h = Math.max(4, Math.round(56 * Math.max(0, v) / (mx || 1)));
       return '<div class="arv-bar' + (last ? ' is-now' : '') + (last && partialLast ? ' is-partial' : '') + '" role="listitem"><span class="arv-bar-v">' + esc(v) + esc(unit) + (last && partialLast ? '<small>途中</small>' : '') + '</span><span class="arv-bar-fill" style="height:' + h + 'px"></span><span class="arv-bar-m">' + esc(ymShort(m)) + '</span></div>';
     }).join('') + '</div>';
@@ -193,14 +194,15 @@
     var n = vals.length, now = vals[n - 1], prev = vals[n - 2];
     var has = vals.some(function (v) { return v != null; });
     var head = '<div class="arv-tc-h"><b>' + esc(title) + '</b>' + (opts.tag || '') + '</div>';
-    if (!has) return '<figure class="arv-tc">' + head + '<p class="arv-empty">この6か月は計測がありません</p></figure>';
+    if (!has) return '<figure class="arv-tc">' + head + '<p class="arv-empty">' + (opts.naLabels && opts.naLabels.some(Boolean) ? 'この6か月は、測った月も数えられる回答がありませんでした（測定不能）' : 'この6か月は計測がありません') + '</p>' + (opts.naLabels && opts.naLabels.some(Boolean) ? monthBars(months, vals, unit, opts.max, false, opts.naLabels) : '') + '</figure>';
     // 検索・訪問：今月が途中集計なら前の月と比べない／対象期間の記録がない月があれば増減は参考（悪化・改善を断定しない）
     var S = window.AirReachStaff, per = opts.periods || null;
     var pNow = per && S && now != null ? S.periodOf(per[n - 1], months[n - 1]) : null;
     var pPrev = per && S && prev != null ? S.periodOf(per[n - 2], months[n - 2]) : null;
     var cmp = per && S ? S.compare(now, prev, pNow, pPrev) : { mode: 'compare', delta: diff(now, prev) };
     var unknownAny = per && S && vals.some(function (v, i) { return v != null && S.periodOf(per[i], months[i]).status === 'unknown'; });
-    var big = now == null ? '<span class="arv-tc-now is-na">今月は未計測</span>'
+    var naNow = opts.naLabels && opts.naLabels[n - 1];
+    var big = now == null ? '<span class="arv-tc-now is-na">今月は' + esc(naNow || '未計測') + '</span>'
       : '<span class="arv-tc-now">' + esc(now) + '<small>' + esc(unit) + '</small></span>' +
         (pNow && pNow.status === 'partial' ? '<span class="arv-period is-partial">' + esc(pNow.short) + '</span>' : cmp.mode === 'compare' ? deltaHtml(cmp.delta, unit, opts.goodUp) : '');
     var say = pNow && pNow.status === 'partial' ? '今月は ' + S.md(pNow.end) + ' までの途中集計のため、前の月と比べていません'
@@ -208,7 +210,7 @@
     return '<figure class="arv-tc">' + head +
       '<div class="arv-tc-big">' + big + '</div>' +
       '<p class="arv-tc-say">' + esc(say) + '</p>' +
-      monthBars(months, vals, unit, opts.max, pNow && pNow.status === 'partial') + '</figure>';
+      monthBars(months, vals, unit, opts.max, pNow && pNow.status === 'partial', opts.naLabels) + '</figure>';
   }
 
   /** 推移（点数・AIの引用率・検索クリック・問い合わせ）。折れ線は使わず、数字と棒で読めるようにする */
@@ -216,19 +218,19 @@
     var h = historyOf(c);
     var months = h.map(function (x) { return x.month; });
     var providers = [];
-    h.forEach(function (x) { Object.keys(x.cite || {}).forEach(function (p) { if (providers.indexOf(p) < 0) providers.push(p); }); });
+    h.forEach(function (x) { Object.keys(x.cite || {}).concat(Object.keys(x.citeNa || {})).forEach(function (p) { if (providers.indexOf(p) < 0) providers.push(p); }); });
     var pick = function (k) { return h.map(function (x) { return x[k] != null ? x[k] : null; }); };
     var cards = [trendCard('情報整備の点数', months, pick('score'), '点', { max: 100 })];
     if (providers.length) providers.forEach(function (p) {
       var s = series(p);
       cards.push(trendCard('AIに引用された割合', months, h.map(function (x) { return x.cite && x.cite[p] != null ? x.cite[p] : null; }), '%',
-        { tag: '<span class="arv-leg"><span class="arv-key" style="background:' + s.color + '"></span>' + esc(s.label) + '</span>' }));
+        { tag: '<span class="arv-leg"><span class="arv-key" style="background:' + s.color + '"></span>' + esc(s.label) + '</span>', naLabels: h.map(function (x) { return x.citeNa && x.citeNa[p] ? x.citeNa[p] : ''; }) }));
     });
     else cards.push(trendCard('AIに引用された割合', months, months.map(function () { return null; }), '%'));
     cards.push(trendCard('検索からのクリック', months, pick('clicks'), '回', { periods: h.map(function (x) { return x.clicksPeriod || null; }) }));
     cards.push(trendCard('問い合わせ・予約', months, pick('conversions'), '件', { periods: h.map(function (x) { return x.conversionsPeriod || null; }) }));
     return '<div class="arv-trends">' + cards.join('') + '</div>' +
-      '<p class="arv-trend-note">濃い棒が今月です。測っていない月は「未計測」と書きます（0 ではありません）。</p>';
+      '<p class="arv-trend-note">濃い棒が今月です。測っていない月は「未計測」、測ったが数えられる回答が無かった月は「測定不能」と書きます（どちらも 0 ではありません）。</p>';
   }
 
   // ---- 情報整備の内訳（4項目の横棒）-------------------------------------------
@@ -251,11 +253,11 @@
     if (!ai || !ai.providers || !ai.providers.length) return '';
     return '<div class="arv-cmp">' + ai.providers.map(function (p) {
       var s = series(p.provider);
-      function bar(v, color, lbl) {
-        return '<div class="arv-cmp-row"><span class="arv-cmp-l">' + lbl + '</span><span class="arv-cmp-bar"><span style="width:' + (v == null ? 0 : Math.max(1, Math.min(100, v))) + '%;background:' + color + '"></span></span><span class="arv-cmp-v">' + (v == null ? '—' : esc(v) + '%') + '</span></div>';
+      function bar(v, color, lbl, na) {
+        return '<div class="arv-cmp-row"><span class="arv-cmp-l">' + lbl + '</span><span class="arv-cmp-bar"><span style="width:' + (v == null ? 0 : Math.max(1, Math.min(100, v))) + '%;background:' + color + '"></span></span><span class="arv-cmp-v">' + (v == null ? (na ? '<small class="arv-na">' + esc(na) + '</small>' : '—') : esc(v) + '%') + '</span></div>';
       }
       return '<div class="arv-cmp-g"><div class="arv-cmp-h"><span class="arv-key" style="background:' + s.color + '"></span>' + esc(s.label) + '</div>' +
-        bar(p.prevCiteRate, PREV, '前月') + bar(p.citeRate, s.color, '今月') + '</div>';
+        bar(p.prevCiteRate, PREV, '前月') + bar(p.citeRate, s.color, '今月', p.citeNa ? (/^判定なし/.test(p.citeNa) ? '判定なし' : '測定不能') : '') + '</div>';
     }).join('') + '</div>';
   }
 
