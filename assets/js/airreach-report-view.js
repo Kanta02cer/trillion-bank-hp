@@ -265,6 +265,28 @@
       '<p class="arr-note">有効な回答が0件の AI は、割合を 0% とせず「測定不能」と書いています（取得の失敗や、AI の回答が表示されなかったため、数えられる回答がありませんでした）。</p>';
   }
 
+  // 計測ごとの結果（月2回の計測も1回ずつ）：初回は改善前の基準、2回目からは1つ前と同じ条件のときだけ差を出す
+  function perRunHtml(c) {
+    var rs = c && c.runs;
+    if (!rs || !rs.length) return '';
+    var keys = rs[0].engines.map(function (e) { return e; });
+    var cell = function (e, first) {
+      if (!e.measured) return '<span class="arr-na">未計測</span>';
+      if (e.unmeasurable) return '<span class="arr-na">' + esc(e.unmeasurable) + '</span>';
+      var now = '<b>' + esc(e.x) + '</b> / ' + esc(e.n) + '回' + (e.rate != null ? '<small class="arr-na">（' + esc(e.rate) + '%）</small>' : '');
+      if (first) return now + '<br><small class="arr-na">改善前の基準</small>';
+      if (e.comparable) return now + '<br><small>前回 ' + esc(e.prev.x) + ' / ' + esc(e.prev.n) + '回 → ' + (e.diff > 0 ? '+' : '') + esc(e.diff) + 'ポイント</small>';
+      return now + '<br><small class="arr-na">前回と比べていません：' + esc(e.reason || '条件が違います') + '</small>';
+    };
+    return '<h3 class="arr-h3">計測ごとの結果（名前を入れていない質問で、名前が出た回数）</h3><div style="overflow-x:auto"><table class="arr-table"><thead><tr><th>計測日</th><th>この回の位置づけ</th>' +
+      keys.map(function (e) { return '<th>' + esc(e.key === 'aio' ? 'Google の AI による概要（主）' : 'ChatGPT（検索あり・補助）') + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      rs.map(function (r) {
+        var kind = r.first ? '初回（改善前の基準）' : r.kind === 'effect' ? '施策の前後の比較（前回 ' + esc(r.prevOn) + '）' : '前回（' + esc(r.prevOn) + '）との比較' + (r.kindWhy ? '<br><small class="arr-na">施策の効果としては見ていません（' + esc(r.kindWhy) + '）</small>' : '');
+        return '<tr><td>' + esc(r.measuredOn) + '</td><td>' + kind + '</td>' + r.engines.map(function (e) { return '<td>' + cell(e, r.first) + '</td>'; }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<p class="arr-note">前回と比べるのは、聞いた質問・地域・モデル・判定の方法・名前が同じ計測どうしだけです。違うときは差を出さず、理由を書いています。回数が少ない計測の差は、偶然の揺れのことがあります。</p>';
+  }
+
   function modelName(m) { m = String(m || ''); return /^serpapi\//i.test(m) ? '' : m; }
 
   function render(r) {
@@ -322,6 +344,7 @@
         : '<p class="arr-na">診断の記録がありません。</p>') + '</section>' +
       '<section><h2 class="arr-h2">AI回答の計測' + tag(ai ? 'reference' : 'unknown') + '</h2>' +
       (ai ? '<p class="arr-sub">' + (ai.basis === 'monthly' ? '今月の計測 ' + esc(ai.runs) + '回（' + esc(ai.firstOn) + (ai.runs > 1 ? '〜' + esc(ai.lastOn) : '') + '）の合計' + (ai.excludedOld ? '（判定方法を変える前の計測 ' + esc(ai.excludedOld) + '回は含めていません）' : '') : '計測日 ' + esc(ai.measuredOn)) + '・質問の版 ' + esc((ai.versions && ai.versions.length ? ai.versions : [ai.querySetVersion || '—']).join('、')) + (ai.comparable ? '' : '（前月と条件が異なる、または前月の計測なしのため、差は出していません）') + '</p>' +
+        perRunHtml(c) +
         C.aiCompare(c) +
         conditionsHtml(ai) +
         '<table class="arr-table"><thead><tr><th>AI</th><th>回答の数</th><th>公式サイトが出典になった割合<br><small>出典になった回答 ÷ 判定できた回答</small></th><th>店名・社名が出た割合<br><small>名前が出た回答 ÷ 回答</small></th><th>割合に入れなかった回答</th></tr></thead><tbody>' +
@@ -336,7 +359,7 @@
         latestHtml(ai) +
         '<p class="arr-note">「判定できない」は、AI が出典の一覧を返さず、回答の本文にも URL が無かった回答です（0% として数えません）。「AI の回答が表示されなかった」は、Google の検索結果に AI による概要が出なかった質問です。計測は API で行っており、一般の人が使う最新の ChatGPT・Gemini とは結果が異なることがあります。</p>' +
         citedHtml(ai) + answerRecordsHtml(ai)
-        : '<p class="arr-na">今月は計測していません。</p>') + '</section>' +
+        : (perRunHtml(c) || '<p class="arr-na">今月は計測していません。</p>')) + '</section>' +
       '<section' + (c.first ? ' class="arr-first"' : '') + '><h2 class="arr-h2">' + (c.first ? '数値の一覧（初回の基準値）' : '数値の一覧（前月との比較）') + '</h2><table class="arr-table"><thead><tr><th></th><th>' + esc(ym(c.previousMonth)) + '</th><th>' + esc(ym(r.period_month)) + '</th><th>差</th></tr></thead><tbody>' + kpi.join('') +
       '<tr><th>検索の表示回数' + tag(trafficKind(tr.gsc)) + '</th><td>' + v(tr.gscPrev && tr.gscPrev.impressions) + '</td><td>' + v(tr.gsc && tr.gsc.impressions) + '</td><td>' + d(diff(tr.gsc && tr.gsc.impressions, tr.gscPrev && tr.gscPrev.impressions)) + '</td></tr>' +
       '<tr><th>検索結果での平均の順位' + tag(trafficKind(tr.gsc)) + '</th><td>' + v(tr.gscPrev && tr.gscPrev.position) + '</td><td>' + v(tr.gsc && tr.gsc.position) + '</td><td>' + d(diff(tr.gsc && tr.gsc.position, tr.gscPrev && tr.gscPrev.position), '', true) + '</td></tr>' +
