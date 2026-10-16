@@ -53,5 +53,22 @@ t('aio が無い古いレポートでは何も出さない', C.aioHero({}) === '
   t('レポート：0 / 0回を出さない', /測定不能（有効な回答が0件：取得に失敗 5回）/.test(hh) && !/<b>0<\/b> \/ 0回/.test(hh), hh.slice(0, 400));
   const nh = ctx.AirReachClientHome.numbers({ period_month: '2026-10-01', compiled: { site: {}, traffic: {}, aio: cc.aio, chatgpt: null } });
   t('お客様のホーム：測定不能（理由）', /測定不能（有効な回答が0件/.test(nh) && !/0<\/b><small> \/ 0回/.test(nh), nh.slice(0, 400)); }
+// ---- 計測ごとの結果（月2回）：初回は改善前の基準、2回目からは1つ前と同じ条件のときだけ差。違う条件・測定不能は理由 ----
+{ const rr = (day, t, pat, x) => Object.assign(run(day, pat, x), { id: 'r-' + day + t, created_at: day + 'T0' + t + ':00:00Z' });
+  // 9/7 初回 → 10/7（同じ条件）→ 10/21（地域が違う）→ 10/28（すべて失敗）
+  const runs = [rr('2026-09-07', 2, 'mnsne'), rr('2026-10-07', 2, 'mmsnn'), rr('2026-10-21', 2, 'mmmnn', { location: 'Tokyo,Japan' }), rr('2026-10-28', 3, 'eeeee', { location: 'Tokyo,Japan' })];
+  const cs = R.compileReport({ client, periodMonth: '2026-09-01', now: new Date('2026-09-30T00:00:00Z'), scans: [], runs, traffic: [], actions: [] });
+  t('初回：改善前の基準（前回なし）', cs.runs && cs.runs.length === 1 && cs.runs[0].first === true && cs.runs[0].engines[0].x === 1 && cs.runs[0].engines[0].n === 4 && cs.runs[0].engines[0].comparable === undefined, cs.runs);
+  const co = R.compileReport({ client, periodMonth: '2026-10-01', now: new Date('2026-10-30T00:00:00Z'), scans: [], runs, traffic: [], actions: [] });
+  const [a, b, c2] = co.runs || [];
+  t('月の中の計測を1回ずつ（3回）', co.runs && co.runs.length === 3 && !a.first && a.prevOn === '2026-09-07' && b.prevOn === '2026-10-07', co.runs);
+  // AI による概要は、概要が出なかった検索も分母に入れる（2/5 ＝ 40%、前回 1/4 ＝ 25% → +15）
+  t('同じ条件：前回と差を出す（1/4 → 2/5 ＝ +15）', a.engines[0].comparable === true && a.engines[0].x === 2 && a.engines[0].n === 5 && a.engines[0].diff === 15 && a.engines[0].prev.x === 1 && a.engines[0].prev.n === 4, a.engines[0]);
+  t('地域が違う：差を出さず理由', b.engines[0].comparable === false && b.engines[0].diff === null && /地域/.test(b.engines[0].reason), b.engines[0]);
+  t('すべて失敗：測定不能（理由）・比べない', c2.engines[0].unmeasurable === '測定不能（有効な回答が0件：取得に失敗 5回）' && c2.engines[0].comparable === false && c2.engines[0].rate === null, c2.engines[0]);
+  t('ChatGPT を測っていない回は未計測', a.engines[1] && a.engines[1].measured === false, a.engines[1]);
+  const old = R.compileReport({ client, periodMonth: '2026-10-01', now: new Date('2026-10-30T00:00:00Z'), scans: [], runs: [{ id: 'old', measured_on: '2026-08-20', created_at: '2026-08-20T01:00:00Z', summary: { by: [] } }].concat(runs.slice(1, 2)), traffic: [], actions: [] });
+  t('前に古い形の計測があれば初回にしない', old.runs && old.runs[0].first === false, old.runs);
+  t('回答の記録が無い計測だけなら runs は null', R.compileReport({ client, periodMonth: '2026-10-01', scans: [], runs: [{ measured_on: '2026-10-28', summary: { by: [] } }], traffic: [], actions: [] }).runs === null); }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

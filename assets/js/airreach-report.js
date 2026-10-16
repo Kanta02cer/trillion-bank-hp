@@ -606,6 +606,47 @@
     return { rule: key === 'aio' ? 'aio-general-v1' : key + '-general-v1', now: now, prev: prev, comparable: comparable, diff: comparable ? diff : null, reason: prev && !comparable ? (!now.n || !prev.n ? '測定不能の月があります' : (reason || '条件が違います')) : '' };
   }
 
+  /**
+   * 計測ごとの結果（月2回の計測も1回ずつ）。主の数字（AI による概要・補助の ChatGPT）を、aioKpi と同じ数え方で1回ずつ出す。
+   *   初回：このお客様で最初の計測（回答の記録がある計測）＝ 改善前の基準。
+   *   2回目から：1つ前の計測と、条件（質問・地域・モデル・判定の版・名前）が同じときだけ差を出す（airreach-compare.js）。違えば理由。
+   *   分母が0（取得に失敗だけなど）は「測定不能（理由）」。部品が無い環境では null（レポートは今までどおり）
+   */
+  function perRun(runs, m, client) {
+    var A = root && root.AirReachAI3, CP = root && root.AirReachCompare;
+    if (!A || !A.summarize) return null;
+    var brand = (client && client.name) || '';
+    var all = (runs || []).filter(function (r) { return r && r.summary && Array.isArray(r.summary.answers) && r.summary.answers.length; })
+      .sort(function (a, b) { var x = String(a.created_at || a.measured_on), y = String(b.created_at || b.measured_on); return x < y ? -1 : x > y ? 1 : 0; });
+    var keys = (A.MAIN || []).map(function (d) { return { key: d.key, label: d.label }; });
+    var out = [];
+    all.forEach(function (run, i) {
+      if (!inMonth(run.measured_on, m)) return;
+      var prev = i > 0 ? all[i - 1] : null, sm = {}, cmp = null;
+      try { sm = A.summarize(run.summary.answers, { brand: brand, segment: 'general' }) || {}; } catch (e) { sm = {}; }
+      if (prev && CP) { try { cmp = CP.compare(prev, run, { brand: brand }); } catch (e) { cmp = null; } }
+      out.push({
+        id: run.id || '', measuredOn: run.measured_on, createdAt: run.created_at || '', version: run.query_set_version || '',
+        // 初回：これより前に、回答の記録が無い古い形の計測も無い
+        first: i === 0 && !(runs || []).some(function (r) { return r && r !== run && String(r.created_at || r.measured_on) < String(run.created_at || run.measured_on); }), prevOn: prev ? prev.measured_on : '', kind: cmp && cmp.kind ? cmp.kind.kind : '', kindWhy: cmp && cmp.kind ? cmp.kind.why || '' : '',
+        engines: keys.map(function (d) {
+          var t = sm[d.key], e = cmp ? cmp.engines.filter(function (x) { return x.key === d.key; })[0] : null;
+          if (!t || t.status !== 'measured') return { key: d.key, label: d.label, measured: false };
+          var o = { key: d.key, label: d.label, measured: true, x: t.t.mentioned, n: t.t.denominator, rate: t.t.denominator ? t.t.rate : null, attempts: t.t.attempts, errors: t.t.errors, notShown: t.t.notShown };
+          if (!o.n) o.unmeasurable = '測定不能（有効な回答が0件：' + (o.errors ? '取得に失敗 ' + o.errors + '回' : '回答なし') + '）';
+          if (prev) {
+            o.comparable = !!(e && e.comparable && o.n);
+            o.diff = o.comparable ? e.diff : null;
+            o.prev = e && e.before ? { x: e.before.mentioned, n: e.before.denominator, rate: e.before.rate } : null;
+            o.reason = o.comparable ? '' : ((e && e.reasons && e.reasons.length ? e.reasons.join('／') : '') || (o.n ? '前の計測と比べられません' : '測定不能のため比べません'));
+          }
+          return o;
+        })
+      });
+    });
+    return out.length ? out : null;
+  }
+
   function compileReport(p) {
     var m = monthStart(p.periodMonth);
     if (!m) throw new Error('対象月が不正です');
@@ -744,6 +785,8 @@
       aio: aioKpi(p.runs, m, pm, p.client),
       // 補助：検索ありの ChatGPT（同じ数え方。回答が取れた数が分母。AI による概要とは合算しない）
       chatgpt: aioKpi(p.runs, m, pm, p.client, 'chatgpt_search'),
+      // 計測ごとの結果（初回は改善前の基準、2回目からは1つ前と同じ条件のときだけ差）
+      runs: perRun(p.runs, m, p.client),
       traffic: traffic,
       actions: actions,
       facts: facts,
@@ -792,7 +835,7 @@
     return out;
   }
 
-  var api = { conversionBasisText: conversionBasisText, naReasons: naReasons, measureConditions: measureConditions, jstDay: jstDay, jstTime: jstTime, criteria: CRITERIA, factorWeight: FACTOR_WEIGHT, evidenceList: evidenceList, gapText: gapText, plainGap: plainGap, plainResolved: plainResolved, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
+  var api = { perRun: perRun, conversionBasisText: conversionBasisText, naReasons: naReasons, measureConditions: measureConditions, jstDay: jstDay, jstTime: jstTime, criteria: CRITERIA, factorWeight: FACTOR_WEIGHT, evidenceList: evidenceList, gapText: gapText, plainGap: plainGap, plainResolved: plainResolved, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachReport = api;
 })(typeof window !== 'undefined' ? window : null);
