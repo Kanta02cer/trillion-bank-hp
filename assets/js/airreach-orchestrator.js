@@ -1358,6 +1358,8 @@
           gsc_impressions: k.gsc_impressions, related_count: k.related_count || 0, related: k.related || [], why: k.why || '', action: k.action || '',
           // 出どころ（Search Console 由来の語は AI計測の質問に使わない。airreach-google-guard.js）
           seed_source: k.seed_source || '',
+          // 言葉の種類（指名・サービス・地域・条件・扱っているもの）。言葉を決めるとき（airreach-keyword-lock.js）の目安に使う
+          seed_group: k.seed_group || '',
           brandScope: (job.profile && job.profile.brand) || '',
           serviceScope: (job.profile && job.profile.service) || ''
         };

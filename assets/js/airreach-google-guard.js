@@ -117,7 +117,8 @@
   /** 計測 API に送る形（サーバーも confirmed と出どころを確かめる） */
   function toApiPrompt(p) {
     var t = String(p.text || p.prompt || '').trim();
-    return { keyword: t, prompt: t, confirmed: p.confirmed === true, origin: p.src || 'manual' };
+    // 固定した言葉の質問は、計測の記録に元の言葉を残す（言葉と質問は1対1・airreach-keyword-lock.js）
+    return { keyword: String(p.kw || '').trim() || t, prompt: t, confirmed: p.confirmed === true, origin: p.src || 'manual' };
   }
 
   // ---- このブラウザに残っている Google データを消す ----------------------------------------
@@ -207,7 +208,7 @@
   var api = {
     norm: norm, isGscKeyword: isGscKeyword, isGoogleRow: isGoogleRow, gscQuerySet: gscQuerySet, ctxOf: ctxOf,
     promptKeywords: promptKeywords, isGoogleDerivedPrompt: isGoogleDerivedPrompt, markPrompts: markPrompts,
-    canConfirm: canConfirm, sendablePrompts: sendablePrompts, toApiPrompt: toApiPrompt,
+    canConfirm: canConfirm, sendablePrompts: sendablePrompts, toApiPrompt: toApiPrompt, isGscKeyword: isGscKeyword,
     stripStudioState: stripStudioState, purgeLocal: purgeLocal, needsPurge: needsPurge, KEYS: KEYS
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
