@@ -482,6 +482,158 @@ async function assertInternalLinks(page, context) {
   }
 }
 
+async function assertCrawlerLabPositioning(page, route, context) {
+  if (!['home', 'business', 'contact', 'pay-per-crawl'].includes(route.name)) return;
+
+  const mainText = await page.locator('main').innerText();
+  for (const term of ['日本初', '成果保証', '本番稼働']) {
+    check(!mainText.includes(term), context, 'lab-claim', `Unapproved claim is visible: ${term}`);
+  }
+
+  const headerLabEntry = page.locator('#mega-biz a[href="/#ai-crawler-lab"]');
+  check(await headerLabEntry.count() === 1, context, 'lab-navigation', 'AI Crawler Lab header entry is missing');
+
+  if (route.name === 'home') {
+    const lab = page.locator('#ai-crawler-lab[data-ai-crawler-lab]');
+    check(await lab.count() === 1, context, 'lab-content', 'Expected one AI Crawler Lab section');
+    check(await lab.isVisible(), context, 'lab-content', 'AI Crawler Lab section is not visible');
+    check(
+      await page.locator('a[data-lab-entry="diagnosis"][href="/airreach/"]').count() > 0,
+      context,
+      'lab-cta',
+      'Site diagnosis entry is missing',
+    );
+    check(
+      await page.locator('a[data-lab-entry="collaboration"][href*="/trillionbank/contact/"]').count() > 0,
+      context,
+      'lab-cta',
+      'Research collaboration entry is missing',
+    );
+    check(
+      await page.locator('[data-lab-role="airreach"] [data-lab-status="measure-improve"]').count() === 1,
+      context,
+      'lab-role',
+      'AirReach measurement/improvement role is missing',
+    );
+    check(
+      await page.locator('[data-lab-role="adctor"] [data-lab-status="research-poc"]').count() === 1,
+      context,
+      'lab-role',
+      'Adctor research/PoC role is missing',
+    );
+
+    const labSchema = await page.locator('script[type="application/ld+json"]').evaluateAll((blocks) => {
+      const nodes = [];
+      blocks.forEach((block) => {
+        try {
+          const parsed = JSON.parse(block.textContent || '');
+          const values = Array.isArray(parsed) ? parsed : [parsed];
+          values.forEach((value) => nodes.push(...(Array.isArray(value?.['@graph']) ? value['@graph'] : [value])));
+        } catch {
+          // JSON validity is reported separately by assertMetadata().
+        }
+      });
+      return nodes.some((node) => node?.['@type'] === 'ResearchProject' && node?.name === 'AI Crawler Lab');
+    });
+    check(labSchema, context, 'lab-schema', 'AI Crawler Lab ResearchProject schema is missing');
+
+    const visibleLabFAQ = await page.locator('.home-faq details').first().evaluate((details) => ({
+      question: (details.querySelector('summary')?.textContent || '').trim(),
+      answer: (details.querySelector('.faq-a')?.textContent || '').trim(),
+    }));
+    const schemaLabFAQ = await page.locator('script[type="application/ld+json"]').evaluateAll((blocks) => {
+      for (const block of blocks) {
+        try {
+          const parsed = JSON.parse(block.textContent || '');
+          const nodes = Array.isArray(parsed?.['@graph']) ? parsed['@graph'] : [];
+          const faq = nodes.find((node) => node?.['@type'] === 'FAQPage');
+          const entry = faq?.mainEntity?.find((item) => item?.name === 'AI Crawler Labとは何ですか？');
+          if (entry) return {
+            question: entry.name,
+            answer: entry.acceptedAnswer?.text || '',
+          };
+        } catch {
+          // JSON validity is reported separately by assertMetadata().
+        }
+      }
+      return null;
+    });
+    check(
+      Boolean(schemaLabFAQ)
+        && visibleLabFAQ.question === schemaLabFAQ.question
+        && visibleLabFAQ.answer === schemaLabFAQ.answer,
+      context,
+      'lab-faq-parity',
+      'Visible AI Crawler Lab FAQ does not match JSON-LD',
+    );
+  }
+
+  if (route.name === 'business') {
+    check(
+      await page.locator('[data-lab-role="airreach"][data-lab-status="measure-improve"]').count() === 1,
+      context,
+      'lab-role',
+      'Business page AirReach role/status is missing',
+    );
+    check(
+      await page.locator('[data-lab-role="adctor"][data-lab-status="research-poc"]').count() === 1,
+      context,
+      'lab-role',
+      'Business page Adctor role/status is missing',
+    );
+    check(
+      await page.locator('a[href="/trillionbank/meeting/?type=company"][data-service="airreach"]').count() === 1,
+      context,
+      'lab-cta',
+      'Business page measurement/improvement consultation entry is missing',
+    );
+  }
+
+  if (route.name === 'contact') {
+    check(
+      await page.locator('a[data-lab-entry="diagnosis"][href="/airreach/"]').count() === 1,
+      context,
+      'lab-cta',
+      'Contact page site diagnosis entry is missing',
+    );
+    check(
+      await page.locator('a[data-lab-entry="collaboration"][href="#form"]').count() === 1,
+      context,
+      'lab-cta',
+      'Contact page research collaboration entry is missing',
+    );
+    check(
+      await page.locator('a[href="/trillionbank/meeting/?type=company"][data-service="airreach"]').count() === 1,
+      context,
+      'lab-cta',
+      'Contact page measurement/improvement consultation entry is missing',
+    );
+  }
+
+  if (route.name === 'pay-per-crawl') {
+    const adctorSchemaType = await page.locator('script[type="application/ld+json"]').evaluateAll((blocks) => {
+      for (const block of blocks) {
+        try {
+          const parsed = JSON.parse(block.textContent || '');
+          const values = Array.isArray(parsed) ? parsed : [parsed];
+          const entry = values.find((value) => value?.['@id']?.endsWith('/#adctor'));
+          if (entry) return entry['@type'];
+        } catch {
+          // JSON validity is reported separately by assertMetadata().
+        }
+      }
+      return '';
+    });
+    check(adctorSchemaType === 'ResearchProject', context, 'lab-schema', `Adctor schema type is ${adctorSchemaType || 'missing'}`);
+    check(
+      await page.locator('a[data-lab-entry="collaboration"][href="/trillionbank/contact/#form"][data-inquiry="adctor-poc"]').count() === 2,
+      context,
+      'lab-cta',
+      'Pay per Crawl collaboration entries are missing or use the wrong URL',
+    );
+  }
+}
+
 async function assertTargetShell(page, route, context) {
   const bodyMatches = await page.locator('body.tb-refresh[data-site-refresh]').count();
   check(bodyMatches === 1, context, 'scope', 'Missing body.tb-refresh[data-site-refresh]');
@@ -609,6 +761,7 @@ async function assertTargetShell(page, route, context) {
     'Legacy footer navigation labels are still visible',
   );
 
+  await assertCrawlerLabPositioning(page, route, context);
   await assertMetadata(page, route, context);
 }
 

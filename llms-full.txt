@@ -1,13 +1,30 @@
 # Trillion Bank public reference
 
-Last reviewed: 2026-09-05
+Last reviewed: 2026-10-16
 Canonical website: https://trillion-bank.jp/
 
 ## Company
 
-株式会社Trillion Bank is a Tokyo-based technology company. It works on how corporate and public information is described, compared, cited and used in AI-search and AI-agent environments. It is not a bank or financial institution.
+株式会社Trillion Bank is a Tokyo-based technology company. Through AI Crawler Lab, it studies externally verifiable signals around how public Web information is discovered, retrieved and appears in AI answers or citations. AirReach covers site diagnosis, measurement and improvement; Adctor covers research and PoC for AI information-use management. It is not a bank or financial institution.
 
 Official company information: https://trillion-bank.jp/trillionbank/company/
+
+## AI Crawler Lab - research and validation
+
+AI Crawler Lab observes public information structure, requests that identify themselves as crawlers, site responses, and AI-answer mentions and cited URLs under documented conditions. These observations support information-design, measurement and improvement decisions.
+
+Limitations:
+- Crawler arrival, AI-answer mentions/citations, and inquiries or revenue are separate observation points. One does not guarantee another.
+- Access logs and User-Agent strings alone do not prove the operator's identity, model training use or adoption in an answer.
+- The program does not claim to observe every unknown crawler or every external AI action.
+
+Lab page: https://trillion-bank.jp/#ai-crawler-lab
+
+## AirReach Tools - free site diagnosis
+
+AirReach Tools checks the information structure and AI-search readiness of public pages and identifies an initial improvement priority. It does not by itself measure actual citation rates in ChatGPT, Gemini, Claude or AI Overviews.
+
+Free diagnosis: https://trillion-bank.jp/airreach/
 
 ## AirReach Consulting - current practical product
 
@@ -69,8 +86,9 @@ Program page: https://trillion-bank.jp/trillionbank/business/pay-per-crawl/
 
 ## Contact
 
-Business consultation: https://trillion-bank.jp/trillionbank/meeting/
-General inquiries: https://trillion-bank.jp/trillionbank/contact/
+Free site diagnosis: https://trillion-bank.jp/airreach/
+AirReach measurement and improvement consultation: https://trillion-bank.jp/trillionbank/meeting/?type=company
+AI Crawler Lab / Adctor research collaboration: https://trillion-bank.jp/trillionbank/contact/#form
 
 The HTML pages are canonical. This file is an optional discovery index, not a ranking signal or a guarantee.
 

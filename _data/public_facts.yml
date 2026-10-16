@@ -1,4 +1,4 @@
-last_reviewed: "2026-09-30"
+last_reviewed: "2026-10-16"
 company:
   legal_name: "株式会社Trillion Bank"
   display_name: "Trillion Bank"
@@ -18,8 +18,22 @@ company:
   website: "https://trillion-bank.jp/"
   bank_disclaimer: "株式会社Trillion Bankは銀行業を営む会社ではありません。"
 positioning:
-  short: "AI検索集客とAI情報利用管理に取り組むテクノロジー企業。"
-  long: "AirReach Tools / AirReach ConsultingでAI検索での見つかり方を測定・改善し、AdctorでAIによる情報利用の証跡・契約・請求接続を研究開発しています。"
+  short: "AI Crawler Labを軸に、AI検索のサイト診断・計測改善とAI情報利用管理の研究開発に取り組むテクノロジー企業。"
+  long: "AI Crawler Labで公開Web情報がAIに発見・取得され、回答や引用に現れる過程の外部シグナルを研究し、AirReach Toolsでサイト診断、AirReach ConsultingでAI回答・引用の計測と改善、Adctorで情報利用の契約・認証・利用証跡・将来の請求接続を研究開発しています。"
+programs:
+  ai_crawler_lab:
+    name: "AI Crawler Lab"
+    status: "研究・検証プログラム"
+    public_definition: "公開Web情報がAIに発見・取得され、回答や引用に現れる過程について、各段階で確認できる外部シグナルを観測し、情報設計・計測・改善判断へつなげる研究・検証プログラム。"
+    observed_scope:
+      - "企業・サービス・根拠情報の公開構造"
+      - "クローラーを名乗るリクエストとサイト応答"
+      - "合意した質問でのAI回答・引用URL・自社と競合の言及"
+      - "サイト改善後の同条件での再計測"
+    limitations:
+      - "アクセスログやUser-Agentだけで、クローラー運営主体の同一性、モデル学習への利用、回答・引用への採用を証明しない"
+      - "クローラー到達、AI回答・引用、問い合わせ・売上は別の観測点として扱い、一方から他方を保証しない"
+      - "未知のAIクローラーや外部AIの全挙動を完全には観測しない"
 products:
   hack2:
     name: "AirReach Consulting"
@@ -85,7 +99,17 @@ products:
       - "未知のAIボットを完全識別するものではない"
       - "外部AIのすべての引用・学習利用を観測するものではない"
 public_cta:
-  primary_label: "AI検索の現在地を相談する"
-  primary_url: "/trillionbank/meeting/?type=company"
-  secondary_label: "お問い合わせ"
+  primary_label: "サイトを無料診断する"
+  primary_url: "/airreach/"
+  secondary_label: "共同研究・協業を相談する"
   secondary_url: "/trillionbank/contact/#form"
+  routes:
+    diagnosis:
+      label: "サイトを無料診断する"
+      url: "/airreach/"
+    measurement_improvement:
+      label: "計測・改善を相談する"
+      url: "/trillionbank/meeting/?type=company"
+    research_collaboration:
+      label: "共同研究・協業を相談する"
+      url: "/trillionbank/contact/#form"

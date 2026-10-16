@@ -15,7 +15,7 @@
       "url": "https://trillion-bank.jp/",
       "logo": "https://trillion-bank.jp/images/hero/tb-logo-symbol.webp",
       "foundingDate": "2025-12-23",
-      "description": "AI検索とAIエージェント時代の情報流通を、測定・証跡・運用へ変えるテクノロジー企業。",
+      "description": "AI Crawler Labを軸に、AI検索のサイト診断・計測改善とAI情報利用管理の研究開発に取り組むテクノロジー企業。",
       "founder": {
         "@id": "https://trillion-bank.jp/#kanta-inoue"
       },
@@ -32,6 +32,8 @@
         "name": "JP"
       },
       "knowsAbout": [
+        "AI Crawler Lab",
+        "AIクローラーの外部シグナル観測",
         "AI検索最適化",
         "AEO（Answer Engine Optimization）",
         "GEO（Generative Engine Optimization）",
@@ -105,6 +107,29 @@
       ]
     },
     {
+      "@type": "ResearchProject",
+      "@id": "https://trillion-bank.jp/#ai-crawler-lab",
+      "name": "AI Crawler Lab",
+      "url": "https://trillion-bank.jp/#ai-crawler-lab",
+      "description": "公開Web情報がAIに発見・取得され、回答や引用に現れる過程について、各段階で確認できる外部シグナルを観測し、情報設計・計測・改善判断へつなげる研究・検証プログラム。クローラー到達、回答・引用、問い合わせ・売上は別の観測点として扱い、一方から他方を保証しない。",
+      "parentOrganization": {
+        "@id": "https://trillion-bank.jp/#organization"
+      }
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://trillion-bank.jp/airreach/#application",
+      "name": "AirReach Tools",
+      "url": "https://trillion-bank.jp/airreach/",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "isAccessibleForFree": true,
+      "provider": {
+        "@id": "https://trillion-bank.jp/#organization"
+      },
+      "description": "公開ページの情報整備状況とAI検索への準備状況を診断し、最初に直す項目を示す無料入口。本ツール単体ではAI回答の実引用率を測定しない。"
+    },
+    {
       "@type": "Service",
       "@id": "https://trillion-bank.jp/trillionbank/business/hack2/#service",
       "name": "AirReach Consulting",
@@ -118,7 +143,7 @@
         "@id": "https://trillion-bank.jp/#organization"
       },
       "serviceType": "AI検索測定・意思決定支援サービス",
-      "description": "選定した質問について、AI回答本文、引用URL、自社・競合の言及、測定日時・条件を保存し、AI検索上の現在地と改善判断を支援するサービス。"
+      "description": "選定した質問について、AI回答本文、引用URL、自社・競合の言及、測定日時・条件を保存し、AI検索上の現在地の計測、改善優先度の整理、同条件での継続測定を支援するサービス。"
     },
     {
       "@type": "ResearchProject",
@@ -129,8 +154,8 @@
         "AI Access Gateway"
       ],
       "url": "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/",
-      "description": "AI・RAG・MCP・Agentによるコンテンツ利用を、契約・認証・利用証跡・将来の請求へ接続する研究開発・PoCプログラム。",
-      "member": {
+      "description": "AI・RAG・MCP・Agentによるコンテンツ利用を、契約・認証・利用証跡・将来の請求へ接続する研究開発・PoCプログラム。完成済みの決済・自動徴収・自動分配サービスではない。",
+      "parentOrganization": {
         "@id": "https://trillion-bank.jp/#organization"
       }
     }

@@ -1,4 +1,4 @@
-last_reviewed: "2026-09-05"
+last_reviewed: "2026-10-16"
 
 # These paths must never be restored to the public repository. Authentication
 # and internal administration require a server-side access-control system in a
@@ -34,6 +34,8 @@ restricted_terms:
     reason: "成果保証は提供しない"
   - term: "問い合わせ保証"
     reason: "成果保証は提供しない"
+  - term: "本番稼働"
+    reason: "研究・PoCを検証なく商用本番として表現しない"
   - term: "AI Exclusive"
     reason: "旧構想・未承認名称"
   - term: "AICS™"
@@ -75,6 +77,20 @@ private_patterns:
 # AI掲載率・検索順位・予約数を断定する表現、AirReach Consulting を対策として混ぜる表現を検出する。
 # 否定形（〜ではありません／保証しません）は許容するため、断定形だけを正規表現で拾う。
 scoped_claim_patterns:
+  - name: "corporate: 成果保証の断定"
+    roots:
+      - "index.html"
+      - "trillionbank/business/index.html"
+      - "trillionbank/business/hack2/index.html"
+      - "trillionbank/business/pay-per-crawl/index.html"
+      - "trillionbank/contact/index.html"
+      - "_data/public_facts.yml"
+      - "llms.txt"
+      - "llms-full.txt"
+      - "knowledge.json"
+    patterns:
+      - regex: "(成果|売上|問い合わせ|掲載|引用|順位)(を)?保証(します|いたします|する(?!ものでは|ことは|わけでは))"
+        reason: "AI回答への掲載・引用や事業成果を保証する未承認表現"
   - name: "airreach: AI掲載・順位・予約の断定"
     roots:
       - "assets/js/airreach-diagnose.js"
