@@ -48,7 +48,7 @@
   var CONDITION_RE = /(付き|付|OK|ＯＫ|可能|可|対応|無料|0円|０円|なし|無し|不要|即日|当日|個室|駅近|駅徒歩|徒歩\d+分|オンライン|女性|男性|メンズ|レディース|法人|学割|24時間|土日|夜間|初回|短期|長期|ペット)/;
 
   // メニュー・小見出しのうち、扱っているものではないもの
-  var TOPIC_NOISE = /(授業システム|料金システム|予約システム|探す|さがす|検索$|条件$|キャンペーン|ニュース$|メッセージ|挨拶|沿革|案内|流れ|ブログ|フォーム|相談|強み|理由|トップ$|^情報$|情報トップ|最新情報|新着|お知らせ|ニュースリリース|プレスリリース|方法$|方針|編集|者$|紹介$|実績$|参考書|募集|資料|事例|セミナー|イベント|ナレッジ|^運用$|^導入$|^BtoB$|^BtoC$|^とは$|とは$|メソッド|企業情報|会社情報|会社概要|事業内容|IR|サステナビリティ|SDGs|ESG|採用|求人|アクセス|地図|よくある質問|FAQ|お問い合わせ|問い合わせ|プライバシー|個人情報|利用規約|免責|サイトマップ|運営会社|運営者|ご利用|利用にあたって|コンセプト|特徴|選ばれる|お客様の声|スタッフ|講師|ギャラリー|一覧$|すべて|もっと|詳しく|ランキング|姉妹|関連|カテゴリ|タグ|アーカイブ|ログイン|会員|マイページ|カート|English|YouTube|Instagram|LINE|^で|へ$|^\d)/i;
+  var TOPIC_NOISE = /(授業システム|料金システム|予約システム|探す|さがす|検索$|条件$|キャンペーン|ニュース$|メッセージ|挨拶|沿革|案内|流れ|ブログ|フォーム|相談|強み|理由|トップ$|^情報$|情報トップ|最新情報|新着|お知らせ|ニュースリリース|プレスリリース|方法$|方針|編集|者$|紹介$|実績$|参考書|募集|資料|事例|セミナー|イベント|ナレッジ|^運用$|^導入$|^BtoB$|^BtoC$|^とは$|とは$|メソッド|企業情報|会社情報|会社概要|事業内容|IR|サステナビリティ|SDGs|ESG|採用|求人|アクセス|地図|よくある質問|FAQ|お問い合わせ|問い合わせ|プライバシー|個人情報|利用規約|免責|サイトマップ|運営会社|運営者|ご利用|利用にあたって|コンセプト|特徴|選ばれる|お客様の声|スタッフ|講師|ギャラリー|一覧$|すべて|もっと|詳しく|ランキング|姉妹|関連|カテゴリ|タグ|アーカイブ|ログイン|会員|マイページ|カート|English|YouTube|Instagram|LINE|^で|へ$|^\d|メニュー|コラム|予定表|出勤|ポリシー|撤廃|廃止|徹底|宣言|こだわり|^当(社|院|店|クリニック|サロン|医院)|^弊社|機器$|設備$|院長|ドクター|医師紹介|症例$|料金表|^料金$|^価格$|モニター募集)/i;
   // 会社向けの事業の手がかり（地域で探す言葉を作らない・会社向けの付け足す言葉にする）
   var B2B_RE = /(BtoB|法人向け|企業の|企業向け|導入支援|DX|コンサルティング|マーケティング支援|PR会社|システム開発)/i;
   // 記事やお知らせの見出し（「〜の提供開始」「〜を強化」など）
@@ -79,6 +79,14 @@
   function isPlace(s) {
     s = clean(s).replace(/(都|府|県|駅|区|市)$/, '');
     return PREFS.indexOf(s) >= 0 || WARDS.indexOf(s) >= 0 || PLACES.indexOf(s) >= 0;
+  }
+  // 名前の後ろのかっこ書き（「〇〇クリニック(渋谷)」「〇〇（新宿院）」）。中身が地名なら地域として返し、名前から外す
+  function splitParen(s) {
+    s = clean(s);
+    var m = s.match(/^(.*?)\s*[（(［\[]\s*([^）)］\]]{1,12})\s*[）)］\]]\s*$/);
+    if (!m || !clean(m[1])) return { name: s, place: '' };
+    var inner = clean(m[2]).replace(/(院|店|校|本店|本院)$/, '');
+    return isPlace(inner) ? { name: clean(m[1]), place: inner } : { name: s, place: '' };
   }
   function placeName(s) {
     s = clean(s);
@@ -141,6 +149,9 @@
       else if (latinBrand) brand = { value: latinBrand, source: 'title' };
       else if (named.length) brand = { value: corpless(jaName(named[0])), source: 'structured' };
     }
+    // 「〇〇クリニック(渋谷)」のかっこ書きの地名は、会社名から外して地域にする
+    var brandPlace = '';
+    if (brand.value) { var bp = splitParen(brand.value); if (bp.place) { brand.value = bp.name; brandPlace = bp.place; } }
     var brandKey = norm(brand.value);
 
     // ---- サービス・地域・条件（題名） ----
@@ -168,10 +179,14 @@
       if (conditions.some(function (x) { return norm(x.value) === norm(v); })) return;
       conditions.push({ value: v, source: src });
     }
+    if (brandPlace) addRegion(brandPlace, brand.source === 'input' ? 'input' : 'title');
 
     // 区切り1つを「地域の」「条件」「サービス」に分ける
     function readSegment(seg, src) {
       var s = seg;
+      // 「東京で豊胸手術・美容整形でお悩みなら」「〇〇をお探しなら」は、悩み・探し物の部分（東京で豊胸手術・美容整形）を使う
+      var ask = s.match(/^(.{2,30}?)(?:で|を|が|に)?(?:お悩み|お探し|探し|ご検討|検討|迷い|迷って(?:いる)?)(?:の方|中)?(?:なら|は)$/);
+      if (ask) { reject(s, 'キャッチコピー・文の形（悩み・探し物の部分だけ使う）'); s = ask[1]; }
       // 「〇〇を目指すなら△△」「〇〇なら△△」は後ろを使う
       var nara = s.match(/^.{2,20}?なら(.{2,})$/);
       if (nara) { reject(s.replace(nara[1], '').trim(), 'キャッチコピー・文の形'); s = nara[1]; }
@@ -179,6 +194,12 @@
       [brand.value, latinBrand].forEach(function (b) {
         if (b) s = clean(s.replace(new RegExp('\\s*' + b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*', 'ig'), ' '));
       });
+      // 会社名を外した残りの「(渋谷)」、「美容整形（新宿）」のかっこ書きの地名は地域にする
+      var bare = s.match(/^[（(［\[]\s*([^）)］\]]+?)\s*[）)］\]]$/);
+      if (bare) s = clean(bare[1]);
+      var sp = splitParen(s);
+      if (sp.place) { addRegion(sp.place, src); s = sp.name; }
+      if (!s) return;
       // 「東京の〇〇」「新宿で〇〇」
       var rm = s.match(/^([^\sのでに]{2,8}?)(?:の|で)(.{2,})$/);
       if (rm && isPlace(rm[1])) { addRegion(rm[1], src); s = rm[2]; }
@@ -196,11 +217,19 @@
         addService(p, src);
       }
     }
-    if (clean(hint.service)) services.push({ value: clean(hint.service), source: 'input' });
+    // 入力のサービス名に会社名が入っているとき（前の分析で「〇〇クリニック(渋谷)」が入ったままなど）は、題名と同じく会社名を外して読む
+    if (clean(hint.service)) {
+      if (brandKey && norm(hint.service).indexOf(brandKey) >= 0) readSegment(clean(hint.service), 'input');
+      else services.push({ value: clean(hint.service), source: 'input' });
+    }
     segs.forEach(function (seg) {
       // 会社名だけの区切り（「株式会社〇〇」「VECTOR INC.」「〇〇.com」）は読まない。会社名と他の言葉が混ざった区切りは、会社名を外して読む
       var n = norm(corpless(jaName(seg)));
-      if (brandKey && (n === brandKey || (segIsBrand(seg) && !SERVICE_TAIL.test(seg) && n.length <= brandKey.length + 4))) return;
+      if (brandKey && (n === brandKey || (segIsBrand(seg) && !SERVICE_TAIL.test(seg) && n.length <= brandKey.length + 4))) {
+        var segPlace = splitParen(seg).place;
+        if (segPlace) addRegion(segPlace, 'title');
+        return;
+      }
       if (/^[A-Za-z0-9 .,&'’\-]+$/.test(seg) && segIsBrand(seg)) return;
       readSegment(seg, 'title');
     });
@@ -219,10 +248,16 @@
       while ((mm = re.exec(desc))) {
         var word = mm[1] + (mm[2] === '事業' ? '' : mm[2]);
         word = word.replace(/^(独自|主軸|総合|あらゆる|当社|弊社|私たち)/, '');
+        // 「を掲げる美容クリニック」のような文の切れ端は、最後のひらがなより後ろ（美容クリニック）だけ使う
+        var tailWord = word.match(/[ぁ-ゖ]([ァ-ヿ一-鿿][ァ-ヿ一-鿿A-Za-z]{2,})$/);
+        if (tailWord && /^(を|は|が|の|と|で|に|る|た|な)$/.test(word.charAt(word.length - tailWord[1].length - 1))) word = tailWord[1];
         // 文の切れ端（「〜領域に軸足をおいた」など、助詞や動詞を含むもの）は使わない
         if (word.length < 2 || isCatchphrase(word) || /^(を|の|と|が)/.test(word) || /(に|を|が|で|た|おいた|して|する|ける|れる)/.test(word.replace(/^[^ぁ-ん]*/, ''))) continue;
         addService(word.replace(/^「|」$/g, ''), 'description');
       }
+      // 「渋谷駅から徒歩30秒」「新宿駅徒歩3分」：駅の地名と、駅近の条件
+      var walk = desc.match(/([ァ-ヿ一-鿿]{2,6})駅(?:から|より)?\s*徒歩\s*[0-9０-９]+\s*(?:秒|分)/);
+      if (walk && isPlace(walk[1])) { addRegion(walk[1], 'description'); addCondition('駅近', 'description'); }
       // 条件（説明文の「家具・家電付き」「即日入居」など）
       (desc.match(/[^\s。、「」・]{1,6}・[^\s。、「」・]{1,6}付き|即日入居|敷金・礼金0円|敷金礼金0円|全室個室|完全個室|駅徒歩\d+分以内|法人契約|オンライン対応|無料体験|無料カウンセリング/g) || []).forEach(function (c) {
         addCondition(c.replace(/・/g, '').replace(/^敷金礼金0円$/, '敷金礼金なし'), 'description');
