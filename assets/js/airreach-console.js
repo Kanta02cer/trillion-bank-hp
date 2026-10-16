@@ -927,9 +927,10 @@
       }));
       if (ga4) jobs.push(googlePost('/api/google/ga4/', { clientId: clientId, propertyId: ga4, siteUrl: sites[0].url, startDate: range.start, endDate: range.end, summaryOnly: true }).then(function (d) {
         var g = d.summary; if (!g) throw new Error('GA4 の合計を取得できませんでした');
-        got.push('GA4（セッション ' + g.sessions + ' / AI経由 ' + g.aiSessions + ' / キーイベント ' + g.keyEvents + '）');
+        var cv = g.conversions != null ? g.conversions : g.keyEvents, byEv = g.conversionBasis === 'events';
+        got.push('GA4（セッション ' + g.sessions + ' / AI経由 ' + g.aiSessions + ' / 問い合わせ・予約 ' + cv + (byEv ? '：' + (g.conversionEvents || []).join('・') + ' の回数' : '：キーイベントすべての合計（数えるイベントは未設定）') + '）');
         return sb.from('traffic_snapshots').upsert({ client_id: clientId, period_month: period, source: 'ga4_api',
-          metrics: { sessions: g.sessions, ai_sessions: g.aiSessions, conversions: g.keyEvents, target_page_views: null, ai_sources: g.aiSources,
+          metrics: { sessions: g.sessions, ai_sessions: g.aiSessions, conversions: cv, conversion_basis: g.conversionBasis || 'all_key_events', conversion_events: g.conversionEvents || [], conversions_by_event: g.conversionsByEvent || null, key_events: g.keyEvents, target_page_views: null, ai_sources: g.aiSources,
             property_id: ga4, host: d.host, start_date: range.start, end_date: range.end, google_email: googleEmail(clientId) || null, fetched_at: new Date().toISOString() },
           created_by: me.email }, { onConflict: 'client_id,period_month,source' }).then(q);
       }));

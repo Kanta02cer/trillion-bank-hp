@@ -3,6 +3,7 @@ import { googleAccess, denyAccess } from './_lib/access.js';
 import { isGa4Enabled } from './_lib/scopes.js';
 import { ga4Host, siteHost } from './_lib/host.js';
 import { saveTraffic, periodOf, jwtEmail, googleEmailOf } from './_lib/save.js';
+import { loadConversionEvents, sumEventRows, eventReportBody } from './_lib/conversion-events.js';
 
 function setCors(req, res) {
   const origin = req.headers.origin || '';
@@ -84,11 +85,15 @@ export default async function handler(req, res) {
   if (req.body.summaryOnly) {
     const s = await fetchSummary(url, token, startDate, endDate, host);
     if (s.error) return res.status(s.status).json(s.error);
+    // 問い合わせ・予約として数えるもの：担当者が決めたイベントの回数。決めていなければキーイベントすべての合計（どちらかを記録に残す）
+    const conv = await conversionsOf(url, token, startDate, endDate, host, requestClientId(req), s.summary);
+    if (conv.error) return res.status(conv.status).json(conv.error);
+    Object.assign(s.summary, conv.summary);
     // save: お客様が自分で取り込むとき。サーバーが読んだ合計だけを、サーバーが保存する（_lib/save.js）
     if (req.body.save === true) {
       const clientId = requestClientId(req), g = s.summary || {};
       const saved = await saveTraffic({ clientId, period: periodOf(startDate), source: 'ga4_api', savedBy: jwtEmail(req),
-        metrics: { sessions: g.sessions, ai_sessions: g.aiSessions, conversions: g.keyEvents, target_page_views: null, ai_sources: g.aiSources,
+        metrics: { sessions: g.sessions, ai_sessions: g.aiSessions, conversions: g.conversions, conversion_basis: g.conversionBasis, conversion_events: g.conversionEvents, conversions_by_event: g.conversionsByEvent, key_events: g.keyEvents, target_page_views: null, ai_sources: g.aiSources,
           property_id: pid, host, start_date: startDate, end_date: endDate, google_email: googleEmailOf(req, clientId), fetched_at: new Date().toISOString(), saved_via: 'server' } });
       if (!saved.ok) return res.status(saved.status).json({ code: saved.code, error: saved.error });
       return res.status(200).json({ summary: s.summary, propertyId: pid, siteUrl: String(siteUrl), host, saved: true });
@@ -176,6 +181,26 @@ async function fetchSummary(url, token, startDate, endDate, host) {
     if (isAiSource(src)) { summary.aiSessions += ses; summary.aiSources[src] = (summary.aiSources[src] || 0) + ses; }
   });
   return { summary };
+}
+
+/**
+ * 問い合わせ・予約の数。決めたイベントがあれば、そのイベントの回数の合計（basis: 'events'）。
+ * 無ければキーイベントすべての合計（basis: 'all_key_events'）。設定を読めなかったときも後者にし、そう記録する
+ */
+async function conversionsOf(url, token, startDate, endDate, host, clientId, summary) {
+  const cfg = await loadConversionEvents(clientId);
+  if (!cfg.events.length) {
+    return { summary: { conversions: summary.keyEvents, conversionBasis: cfg.loaded ? 'all_key_events' : 'all_key_events_unread', conversionEvents: [], conversionsByEvent: null } };
+  }
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(eventReportBody(startDate, endDate, cfg.events))
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) { const ge = googleError(r.status, data); return { status: ge.status, error: ge.body }; }
+  const t = sumEventRows(data.rows, host, cfg.events, ga4Host);
+  return { summary: { conversions: t.total, conversionBasis: 'events', conversionEvents: cfg.events, conversionsByEvent: t.byEvent } };
 }
 
 function normalizeDate(v) {

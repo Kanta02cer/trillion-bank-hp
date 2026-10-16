@@ -149,7 +149,7 @@
       'AIに同じ質問をして、公式サイトが出典に入った回答の割合') + '</div></div>';
 
     var t3 = trafficTile('検索からのクリック', '回', tr.gsc, tr.gscPrev, 'clicks', c, 'Google 検索の結果からサイトに来た回数（Search Console）');
-    var t4 = trafficTile('問い合わせ・予約', '件', tr.ga4, tr.ga4Prev, 'conversions', c, 'サイト経由の問い合わせ・予約の件数（Google アナリティクス）');
+    var t4 = trafficTile('問い合わせ・予約', '件', tr.ga4, tr.ga4Prev, 'conversions', c, 'サイト経由の問い合わせ・予約の件数（Google アナリティクス）' + (tr.ga4 && window.AirReachReport && window.AirReachReport.conversionBasisText ? '。数え方：' + window.AirReachReport.conversionBasisText(tr.ga4) : ''));
 
     return '<div class="arv-tiles">' + t1 + t2 + t3 + t4 + '</div>';
   }

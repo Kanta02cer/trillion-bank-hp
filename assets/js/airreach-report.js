@@ -764,6 +764,16 @@
   }
   var PROV_JA = { openai: 'ChatGPT', chatgpt_search: 'ChatGPT（検索あり）', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity', google_aio: 'Google の AI による概要', google_ai_mode: 'Google の AI モード' };
   var SRC_JA = { gsc_api: 'Google Search Console（連携で取得）', gsc_csv: 'Google Search Console（CSV を取り込み）', ga4_api: 'Google アナリティクス（連携で取得）', ga4_manual: 'Google アナリティクス（担当者が入力）' };
+  // 問い合わせ・予約の数え方（GA4 の取り込みで記録したもの）。古い記録（数え方の記録なし）はキーイベントすべての合計
+  function conversionBasisText(a) {
+    if (!a) return '';
+    if (a.source === 'ga4_manual') return '担当者が入力した件数';
+    if (a.conversion_basis === 'events' && Array.isArray(a.conversion_events) && a.conversion_events.length) {
+      var by = a.conversions_by_event && typeof a.conversions_by_event === 'object' ? a.conversions_by_event : null;
+      return 'イベント ' + a.conversion_events.map(function (e) { return e + (by && by[e] != null ? '（' + by[e] + '回）' : ''); }).join('・') + ' の回数の合計';
+    }
+    return 'GA4 のキーイベントすべての合計（問い合わせ・予約として数えるイベントを、まだ決めていません）';
+  }
   function evidenceList(c) {
     var out = [];
     var cur = c && c.site && c.site.current;
@@ -777,12 +787,12 @@
     out.push({ kinds: [g ? (g.source === 'ga4_manual' ? 'manual' : 'measured') : 'unknown'], label: '検索からのクリック・表示回数・平均の順位', source: g ? (SRC_JA[g.source] || g.source) : '未取得',
       detail: g ? (((g.start_date && g.end_date) ? g.start_date + '〜' + g.end_date + (g.days ? '（' + g.days + '日間）' : '') : '対象月') + (g.property ? '・' + g.property : '') + (g.source === 'gsc_api' ? '・サイト全体の合計' : '')) : '' });
     out.push({ kinds: [a ? (a.source === 'ga4_manual' ? 'manual' : 'measured') : 'unknown'], label: '訪問回数・AIのサービスから来た訪問・問い合わせ', source: a ? (SRC_JA[a.source] || a.source) : '未取得',
-      detail: a ? (((a.start_date && a.end_date) ? a.start_date + '〜' + a.end_date : '対象月') + (a.host ? '・' + a.host : '') + (a.source === 'ga4_api' ? '・問い合わせは GA4 のキーイベントの合計・AI 経由は参照元が AI サービス（ChatGPT・Perplexity・Gemini など）の訪問' : '')) : '' });
+      detail: a ? (((a.start_date && a.end_date) ? a.start_date + '〜' + a.end_date : '対象月') + (a.host ? '・' + a.host : '') + (a.source === 'ga4_api' ? '・問い合わせ・予約は ' + conversionBasisText(a) + '・AI 経由は参照元が AI サービス（ChatGPT・Perplexity・Gemini など）の訪問' : '')) : '' });
     out.push({ kinds: ['manual'], label: '今月実施したこと', source: 'AirReach の施策台帳', detail: '担当者が登録した実施日と、公開ページの URL（証拠）' });
     return out;
   }
 
-  var api = { naReasons: naReasons, measureConditions: measureConditions, jstDay: jstDay, jstTime: jstTime, criteria: CRITERIA, factorWeight: FACTOR_WEIGHT, evidenceList: evidenceList, gapText: gapText, plainGap: plainGap, plainResolved: plainResolved, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
+  var api = { conversionBasisText: conversionBasisText, naReasons: naReasons, measureConditions: measureConditions, jstDay: jstDay, jstTime: jstTime, criteria: CRITERIA, factorWeight: FACTOR_WEIGHT, evidenceList: evidenceList, gapText: gapText, plainGap: plainGap, plainResolved: plainResolved, todoList: todoList, parseMeasurementSummary: parseMeasurementSummary, parseGscCsv: parseGscCsv, compileReport: compileReport, monthStart: monthStart, prevMonth: prevMonth, version: 'report-v1' };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.AirReachReport = api;
 })(typeof window !== 'undefined' ? window : null);
