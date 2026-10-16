@@ -387,6 +387,8 @@
     var page = (diagnose && diagnose.page) || {};
     var brand = hint.brand || '';
     var service = validService(hint.service);
+    // 会社名に地名を足しただけのもの（「〇〇クリニック(渋谷)」）はサービス名にしない。ページから読み直す
+    if (service && brand && normKw(service).indexOf(normKw(brand)) >= 0) service = '';
     // 題名のキャッチコピー（「目元が変われば、第一印象が武器になる」など）を会社名・サービス名にしないよう、材料を先に見る
     var seed = hint.industry === 'restaurant' ? null : seedFromDiagnose(diagnose, url, hint.industry || '', {});
     if (!brand && seed && seed.brand && seed.brand.value) brand = seed.brand.value;

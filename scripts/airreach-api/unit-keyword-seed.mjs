@@ -89,6 +89,30 @@ ok('check: punctuation', S.checkKeyword('肌が変われば、毎日が変わる
 ok('check: とは おすすめ', S.checkKeyword('とは おすすめ') !== '');
 ok('check: ok keyword', S.checkKeyword('マンスリーマンション 新宿') === '');
 
+// 12. 会社名のかっこ書きの地名（「〇〇クリニック(渋谷)」）、「〜でお悩みなら」、説明文の「〇〇駅から徒歩」、メニューの案内
+{
+  const page = {
+    title: '東京で二重整形・美容整形でお悩みなら｜テストソラクリニック(渋谷)',
+    metaDesc: 'テストソラクリニックは渋谷駅から徒歩30秒の「確かな技術で」を掲げる美容クリニックです。',
+    topics: ['施術メニュー', 'コラム', '出勤予定表', 'テストソラポリシー', 'カウンセラー撤廃', '形成外科技術の徹底', '目元の施術', '当クリニックのレーザー機器'],
+    url: 'https://test-sora.example/', industry: 'clinic'
+  };
+  for (const [label, hint] of [['no input', {}], ['brand input', { brand: 'テストソラクリニック' }], ['old service input', { brand: 'テストソラクリニック', service: 'テストソラクリニック(渋谷)' }]]) {
+    const r = S.analyze({ ...page, hint });
+    ok(`paren: brand without place (${label})`, r.brand.value === 'テストソラクリニック', r.brand.value);
+    ok(`paren: services from お悩みなら (${label})`, vals(r.services).slice(0, 2).join(',') === '二重整形,美容整形', vals(r.services).join(','));
+    ok(`paren: regions 渋谷・東京 (${label})`, ['渋谷', '東京'].every((x) => vals(r.regions).includes(x)), vals(r.regions).join(','));
+    const kw = texts(S.keywords(r, 'clinic', 40));
+    ok(`paren: no bracket keyword (${label})`, !kw.some((t) => /[()（）]/.test(t)), kw.join(' / '));
+    ok(`paren: menu guidance dropped (${label})`, !kw.some((t) => /メニュー|コラム|予定表|ポリシー|撤廃|徹底|当クリニック/.test(t)), kw.join(' / '));
+    ok(`paren: service × region (${label})`, kw.includes('二重整形 渋谷'), kw.join(' / '));
+  }
+  const r = S.analyze({ ...page, hint: {} });
+  ok('desc: 美容クリニック from sentence', vals(r.services).includes('美容クリニック'), vals(r.services).join(','));
+  ok('desc: 駅から徒歩 → 駅近', vals(r.conditions).includes('駅近'), vals(r.conditions).join(','));
+  ok('topic: 目元の施術 kept', vals(r.topics).includes('目元の施術'), vals(r.topics).join(','));
+}
+
 // 11. 生成の本体（orchestrator）に材料を渡すと、材料から作った言葉だけになり、関係の薄い埋め合わせをしない
 {
   const ctx = { console, setTimeout, clearTimeout, URL, Blob: function () {}, document: { addEventListener() {}, getElementById() { return null; }, querySelector() { return null; }, querySelectorAll() { return []; } }, sessionStorage: { getItem() { return null; }, setItem() {} }, localStorage: { getItem() { return null; }, setItem() {} } };
@@ -109,7 +133,11 @@ ok('check: ok keyword', S.checkKeyword('マンスリーマンション 新宿') 
   ok('seed group recorded', kws.every((k) => k.seed_group), kws.filter((k) => !k.seed_group).map((k) => k.keyword).join(','));
   // 材料が無いとき（部品を読み込まない画面など）は今までの作り方のまま
   const old = O._buildKeywords('まつ毛パーマ', '', 10, {}, { industry: 'clinic', topics: [], brand: 'テストブロウ', url: 'https://test-brow.example/' });
-  ok('fallback without seed', old.length > 0 && old.every((k) => !k.seed_group), old.map((k) => k.keyword).join(','));
+  // 前の分析で入力欄に「会社名(地名)」が残っていても、サービス名にしない
+  const page2 = { title: '東京で二重整形でお悩みなら｜テストソラクリニック(渋谷)', metaDesc: '', topics: [], kwSrc: { text: '' }, ld: { blocks: [] } };
+  const prof2 = O.profileFromDiagnose({ page: page2 }, 'https://test-sora.example/', { industry: 'clinic', brand: 'テストソラクリニック', service: 'テストソラクリニック(渋谷)' });
+  ok('profile: old brand+place service replaced', prof2.service === '二重整形', prof2.service);
+  ok('fallback without seed',old.length > 0 && old.every((k) => !k.seed_group), old.map((k) => k.keyword).join(','));
 }
 
 const pass = results.filter(Boolean).length;
