@@ -46,5 +46,12 @@ t('aio が無い古いレポートでは何も出さない', C.aioHero({}) === '
   t('AI による概要を測っていない月：2つの枠（AI による概要は未計測・ChatGPT は 1/4）', /AI による概要[\s\S]*未計測/.test(onlyG) && /ChatGPT の回答に名前が出た回数[\s\S]*1<\/b> \/ 4回/.test(onlyG), onlyG); }
 { const H = ctx.AirReachClientHome; const nh = H.numbers({ period_month: '2026-10-01', compiled: { site: {}, ai: { providers: [{ provider: 'perplexity', judged: 8, citeCount: 3 }, { provider: 'openai', judged: 6, citeCount: 2 }] }, traffic: {}, chatgpt: { now: { x: 1, n: 4 }, prev: null }, aio: null } });
   t('お客様のホーム：複数の AI を合わせた出典の割合を出さない・2つの枠', !/出典になった/.test(nh) && /AI による概要に名前が出た[\s\S]*未計測/.test(nh) && /ChatGPT の回答に名前が出た（補助）[\s\S]*1<\/b>/.test(nh), nh.slice(0, 600)); }
+// ---- 測ったのに数えられる検索が1件も無い（すべて取得に失敗）ときは「測定不能」。0 / 0回とは書かない ----
+{ const cc = R.compileReport({ client, periodMonth: '2026-10-01', now: new Date('2026-10-28T00:00:00Z'), scans: [], runs: [run('2026-09-07', 'mnsne'), run('2026-10-28', 'eeeee')], traffic: [], actions: [] });
+  t('すべて失敗：測定不能（理由）・比べない', cc.aio && cc.aio.now.n === 0 && /^測定不能（有効な回答が0件：取得に失敗 5回）$/.test(cc.aio.now.unmeasurable) && !cc.aio.comparable && cc.aio.diff === null && /測定不能/.test(cc.aio.reason), cc.aio);
+  const hh = C.aioHero(cc);
+  t('レポート：0 / 0回を出さない', /測定不能（有効な回答が0件：取得に失敗 5回）/.test(hh) && !/<b>0<\/b> \/ 0回/.test(hh), hh.slice(0, 400));
+  const nh = ctx.AirReachClientHome.numbers({ period_month: '2026-10-01', compiled: { site: {}, traffic: {}, aio: cc.aio, chatgpt: null } });
+  t('お客様のホーム：測定不能（理由）', /測定不能（有効な回答が0件/.test(nh) && !/0<\/b><small> \/ 0回/.test(nh), nh.slice(0, 400)); }
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

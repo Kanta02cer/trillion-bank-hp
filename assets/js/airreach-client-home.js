@@ -26,6 +26,7 @@
     var aiRow = function (k, x, note) {
       if (x === undefined) return row(k, '<span class="arv-na">この月のレポートでは出していません</span>');
       if (!x || !x.now) return row(k, na);
+      if (x.now.unmeasurable) return row(k, '<span class="arv-na">' + esc(x.now.unmeasurable) + '</span>');
       return row(k, '<b>' + esc(x.now.x) + '</b><small> / ' + esc(x.now.n) + '回</small>', x.prev ? (x.comparable ? '先月 ' + esc(x.prev.x) + ' / ' + esc(x.prev.n) + '回' : '先月と条件がそろっていないため比べていません') : note);
     };
     // 検索と訪問の数字は、対象期間（全期間・途中集計・期間不明）を必ず添える
@@ -42,7 +43,7 @@
       aiRow('ChatGPT の回答に名前が出た（補助）', c.chatgpt, '検索付き API での観測・回答が取れた数が分母') +
       traffic('検索からのクリック', tr.gsc, 'clicks', '回') +
       traffic('問い合わせ・予約', tr.ga4, 'conversions', '件') + '</div>' +
-      '<p class="arc-note">測っていない数字は「未計測」と書きます（0 ではありません）。</p>' +
+      '<p class="arc-note">測っていない数字は「未計測」、測ったが数えられる回答が無かった数字は「測定不能」と書きます（どちらも 0 ではありません）。</p>' +
       (window.AirReachCharts ? '<details class="arc-more"><summary>数字の内訳を開く（AI ごと・前月との比較・対象期間）</summary>' + window.AirReachCharts.tiles(c) + '</details>' : '') + '</section>';
   }
   /**

@@ -215,6 +215,37 @@ expect('jstDay: 日付だけはそのまま', R.jstDay('2026-10-03'), '2026-10-0
   expect('report: 同じ日に複数回の計測は新しい方', c3.ai.providers.map((p) => p.citeRate), [100]);
 }
 
+{
+  // 測ったのに有効な回答が0件のときは「測定不能（理由）」。0% にも「未計測」にもしない。計測の条件（AI・モデル・日時・検索・地域・回数・有効な回答）を返す
+  const ans = (engine, status, extra) => Object.assign({ prompt: '渋谷 テスト整体 おすすめ', engine, status, model: engine === 'openai' ? 'openai/gpt-4o-mini' : 'openai/gpt-5-mini', measured_at: '2026-10-09T04:01:21Z',
+    mentioned: status === 'ok' ? 1 : null, cited: status === 'ok' ? 0 : null, conditions: { search: engine !== 'openai', location: 'JP' } }, extra || {});
+  const run = { measured_on: '2026-10-09', created_at: '2026-10-09T04:02:00Z', summary: { source: 'studio', by: [
+    { provider: 'chatgpt_search', model: 'openai/gpt-5-mini', group: 'main', denominator: 0, judged: 0, not_shown_count: 0, error_count: 2, mention_count: 0 },
+    { provider: 'perplexity', model: 'perplexity/sonar', group: 'main', denominator: 2, judged: 0, not_shown_count: 0, error_count: 0, mention_count: 1 },
+    { provider: 'openai', model: 'openai/gpt-4o-mini', group: 'main', denominator: 2, judged: 0, not_shown_count: 0, error_count: 0, mention_count: 2 },
+    { provider: 'google_aio', model: 'serpapi/google_ai_overview', group: 'main', denominator: 2, judged: 2, either: { numerator: 1, denominator: 2, rate: 50 }, not_shown_count: 1, error_count: 0, mention_count: 1 }
+  ], answers: [ans('chatgpt_search', 'error'), ans('chatgpt_search', 'error', { measured_at: '2026-10-09T04:05:00Z' }), ans('perplexity', 'ok'), ans('openai', 'ok'), ans('google_aio', 'ok')] } };
+  const c = R.compileReport({ client: { id: 'x', name: 'テスト整体' }, periodMonth: '2026-10-01', scans: [], runs: [run], traffic: [], actions: [] });
+  const p = (k) => c.ai.providers.filter((x) => x.provider === k)[0];
+  expect('測定不能: 全部エラーは割合なし', [p('chatgpt_search').citeRate, p('chatgpt_search').mentionRate], [null, null]);
+  expect('測定不能: 理由（取得に失敗）', p('chatgpt_search').mentionNa, '測定不能（有効な回答が0件：取得に失敗 2回）');
+  expect('測定不能: 出典が取れない回答だけ', p('perplexity').citeNa, '測定不能（出典が取れず判定できない回答だけでした：2件）');
+  expect('測定不能: 名前の割合は出す', p('perplexity').mentionRate, 50);
+  expect('判定なし: 検索しない AI', p('openai').citeNa, '判定なし（検索しない AI のため出典は判定しません）');
+  expect('測れたときは理由なし', [p('google_aio').citeRate, p('google_aio').citeNa, p('google_aio').mentionNa], [50, '', '']);
+  expect('結論の候補に測定不能を書く', c.facts.filter((f) => /測定不能/.test(f)).length, 2);
+  expect('推移: 測定不能の月を区別', c.history[5].citeNa, { chatgpt_search: '測定不能', perplexity: '測定不能', openai: '判定なし' });
+  const cs = (k) => c.ai.conditions.filter((x) => x.provider === k)[0];
+  expect('条件: モデル・検索・地域・回数', [cs('chatgpt_search').models, cs('chatgpt_search').search, cs('chatgpt_search').locations, cs('chatgpt_search').repeats], [['openai/gpt-5-mini'], 'yes', ['JP'], 1]);
+  expect('条件: 日時の範囲', [cs('chatgpt_search').from, cs('chatgpt_search').to], ['2026-10-09T04:01:21Z', '2026-10-09T04:05:00Z']);
+  expect('条件: 有効な回答と聞いた数', [cs('chatgpt_search').answers, cs('chatgpt_search').asked, cs('google_aio').answers, cs('google_aio').asked, cs('google_aio').judged], [0, 2, 2, 3, 2]);
+  expect('条件: 検索しない AI', cs('openai').search, 'no');
+  expect('出どころ: 測定不能を添える', /ChatGPT（検索あり）[^、]*測定不能/.test(R.evidenceList(c)[1].detail), true);
+  // 記録が無い（測っていない）ときは理由を付けない＝画面は「未計測」
+  expect('未計測は理由なし', R.naReasons({ provider: 'gemini', answers: 0, judged: 0, notShown: 0, errors: 0 }), { mention: '', cite: '' });
+  expect('表示なしだけも測定不能', R.naReasons({ provider: 'google_aio', answers: 0, judged: 0, notShown: 3, errors: 0 }).mention, '測定不能（有効な回答が0件：AI の回答が表示されなかった 3回）');
+}
+
 const failed = results.filter((x) => !x).length;
 console.log(`\n${results.length - failed}/${results.length} passed`);
 process.exit(failed ? 1 : 0);
