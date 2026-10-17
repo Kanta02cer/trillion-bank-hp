@@ -316,11 +316,11 @@
       '<div class="arr-tools"><button type="button" class="arr-btn" id="arr-print">PDFで保存（印刷）</button>' +
       (r.status !== 'published' ? '<span class="arr-draft">' + ({ draft: '下書き', in_review: '確認待ち', approved: '承認済み・未公開' }[r.status] || '下書き') + '（お客様には見えません）</span>' : '') + '</div>' +
       '<article class="arr-page">' +
-      '<header class="arr-head"><div class="arr-kicker">AirReach 月次レポート</div>' +
+      '<header class="arr-head"><div class="arr-kicker">' + (c.first ? 'AirReach 初回の計測レポート（改善前の基準値）' : 'AirReach 月次レポート') + '</div>' +
       '<h1 class="arr-title">' + esc(c.client ? c.client.name : '') + '　' + esc(ym(r.period_month)) + '</h1>' +
       '<div class="arr-meta">' + (r.published_at ? '公開 ' + esc(day(r.published_at)) : '作成 ' + esc(day(c.generatedAt))) + ' · 株式会社Trillion Bank</div></header>' +
       // 1ページ目：結論 → 数字 → 今月実施したこと → 次にやる3施策 → ご判断いただきたいこと（目立たせる）
-      '<section><h2 class="arr-h2">今月の結論' + tag('manual') + '</h2><ol class="arr-ol arr-concl">' + (concl.length ? concl.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') : '<li class="arr-na">（未記入）</li>') + '</ol></section>' +
+      '<section><h2 class="arr-h2">' + (c.first ? '初回の計測でわかったこと' : '今月の結論') + tag('manual') + '</h2><ol class="arr-ol arr-concl">' + (concl.length ? concl.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') : '<li class="arr-na">（未記入）</li>') + '</ol></section>' +
       '<section><h2 class="arr-h2">今月の数字</h2>' + (C.aioHero ? C.aioHero(c) : '') + C.tiles(c) + '</section>' +
       '<section><h2 class="arr-h2">今月実施したこと' + tag('manual') + '</h2><ul class="arr-ul arr-done">' + (acts.length ? acts.map(function (a) {
         return '<li><span class="arr-date">' + esc(String(a.doneOn || '').slice(5).replace('-', '/')) + '</span>' + esc(a.title) + (a.evidenceUrl ? ' <a href="' + esc(a.evidenceUrl) + '">' + esc(a.evidenceUrl) + '</a>' : '') + '</li>';
