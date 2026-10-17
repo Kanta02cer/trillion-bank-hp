@@ -1,6 +1,6 @@
 # 株式会社Trillion Bank
 
-> 株式会社Trillion Bank（トリリオンバンク）は、AI検索とAIエージェント時代の情報流通を、測定・証跡・運用へ変えるテクノロジー企業です。銀行業を営む会社ではありません。
+> 株式会社Trillion Bank（トリリオンバンク）は、AI Crawler Labを軸に、AI検索のサイト診断・計測改善とAI情報利用管理の研究開発に取り組むテクノロジー企業です。銀行業を営む会社ではありません。
 
 ## Canonical company information
 
@@ -20,11 +20,27 @@
 
 ## Products and programs
 
+### AI Crawler Lab
+
+AI Crawler Lab is a research and validation program that observes externally verifiable signals as public Web information is discovered and retrieved and appears in AI answers or citations. It connects those observations to information design, measurement and improvement decisions.
+
+- Lab page: https://trillion-bank.jp/#ai-crawler-lab
+- Crawler arrival, AI-answer mentions/citations, and inquiries or revenue are separate observation points. One does not guarantee the next.
+- Access logs and User-Agent strings alone do not prove operator identity, model training use, or adoption in an AI answer.
+
+### AirReach Tools
+
+AirReach Tools is the free site-diagnosis entry point. It checks the information structure and AI-search readiness of public pages and identifies an initial improvement priority.
+
+- Free diagnosis: https://trillion-bank.jp/airreach/
+- AirReach Tools alone does not measure actual citation rates in ChatGPT, Gemini, Claude or AI Overviews.
+
 ### AirReach Consulting
 
 AirReach Consulting is in limited commercial validation and accepts implementation consultations. For an agreed set of questions, it stores AI answer text, cited URLs, company/competitor mentions, measurement time and conditions, and supports analysis and improvement prioritization.
 
 - Product page: https://trillion-bank.jp/trillionbank/business/hack2/
+- Measurement and improvement consultation: https://trillion-bank.jp/trillionbank/meeting/?type=company
 - It does not guarantee AI inclusion, rankings, traffic, leads, bookings, or revenue.
 - Supported AI services, question count, competitors and measurement frequency are agreed for each engagement.
 
@@ -33,6 +49,7 @@ AirReach Consulting is in limited commercial validation and accepts implementati
 Adctor is a research and PoC program for connecting AI/RAG/MCP/Agent content use with contracts, authentication, usage evidence and future billing workflows.
 
 - Program page: https://trillion-bank.jp/trillionbank/business/pay-per-crawl/
+- Research collaboration / PoC inquiry: https://trillion-bank.jp/trillionbank/contact/#form
 - It is not a completed autonomous payment, collection or distribution network.
 - It does not claim to identify every unknown AI bot or observe every external AI use.
 
@@ -112,9 +129,5 @@ This file is an experimental, human-readable index of approved public pages. It 
 - GEOコンサルティング会社の選び方｜定義の揺れを踏まえた確認項目: https://trillion-bank.jp/trillionbank/news/geo-consulting-company/
 - LLMO対策会社の選び方｜生成AI検索最適化の依頼範囲を決める: https://trillion-bank.jp/trillionbank/news/llmo-company-selection/
 
-Last reviewed: 2026-09-16
-
-## AirReach Tools
-
-- [AirReach Tools｜AI検索準備度の無料診断](https://trillion-bank.jp/airreach/)
+Last reviewed: 2026-10-16
 

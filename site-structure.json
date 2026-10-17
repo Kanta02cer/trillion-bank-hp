@@ -1,12 +1,17 @@
 {
   "site": "https://trillion-bank.jp/",
-  "lastReviewed": "2026-09-16",
+  "lastReviewed": "2026-10-16",
   "language": "ja",
   "canonicalSections": [
     {
       "name": "Home",
       "url": "https://trillion-bank.jp/",
       "purpose": "会社とプロダクトの全体像"
+    },
+    {
+      "name": "AI Crawler Lab",
+      "url": "https://trillion-bank.jp/#ai-crawler-lab",
+      "purpose": "公開Web情報がAIに発見・取得され、回答や引用に現れる過程の外部シグナルを観測し、情報設計・計測・改善判断につなげる研究・検証"
     },
     {
       "name": "Company",
@@ -31,7 +36,7 @@
     {
       "name": "AirReach Consulting",
       "url": "https://trillion-bank.jp/trillionbank/business/hack2/",
-      "purpose": "AI回答・競合・引用元の測定と分析支援"
+      "purpose": "AI回答・競合・引用元の計測、改善判断と継続改善の支援"
     },
     {
       "name": "AirReach Tools",

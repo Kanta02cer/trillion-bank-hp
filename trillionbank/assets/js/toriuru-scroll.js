@@ -338,6 +338,17 @@
   shortLandscape.addEventListener?.('change', measure);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) schedule(); });
 
+  // CSS background images do not expose an error event. Probe the essential
+  // neutral asset so a failed image request removes the decorative controller
+  // instead of leaving an empty stage and an unusable pause button.
+  const neutralAssetProbe = new Image();
+  neutralAssetProbe.addEventListener('error', () => {
+    root.classList.add('is-unavailable');
+    toggle.hidden = true;
+    if (frame) cancelAnimationFrame(frame);
+  }, { once: true });
+  neutralAssetProbe.src = `${assetsBase}/toriuru-neutral.webp`;
+
   root.classList.add('is-enhanced');
   toggle.hidden = false;
   renderPauseControl();

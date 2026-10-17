@@ -20,11 +20,12 @@ permalink: /trillionbank/business/pay-per-crawl/
   },
   {
     "@context": "https://schema.org",
-    "@type": "Service",
+    "@type": "ResearchProject",
+    "@id": "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/#adctor",
     "name": "Adctor / Pay per Crawl",
-    "provider": { "@type": "Organization", "name": "株式会社Trillion Bank" },
-    "description": "AIクローラー・AI Agentによるコンテンツアクセスの証跡記録と、契約・請求接続を目指す研究開発・PoC",
-    "serviceType": "AI情報利用管理"
+    "url": "https://trillion-bank.jp/trillionbank/business/pay-per-crawl/",
+    "parentOrganization": { "@id": "https://trillion-bank.jp/#organization" },
+    "description": "AIクローラー・AI Agentによる公開Webコンテンツ取得の証跡を、契約・認証・将来の請求接続へつなげる研究開発・PoC。完成済みの決済・自動徴収・自動分配サービスではありません。"
   }
 ]
 </script>
@@ -33,12 +34,12 @@ permalink: /trillionbank/business/pay-per-crawl/
 <main id="main">
 <section class="phero tbr-scene tbr-character-right" data-toriuru-scene data-pose="explain" data-x="80" data-y="49" data-scale=".9"><div class="wrap">
   <div class="crumb"><a href="/">HOME</a> ／ <a href="/trillionbank/business/">事業概要</a> ／ Pay per Crawl</div>
-  <span class="badge poc">研究開発・PoC相談受付</span>
+  <span class="badge poc">研究開発・PoC相談</span>
   {% include tb-page-summary.html %}
   <span class="ey">AI USAGE ACCOUNTING · ADCTOR</span>
   <h1>Pay per Crawlとは？AIによるWeb情報利用を記録し、対価へつなぐ仕組み</h1>
   <p>Gatewayで直接証明できるのは基本的に「要求し、コンテンツを受け取った」までです。モデル学習や推論に使ったことまでの自動証明は対象外とし、契約・請求の根拠として使える証跡づくりを目指します。</p>
-  <div style="margin-top:28px"><a class="btn btn-primary" href="{{ site.data.contact.meeting_url }}" target="_blank" rel="noopener noreferrer" data-event="meeting_booking_click" data-service="ppc">PoC商談を予約する <span class="a">→</span></a></div>
+  <div style="margin-top:28px"><a class="btn btn-primary" href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="adctor-poc" data-lab-entry="collaboration" data-cta="pay_per_crawl_hero_collaboration">共同研究・PoCを相談する <span class="a" aria-hidden="true">→</span></a></div>
 </div></section>
 <section class="sec tbr-scene tbr-character-right" data-toriuru-scene data-pose="point-left" data-x="82" data-y="52" data-scale=".82"><div class="wrap"><div class="khead"><span class="no">01 — FLOW</span><h2 class="rv">証跡から請求までの流れ（構想）</h2></div>
 <div class="steps rv" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr))">
@@ -66,6 +67,6 @@ permalink: /trillionbank/business/pay-per-crawl/
     <li>・導入すれば必ず収益化できるとは述べません</li>
   </ul>
 </div>
-<div style="margin-top:36px"><a class="btn btn-primary" href="{{ site.data.contact.meeting_url }}" target="_blank" rel="noopener noreferrer">Readiness診断・PoC商談を予約する <span class="a">→</span></a></div>
+<div style="margin-top:36px"><a class="btn btn-primary" href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="adctor-poc" data-lab-entry="collaboration" data-cta="pay_per_crawl_final_collaboration">共同研究・PoCを相談する <span class="a" aria-hidden="true">→</span></a></div>
 </div></section>
 </main>{% include tb-footer.html refresh_navigation=true %}</body></html>

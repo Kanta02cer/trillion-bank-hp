@@ -4,13 +4,15 @@
     <a class="brand" href="/" aria-label="Trillion Bank ホーム">
       <img src="{{ '/images/hero/tb-logo-symbol.webp' | relative_url }}" alt="TRILLION BANK" width="414" height="318" style="height:48px;width:auto">
     </a>
-    <nav class="links" aria-label="グローバル">
+    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false" aria-controls="tbNav" aria-hidden="true" tabindex="-1"><span></span><span></span><span></span></button>
+    <nav class="links" id="tbNav" aria-label="グローバル" aria-hidden="true" inert>
       <div class="mega">
         <button class="mega-t" aria-haspopup="true" aria-expanded="false" aria-controls="mega-biz">BUSINESS <span aria-hidden="true">▾</span></button>
         <div class="mega-panel" id="mega-biz">
-          <a href="/airreach/"><span class="mt">AirReach Tools <span class="ma">→</span></span><span class="md">業種に合わせた予約・問い合わせ・記事参照の目安を30秒で診断。詳細測定はAirReach Consultingへ</span></a>
+          <a href="/#ai-crawler-lab"><span class="mt">AI Crawler Lab <span class="ma">→</span></span><span class="md">公開Web情報がAIに発見・取得され、回答や引用に現れるまでを研究・検証</span></a>
+          <a href="/airreach/"><span class="mt">AirReach Tools <span class="ma">→</span></span><span class="md">サイトの情報構造とAI検索への準備状況を無料診断</span></a>
           <a href="/trillionbank/business/hack2/"><span class="mt">AirReach Consulting <span class="ma">→</span></span><span class="md">AI回答での候補入り・勝敗・引用元を証拠付きで測定するAI Recommendation Intelligence</span></a>
-          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Pay per Crawl <span class="ma">→</span></span><span class="md">AIクローラーによるコンテンツ利用を制御・記録する基盤</span></a>
+          <a href="/trillionbank/business/pay-per-crawl/"><span class="mt">Adctor / Pay per Crawl <span class="ma">→</span></span><span class="md">情報利用の契約・認証・利用証跡を検証する研究開発・PoC</span></a>
         </div>
       </div>
       <a href="/trillionbank/mission/">企業理念</a>
@@ -20,6 +22,14 @@
       <a href="/trillionbank/meeting/" data-event="meeting_form_open" data-service="general" data-cta="header_meeting">商談を予約する</a>
       <a class="tbh-login" href="/airreach/app/" data-cta="header_login" aria-label="AirReach にログイン（ご契約のお客様・社内）">ログイン</a>
     </nav>
-    <button class="burger" id="tbBurger" aria-label="メニュー" aria-expanded="false"><span></span><span></span><span></span></button>
+    <nav class="tb-refresh-fallback-nav" aria-label="グローバル（簡易）">
+      <a href="/#ai-crawler-lab">AI Crawler Lab</a>
+      <a href="/trillionbank/business/">事業</a>
+      <a href="/trillionbank/mission/">企業理念</a>
+      <a href="/trillionbank/company/">企業概要</a>
+      <a href="/trillionbank/insights/">コラム</a>
+      <a href="/trillionbank/contact/#form">お問い合わせ</a>
+      <a href="/trillionbank/meeting/">商談予約</a>
+    </nav>
   </div>
 </header>

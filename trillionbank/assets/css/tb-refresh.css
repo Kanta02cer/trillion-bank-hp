@@ -12,7 +12,7 @@ body.tb-refresh {
   --toriuru-scale: .92;
   --toriuru-tilt: 0deg;
   --toriuru-opacity: 1;
-  --toriuru-size: clamp(250px, 28vw, 430px);
+  --toriuru-size: clamp(170px, 20vw, 300px);
   background: var(--tbr-paper);
   color: var(--tbr-ink);
 }
@@ -56,9 +56,9 @@ body.tb-refresh .sec {
 }
 
 body.tb-refresh .hero {
-  min-height: 100svh;
+  min-height: 0;
   height: auto;
-  padding-top: calc(var(--hdr) + clamp(44px, 7vw, 100px));
+  padding-top: calc(var(--hdr) + clamp(28px, 4vw, 56px));
 }
 
 body.tb-refresh .hero .wrap {
@@ -69,7 +69,7 @@ body.tb-refresh .hero .wrap {
 
 body.tb-refresh .hero h1 {
   max-width: 11ch;
-  font-size: clamp(3rem, 7.5vw, 7.2rem);
+  font-size: clamp(2.5rem, 5.4vw, 5.4rem);
   line-height: 1.05;
   letter-spacing: -.055em;
 }
@@ -90,16 +90,16 @@ body.tb-refresh .hero-bottom img {
 }
 
 body.tb-refresh .phero {
-  min-height: min(900px, 88svh);
+  min-height: 0;
   display: grid;
   align-items: center;
-  padding-block: calc(var(--hdr) + clamp(54px, 9vw, 120px)) clamp(72px, 10vw, 144px);
+  padding-block: calc(var(--hdr) + clamp(36px, 6vw, 72px)) clamp(56px, 8vw, 96px);
   border-bottom: 1px solid var(--tbr-line);
 }
 
 body.tb-refresh .phero h1 {
   max-width: 13ch;
-  font-size: clamp(3rem, 6.5vw, 6.3rem);
+  font-size: clamp(2.3rem, 5vw, 4.6rem);
   line-height: 1.08;
   letter-spacing: -.05em;
 }
@@ -111,12 +111,12 @@ body.tb-refresh .phero p {
 }
 
 body.tb-refresh .sec {
-  padding-block: clamp(96px, 13vw, 176px);
+  padding-block: clamp(68px, 8vw, 112px);
   border-top: 1px solid var(--tbr-line);
 }
 
 body.tb-refresh .tbr-scene {
-  min-height: max(700px, 78svh);
+  min-height: 0;
   display: grid;
   align-items: center;
 }
@@ -167,7 +167,7 @@ body.tb-refresh .bh,
 body.tb-refresh .khead h2,
 body.tb-refresh .sec > .wrap > h2 {
   max-width: 15ch;
-  font-size: clamp(2.35rem, 5.4vw, 5.2rem);
+  font-size: clamp(1.9rem, 3.8vw, 3.5rem);
   line-height: 1.12;
   letter-spacing: -.045em;
 }
@@ -175,7 +175,7 @@ body.tb-refresh .sec > .wrap > h2 {
 body.tb-refresh .sh,
 body.tb-refresh .lead {
   color: var(--tbr-muted);
-  font-size: clamp(.98rem, 1.25vw, 1.12rem);
+  font-size: clamp(1rem, 1.1vw, 1.125rem);
   line-height: 2;
 }
 
@@ -302,10 +302,69 @@ body.tb-refresh header.tbh {
   backdrop-filter: blur(14px);
 }
 
+body.tb-refresh header.tbh:focus-within {
+  transition-duration: 0s;
+}
+
 body.tb-refresh .tbh .links > a.tbh-login,
 body.tb-refresh .tbh .mega-panel,
 body.tb-refresh .tbh .mega-panel a {
   border-radius: 2px;
+}
+
+/* JavaScript upgrades the always-available simple link fallback. */
+body.tb-refresh .tbh .links[inert] {
+  display: none;
+}
+
+body.tb-refresh .tb-refresh-fallback-nav {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: clamp(12px, 2vw, 22px);
+  min-width: 0;
+  margin-left: auto;
+  overflow-x: auto;
+  color: var(--tbr-ink);
+  font-size: .78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+body.tb-refresh .tbh.tb-nav-enhanced .tb-refresh-fallback-nav {
+  display: none;
+}
+
+body.tb-refresh .tbh.tb-nav-enhanced .mega:hover .mega-panel,
+body.tb-refresh .tbh.tb-nav-enhanced .mega:focus-within .mega-panel {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+}
+
+body.tb-refresh .tbh.tb-nav-enhanced .mega-t[aria-expanded="true"] + .mega-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+@media (max-width: 960px) {
+  body.tb-refresh .tbh.tb-nav-enhanced .mega-panel,
+  body.tb-refresh .tbh.tb-nav-enhanced .mega:hover .mega-panel,
+  body.tb-refresh .tbh.tb-nav-enhanced .mega:focus-within .mega-panel {
+    display: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  body.tb-refresh .tbh.tb-nav-enhanced .mega-t[aria-expanded="true"] + .mega-panel {
+    display: block;
+  }
+
+  body.tb-refresh .tbh:not(.tb-nav-enhanced) .burger {
+    display: none;
+  }
 }
 
 body.tb-refresh footer.tbf {
@@ -339,10 +398,14 @@ body.tb-refresh .tbf .bottom {
   z-index: 3;
   top: clamp(120px, 18vh, 190px);
   right: clamp(18px, 5vw, 80px);
-  width: clamp(190px, 26vw, 360px);
+  width: clamp(150px, 20vw, 260px);
   aspect-ratio: 1;
   pointer-events: none;
   background: url("/trillionbank/assets/images/toriuru/toriuru-neutral.webp") center / contain no-repeat;
+}
+
+.toriuru-guide.is-unavailable {
+  display: none !important;
 }
 
 .toriuru-guide__stage {
@@ -525,10 +588,10 @@ body.tb-refresh .tbf .bottom {
 
   body.tb-refresh .tbr-scene:not(.tbr-scene--dense),
   body.tb-refresh .phero.tbr-scene {
-    min-height: max(760px, 100svh);
-    align-items: end;
-    padding-top: max(300px, 42svh) !important;
-    padding-bottom: clamp(84px, 12vh, 128px) !important;
+    min-height: 0;
+    align-items: center;
+    padding-top: calc(var(--hdr) + 44px) !important;
+    padding-bottom: 64px !important;
   }
 
   body.tb-refresh .hero.tbr-scene .wrap {
@@ -551,13 +614,13 @@ body.tb-refresh .tbf .bottom {
 
   body.tb-refresh .phero h1,
   body.tb-refresh .hero h1 {
-    font-size: clamp(2.7rem, 12vw, 5rem);
+    font-size: clamp(2.1rem, 9vw, 3.4rem);
   }
 
   body.tb-refresh .bh,
   body.tb-refresh .khead h2,
   body.tb-refresh .sec > .wrap > h2 {
-    font-size: clamp(2.2rem, 10vw, 4.2rem);
+    font-size: clamp(1.75rem, 7.8vw, 2.8rem);
   }
 
   body.tb-refresh .bcards,
@@ -590,7 +653,7 @@ body.tb-refresh .tbf .bottom {
     position: absolute;
     top: calc(var(--hdr) + 28px);
     right: 8vw;
-    width: clamp(170px, 48vw, 240px);
+    width: clamp(110px, 30vw, 160px);
   }
 
   .toriuru-guide__toggle-text {
@@ -631,6 +694,13 @@ body.tb-refresh .tbf .bottom {
   body.tb-refresh .hero.tbr-scene .wrap {
     padding-top: 40px;
   }
+
+  .toriuru-guide__toggle {
+    top: auto;
+    right: auto;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: max(16px, env(safe-area-inset-left));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -648,5 +718,58 @@ body.tb-refresh .tbf .bottom {
 
   .toriuru-guide.is-reduced .toriuru-guide__stage {
     position: fixed;
+  }
+}
+
+
+/* 2026-10 clean-canvas refinement */
+body.tb-refresh p,
+body.tb-refresh li { font-size: clamp(1rem, 1.05vw, 1.125rem); }
+body.tb-refresh .hero-sub,
+body.tb-refresh .hero-note { max-width: 48rem; }
+body.tb-refresh .hero-note { font-size: .875rem; line-height: 1.75; }
+body.tb-refresh .hero-scroll { padding-block: 14px; }
+body.tb-refresh .hero-bottom { margin-top: clamp(24px, 4vw, 48px); }
+body.tb-refresh .home-faq summary,
+body.tb-refresh .faq summary { position: relative; padding-right: 44px; }
+body.tb-refresh .home-faq summary::after { content:"+"; position:absolute; right:4px; top:50%; transform:translateY(-50%); font-family:var(--mono); color:var(--tbr-blue); font-size:1.35rem; }
+body.tb-refresh .home-faq details[open] summary::after { content:"−"; }
+body.tb-refresh .ins-cluster,
+body.tb-refresh .ins-item { border-bottom:1px solid var(--tbr-line) !important; }
+body.tb-refresh .ins-item:hover { color:var(--tbr-blue); }
+.tb-company-business-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(24px,3vw,40px); }
+.tb-company-founder { display:grid; grid-template-columns:minmax(180px,280px) minmax(0,1fr); gap:clamp(28px,5vw,72px); align-items:start; max-width:900px; }
+.tb-company-founder__portrait { display:block; width:100%; height:auto; aspect-ratio:1; object-fit:cover; }
+.tb-company-founder__label { display:block; margin-bottom:14px; }
+.tb-company-founder__name { font-size:clamp(1.8rem,3vw,2.8rem); line-height:1.25; margin-bottom:16px; }
+.tb-company-founder__role { font-weight:600; margin-bottom:12px; }
+.tb-company-founder__bio { color:var(--muted); max-width:38em; }
+@media (max-width:700px) {
+  .tb-company-business-grid,
+  .tb-company-founder { grid-template-columns:1fr; }
+  .tb-company-founder__portrait { width:min(220px,70vw); }
+}
+@media (max-width:900px){
+  .toriuru-guide.is-enhanced .toriuru-guide__stage { display:none; }
+  .toriuru-guide.is-enhanced .toriuru-guide__static { display:block; }
+  .toriuru-guide__toggle { display:none !important; }
+  .toriuru-guide__static {
+    top:calc(var(--hdr) + 12px);
+    right:max(20px,var(--tbr-gutter));
+    width:clamp(84px,24vw,116px);
+  }
+  body.tb-refresh main > .hero.tbr-scene,
+  body.tb-refresh main > .phero.tbr-scene {
+    padding-top:calc(var(--hdr) + clamp(128px,34vw,160px)) !important;
+  }
+  body.tb-refresh .hero-bottom { margin-top:24px; }
+}
+
+@media (max-height:620px) and (min-width:521px) and (max-width:900px){
+  .toriuru-guide__static,
+  .toriuru-guide.is-enhanced .toriuru-guide__static { display:none !important; }
+  body.tb-refresh main > .hero.tbr-scene,
+  body.tb-refresh main > .phero.tbr-scene {
+    padding-top:calc(var(--hdr) + 48px) !important;
   }
 }

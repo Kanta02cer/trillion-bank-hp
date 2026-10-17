@@ -11,5 +11,5 @@
   </div>
 </footer>
 <script>
-(function(){var h=document.getElementById('tbh'),b=document.getElementById('tbBurger');if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});document.querySelectorAll('.mega-t').forEach(function(btn){btn.addEventListener('click',function(){btn.setAttribute('aria-expanded',String(btn.getAttribute('aria-expanded')!=='true'))})});})();
+(function(){if(document.body.classList.contains('tb-refresh'))return;var h=document.getElementById('tbh'),b=document.getElementById('tbBurger');if(b)b.addEventListener('click',function(){var o=h.classList.toggle('open');b.setAttribute('aria-expanded',o)});document.querySelectorAll('.tbh .links a').forEach(function(a){a.addEventListener('click',function(){h.classList.remove('open')})});document.querySelectorAll('.mega-t').forEach(function(btn){btn.addEventListener('click',function(){btn.setAttribute('aria-expanded',String(btn.getAttribute('aria-expanded')!=='true'))})});})();
 </script>
