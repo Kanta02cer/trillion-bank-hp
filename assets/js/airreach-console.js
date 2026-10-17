@@ -1489,6 +1489,12 @@
             '<label class="arc-field" for="arc-next-due-' + i + '"><span>期限（任意）</span><input class="arc-input" type="date" id="arc-next-due-' + i + '" data-next-due="' + i + '" value="' + esc(a.due || '') + '"></label></fieldset>';
         }).join('') + '</section>' +
         '<section class="arc-card"><label class="arc-field" for="arc-decisions"><span class="arc-h2">お客様に判断いただきたいこと（任意・1行に1件）</span><textarea class="arc-input arc-ta" id="arc-decisions" rows="3">' + esc(decisions) + '</textarea></label></section>' +
+        (editable && window.AirReachReportAiDraft ? '<section class="arc-card" id="arc-aidraft"><h2 class="arc-h2">AI に下書きを頼む（任意）</h2>' +
+          '<p class="arc-note">このレポートの数字だけを材料にして、結論・次にやる施策・判断いただきたいことの下書きを AI に頼めます。数字と表はレポートが自動で載せるので、AI に書かせるのは文章だけです。</p>' +
+          '<ol class="arc-note"><li>「指示と材料をコピー」を押し、AI のチャットに貼って送る</li><li>AI の返事（JSON）を下の欄に貼り、「欄に入れる」を押す</li><li>入った文章を読んで直す（材料に無い数字があれば、ここに出ます）。そのあと、いつもどおり確認を依頼する</li></ol>' +
+          '<div class="arc-row"><button type="button" class="arc-btn arc-btn-line" id="arc-aidraft-copy">指示と材料をコピー</button></div>' +
+          '<label class="arc-field" for="arc-aidraft-reply"><span>AI の返事</span><textarea class="arc-input arc-ta" id="arc-aidraft-reply" rows="5" placeholder="{&quot;conclusions&quot;: [...], &quot;next_actions&quot;: [...], &quot;client_decisions&quot;: [...]}"></textarea></label>' +
+          '<div class="arc-row"><button type="button" class="arc-btn" id="arc-aidraft-fill">欄に入れる（今の入力は置き換わります）</button></div><div id="arc-aidraft-msg" role="status" aria-live="polite"></div></section>' : '') +
         approvalCard +
         '<div class="arc-row">' +
         (!flow ? (editable ? '<button class="arc-btn" type="submit">保存</button>' : '') + (r.status === 'published' ? '<button class="arc-btn arc-btn-line" type="button" id="arc-unpublish">非公開に戻す</button>' : '<button class="arc-btn arc-btn-line" type="button" id="arc-publish">公開する（お客様が見られる）</button>') :
@@ -1518,6 +1524,27 @@
         }).filter(function (a) { return a.title; });
         var d = $('#arc-decisions').value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
         return { conclusions: c3, next_actions: n3, client_decisions: d };
+      }
+      // AI の下書き（airreach-report-ai-draft.js）：指示と材料をコピー → 返事を貼って欄に入れる。保存は自動保存に任せる
+      function bindAiDraft(changed) {
+        var D = window.AirReachReportAiDraft, box = $('#arc-aidraft');
+        if (!D || !box) return;
+        var out = function (html, kind) { $('#arc-aidraft-msg').innerHTML = '<p class="arc-gmsg is-' + (kind === 'error' ? 'warn' : kind || 'ok') + '">' + html + '</p>'; };
+        $('#arc-aidraft-copy').addEventListener('click', function () {
+          var text = D.prompt(cmp);
+          var done = function () { out('コピーしました。AI のチャットに貼って送ってください。'); };
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { $('#arc-aidraft-reply').value = text; out('コピーできなかったので、下の欄に指示と材料を出しました。全部選んでコピーしてください（貼る前に欄を空にしてください）。', 'warn'); });
+          else { $('#arc-aidraft-reply').value = text; out('下の欄に指示と材料を出しました。全部選んでコピーしてください（貼る前に欄を空にしてください）。', 'warn'); }
+        });
+        $('#arc-aidraft-fill').addEventListener('click', function () {
+          var res = D.parseReply($('#arc-aidraft-reply').value);
+          if (!res.ok) { out(esc((res.errors || []).join('。')), 'error'); return; }
+          fill(res.value);
+          changed();
+          var unk = D.unknownNumbers(res.value, cmp);
+          out('欄に入れました。読んで直してから、確認を依頼してください。' + (res.errors.length ? '<br>' + esc(res.errors.join('。')) : '') +
+            (unk.length ? '<br><b>材料に無い数字があります：' + esc(unk.join('、')) + '</b>（AI が作った数字かもしれません。レポートの数字と照らして直してください）' : ''), unk.length ? 'warn' : 'ok');
+        });
       }
       function fill(p) {
         [0, 1, 2].forEach(function (i) {
@@ -1551,6 +1578,7 @@
         as.markSaved(collect());
         Array.prototype.forEach.call(root.querySelectorAll(fieldsSel), function (el) { el.addEventListener('input', function () { as.changed(); }); el.addEventListener('change', function () { as.changed(); }); });
         $('#arc-save-now').addEventListener('click', function () { as.flush().catch(fail); });
+        bindAiDraft(function () { as.changed(); });
         // この端末に、保存されていない入力が残っていれば知らせる（再読み込み・通信の失敗のあと）
         var bk = backup.read();
         if (bk && bk.payload && JSON.stringify(bk.payload) !== JSON.stringify(collect())) {
