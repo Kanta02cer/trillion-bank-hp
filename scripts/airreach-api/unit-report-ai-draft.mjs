@@ -34,6 +34,11 @@ ok('prompt: 外部の数字・保証・取得手段を禁止', /業界平均/.te
 ok('prompt: 材料を含む', p.includes('"会社名": "テスト整体院"'));
 ok('prompt: 2回目以降は差のある事実だけ', /差が書かれているものだけ/.test(D.prompt(Object.assign({}, cmp, { first: false }))));
 
+{
+  const old = D.material(Object.assign({}, cmp, { facts: ['AIの引用率（google_aio）：16.7%（前月の計測なし）', '競合と比べた名前の出やすさ・SOV（google_ai_mode）：100%'] }));
+  ok('material: 保存済みの事実の内部の名前を言い換える', old.自動で集めた事実[0].includes('（Google の AI による概要）') && old.自動で集めた事実[1].includes('（Google の AI モード）') && !/google_/.test(JSON.stringify(old)), JSON.stringify(old.自動で集めた事実));
+}
+
 // 2. 返事を読む
 const reply = '```json\n{"conclusions":["改善前の基準として記録しました。Google の AI による概要では25回中3回、名前が出ました。","b","c","d"],"next_actions":[{"title":"会社の情報をAIが読み取れる形で載せる","owner":"当社","due":"2026-11-15"},{"title":"よくある質問を載せる","owner":"","due":"来月"}],"client_decisions":[]}\n```';
 const r = D.parseReply(reply);

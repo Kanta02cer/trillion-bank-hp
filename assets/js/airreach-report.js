@@ -724,14 +724,14 @@
     if (site.resolved.length) facts.push('前月から解消した不足：' + site.resolved.length + '件');
     if (ai) ai.providers.forEach(function (r) {
       if (r.citeRate == null) {
-        if (r.citeNa && !/^判定なし/.test(r.citeNa)) facts.push('AIの引用率（' + ({ openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity' }[r.provider] || r.provider) + '）：' + r.citeNa);
+        if (r.citeNa && !/^判定なし/.test(r.citeNa)) facts.push('AIの引用率（' + (PROV_JA[r.provider] || r.provider) + '）：' + r.citeNa);
         return;
       }
-      facts.push('AIの引用率（' + ({ openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity' }[r.provider] || r.provider) + '）：' + (r.citeDelta != null ? (r.prevCiteRate + '% → ') : '') + r.citeRate + '%' + (r.citeDelta != null ? '（' + (r.citeDelta >= 0 ? '+' : '') + r.citeDelta + 'pt）' : (ai.comparable ? '' : '（前月と質問の版が違う、または前月の計測なし）')));
+      facts.push('AIの引用率（' + (PROV_JA[r.provider] || r.provider) + '）：' + (r.citeDelta != null ? (r.prevCiteRate + '% → ') : '') + r.citeRate + '%' + (r.citeDelta != null ? '（' + (r.citeDelta >= 0 ? '+' : '') + r.citeDelta + 'pt）' : (ai.comparable ? '' : '（前月と質問の版が違う、または前月の計測なし）')));
     });
     if (ai) ai.providers.forEach(function (r) {
       if (r.sov == null) return;
-      facts.push('競合と比べた名前の出やすさ・SOV（' + ({ openai: 'ChatGPT', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity' }[r.provider] || r.provider) + '）：' + (r.sovDelta != null ? (r.prevSov + '% → ') : '') + r.sov + '%' + (r.sovDelta != null ? '（' + (r.sovDelta >= 0 ? '+' : '') + r.sovDelta + 'pt）' : ''));
+      facts.push('競合と比べた名前の出やすさ・SOV（' + (PROV_JA[r.provider] || r.provider) + '）：' + (r.sovDelta != null ? (r.prevSov + '% → ') : '') + r.sov + '%' + (r.sovDelta != null ? '（' + (r.sovDelta >= 0 ? '+' : '') + r.sovDelta + 'pt）' : ''));
     });
     if (traffic.gsc && traffic.gsc.clicks != null) {
       facts.push('検索からのクリック：' + (traffic.gscPrev && traffic.gscPrev.clicks != null ? traffic.gscPrev.clicks + ' → ' : '') + traffic.gsc.clicks);
