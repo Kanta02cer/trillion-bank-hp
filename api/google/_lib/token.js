@@ -1,3 +1,5 @@
+import { loadConnection, accessTokenFromStored } from './connections.js';
+
 /**
  * Google のアクセストークンを Cookie から取り出す（期限切れなら refresh_token で取り直す）。
  * clientId を渡すと、その顧客だけのつながり（ダッシュボードの顧客の画面からつないだもの）を使う。
@@ -24,7 +26,14 @@ export async function getAccessToken(req, clientId) {
   const n = cookieNames(clientId);
   const cookies = parseCookies(req.headers.cookie || '');
   if (cookies[n.access]) return cookies[n.access];
-  if (!cookies[n.refresh]) return null;
+  if (!cookies[n.refresh]) {
+    // このブラウザでつないでいなくても、サーバーに保管したその顧客のつながりがあれば使う（別のパソコン・担当者の画面から取り込むとき）。
+    //   呼ぶ側（gsc.js など）が、ログインと契約（googleAccess）を先に確かめている
+    if (!clientKey(clientId)) return null;
+    const row = await loadConnection(clientId);
+    const got = row ? await accessTokenFromStored(row) : null;
+    return got && got.token ? got.token : null;
+  }
   const body = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID || '',
     client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
