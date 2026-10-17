@@ -1,0 +1,19 @@
+{
+  "name": "trillion-bank-cm-30s",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Trillion Bank 30s motion-graphics CM: deterministic HTML composition rendered frame by frame",
+  "type": "module",
+  "scripts": {
+    "audio": "python3 audio/score.py",
+    "render": "node render.mjs",
+    "preview": "node render.mjs --stills"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "5.2.5",
+    "@fontsource-variable/noto-sans-jp": "5.2.6",
+    "@fontsource-variable/space-grotesk": "5.2.7",
+    "playwright": "1.55.0",
+    "pngjs": "7.0.0"
+  }
+}
