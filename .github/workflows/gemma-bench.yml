@@ -1,0 +1,62 @@
+# Gemma（LiteRT-LM・CPU）の試作を Linux x86_64 で測る。Vercel Functions の大きさ（2GB/1vCPU・4GB/2vCPU）に合わせたコンテナで動かす。
+# 本番・Vercel・Supabase には触らない。材料は架空の本文と公開ページだけ。公開リポジトリの標準ランナー＝費用なし。
+# 動くのは exp/gemma-* ブランチへの push と手動実行だけ（main への push・PR では動かない）。
+name: Gemma bench (experimental)
+
+on:
+  push:
+    branches: ['exp/gemma-*']
+    paths: ['tools/airreach-gemma/**', '.github/workflows/gemma-bench.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gemma-bench-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bench:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    env:
+      MODEL_URL: https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm
+      LITERT_LM_API: litert-lm-api==0.17.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Machine
+        run: |
+          lscpu | grep -E 'Model name|^CPU\(s\)|Flags' | cut -c1-200
+          free -m; df -h / | tail -1; docker --version; stat -fc %T /sys/fs/cgroup
+      - name: Download model (Apache-2.0, public)
+        run: |
+          mkdir -p /tmp/model
+          curl -sSL --retry 3 -o /tmp/model/gemma-4-E2B-it.litertlm "$MODEL_URL"
+          ls -l /tmp/model
+          echo "MODEL_SHA256=$(sha256sum /tmp/model/gemma-4-E2B-it.litertlm | cut -d' ' -f1)" >> "$GITHUB_ENV"
+      - name: Build image (Python 3.12 + litert-lm-api)
+        run: |
+          printf 'FROM python:3.12-slim\nRUN pip install --no-cache-dir %s\nWORKDIR /work\n' "$LITERT_LM_API" > /tmp/Dockerfile
+          docker build -q -t gemma-bench -f /tmp/Dockerfile /tmp
+          docker run --rm gemma-bench sh -c 'pip show litert-lm-api | head -3; du -sh /usr/local/lib/python3.12/site-packages/litert_lm* ; ldd --version | head -1'
+      # 1回目（run 37466297568）は XNNPack の重みのキャッシュを作れない条件で、2GB は読み込み中に OOM・4GB は長い本文の FAQ で OOM・上限なしはピーク 6.2GB だった。
+      # 2回目は、キャッシュを先に作り（上限なし）、それを読み取り専用で渡して 2GB/1CPU・4GB/2CPU を測る（Vercel の関数にモデルとキャッシュを同梱する想定）
+      - name: Build XNNPack weight cache (no limit, writable)
+        continue-on-error: true
+        run: bash tools/airreach-gemma/ci_run.sh cache-build 0 0 1200 rw faq_short 1
+      - name: Vercel standard size (2GB / 1 vCPU) with read-only cache
+        continue-on-error: true
+        run: bash tools/airreach-gemma/ci_run.sh std-2g-1cpu-cache 2g 1 2400 ro
+      - name: Vercel performance size (4GB / 2 vCPU) with read-only cache
+        continue-on-error: true
+        run: bash tools/airreach-gemma/ci_run.sh perf-4g-2cpu-cache 4g 2 2400 ro
+      - name: Summary
+        if: always()
+        run: python3 tools/airreach-gemma/ci_summary.py /tmp/out >> "$GITHUB_STEP_SUMMARY"; cat "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gemma-bench-results
+          path: /tmp/out
+          retention-days: 14

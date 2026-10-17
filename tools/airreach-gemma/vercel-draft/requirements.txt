@@ -1,0 +1,2 @@
+# 【下書き】Vercel の Python Function に置くとき（litert-lm-api は manylinux_2_27_x86_64 の wheel・約47MB）
+litert-lm-api==0.17.1
