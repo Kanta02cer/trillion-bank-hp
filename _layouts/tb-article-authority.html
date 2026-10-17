@@ -2,8 +2,36 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-{% include tb-head.html %}
 {% assign article_type = 'Article' %}{% if page.tech_article %}{% assign article_type = 'TechArticle' %}{% endif %}
+{% assign review_author_name = page.author | default: '' | strip %}
+{% assign review_author_type = page.author_type | default: '' | strip %}
+{% assign review_reviewer_name = page.reviewed_by | default: '' | strip %}
+{% assign review_reviewer_date = page.reviewed_on | default: '' | append: '' | strip %}
+{% assign review_pending = false %}
+{% if page.review_required %}
+  {% assign review_pending = true %}
+  {% if page.review_status == 'approved' %}
+    {% if review_author_name != empty %}
+      {% if review_author_type != empty %}
+        {% if review_reviewer_name != empty %}
+          {% if review_reviewer_date != empty %}
+            {% if page.reviewer_type == 'Person' %}{% assign review_pending = false %}{% endif %}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% elsif page.review_status == 'pending' %}
+  {% assign review_pending = true %}
+{% endif %}
+{% assign article_author = page.author | default: site.data.public_facts.company.representative %}
+{% assign article_author_type = page.author_type | default: 'Person' %}
+{% assign article_author_id = page.author_id %}
+{% unless article_author_id %}{% if article_author == site.data.public_facts.company.representative %}{% assign article_author_id = 'https://trillion-bank.jp/#kanta-inoue' %}{% endif %}{% endunless %}
+{% assign article_reviewer = page.reviewed_by | default: '株式会社Trillion Bank 編集部' %}
+{% assign article_reviewer_type = page.reviewer_type | default: 'Organization' %}
+{% include tb-head.html %}
+{% unless review_pending %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -28,8 +56,8 @@
       "image": {{ page.og_image | default: '/images/hero/tb-logo-color.webp' | absolute_url | jsonify }},
       "datePublished": "{{ page.date | date_to_xmlschema }}",
       "dateModified": "{% if page.last_modified %}{{ page.last_modified }}T00:00:00+09:00{% else %}{{ page.date | date_to_xmlschema }}{% endif %}",
-      "author": {"@type": "Person", "name": {{ page.author | default: site.data.public_facts.company.representative | jsonify }}, "@id": "https://trillion-bank.jp/#kanta-inoue"},
-      "editor": {"@type": "Organization", "name": {{ page.reviewed_by | default: '株式会社Trillion Bank 編集部' | jsonify }}},
+      "author": {"@type": "{{ article_author_type }}", "name": {{ article_author | jsonify }}{% if article_author_id %}, "@id": {{ article_author_id | jsonify }}{% endif %}},
+      "editor": {"@type": "{{ article_reviewer_type }}", "name": {{ article_reviewer | jsonify }}},
       "publisher": {"@id": "https://trillion-bank.jp/#organization"},
       "mainEntityOfPage": {"@id": "{{ page.url | absolute_url }}#webpage"},
       "inLanguage": "ja",
@@ -52,20 +80,22 @@
   ]
 }
 </script>
+{% endunless %}
 </head>
 <body>
 {% include tb-header.html %}
 <main id="main">
 <section class="phero"><div class="wrap"><nav class="crumb" aria-label="パンくずリスト"><a href="/">HOME</a> ／ <a href="/trillionbank/insights/">Insights</a> ／ {{ page.category }}</nav><span class="en" style="font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:var(--gold)">{{ page.date | date: '%Y.%m.%d' }}　{{ page.category }}</span><h1 style="font-size:clamp(1.7rem,4vw,2.9rem);margin-top:14px">{{ page.title }}</h1></div></section>
 <section class="sec"><div class="wrap"><article class="article">
-<div class="byline" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--hair,#e5e7eb);font-size:.86rem;color:var(--muted,#6b7280);"><span>執筆：{{ page.author | default: site.data.public_facts.company.representative }}</span><span>確認：{{ page.reviewed_by | default: '株式会社Trillion Bank 編集部' }}</span><span>公開：{{ page.date | date: '%Y年%m月%d日' }}</span>{% if page.last_modified %}<span>最終確認：{{ page.last_modified }}</span>{% endif %}</div>
+{% if review_pending %}<aside role="status" style="margin-bottom:24px;padding:16px 18px;border:1px solid #d97706;border-radius:8px;background:#fffbeb;color:#78350f"><strong>公開前レビュー用の未公開原稿です。</strong><br>実在する担当者の確認と確認日が記録されるまで公開しません。</aside>{% endif %}
+<div class="byline" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--hair,#e5e7eb);font-size:.86rem;color:var(--muted,#6b7280);">{% if review_pending %}<span>原稿：AI支援による下書き</span><span>確認：レビュー待ち</span><span>原稿作成：{{ page.date | date: '%Y年%m月%d日' }}</span><span>公開日：未定</span>{% else %}<span>執筆：{{ article_author }}</span><span>確認：{{ article_reviewer }}</span><span>公開：{{ page.date | date: '%Y年%m月%d日' }}</span>{% if page.reviewed_on %}<span>確認日：{{ page.reviewed_on }}</span>{% elsif page.last_modified %}<span>最終確認：{{ page.last_modified }}</span>{% endif %}{% endif %}</div>
 {% include tb-direct-answer.html %}
 {% if page.toc %}{% include tb-toc.html %}{% endif %}
 {{ content }}
 {% if page.faq_items %}<section aria-labelledby="article-faq" style="margin-top:48px"><h2 id="article-faq">よくある質問</h2>{% for item in page.faq_items %}<div style="padding:20px 0;border-top:1px solid var(--hair,#e5e7eb)"><h3 style="font-size:1rem;margin-bottom:8px">{{ item.question }}</h3><p>{{ item.answer }}</p></div>{% endfor %}</section>{% endif %}
-{% if page.references %}<div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);"><h2 style="font-size:1rem;margin-bottom:12px">参考文献・一次情報</h2><ol style="font-size:.86rem;color:var(--muted,#6b7280);padding-left:20px">{% for ref in page.references %}<li style="margin-bottom:8px"><a href="{{ ref.url }}" target="_blank" rel="noopener noreferrer">{{ ref.title }}</a>{% if ref.accessed %}（確認日：{{ ref.accessed }}）{% endif %}</li>{% endfor %}</ol></div>{% endif %}
-<div style="margin-top:40px;padding:20px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);font-size:.8rem;color:var(--muted,#6b7280)"><p style="margin:0">本記事は公開時点の一次情報と当社の分析に基づきます。用語や各サービスの仕様は変わる可能性があります。誤りを確認した場合は、お問い合わせ窓口からお知らせください。</p></div>
-{% include tb-author-box.html %}
+{% if page.references %}<div style="margin-top:48px;padding:24px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);"><h2 style="font-size:1rem;margin-bottom:12px">参考文献・一次情報</h2><ol style="font-size:.86rem;color:var(--muted,#6b7280);padding-left:20px">{% for ref in page.references %}<li style="margin-bottom:8px"><a href="{{ ref.url }}" target="_blank" rel="noopener noreferrer">{{ ref.title }}</a>{% if ref.updated %}（更新日：{{ ref.updated }}）{% endif %}{% if ref.accessed %}（確認日：{{ ref.accessed }}）{% endif %}</li>{% endfor %}</ol></div>{% endif %}
+<div style="margin-top:40px;padding:20px;background:var(--surface,#f8fafc);border-radius:8px;border:1px solid var(--hair,#e5e7eb);font-size:.8rem;color:var(--muted,#6b7280)"><p style="margin:0">{% if review_pending %}本原稿は公開前のレビュー用です。内容・日付・著者情報は確認後に変更される場合があります。{% else %}本記事は公開時点の一次情報と当社の分析に基づきます。用語や各サービスの仕様は変わる可能性があります。誤りを確認した場合は、お問い合わせ窓口からお知らせください。{% endif %}</p></div>
+{% unless review_pending %}{% include tb-author-box.html %}{% endunless %}
 <div class="article-cta" style="margin-top:56px;padding-top:36px;border-top:2px solid var(--blue-600)">{% if page.cta_type == 'adctor' %}<h2 style="font-size:clamp(1.2rem,2.4vw,1.55rem)">AIデータの権利・利用証跡について相談する</h2><p>Adctorは研究開発・PoC相談の段階です。契約、認証、利用証跡の成立性を限定範囲で検討します。</p><a class="btn btn-primary" href="/trillionbank/contact/#form" data-event="contact_page_open" data-inquiry="adctor" data-cta="article_footer">PoC・技術連携を相談する <span class="a">→</span></a>{% else %}<h2 style="font-size:clamp(1.2rem,2.4vw,1.55rem)">この記事のテーマを、自社・競合で確認する</h2><p>AirReach Consultingは、選定した質問についてAI回答、引用URL、自社・競合の言及と測定条件を保存し、改善判断を支援します。</p><div style="display:flex;gap:14px;flex-wrap:wrap"><a class="btn btn-primary" href="/trillionbank/meeting/?type=company" data-event="meeting_form_open" data-service="hack2_company" data-cta="article_footer">AI検索の現在地を相談する <span class="a">→</span></a><a class="btn btn-line" href="/trillionbank/meeting/?type=agency" data-event="meeting_form_open" data-service="hack2_agency" data-cta="article_footer">共同提案を相談する <span class="a">→</span></a></div>{% endif %}<p style="margin-top:14px;font-size:.78rem;color:var(--muted)">AI回答への掲載、順位、問い合わせ、売上を保証するサービスではありません。</p></div>
 {% include tb-article-related.html %}
 <div style="margin-top:44px"><a class="btn btn-line" href="/trillionbank/insights/">← Insights一覧へ</a></div>
