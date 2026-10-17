@@ -12,6 +12,10 @@
   var PROV = { openai: 'ChatGPT', chatgpt_search: 'ChatGPT（検索あり）', gemini: 'Gemini', claude: 'Claude', perplexity: 'Perplexity', google_aio: 'Google の AI による概要', google_ai_mode: 'Google の AI モード' };
   var MAX_TEXT = 200;
 
+  function plainProviders(s) {
+    return String(s == null ? '' : s).replace(/（(openai|chatgpt_search|gemini|claude|perplexity|google_aio|google_ai_mode)）/g, function (m, k) { return '（' + PROV[k] + '）'; });
+  }
+
   function num(x) { return x == null || x === '' ? null : x; }
 
   /** AI に渡す材料（このレポートの集計データから。お客様の画面と同じ数字だけ） */
@@ -27,7 +31,8 @@
       会社名: c.client ? c.client.name : '',
       対象の月: String(c.periodMonth || '').slice(0, 7),
       初回の計測か: !!c.first,
-      自動で集めた事実: (c.facts || []).slice(),
+      // 保存済みのレポートには、AI の内部の名前（google_aio など）のまま書かれた事実が残っているので、ここでも言い換える
+      自動で集めた事実: (c.facts || []).map(plainProviders),
       'Google の AI による概要（名前を入れていない質問）': aioCell(c.aio),
       'ChatGPT 検索あり（名前を入れていない質問・補助）': aioCell(c.chatgpt),
       AIごとの結果: ai ? (ai.providers || []).map(function (p) {
