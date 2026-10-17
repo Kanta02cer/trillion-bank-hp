@@ -154,6 +154,49 @@ body.tb-refresh .tbr-character-left > .wrap > .sh {
   margin-left: auto;
 }
 
+/*
+ * PC 幅では、トリウルくんが立つ側に本文を入れない（見出しラベル・カード・画像も含めて、区画の中身全体）。
+ * 余白は、各ページの data-x・data-scale・ポーズの幅のうち一番大きく広がる組み合わせ（右側 x=77・左向きのポーズ・
+ * scale .92、左側 x=18・右向きのポーズ・scale .9）から、キャラクターの端まで＋32px を計算している。
+ * スマホ幅・低い横向き画面（toriuru-scroll.js の compactViewport）では、キャラクターは上に置くのでこの余白は使わない。
+ */
+@media (min-width: 1101px), (min-width: 901px) and (min-height: 621px) {
+  body.tb-refresh {
+    --toriuru-room-right: max(var(--tbr-gutter), calc(23vw - max(0px, (100vw - var(--tbr-max)) / 2) + min(28vw, 430px) * .352 + 32px));
+    --toriuru-room-left: max(var(--tbr-gutter), calc(18vw - max(0px, (100vw - var(--tbr-max)) / 2) + min(28vw, 430px) * .306 + 32px));
+  }
+
+  body.tb-refresh .tbr-character-right > .wrap {
+    padding-right: var(--toriuru-room-right);
+  }
+
+  body.tb-refresh .tbr-character-left > .wrap {
+    padding-left: var(--toriuru-room-left);
+  }
+
+  /* トップの大きなロゴ画像も、区画の .wrap の外にあるので同じ余白を空ける */
+  body.tb-refresh .hero.tbr-character-right > .hero-bottom {
+    max-width: var(--tbr-max);
+    margin-inline: auto;
+    width: 100%;
+    padding-right: var(--toriuru-room-right);
+  }
+
+  body.tb-refresh .tbr-character-right > .wrap > .khead,
+  body.tb-refresh .tbr-character-right > .wrap > .lead,
+  body.tb-refresh .tbr-character-right > .wrap > .pull,
+  body.tb-refresh .tbr-character-right > .wrap > .bh,
+  body.tb-refresh .tbr-character-right > .wrap > .sh,
+  body.tb-refresh .tbr-character-left > .wrap > .khead,
+  body.tb-refresh .tbr-character-left > .wrap > .lead,
+  body.tb-refresh .tbr-character-left > .wrap > .pull,
+  body.tb-refresh .tbr-character-left > .wrap > .bh,
+  body.tb-refresh .tbr-character-left > .wrap > .sh {
+    max-width: 100%;
+    margin-left: 0;
+  }
+}
+
 body.tb-refresh .sl,
 body.tb-refresh .khead .no,
 body.tb-refresh .phero .ey,
