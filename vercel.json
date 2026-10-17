@@ -8,5 +8,11 @@
     }
   },
   "cleanUrls": true,
-  "trailingSlash": true
+  "trailingSlash": true,
+  "crons": [
+    {
+      "path": "/api/google/sync/",
+      "schedule": "0 18 * * *"
+    }
+  ]
 }

@@ -1,5 +1,6 @@
 import { cookieNames } from './_lib/token.js';
 import { GA4_SCOPE, GSC_SCOPE, OAUTH_SCOPES, SCOPE_FEATURES, hasScope } from './_lib/scopes.js';
+import { storeConnection } from './_lib/connections.js';
 
 function setCors(req, res) {
   const origin = req.headers.origin || '';
@@ -82,6 +83,12 @@ export default async function handler(req, res) {
   cookieHeaders.push(scopesCookie(features.join('.'), 2592000));
   // どの Google アカウントでつないだか（画面に出すだけ。トークンではない）。id_token はトークン交換の応答で直接受け取ったもの
   const email = emailFromIdToken(tokens.id_token);
+  // 顧客の画面から始めた接続は、更新用トークンを暗号化してサーバーにも保管する（毎月の自動取り込みと、別のブラウザからの取り込みのため）。
+  //   この顧客について始めてよいかは auth.js が確かめ、その結果を HttpOnly の Cookie（airreach_google_back）で受け取っている。
+  //   鍵（GOOGLE_TOKEN_KEY）が無い・保管に失敗したときも、これまでどおりブラウザでは使える
+  if (backClient && tokens.refresh_token && gscOk) {
+    await storeConnection({ clientId: backClient, refreshToken: tokens.refresh_token, features, googleEmail: email });
+  }
   cookieHeaders.push(`${N.email}=${encodeURIComponent(email)}; Path=/; Secure; SameSite=Lax; Max-Age=${email ? 2592000 : 0}`);
   res.setHeader('Set-Cookie', cookieHeaders);
   res.writeHead(302, { Location: backLocation(cookies.airreach_google_back, status) });

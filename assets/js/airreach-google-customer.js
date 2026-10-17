@@ -56,8 +56,17 @@
     var feats = cookie(cid, 's').split('.').filter(Boolean), email = cookie(cid, 'e'), p = props(cid);
     var ret = o.ret || '';
     // この顧客の取り込んだ数字（お客様も読める）
-    o.sb.from('traffic_snapshots').select('period_month,source,metrics,created_at').eq('client_id', cid).in('source', ['gsc_api', 'ga4_api']).order('period_month', { ascending: false }).limit(12)
-      .then(function (r) { return r.error ? [] : (r.data || []); }, function () { return []; }).then(function (snaps) {
+    // サーバーに保管したつながり（別のブラウザでつないだときも「つないでいる」と分かる。トークンは返らない）
+    var server = null;
+    Promise.all([
+      o.sb.from('traffic_snapshots').select('period_month,source,metrics,created_at').eq('client_id', cid).in('source', ['gsc_api', 'ga4_api']).order('period_month', { ascending: false }).limit(12)
+        .then(function (r) { return r.error ? [] : (r.data || []); }, function () { return []; }),
+      o.sb.rpc('airreach_google_connection_status', { p_client_id: cid }).then(function (r) { return r && !r.error && r.data && r.data.ok ? r.data : null; }, function () { return null; })
+    ]).then(function (got) {
+        var snaps = got[0];
+        server = got[1] && got[1].connected ? got[1] : null;
+        if (server && !feats.length) { feats = ['gsc']; email = email || server.google_email || ''; }
+        if (server && server.gsc_property && !p.gsc) p = Object.assign({}, p, { gsc: server.gsc_property });
         if (!feats.length) drawStart(snaps);
         else if (ret === 'connected' || ret === 'ga4_missing' || !(p.gsc || p.ga4)) drawSelect();
         else drawConnected(snaps);
@@ -77,7 +86,7 @@
         '<ol><li><b>Google のアカウントを選ぶ</b><span>お店のサイトを Search Console と Google アナリティクスで見ているアカウントを選びます。</span></li>' +
         '<li><b>Google の画面で、読み取りを許可する</b><span>「Search Console のデータの表示」「Google アナリティクスのデータの表示」の2つです。書き換えの許可は求めません。</span></li>' +
         '<li><b>AirReach に戻って、お店のサイトを選ぶ</b><span>' + (host ? 'お店のサイト（' + esc(host) + '）を選びます。' : 'お店のサイトを選びます。') + '</span></li></ol>' +
-        '<div class="agc-grid"><div><b>AirReach が読み取るもの</b><ul><li>Google 検索での表示回数・クリック数</li><li>サイトの訪問数と、予約・問い合わせの数</li><li>つないだアカウントのメールアドレス（どのアカウントか表示するため）</li></ul></div>' +
+        '<div class="agc-grid"><div><b>AirReach が読み取るもの</b><ul><li>Google 検索での表示回数・クリック数</li><li>検索された言葉と、表示されたページ（月ごと）</li><li>サイトの訪問数と、予約・問い合わせの数</li><li>つないだアカウントのメールアドレス（どのアカウントか表示するため）</li></ul></div>' +
         '<div><b>しないこと</b><ul><li>サイトや Google の設定の変更</li><li>検索された言葉を、AI に聞く質問づくりに使うこと</li><li>ご契約が終わったあと、90日を超えて数字を持っておくこと</li></ul></div></div>' +
         '<label class="agc-consent"><input type="checkbox" id="agc-consent"> <span>AirReach の担当者が、分析・月次レポートの作成・サポートのために必要な範囲で、この接続で取得する Google のデータ（Search Console・Google アナリティクス）を閲覧することに同意します。</span></label>' +
         (!host ? '<p class="agc-msg is-warn">お店のサイトがまだ登録されていません。担当者にご連絡ください。</p>' : '') +
@@ -151,8 +160,9 @@
         mount(box, Object.assign({}, o, { ret: '' }));
       });
     }
+    function disconnect() { return headers().then(function (h) { return fetch('/api/google/auth/?disconnect=1&client=' + encodeURIComponent(cid), { method: 'POST', credentials: 'same-origin', headers: h }); }); }
     function disconnectThenStart() {
-      fetch('/api/google/auth/?disconnect=1&client=' + encodeURIComponent(cid), { method: 'POST', credentials: 'same-origin' }).catch(function () {}).then(function () {
+      disconnect().catch(function () {}).then(function () {
         feats = []; email = '';
         mount(box, Object.assign({}, o, { ret: '' }));
       });
@@ -173,7 +183,8 @@
         '<dl class="agc-dl"><dt>アカウント</dt><dd>' + esc(email || '（表示できません）') + '</dd><dt>検索の数字</dt><dd>' + esc(p.gsc || '選んでいません') + '</dd><dt>訪問・予約の数字</dt><dd>' + esc(p.ga4 ? 'GA4 プロパティ ' + p.ga4 : '選んでいません') + '</dd><dt>最後に取り込んだ日時</dt><dd>' + esc(last ? dt(last) : 'まだ取り込んでいません') + '</dd></dl>' +
         (rows ? '<div class="arc-table-wrap"><table class="arc-table agc-table"><thead><tr><th>月</th><th>検索からのクリック</th><th>予約・問い合わせ</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '') +
         '<div class="agc-actions"><button type="button" class="arc-btn agc-big" data-agc-reimport>今の数字を取り込み直す</button><button type="button" class="arc-btn-sm" data-agc-change>選んだサイトを変える</button><button type="button" class="arc-btn-sm agc-danger" data-agc-disconnect>切断する</button></div>' +
-        '<p class="agc-note">このブラウザで Google とつないでいます。別のパソコンやスマホで取り込むときは、そこでもう一度つなぎます。毎月のレポートの前に、担当者が取り込みをお願いすることがあります。</p>' +
+        (server ? '<p class="agc-note">このつながりは AirReach のサーバーに暗号化して保管しています。別のパソコンやスマホ、担当者の画面からも取り込めます。</p>' :
+          '<p class="agc-note">このブラウザで Google とつないでいます。別のパソコンやスマホで取り込むときは、そこでもう一度つなぎます。毎月のレポートの前に、担当者が取り込みをお願いすることがあります。</p>') +
         '<p class="agc-note"><b>取り込んだ数字の扱い：</b>月次レポートの「検索からのクリック」「予約・問い合わせ」に使います。切断すると、これからの取り込みは止まります（取り込み済みの数字の削除はご依頼ください）。ご契約が終わったら、90日以内に削除します。</p>' + TROUBLE + '</section>';
       box.querySelector('[data-agc-reimport]').addEventListener('click', function (e) { runImport(e.currentTarget, p.gsc, p.ga4); });
       box.querySelector('[data-agc-change]').addEventListener('click', drawSelect);
@@ -182,7 +193,7 @@
         // 押し間違いを防ぐ：1回目で確認の文言に変え、もう一度押したら切断
         if (dc.getAttribute('data-armed') !== '1') { dc.setAttribute('data-armed', '1'); dc.textContent = 'もう一度押すと切断します'; return; }
         dc.disabled = true;
-        fetch('/api/google/auth/?disconnect=1&client=' + encodeURIComponent(cid), { method: 'POST', credentials: 'same-origin' }).then(function () {
+        disconnect().then(function () {
           say('Google とのつながりを切りました。取り込み済みの数字は残っています（削除はご依頼ください）。', 'ok');
           feats = []; email = '';
           mount(box, Object.assign({}, o, { ret: '' }));

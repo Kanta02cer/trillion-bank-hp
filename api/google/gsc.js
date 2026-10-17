@@ -1,6 +1,9 @@
 import { getAccessToken, requestClientId } from './_lib/token.js';
 import { googleAccess, denyAccess } from './_lib/access.js';
 import { saveTraffic, periodOf, jwtEmail, googleEmailOf } from './_lib/save.js';
+import { fetchTotals, fetchQueryRows, fetchPermission } from './_lib/gsc-fetch.js';
+import { setGscProperty, saveGscQueries } from './_lib/connections.js';
+import { canStoreTokens } from './_lib/crypto.js';
 function setCors(req, res) {
   const origin = req.headers.origin || '';
   let allow = 'https://trillion-bank.jp';
@@ -78,38 +81,11 @@ export default async function handler(req, res) {
       source: 'gsc'
     }));
   }
-  // サイト全体の合計は日付だけで取り直す。検索語句つきの行は Google が伏せた語句（匿名クエリ）の分が落ち、
-  // 合計が実際より小さくなる（2026-10-01 実測: 表示 24,091 に対し語句つきの合計は 14,958）
+  // サイト全体の合計は日付だけで取り直す（語句つきの行の合計は匿名クエリの分だけ小さくなる。_lib/gsc-fetch.js）
   let totals = null;
-  const t = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ startDate, endDate, dimensions: ['date'], rowLimit: 1000, dataState: 'final' })
-  });
-  if (!t.ok && totalsOnly) {
-    const te = await t.json().catch(() => ({}));
-    return res.status(t.status).json(te);
-  }
-  if (t.ok) {
-    const td = await t.json();
-    const days = (td.rows || []).map(row => row.keys?.[0] || '').filter(Boolean).sort();
-    // 日数は開始日から「データのある最後の日」まで（直近の確定前の日を分母に入れない）
-    const last = days.length ? days[days.length - 1] : endDate;
-    const span = Math.round((Date.parse(last < endDate ? last : endDate) - Date.parse(startDate)) / 86400000) + 1;
-    const impressions = (td.rows || []).reduce((s, row) => s + (row.impressions || 0), 0);
-    const clicks = (td.rows || []).reduce((s, row) => s + (row.clicks || 0), 0);
-    // 平均掲載順位は表示回数で重み付け（Search Console の画面の平均と同じ考え方）
-    const posW = (td.rows || []).reduce((s, row) => s + (row.position || 0) * (row.impressions || 0), 0);
-    totals = {
-      impressions,
-      clicks,
-      ctr: impressions ? clicks / impressions : 0,
-      position: impressions ? Math.round((posW / impressions) * 10) / 10 : 0,
-      days: span > 0 ? span : 0,
-      startDate,
-      endDate: last < endDate ? last : endDate
-    };
-  }
+  const t = await fetchTotals(token, siteUrl, startDate, endDate);
+  if (!t.ok && totalsOnly) return res.status(t.status).json(t.data);
+  if (t.ok) totals = t.totals;
   // save: お客様が自分で取り込むとき。サーバーが読んだ合計だけを、サーバーが保存する（画面から数字は受け取らない。_lib/save.js）
   if (req.body && req.body.save === true) {
     if (!totalsOnly || !totals) return res.status(400).json({ code: 'bad_request', error: '保存は月の合計の取り込みだけです。' });
@@ -118,9 +94,24 @@ export default async function handler(req, res) {
       metrics: { clicks: totals.clicks, impressions: totals.impressions, ctr: totals.ctr, position: totals.position, days: totals.days, start_date: totals.startDate, end_date: totals.endDate,
         property: siteUrl, google_email: googleEmailOf(req, clientId), fetched_at: new Date().toISOString(), saved_via: 'server' } });
     if (!saved.ok) return res.status(saved.status).json({ code: saved.code, error: saved.error });
-    return res.status(200).json({ rows: [], count: 0, siteUrl, totals, saved: true });
+    // 合計を保存できたら、サーバーに保管したつながりに「選んだサイト」を記録し、その月の検索語句 × ページも保存する。
+    //   こちらが失敗しても合計の取り込みは成功のまま（queries に結果を返す）。保管していない（鍵が無い等）ときは何もしない
+    const queries = await saveMonthQueries({ token, clientId, siteUrl, startDate, endDate, setBy: jwtEmail(req) });
+    return res.status(200).json({ rows: [], count: 0, siteUrl, totals, saved: true, queries });
   }
   // siteUrl: どの Search Console プロパティのデータか（クライアントは各行に記録し、同じサイトの診断にだけ使う）
   return res.status(200).json({ rows, count: rows.length, siteUrl, totals });
+}
+
+/** 選んだサイトの記録と、その月の語句 × ページの保存。戻り値 { ok, rows?, reason? } */
+export async function saveMonthQueries({ token, clientId, siteUrl, startDate, endDate, setBy }, env = process.env, fetchImpl = globalThis.fetch) {
+  if (!canStoreTokens(env)) return { ok: false, reason: 'not_configured' };
+  const permission = await fetchPermission(token, siteUrl, fetchImpl);
+  const prop = await setGscProperty({ clientId, property: siteUrl, permission, setBy }, env, fetchImpl);
+  if (!prop.ok) return { ok: false, reason: prop.reason || 'property_failed' };
+  const q = await fetchQueryRows(token, siteUrl, startDate, endDate, 5000, fetchImpl);
+  if (!q.ok) return { ok: false, reason: 'google_error', status: q.status };
+  const s = await saveGscQueries({ clientId, period: periodOf(startDate), property: siteUrl, rows: q.rows }, env, fetchImpl);
+  return s.ok ? { ok: true, rows: s.rows } : { ok: false, reason: s.reason || 'save_failed' };
 }
 

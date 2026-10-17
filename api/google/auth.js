@@ -1,7 +1,9 @@
 import { randomBytes } from 'node:crypto';
 import { OAUTH_SCOPES, EMAIL_SCOPES } from './_lib/scopes.js';
 import { cookieNames } from './_lib/token.js';
-import { googleAccess, denyAccess } from './_lib/access.js';
+import { googleAccess, denyAccess, bearerToken } from './_lib/access.js';
+import { loadConnection, deleteConnection } from './_lib/connections.js';
+import { decryptToken } from './_lib/crypto.js';
 
 function setCors(req, res) {
   const origin = req.headers.origin || '';
@@ -35,10 +37,22 @@ export default async function handler(req, res) {
     const N = cookieNames((req.query || {}).client); // ?client=<uuid> ならその顧客のつながりだけを切る
     const tok = ck[N.refresh] || ck[N.access];
     if (tok) { try { await fetch('https://oauth2.googleapis.com/revoke', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ token: tok }) }); } catch (e) {} }
+    // サーバーに保管したその顧客のつながりも消す（ログインして、その顧客を扱える人のときだけ。Google 側の許可も取り消す）
+    let serverDeleted = false;
+    const dcClient = String((req.query || {}).client || '').toLowerCase();
+    if (/^[0-9a-f-]{36}$/.test(dcClient) && bearerToken(req)) {
+      const a = await googleAccess(req, dcClient);
+      if (a.ok) {
+        const row = await loadConnection(dcClient);
+        const stored = row && decryptToken(row.refresh_token_enc);
+        if (stored && stored !== tok) { try { await fetch('https://oauth2.googleapis.com/revoke', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ token: stored }) }); } catch (e) {} }
+        serverDeleted = !!(await deleteConnection(dcClient)).ok;
+      }
+    }
     const gone = (n, http) => `${n}=; Path=/; ${http ? 'HttpOnly; ' : ''}Secure; SameSite=Lax; Max-Age=0`;
     res.setHeader('Set-Cookie', [gone(N.access, true), gone(N.refresh, true), gone(N.scopes, false), gone(N.email, false)]);
     res.setHeader('Content-Type', 'application/json');
-    res.statusCode = 200; res.end(JSON.stringify({ ok: true, revoked: !!tok }));
+    res.statusCode = 200; res.end(JSON.stringify({ ok: true, revoked: !!tok, serverDeleted }));
     return;
   }
   // 接続の開始は POST だけ（ログインのトークンを付けて呼ぶ）。URL を開いただけでは Google の同意画面へ進まない
