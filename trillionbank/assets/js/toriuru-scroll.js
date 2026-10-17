@@ -50,6 +50,8 @@
   function readScene(scene) {
     const rect = scene.getBoundingClientRect();
     return {
+      top: scrollY + rect.top,
+      bottom: scrollY + rect.bottom,
       center: scrollY + rect.top + rect.height / 2,
       pose: scene.dataset.pose || 'neutral',
       x: number(scene.dataset.x, 50),
@@ -57,6 +59,13 @@
       scale: number(scene.dataset.scale, 1),
       visibility: scene.dataset.toriuruHide === 'true' ? 0 : 1,
     };
+  }
+
+  // 出さない区画（data-toriuru-hide）では、画面の中央がその区画に入った時点で消す。
+  // 区画の中心どうしで少しずつ薄くすると、縦に長い区画では半透明のまま長く残るため。
+  function visibilityAt(viewportCenter) {
+    const scene = scenePoints.find((point) => viewportCenter >= point.top && viewportCenter < point.bottom);
+    return scene ? scene.visibility : 1;
   }
 
   function stateForScroll() {
@@ -94,7 +103,7 @@
       scale,
       tilt: Math.sin(eased * Math.PI) * (next.x < current.x ? -1.2 : 1.2),
       pose: progress < .48 ? current.pose : next.pose,
-      visibility: mix(current.visibility, next.visibility, eased),
+      visibility: visibilityAt(viewportCenter),
     };
   }
 
@@ -331,6 +340,17 @@
   }, { passive: true });
   addEventListener('orientationchange', () => setTimeout(measure, 160), { passive: true });
   addEventListener('load', measure, { once: true });
+  // 画像などがあとから読み込まれてページの高さが変わったら、区画と文字の位置を測り直す
+  if ('ResizeObserver' in window) {
+    let lastHeight = 0;
+    new ResizeObserver(() => {
+      const height = document.documentElement.scrollHeight;
+      if (Math.abs(height - lastHeight) < 2) return;
+      lastHeight = height;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(measure, 120);
+    }).observe(document.body);
+  }
   document.addEventListener('toggle', measure, true);
   document.fonts?.ready.then(measure).catch(() => {});
   reducedMotion.addEventListener?.('change', syncMotionPreference);
