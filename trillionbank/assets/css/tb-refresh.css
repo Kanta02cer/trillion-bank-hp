@@ -376,9 +376,10 @@ body.tb-refresh .tbf .bottom {
   will-change: transform, opacity;
 }
 
+/* 文字や画像に重なるときは、消さずに薄くする（瞬時に消えたり出たりしないよう、時間をかけて変える） */
 .toriuru-guide.is-colliding .toriuru-guide__orbit {
-  opacity: 0;
-  transition: none;
+  opacity: min(var(--toriuru-opacity), .18);
+  transition: opacity 240ms ease;
 }
 
 .toriuru-guide__pose,
